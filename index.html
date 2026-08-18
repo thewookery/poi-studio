@@ -28,81 +28,45 @@
         };
     </script>
 
-    <!-- PINNED FLOATING VISUALIZER HUD (ALWAYS VISIBLE DURING SCROLLING) -->
+    <!-- COMPACT TOP HEADER & QUICK ACTION BAR -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
             <div class="hud-title">⚡ POI STUDIO <span style="color:var(--neon-green); font-size:0.75rem;">♾️ ZERO-SEAM</span></div>
             <div class="hud-quick-actions">
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
                 <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi over BLE">🚀 Upload (BLE)</button>
-                <button class="hw-btn" id="btn-ble-deck-open" style="font-size:0.68rem; color:var(--neon-green);" title="Open Live Bluetooth Control Deck">🎛️ Deck</button>
                 <button class="hud-btn-mutate" id="btn-quick-mutate" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
                 <button class="hud-btn-rand" id="btn-quick-rand" title="Random Generator">🎲 Rand</button>
                 <button class="hud-btn-dl" id="btn-quick-dl-bmp" title="Download Open Pixel Poi BMP">💾 BMP</button>
             </div>
         </div>
 
-
-        <!-- DUAL REAL-TIME VISUALIZERS -->
-        <div class="hud-visualizers">
-            <!-- 1. INFINITE STREAMER (LIQUID ZERO-GLITCH FLOW) -->
-            <div class="hud-viz-box">
-                <div class="hud-viz-label">
-                    <span>♾️ Single Pattern Stream (Plays to ∞)</span>
-                    <span class="telemetry-pill" id="hud-seam-badge">100.00% Zero-Seam</span>
-                </div>
-                <div class="infinite-canvas-wrap">
-                    <canvas id="infinite-canvas" width="400" height="70"></canvas>
-                </div>
+        <!-- INLINE NON-INTRUSIVE BLE UPLOAD PROGRESS PILL -->
+        <div class="inline-ble-progress" id="inline-ble-progress">
+            <div class="inline-ble-header">
+                <span style="color:var(--neon-purple);" id="inline-ble-label">📡 Uploading Pattern...</span>
+                <span class="val-mono" id="inline-ble-pct" style="color:var(--neon-green);">0%</span>
             </div>
-
-            <!-- 2. REPEAT STRIP (2X) -->
-            <div class="hud-viz-box">
-                <div class="hud-viz-label">
-                    <span>📏 Seamless Strip (BMP)</span>
-                    <span class="telemetry-pill" id="dim-badge">40 × 55 px</span>
-                </div>
-                <div class="strip-canvas-wrap" id="strip-drag-area" title="Drag horizontally to spin cylinder!">
-                    <canvas id="tile-canvas" width="80" height="55"></canvas>
-                </div>
+            <div class="inline-ble-track">
+                <div class="inline-ble-fill" id="inline-ble-fill"></div>
             </div>
-        </div>
-
-        <!-- QUICK SLIDER BAR IN HUD -->
-        <div class="hud-slider-row">
-            <div class="hud-slider-item">
-                <span>Speed:</span>
-                <input type="range" id="stream-speed" min="0" max="600" value="180">
-                <span id="stream-speed-val" class="val-mono">180</span>
-            </div>
-            <div class="hud-slider-item">
-                <span>Phase:</span>
-                <input type="range" id="phase-slider" min="0" max="40" value="0">
-                <span id="phase-val" class="val-mono">0px</span>
-            </div>
-        </div>
-
-
-        <!-- SMART MUTATE FEATURE LOCKS -->
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:4px; font-size:0.64rem; color:var(--text-muted); padding:3px 6px; background:rgba(0,0,0,0.35); border-radius:3px; border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-weight:700; color:var(--accent-color);">⚡ Mutate Locks:</span>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-palette" style="accent-color:var(--accent-color);"> 🔒 Palette</label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-geometry" style="accent-color:var(--neon-green);"> 🔒 Geometry</label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-symmetries" style="accent-color:var(--neon-purple);"> 🔒 Symmetries</label>
-            <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-shaders" style="accent-color:var(--neon-pink);"> 🔒 Shaders</label>
+            <div style="font-size:0.65rem; color:var(--text-muted);" id="inline-ble-details">Preparing packets...</div>
         </div>
     </header>
 
-
-    <!-- PRIMARY DUAL-WORKSPACE MODE SWITCHER -->
+    <!-- 3-WORKSPACE PRIMARY NAVIGATION BAR -->
     <div class="workspace-mode-bar">
-        <button class="mode-switch-btn active" id="btn-mode-stitcher" data-mode="workspace-stitcher">
-            🔀 Master BMP Pattern Stitcher & Vault (395 BMPs)
+        <button class="mode-switch-btn active" id="btn-mode-generator" data-mode="workspace-generator">
+            🎨 Algorithmic Generator
         </button>
-        <button class="mode-switch-btn" id="btn-mode-generator" data-mode="workspace-generator">
-            ⚡ Algorithmic Pattern Generator & Shaders (128+)
+        <button class="mode-switch-btn" id="btn-mode-stitcher" data-mode="workspace-stitcher">
+            🎬 Storyboard & Vault (395)
+        </button>
+        <button class="mode-switch-btn" id="btn-mode-deck" data-mode="workspace-deck">
+            🎛️ Poi Deck (<span id="btn-nav-poi-count">0</span>)
         </button>
     </div>
+
 
     <!-- ==========================================================================
          WORKSPACE 1: MASTER BMP PATTERN STITCHER & VAULT (ON SAME PAGE)
@@ -271,9 +235,60 @@
     </div>
 
     <!-- ==========================================================================
-         WORKSPACE 2: ALGORITHMIC PATTERN GENERATOR & POV SHADERS
+         WORKSPACE 1: ALGORITHMIC PATTERN GENERATOR & POV SHADERS (DEFAULT)
          ========================================================================== -->
-    <div id="workspace-generator" style="display:none; flex-direction:column; gap:6px;">
+    <div id="workspace-generator" style="display:flex; flex-direction:column; gap:8px; padding:10px 12px;">
+        
+        <!-- INTEGRATED DUAL REAL-TIME VISUALIZERS (LOCKED TO GENERATOR) -->
+        <div class="card-box" style="padding:8px 10px; background:rgba(0,0,0,0.5); border-color:rgba(0, 173, 181, 0.4);">
+            <div class="hud-visualizers">
+                <!-- 1. INFINITE STREAMER (LIQUID ZERO-GLITCH FLOW) -->
+                <div class="hud-viz-box">
+                    <div class="hud-viz-label">
+                        <span>♾️ Single Pattern Stream (Plays to ∞)</span>
+                        <span class="telemetry-pill" id="hud-seam-badge">100.00% Zero-Seam</span>
+                    </div>
+                    <div class="infinite-canvas-wrap">
+                        <canvas id="infinite-canvas" width="400" height="70"></canvas>
+                    </div>
+                </div>
+
+                <!-- 2. REPEAT STRIP (2X) -->
+                <div class="hud-viz-box">
+                    <div class="hud-viz-label">
+                        <span>📏 Seamless Strip (BMP)</span>
+                        <span class="telemetry-pill" id="dim-badge">40 × 55 px</span>
+                    </div>
+                    <div class="strip-canvas-wrap" id="strip-drag-area" title="Drag horizontally to spin cylinder!">
+                        <canvas id="tile-canvas" width="80" height="55"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK SLIDER BAR & MUTATE LOCKS -->
+            <div class="hud-slider-row" style="margin-top:6px;">
+                <div class="hud-slider-item">
+                    <span>Speed:</span>
+                    <input type="range" id="stream-speed" min="0" max="600" value="180">
+                    <span id="stream-speed-val" class="val-mono">180</span>
+                </div>
+                <div class="hud-slider-item">
+                    <span>Phase:</span>
+                    <input type="range" id="phase-slider" min="0" max="40" value="0">
+                    <span id="phase-val" class="val-mono">0px</span>
+                </div>
+            </div>
+
+            <!-- SMART MUTATE FEATURE LOCKS -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:6px; font-size:0.64rem; color:var(--text-muted); padding:4px 8px; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.08);">
+                <span style="font-weight:700; color:var(--accent-color);">⚡ Mutate Locks:</span>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-palette" style="accent-color:var(--accent-color);"> 🔒 Palette</label>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-geometry" style="accent-color:var(--neon-green);"> 🔒 Geometry</label>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-symmetries" style="accent-color:var(--neon-purple);"> 🔒 Symmetries</label>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-shaders" style="accent-color:var(--neon-pink);"> 🔒 Shaders</label>
+            </div>
+        </div>
+
         
         <!-- PERSISTENT PRO LED HEIGHT & TIMELINE LENGTH BAR FOR GENERATOR -->
         <div class="card-box" style="margin-bottom:6px; background:rgba(0, 173, 181, 0.06); border:1px solid rgba(0, 173, 181, 0.3); padding:8px 12px;">
@@ -584,124 +599,108 @@
         </div>
     </div>
 
-    <!-- BLE MODAL & REAL-TIME HARDWARE CONTROL DECK -->
-    <div class="ble-modal-overlay" id="ble-modal">
-        <div class="ble-modal-content">
-            <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+    <!-- ==========================================================================
+         WORKSPACE 3: POI BLUETOOTH HARDWARE DECK & PAIR MANAGER
+         ========================================================================== -->
+    <div id="workspace-deck" style="display:none; flex-direction:column; gap:10px; padding:10px 12px;">
+
+        <!-- 1. CONNECTED POI DEVICES & PAIR MANAGER -->
+        <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:1.2rem;">📡</span>
-                    <div>
-                        <div style="font-size:0.88rem; font-weight:800; color:var(--neon-green);" id="ble-modal-title">Open Pixel Poi BLE Uplink</div>
-                        <div style="font-size:0.68rem; color:var(--text-muted);" id="ble-modal-status">Status: Disconnected</div>
-                    </div>
+                    <span style="font-size:1.1rem;">🪄</span>
+                    <span style="font-size:0.86rem; font-weight:800; color:var(--neon-green);">
+                        Connected Poi Devices (<span id="ble-connected-count-badge">0</span>):
+                    </span>
                 </div>
-                <button class="storyboard-btn-mini" id="btn-ble-modal-close" style="font-size:0.9rem; padding:4px 8px;">✕</button>
+                <button class="hw-btn" id="btn-ble-add-poi" style="font-size:0.72rem; color:var(--neon-green); font-weight:800; padding:6px 12px;">
+                    ➕ Connect / Pair Another Poi
+                </button>
             </div>
-
-            <!-- CONNECTED POI DEVICES LIST -->
-            <div style="display:flex; flex-direction:column; gap:4px; background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green);">🪄 Connected Poi (<span id="ble-connected-count-badge">0</span>):</span>
-                    <button class="hw-btn" id="btn-ble-add-poi" style="font-size:0.68rem; color:var(--neon-green); font-weight:800;">➕ Connect Another Poi</button>
+            <div id="ble-devices-list" style="display:flex; flex-direction:column; gap:6px;">
+                <div style="font-size:0.7rem; color:var(--text-muted); padding:6px 8px; background:#0b0f17; border-radius:4px;">
+                    No Poi connected. Click "➕ Connect / Pair Another Poi" above to link your Left and Right Poi!
                 </div>
-                <div id="ble-devices-list" style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
-                    <div style="font-size:0.68rem; color:var(--text-muted);">No Poi connected. Click below to pair!</div>
-                </div>
-            </div>
-
-            <!-- LIVE UPLOAD PROGRESS (Only visible during transfer) -->
-            <div id="ble-upload-section" style="display:none; flex-direction:column; gap:6px; background:rgba(0,0,0,0.4); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--neon-purple);">
-                <div style="display:flex; justify-content:space-between; font-size:0.72rem; font-weight:700;">
-                    <span style="color:var(--neon-purple);" id="ble-upload-label">Uploading Pattern...</span>
-                    <span class="val-mono" id="ble-upload-pct" style="color:var(--neon-green);">0%</span>
-                </div>
-                <div class="ble-progress-bar-wrap">
-                    <div class="ble-progress-bar-fill" id="ble-progress-bar-fill"></div>
-                </div>
-                <div style="font-size:0.65rem; color:var(--text-muted);" id="ble-upload-details">Packet 0 / 0 (0 KB)</div>
-            </div>
-
-            <!-- HARDWARE CONTROL DECK (Active when connected) -->
-            <div id="ble-controls-section" style="display:flex; flex-direction:column; gap:8px;">
-                <div style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎛️ Simultaneous Broadcast Controls (All Connected Poi):</div>
-
-                <div class="ctrl-row">
-                    <span class="ctrl-label">☀️ LED Brightness:</span>
-                    <input type="range" id="ble-ctrl-brightness" min="1" max="255" value="128" style="accent-color:var(--neon-yellow);">
-                    <span class="val-mono" id="ble-ctrl-brightness-val">128</span>
-                </div>
-
-                <div class="ctrl-row">
-                    <span class="ctrl-label">⏩ Spin Speed:</span>
-                    <input type="range" id="ble-ctrl-speed" min="10" max="600" value="180" style="accent-color:var(--neon-green);">
-                    <span class="val-mono" id="ble-ctrl-speed-val">180 Hz</span>
-                </div>
-
-                <div class="ctrl-row">
-                    <span class="ctrl-label">🛡️ Transfer Pacing (Pacing Delay):</span>
-                    <input type="range" id="ble-ctrl-pacing" min="20" max="150" value="50" style="accent-color:var(--neon-purple);">
-                    <span class="val-mono" id="ble-ctrl-pacing-val">50 ms (Safe)</span>
-                </div>
-
-
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
-                    <div style="flex:1;">
-                        <span style="font-size:0.7rem; color:var(--text-muted);">🎰 Slot (1-16):</span>
-                        <select id="ble-ctrl-slot" style="width:100%; font-size:0.72rem; padding:4px; margin-top:2px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:3px;">
-                        </select>
-                    </div>
-                    <div style="flex:1;">
-                        <span style="font-size:0.7rem; color:var(--text-muted);">🔀 Bank (1-16):</span>
-                        <select id="ble-ctrl-bank" style="width:100%; font-size:0.72rem; padding:4px; margin-top:2px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:3px;">
-                        </select>
-                    </div>
-                </div>
-
-                <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
-                    <button class="hw-btn" id="ble-btn-loop-bank" style="font-size:0.68rem; color:var(--neon-purple);">♾️ Loop Bank</button>
-                    <button class="hw-btn" id="ble-btn-loop-all" style="font-size:0.68rem; color:var(--neon-yellow);">🌐 Loop All Banks</button>
-                </div>
-            </div>
-
-            <!-- HARDWARE FLASH & SAFETY DIAGNOSTICS -->
-            <div style="background:rgba(20, 30, 45, 0.6); border:1px solid rgba(0, 255, 136, 0.2); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.68rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                    <span style="font-weight:800; color:var(--neon-green);">💾 Poi Flash Memory & Safety:</span>
-                    <span class="val-mono" style="color:var(--neon-yellow);">Seeed XIAO ESP32-C3</span>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; color:var(--text-muted); font-size:0.65rem; line-height:1.4;">
-                    <div>• <b>Total SPI Flash:</b> 4,096 KB (4 MB)</div>
-                    <div>• <b>Pattern Partition:</b> 2,504 KB (LittleFS)</div>
-                    <div>• <b>Bank Capacity:</b> 3 Banks × 5 Slots (15 Total)</div>
-                    <div>• <b>Slot Size (55x40):</b> 6.6 KB (~4% of Flash)</div>
-                </div>
-                <div style="margin-top:4px; font-size:0.62rem; color:var(--neon-green);">
-                    🛡️ <b>Bootloader Protection:</b> Hardware bootloader is isolated in silicon ROM & flash <code>0x0000</code>. Bluetooth uploads write strictly to isolated pattern filesystem (<code>0x17E000</code>) with zero risk of bricking.
-                </div>
-            </div>
-
-
-            <!-- SCAN OPTIONS & TROUBLESHOOTING GUIDE -->
-            <div style="background:rgba(0, 173, 181, 0.05); border:1px solid rgba(0, 173, 181, 0.25); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.7rem;">
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; color:var(--accent-color);">
-                    <input type="checkbox" id="ble-scan-all-chk" checked style="accent-color:var(--accent-color);">
-                    <span>Show All Nearby Bluetooth Devices in Scanner</span>
-                </label>
-                <div style="margin-top:6px; font-size:0.65rem; color:var(--text-muted); line-height:1.4;">
-                    <b>💡 Pairing Checklist:</b><br>
-                    • <b>Pair Left Poi, then click "➕ Connect Another Poi" to pair Right Poi!</b><br>
-                    • <b>Power ON</b> both Poi.<br>
-                    • <b>Close/Disconnect Phone App</b>: ESP32 only pairs with 1 device at a time.<br>
-                    • Supported in <b>Google Chrome</b>, <b>Microsoft Edge</b>, and <b>Android Chromium</b>.
-                </div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; border-top:1px solid var(--border-color); padding-top:8px;">
-                <button class="ble-connect-btn" id="ble-modal-connect-btn">📡 Scan & Connect Poi</button>
-                <button class="btn-ble-upload" id="ble-modal-upload-active-btn">🚀 Broadcast Active Pattern</button>
             </div>
         </div>
+
+        <!-- 2. REAL-TIME HARDWARE CONTROLS (SIMULTANEOUS BROADCAST) -->
+        <div class="card-box">
+            <div style="font-size:0.82rem; font-weight:800; color:var(--accent-color); margin-bottom:8px;">
+                🎛️ Real-Time Hardware Controls (Simultaneous Sync):
+            </div>
+
+            <div class="ctrl-row">
+                <span class="ctrl-label">☀️ LED Brightness:</span>
+                <input type="range" id="ble-ctrl-brightness" min="1" max="255" value="128" style="accent-color:var(--neon-yellow);">
+                <span class="val-mono" id="ble-ctrl-brightness-val">128</span>
+            </div>
+
+            <div class="ctrl-row">
+                <span class="ctrl-label">⏩ Spin Speed (FPS):</span>
+                <input type="range" id="ble-ctrl-speed" min="10" max="600" value="180" style="accent-color:var(--neon-green);">
+                <span class="val-mono" id="ble-ctrl-speed-val">180 Hz</span>
+            </div>
+
+            <div class="ctrl-row">
+                <span class="ctrl-label">🛡️ Transfer Pacing:</span>
+                <input type="range" id="ble-ctrl-pacing" min="20" max="150" value="50" style="accent-color:var(--neon-purple);">
+                <span class="val-mono" id="ble-ctrl-pacing-val">50 ms (Safe)</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+                <div>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">🎰 Active Slot:</span>
+                    <select id="ble-ctrl-slot" style="width:100%; font-size:0.75rem; padding:6px; margin-top:2px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                    </select>
+                </div>
+                <div>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">🔀 Active Bank:</span>
+                    <select id="ble-ctrl-bank" style="width:100%; font-size:0.75rem; padding:6px; margin-top:2px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                <button class="hw-btn" id="ble-btn-loop-bank" style="font-size:0.72rem; color:var(--neon-purple); flex:1;">♾️ Auto-Loop Bank</button>
+                <button class="hw-btn" id="ble-btn-loop-all" style="font-size:0.72rem; color:var(--neon-yellow); flex:1;">🌐 Auto-Loop All Banks</button>
+            </div>
+        </div>
+
+        <!-- 3. HARDWARE FLASH MEMORY & SAFETY DIAGNOSTICS -->
+        <div class="card-box" style="background:rgba(20, 30, 45, 0.6); border-color:rgba(0, 255, 136, 0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="font-size:0.8rem; font-weight:800; color:var(--neon-green);">💾 Poi Flash Memory & Architecture:</span>
+                <span class="val-mono" style="color:var(--neon-yellow);">Seeed XIAO ESP32-C3</span>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; color:var(--text-muted); font-size:0.68rem; line-height:1.4;">
+                <div>• <b>Total SPI Flash:</b> 4,096 KB (4 MB)</div>
+                <div>• <b>Pattern Partition:</b> 2,504 KB (LittleFS)</div>
+                <div>• <b>Bank Capacity:</b> 3 Banks × 5 Slots (15 Total)</div>
+                <div>• <b>Slot Size (55x40):</b> 6.6 KB (~4% of Flash)</div>
+            </div>
+            <div style="margin-top:6px; font-size:0.65rem; color:var(--neon-green); line-height:1.4;">
+                🛡️ <b>Bootloader Protection:</b> Hardware bootloader is isolated in silicon ROM & flash <code>0x0000</code>. Bluetooth uploads write strictly to the isolated LittleFS partition (<code>0x17E000</code>) with zero risk of bricking.
+            </div>
+        </div>
+
+        <!-- 4. SCAN OPTIONS & TROUBLESHOOTING GUIDE -->
+        <div class="card-box" style="background:rgba(0, 173, 181, 0.05); border-color:rgba(0, 173, 181, 0.25);">
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; color:var(--accent-color); font-size:0.75rem;">
+                <input type="checkbox" id="ble-scan-all-chk" checked style="accent-color:var(--accent-color);">
+                <span>Show All Nearby Bluetooth Devices in Scanner</span>
+            </label>
+            <div style="margin-top:6px; font-size:0.68rem; color:var(--text-muted); line-height:1.4;">
+                <b>💡 Pairing Checklist:</b><br>
+                • <b>Pair Left Poi, then click "➕ Connect / Pair Another Poi" to pair Right Poi!</b><br>
+                • <b>Power ON</b> both Poi (LEDs light up on boot).<br>
+                • <b>Close / Disconnect Phone App</b>: ESP32 only pairs with 1 host at a time.<br>
+                • Supported in <b>Google Chrome</b>, <b>Microsoft Edge</b>, and <b>Android Chromium</b>.
+            </div>
+        </div>
+
     </div>
+
 
 
 
@@ -724,8 +723,8 @@ document.addEventListener('DOMContentLoaded', function() {
         registerMasterBmpVault();
     }
 
-    // --- WORKSPACE STATE ---
-    let activeWorkspace = "workspace-stitcher";
+    // --- WORKSPACE STATE (Default: Algorithmic Generator) ---
+    let activeWorkspace = "workspace-generator";
     let currentPattern = "aztec_xicalcoliuhqui_fret";
     let currentHeight = 55;
     let currentWidth = 40;
@@ -756,19 +755,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Timeline Storyboard Queue
     const storyboardQueue = [];
 
-    // --- WORKSPACE MODE SWITCHER ---
+    // --- 3-WORKSPACE PRIMARY MODE SWITCHER ---
+    function switchWorkspace(mode) {
+        activeWorkspace = mode;
+        document.querySelectorAll('.mode-switch-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+        });
+
+        const wStitcher = el('workspace-stitcher');
+        const wGen = el('workspace-generator');
+        const wDeck = el('workspace-deck');
+
+        if (wGen) wGen.style.display = (mode === 'workspace-generator') ? 'flex' : 'none';
+        if (wStitcher) wStitcher.style.display = (mode === 'workspace-stitcher') ? 'flex' : 'none';
+        if (wDeck) wDeck.style.display = (mode === 'workspace-deck') ? 'flex' : 'none';
+
+        if (mode === 'workspace-generator') {
+            triggerSmoothRender();
+        }
+    }
+
     document.querySelectorAll('.mode-switch-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            document.querySelectorAll('.mode-switch-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            activeWorkspace = this.getAttribute('data-mode');
-            
-            const wStitcher = el('workspace-stitcher');
-            const wGen = el('workspace-generator');
-            if (wStitcher) wStitcher.style.display = (activeWorkspace === 'workspace-stitcher') ? 'flex' : 'none';
-            if (wGen) wGen.style.display = (activeWorkspace === 'workspace-generator') ? 'flex' : 'none';
+            switchWorkspace(this.getAttribute('data-mode'));
         });
     });
+
 
     // --- GENERATOR SUB-TAB SWITCHING ---
     document.querySelectorAll('#gen-tabs-nav .tab-btn').forEach(btn => {
@@ -1958,63 +1970,49 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Toggle BLE Connection / Open Modal
+    // Toggle BLE Connection / Switch to Hardware Deck
     async function toggleBleConnection() {
         if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
-            alert("Web Bluetooth is not supported in this browser.\n\nPlease open this app in Google Chrome, Microsoft Edge, Opera, or Android Chromium to connect directly to your Open Pixel Poi!");
+            alert("Web Bluetooth is not supported in this browser.\n\nPlease open this app in Google Chrome, Microsoft Edge, Opera, or Android Chromium (or Bluefy on iOS) to connect directly to your Open Pixel Poi!");
             return;
         }
 
         if (OpenPixelPoiBLE.isConnected) {
-            openBleModal();
+            switchWorkspace('workspace-deck');
         } else {
             await connectAnotherPoi();
         }
     }
 
     if (el('btn-ble-connect')) el('btn-ble-connect').onclick = toggleBleConnection;
-    if (el('ble-modal-connect-btn')) el('ble-modal-connect-btn').onclick = connectAnotherPoi;
     if (el('btn-ble-add-poi')) el('btn-ble-add-poi').onclick = connectAnotherPoi;
 
     // BLE State Listener
     if (window.OpenPixelPoiBLE) {
         OpenPixelPoiBLE.onStateChange((state, data) => {
-            const connectBtns = [el('btn-ble-connect'), el('ble-modal-connect-btn')];
-            const statusBadge = el('ble-modal-status');
-            const titleBadge = el('ble-modal-title');
             const devCount = (data.devices || []).length;
+            updateBadge('btn-nav-poi-count', `${devCount}`);
 
             renderConnectedDevicesList(data.devices || []);
 
             if (data.isConnected && devCount > 0) {
                 const label = devCount === 1 
                     ? `🟢 1 Poi (${data.devices[0].name})` 
-                    : `🟢 ${devCount} Poi Connected (Pair Sync)`;
+                    : `🟢 ${devCount} Poi Connected`;
                 
                 if (el('btn-ble-connect')) {
                     el('btn-ble-connect').classList.add('connected');
                     el('btn-ble-connect').innerText = label;
-                    el('btn-ble-connect').title = 'Click to open BLE Hardware Deck';
+                    el('btn-ble-connect').title = 'Click to open Poi Hardware Deck';
                 }
-                if (el('ble-modal-connect-btn')) {
-                    el('ble-modal-connect-btn').innerText = '➕ Add Another Poi';
-                }
-                if (statusBadge) statusBadge.innerText = `Status: ${devCount} Poi Connected & Synchronized`;
-                if (titleBadge) titleBadge.innerText = `🟢 ${devCount} Poi Connected (Sync Broadcast)`;
             } else if (state === 'connecting') {
-                if (el('btn-ble-connect')) el('btn-ble-connect').innerText = '⏳ Scanning & Connecting...';
-                if (statusBadge) statusBadge.innerText = 'Status: Scanning & Connecting...';
+                if (el('btn-ble-connect')) el('btn-ble-connect').innerText = '⏳ Connecting...';
             } else {
                 if (el('btn-ble-connect')) {
                     el('btn-ble-connect').classList.remove('connected');
-                    el('btn-ble-connect').innerText = '📡 Connect Poi (BLE)';
+                    el('btn-ble-connect').innerText = '📡 Connect Poi';
                     el('btn-ble-connect').title = 'Connect Open Pixel Poi via Web Bluetooth';
                 }
-                if (el('ble-modal-connect-btn')) {
-                    el('ble-modal-connect-btn').innerText = '📡 Scan & Connect Poi';
-                }
-                if (statusBadge) statusBadge.innerText = 'Status: Disconnected';
-                if (titleBadge) titleBadge.innerText = 'Open Pixel Poi BLE Uplink';
             }
         });
     }
@@ -2029,7 +2027,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Upload Active Pattern (Canvas) to Poi over BLE (Sequential One-at-a-Time)
+    // Upload Active Pattern (Canvas) to Poi over BLE (Seamless Inline Progress)
     async function uploadActivePatternToPoi() {
         if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
             alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
@@ -2037,7 +2035,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (!OpenPixelPoiBLE.isConnected) {
-            openBleModal();
             try {
                 await OpenPixelPoiBLE.connectDevice();
             } catch (e) {
@@ -2045,16 +2042,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        openBleModal();
-        const uploadSec = el('ble-upload-section');
-        const fill = el('ble-progress-bar-fill');
-        const pct = el('ble-upload-pct');
-        const details = el('ble-upload-details');
-        const label = el('ble-upload-label');
+        const inlineProg = el('inline-ble-progress');
+        const fill = el('inline-ble-fill');
+        const pct = el('inline-ble-pct');
+        const details = el('inline-ble-details');
+        const label = el('inline-ble-label');
         const pacing = el('ble-ctrl-pacing') ? parseInt(el('ble-ctrl-pacing').value) : 50;
 
-        if (uploadSec) uploadSec.style.display = 'flex';
-        if (label) label.innerText = `Preparing Pattern (${currentWidth}x${currentHeight} px)...`;
+        if (inlineProg) inlineProg.style.display = 'flex';
+        if (label) label.innerText = `Preparing Active Pattern (${currentWidth}x${currentHeight} px)...`;
+        if (fill) fill.style.width = '0%';
+        if (pct) pct.innerText = '0%';
 
         try {
             await OpenPixelPoiBLE.uploadPattern(baseCanvas, (progress, info) => {
@@ -2062,24 +2060,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 const devP = Math.round(info.deviceProgress * 100);
                 if (fill) fill.style.width = `${p}%`;
                 if (pct) pct.innerText = `${p}%`;
-                if (label) label.innerText = `Flashing Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName})...`;
-                if (details) details.innerText = `Poi ${info.deviceIndex}/${info.totalDevices}: Packet ${info.chunk}/${info.totalChunks} (${devP}%) • Overall: ${p}%`;
+                if (label) label.innerText = `📡 Flashing Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName})...`;
+                if (details) details.innerText = `Packet ${info.chunk}/${info.totalChunks} (${devP}%) • Overall Sync: ${p}%`;
             }, pacing);
 
-            if (label) label.innerText = `✅ Flashed cleanly to all connected Poi!`;
+            if (label) label.innerText = `✅ Pattern Flashed Cleanly to All Connected Poi!`;
+            if (pct) pct.innerText = `100%`;
             setTimeout(() => {
-                if (uploadSec) uploadSec.style.display = 'none';
+                if (inlineProg) inlineProg.style.display = 'none';
             }, 2500);
         } catch (err) {
             alert("BLE Upload Failed: " + err.message);
-            if (uploadSec) uploadSec.style.display = 'none';
+            if (inlineProg) inlineProg.style.display = 'none';
         }
     }
 
     if (el('btn-ble-upload-active')) el('btn-ble-upload-active').onclick = uploadActivePatternToPoi;
-    if (el('ble-modal-upload-active-btn')) el('ble-modal-upload-active-btn').onclick = uploadActivePatternToPoi;
 
-    // Upload Master Show to Poi over BLE (Sequential One-at-a-Time)
+    // Upload Master Show to Poi over BLE (Seamless Inline Progress)
     async function uploadMasterShowToPoi() {
         if (storyboardQueue.length === 0) {
             alert("Storyboard timeline is empty! Add patterns first.");
@@ -2100,7 +2098,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (!OpenPixelPoiBLE.isConnected) {
-            openBleModal();
             try {
                 await OpenPixelPoiBLE.connectDevice();
             } catch (e) {
@@ -2108,16 +2105,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        openBleModal();
-        const uploadSec = el('ble-upload-section');
-        const fill = el('ble-progress-bar-fill');
-        const pct = el('ble-upload-pct');
-        const details = el('ble-upload-details');
-        const label = el('ble-upload-label');
+        const inlineProg = el('inline-ble-progress');
+        const fill = el('inline-ble-fill');
+        const pct = el('inline-ble-pct');
+        const details = el('inline-ble-details');
+        const label = el('inline-ble-label');
         const pacing = el('ble-ctrl-pacing') ? parseInt(el('ble-ctrl-pacing').value) : 50;
 
-        if (uploadSec) uploadSec.style.display = 'flex';
-        if (label) label.innerText = `Preparing Show (${showMasterCanvas.width}x${showMasterCanvas.height} px)...`;
+        if (inlineProg) inlineProg.style.display = 'flex';
+        if (label) label.innerText = `Preparing Master Show (${showMasterCanvas.width}x${showMasterCanvas.height} px)...`;
+        if (fill) fill.style.width = '0%';
+        if (pct) pct.innerText = '0%';
 
         try {
             await OpenPixelPoiBLE.uploadPattern(showMasterCanvas, (progress, info) => {
@@ -2125,17 +2123,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const devP = Math.round(info.deviceProgress * 100);
                 if (fill) fill.style.width = `${p}%`;
                 if (pct) pct.innerText = `${p}%`;
-                if (label) label.innerText = `Flashing Show to Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName})...`;
-                if (details) details.innerText = `Poi ${info.deviceIndex}/${info.totalDevices}: Packet ${info.chunk}/${info.totalChunks} (${devP}%) • Overall: ${p}%`;
+                if (label) label.innerText = `🎬 Flashing Show to Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName})...`;
+                if (details) details.innerText = `Packet ${info.chunk}/${info.totalChunks} (${devP}%) • Overall Sync: ${p}%`;
             }, pacing);
 
-            if (label) label.innerText = `✅ Master Show Flashed cleanly to all connected Poi!`;
+            if (label) label.innerText = `✅ Master Show Flashed Cleanly to All Connected Poi!`;
+            if (pct) pct.innerText = `100%`;
             setTimeout(() => {
-                if (uploadSec) uploadSec.style.display = 'none';
+                if (inlineProg) inlineProg.style.display = 'none';
             }, 3000);
         } catch (err) {
             alert("Show BLE Upload Failed: " + err.message);
-            if (uploadSec) uploadSec.style.display = 'none';
+            if (inlineProg) inlineProg.style.display = 'none';
         }
     }
 
