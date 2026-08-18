@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POI Studio: 100% Zero-Seam POV Suite & Aztec Sacred Suite</title>
+    <title>POI Studio: 100% Zero-Seam POV Suite & Custom Color Studio</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -71,22 +71,230 @@
         </div>
     </header>
 
-    <!-- APP NAVIGATION TABS (UNCLUTTERED MOBILE ARCHITECTURE) -->
-    <nav class="app-tabs-nav">
-        <button class="tab-btn active" data-tab="tab-aztec">🏛️ Aztec & Sacred</button>
-        <button class="tab-btn" data-tab="tab-illusions">👁️ Optical & Eyes</button>
+    <!-- APP NAVIGATION TABS (CLEAN MULTI-ROW / SCROLLABLE WITH ACTIVE INDICATORS) -->
+    <nav class="app-tabs-nav" id="main-nav-bar">
+        <button class="tab-btn active" data-tab="tab-colors">🎨 Custom Colors</button>
+        <button class="tab-btn" data-tab="tab-symmetries">🎛️ Symmetries & FX</button>
+        <button class="tab-btn" data-tab="tab-hardware">📐 Props & Length</button>
+        <button class="tab-btn" data-tab="tab-aztec">🏛️ Aztec & Sacred</button>
+        <button class="tab-btn" data-tab="tab-illusions">👁️ Optical Illusions</button>
         <button class="tab-btn" data-tab="tab-trippy">🌀 Trippy & Math</button>
         <button class="tab-btn" data-tab="tab-voids">🕳️ Negative Voids</button>
         <button class="tab-btn" data-tab="tab-morph">🎭 Flow Morph</button>
         <button class="tab-btn" data-tab="tab-sequence">🔗 Sequencer</button>
-        <button class="tab-btn" data-tab="tab-controls">🎨 Colors & Symmetries</button>
     </nav>
 
     <!-- TAB CONTENTS -->
     <main class="app-tab-content">
         
-        <!-- 1. AZTEC & SACRED GEOMETRY TAB -->
-        <div class="tab-pane active" id="tab-aztec">
+        <!-- 1. CUSTOM COLORS & PALETTES TAB -->
+        <div class="tab-pane active" id="tab-colors">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--accent-color);">🎨 Custom Color Picker & 25+ Spectrum Studio</span>
+                <span class="pane-sub">Build your own custom color gradients or pick from curated palettes</span>
+            </div>
+
+            <!-- INTERACTIVE CUSTOM MULTI-STOP COLOR PICKER -->
+            <div class="card-box" style="border-color:var(--accent-color); background:rgba(0, 173, 181, 0.05);">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <span style="font-size:0.82rem; font-weight:800; color:var(--accent-color);">🖌️ Interactive Multi-Stop Custom Palette:</span>
+                    <button class="hw-btn" id="btn-custom-rand" style="font-size:0.7rem; color:var(--neon-green);">🎲 Random Swatches</button>
+                </div>
+
+                <!-- LIVE GRADIENT PREVIEW BAR -->
+                <div id="custom-gradient-preview" style="height:22px; border-radius:4px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.2);"></div>
+
+                <!-- DYNAMIC COLOR SWATCHES ROW -->
+                <div id="custom-swatches-container" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                    <!-- Dynamically populated color inputs -->
+                </div>
+
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="hw-btn" id="btn-add-swatch">➕ Add Color</button>
+                    <button class="hw-btn" id="btn-del-swatch">➖ Remove Color</button>
+                    <button class="hw-btn" id="btn-preset-fire">🔥 Fire</button>
+                    <button class="hw-btn" id="btn-preset-neon">⚡ Neon</button>
+                    <button class="hw-btn" id="btn-preset-rainbow">🌈 Rainbow</button>
+                </div>
+            </div>
+
+            <!-- 25+ PRESET PALETTES -->
+            <div class="card-box" style="margin-top:10px;">
+                <div class="ctrl-row">
+                    <span class="ctrl-label">🎨 25+ Spectrum Palettes:</span>
+                    <select id="ctrl-palette" style="width:100%;">
+                        <option value="custom">🖌️ Custom Palette (Active Above)</option>
+                        <option value="aztec_gold_turquoise">Aztec Imperial Gold & Turquoise</option>
+                        <option value="psychedelic_third_eye">Third-Eye Electric Violet & Gold</option>
+                        <option value="kaleido_hyper_spectral">Hyper-Spectral 8-Band Rainbow</option>
+                        <option value="cyberpunk_neon_2077">Cyberpunk Neon 2077 (Pink/Cyan/Yellow)</option>
+                        <option value="vaporwave_sunset">Vaporwave Sunset (Pastel/Lavender)</option>
+                        <option value="biolum_jellyfish">Bioluminescent Deep Jellyfish</option>
+                        <option value="volcanic_magma">Volcanic Molten Magma</option>
+                        <option value="northern_lights_aurora">Northern Lights Aurora Borealis</option>
+                        <option value="sacred_chakra_7">Sacred 7 Chakra Matrix</option>
+                        <option value="matrix_terminal_code">Matrix Terminal Phosphor Code</option>
+                        <option value="golden_pharaoh">Egyptian Golden Pharaoh</option>
+                        <option value="holographic_foil">Holographic Iridescent Opal</option>
+                        <option value="blacklight_fluorescent">Blacklight Fluorescent UV</option>
+                        <option value="cosmic_nebula_dust">Cosmic Nebula Stardust</option>
+                        <option value="monochrome_cyber_noir">Monochrome Cyber Noir</option>
+                        <option value="fire_and_ice">Fire & Ice Dualism</option>
+                        <option value="alien_plasma">Alien Toxic Plasma</option>
+                        <option value="dragon_fire">Dragon Fire Flame</option>
+                        <option value="bubblegum_cotton_candy">Bubblegum Cotton Candy</option>
+                        <option value="desert_mirage">Desert Mirage Horizon</option>
+                        <option value="laser_cyan_pink">Laser Cyan & Neon Pink</option>
+                        <option value="deep_space_void">Deep Space Violet Void</option>
+                        <option value="acid_rave_green">Acid Rave Phosphor Green</option>
+                        <option value="solar_fire_flare">Solar Corona Flare</option>
+                        <option value="pure_high_contrast">Pure High-Contrast White/Cyan</option>
+                        <option value="random">🎲 Random Dynamic Surprise</option>
+                    </select>
+                </div>
+
+                <div class="ctrl-row" style="margin-top:10px;">
+                    <span class="ctrl-label">🌊 Color Flow & Grabbing:</span>
+                    <select id="pro-color-dir" style="width:100%;">
+                        <option value="h">Horizontal (Azimuthal 0° ➔ 360°)</option>
+                        <option value="h_rev">Horizontal Inverted (360° ➔ 0°)</option>
+                        <option value="v">Vertical (Tube Base ➔ Tip)</option>
+                        <option value="v_rev">Vertical Inverted (Tip ➔ Base)</option>
+                        <option value="diag">Diagonal Helical Twist</option>
+                        <option value="radial">Concentric Radial Pulse</option>
+                        <option value="wave_curvature">🌊 Wave Curvature Grabbing (Locks to Peaks!)</option>
+                        <option value="spiral_vortex">🌀 Polar Spiral Color Vortex</option>
+                        <option value="noise_warp">🌪️ Chaotic Simplex Noise Domain Warp</option>
+                    </select>
+                </div>
+
+                <div class="ctrl-row" style="margin-top:10px;">
+                    <span class="ctrl-label">🔁 Harmonic Spokes:</span>
+                    <input type="range" id="ctrl-repeats" min="1" max="12" step="1" value="4">
+                    <span class="val-mono" id="ctrl-repeats-val">4x</span>
+                </div>
+                <div class="ctrl-row">
+                    <span class="ctrl-label">✏️ Line Thickness:</span>
+                    <input type="range" id="ctrl-thickness" min="1" max="8" step="0.5" value="2.5">
+                    <span class="val-mono" id="ctrl-thickness-val">2.5px</span>
+                </div>
+                <div class="ctrl-row">
+                    <span class="ctrl-label">🌈 Seamless Loop Mode:</span>
+                    <select id="ctrl-gradient-mode" style="width:100%;">
+                        <option value="cyclic">Cyclic 360° Loop (100% Zero-Seam)</option>
+                        <option value="pingpong">Ping-Pong Mirrored (A ➔ B ➔ A)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. SYMMETRIES & PRO SHADERS TAB -->
+        <div class="tab-pane" id="tab-symmetries">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--neon-purple);">🎛️ Hyper-Symmetries, POV Shaders & Mutator Control</span>
+                <span class="pane-sub">Stack reflection planes, kaleidoscopic mirrors, and optical post-shaders</span>
+            </div>
+
+            <!-- MUTATION VARIABILITY TOGGLES -->
+            <div class="card-box" style="border-color:var(--neon-pink); background:rgba(255, 46, 99, 0.04);">
+                <div style="font-size:0.78rem; font-weight:800; color:var(--neon-pink); margin-bottom:6px;">⚡ Hyper-Mutation Variability Options:</div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="mut-include-sym" checked style="accent-color:var(--neon-pink);"> <b>Include Symmetries in Mutate (Mirror/Kaleido)</b>
+                    </label>
+                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="mut-include-fx" checked style="accent-color:var(--neon-pink);"> <b>Include Optical Shaders in Mutate (Wave/RGB/Glow)</b>
+                    </label>
+                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="mut-include-flow" checked style="accent-color:var(--neon-pink);"> <b>Include Color Flow Grabbing Modes in Mutate</b>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 8+ HYPER-SYMMETRIES -->
+            <div class="card-box" style="margin-top:10px;">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-bottom:6px;">8+ Hyper-Symmetries (Stackable):</div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+                    <button class="hw-btn" id="btn-sym-mh">Mirror H ↔</button>
+                    <button class="hw-btn" id="btn-sym-mv">Mirror V ↕</button>
+                    <button class="hw-btn" id="btn-sym-diag">Mirror Diag ⤡</button>
+                    <button class="hw-btn" id="btn-sym-inv180">180° Invert 🔄</button>
+                    <button class="hw-btn" id="btn-sym-k4">Kaleido 4x</button>
+                    <button class="hw-btn" id="btn-sym-k6">Kaleido 6x</button>
+                    <button class="hw-btn" id="btn-sym-k8">Kaleido 8x</button>
+                    <button class="hw-btn" id="btn-sym-k12">Kaleido 12x</button>
+                </div>
+
+                <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-top:10px; margin-bottom:6px;">Optical POV Shaders:</div>
+                <div class="ctrl-row">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">POV Strobe:</span>
+                    <input type="range" id="fx-strobe" min="0" max="10" value="0">
+                    <span class="val-mono" id="fx-strobe-val">Off</span>
+                </div>
+                <div class="ctrl-row">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">RGB Split:</span>
+                    <input type="range" id="fx-rgb" min="0" max="20" value="0">
+                    <span class="val-mono" id="fx-rgb-val">Off</span>
+                </div>
+                <div class="ctrl-row">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">Wave Warp:</span>
+                    <input type="range" id="fx-wave" min="0" max="25" value="0">
+                    <span class="val-mono" id="fx-wave-val">Off</span>
+                </div>
+                <div class="ctrl-row">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">Neon Glow:</span>
+                    <input type="range" id="fx-glow" min="0" max="20" value="0">
+                    <span class="val-mono" id="fx-glow-val">Off</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. PROPS & HARDWARE TAB -->
+        <div class="tab-pane" id="tab-hardware">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--neon-green);">📐 Open Pixel Poi Hardware Dimensions & SD Storage</span>
+                <span class="pane-sub">Set exact pixel heights and pattern lengths for your poi rig</span>
+            </div>
+            
+            <div class="card-box">
+                <div style="font-size:0.75rem; font-weight:800; color:var(--text-color); margin-bottom:6px;">1. LED Pixel Height (Prop Model):</div>
+                <div class="hw-presets">
+                    <button class="hw-btn active" data-h="55" data-w="240">55px Standard (Open Pixel Poi)</button>
+                    <button class="hw-btn" data-h="22" data-w="96">22px Mini (Open Pixel Poi)</button>
+                    <button class="hw-btn" data-h="32" data-w="128">32px</button>
+                    <button class="hw-btn" data-h="64" data-w="256">64px</button>
+                    <button class="hw-btn" data-h="144" data-w="480">144px HD</button>
+                    <div class="custom-dim-wrap">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
+                        <input type="number" id="custom-h-input" value="55" min="8" max="255">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+                    </div>
+                </div>
+
+                <div style="font-size:0.75rem; font-weight:800; color:var(--accent-color); margin-top:12px; margin-bottom:6px;">2. Pattern Length (SD Storage Memory):</div>
+                <div class="hw-presets">
+                    <button class="hw-btn" data-set-w="48">48px Micro (~7KB)</button>
+                    <button class="hw-btn" data-set-w="96">96px Compact (~15KB)</button>
+                    <button class="hw-btn" data-set-w="180">180px (~29KB)</button>
+                    <button class="hw-btn active" data-set-w="240">240px Standard (~39KB)</button>
+                    <button class="hw-btn" data-set-w="360">360px HD (~59KB)</button>
+                    <button class="hw-btn" data-set-w="480">480px Ultra (~78KB)</button>
+                    <div class="custom-dim-wrap">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
+                        <input type="number" id="custom-w-input" value="240" min="32" max="720">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+                    </div>
+                </div>
+
+                <div class="ctrl-row" style="margin-top:14px;">
+                    <span class="ctrl-label">Active Equation:</span>
+                    <select id="pro-pattern-select" style="width:100%;"></select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. AZTEC & SACRED GEOMETRY TAB -->
+        <div class="tab-pane" id="tab-aztec">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-yellow);">🏛️ Aztec, Mayan & Sacred Step-Fret Suite</span>
                 <span class="pane-sub">Mitla mosaics, Feathered Serpents & Third-Eye Mandalas</span>
@@ -145,7 +353,7 @@
             </div>
         </div>
 
-        <!-- 2. OPTICAL ILLUSIONS TAB -->
+        <!-- 5. OPTICAL ILLUSIONS TAB -->
         <div class="tab-pane" id="tab-illusions">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-pink);">👁️ Optical Illusions & Cortical Motion</span>
@@ -195,7 +403,7 @@
             </div>
         </div>
 
-        <!-- 3. TRIPPY & MATH TAB -->
+        <!-- 6. TRIPPY & MATH TAB -->
         <div class="tab-pane" id="tab-trippy">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-purple);">🌀 Trippy Complex-Domain Shaders & Chaos</span>
@@ -245,7 +453,7 @@
             </div>
         </div>
 
-        <!-- 4. NEGATIVE SPACE VOIDS TAB -->
+        <!-- 7. NEGATIVE SPACE VOIDS TAB -->
         <div class="tab-pane" id="tab-voids">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-pink);">🕳️ Negative-Space & Void Cutouts</span>
@@ -285,7 +493,7 @@
             </div>
         </div>
 
-        <!-- 5. DUAL FLOW MORPH STUDIO TAB -->
+        <!-- 8. DUAL FLOW MORPH STUDIO TAB -->
         <div class="tab-pane" id="tab-morph">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-purple);">🎭 Harmonic Geometry Flow Morph Studio</span>
@@ -323,7 +531,7 @@
             </div>
         </div>
 
-        <!-- 6. MULTI-PATTERN SEQUENCE JOINER TAB -->
+        <!-- 9. MULTI-PATTERN SEQUENCE JOINER TAB -->
         <div class="tab-pane" id="tab-sequence">
             <div class="pane-header">
                 <span class="pane-title" style="color: #ffffff;">🔗 Multi-Pattern Sequence Joiner & Show Builder</span>
@@ -352,161 +560,6 @@
             </div>
         </div>
 
-        <!-- 7. COLORS, SYMMETRIES & PRO FX TAB -->
-        <div class="tab-pane" id="tab-controls">
-            <div class="pane-header">
-                <span class="pane-title" style="color: var(--accent-color);">🎨 22+ Palettes, Geometry Color Grabbing & Symmetries</span>
-            </div>
-
-            <!-- MUTATION VARIABILITY TOGGLES -->
-            <div class="card-box" style="border-color:var(--neon-pink); background:rgba(255, 46, 99, 0.04);">
-                <div style="font-size:0.78rem; font-weight:800; color:var(--neon-pink); margin-bottom:6px;">⚡ Hyper-Mutation Variability:</div>
-                <div style="display:flex; flex-direction:column; gap:6px;">
-                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                        <input type="checkbox" id="mut-include-sym" checked style="accent-color:var(--neon-pink);"> <b>Include Symmetries in Mutate (Mirror/Kaleido)</b>
-                    </label>
-                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                        <input type="checkbox" id="mut-include-fx" checked style="accent-color:var(--neon-pink);"> <b>Include Optical Shaders in Mutate (Wave/RGB/Glow)</b>
-                    </label>
-                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                        <input type="checkbox" id="mut-include-flow" checked style="accent-color:var(--neon-pink);"> <b>Include Color Flow Grabbing Modes in Mutate</b>
-                    </label>
-                </div>
-            </div>
-            
-            <!-- HARDWARE HEIGHT & WIDTH PRESETS -->
-            <div class="card-box" style="margin-top:10px;">
-                <div style="font-size:0.75rem; font-weight:800; color:var(--text-color); margin-bottom:6px;">1. LED Pixel Height:</div>
-                <div class="hw-presets">
-                    <button class="hw-btn active" data-h="55" data-w="240">55px Standard</button>
-                    <button class="hw-btn" data-h="22" data-w="96">22px Mini</button>
-                    <div class="custom-dim-wrap">
-                        <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
-                        <input type="number" id="custom-h-input" value="55" min="8" max="255">
-                        <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
-                    </div>
-                </div>
-
-                <div style="font-size:0.75rem; font-weight:800; color:var(--accent-color); margin-top:10px; margin-bottom:6px;">2. Pattern Length (SD Storage):</div>
-                <div class="hw-presets">
-                    <button class="hw-btn" data-set-w="48">48px (~7KB)</button>
-                    <button class="hw-btn" data-set-w="96">96px (~15KB)</button>
-                    <button class="hw-btn" data-set-w="180">180px (~29KB)</button>
-                    <button class="hw-btn active" data-set-w="240">240px (~39KB)</button>
-                    <button class="hw-btn" data-set-w="360">360px (~59KB)</button>
-                    <div class="custom-dim-wrap">
-                        <input type="number" id="custom-w-input" value="240" min="32" max="720">
-                        <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 22+ RICH PALETTES & FLOW MODES -->
-            <div class="card-box" style="margin-top:10px;">
-                <div class="ctrl-row">
-                    <span class="ctrl-label">🎨 22+ Spectrum Palettes:</span>
-                    <select id="ctrl-palette" style="width:100%;">
-                        <option value="aztec_gold_turquoise">Aztec Imperial Gold & Turquoise</option>
-                        <option value="psychedelic_third_eye">Third-Eye Electric Violet & Gold</option>
-                        <option value="kaleido_hyper_spectral">Hyper-Spectral 8-Band Rainbow</option>
-                        <option value="cyberpunk_neon_2077">Cyberpunk Neon 2077 (Pink/Cyan/Yellow)</option>
-                        <option value="vaporwave_sunset">Vaporwave Sunset (Pastel/Lavender)</option>
-                        <option value="biolum_jellyfish">Bioluminescent Deep Jellyfish</option>
-                        <option value="volcanic_magma">Volcanic Molten Magma</option>
-                        <option value="northern_lights_aurora">Northern Lights Aurora Borealis</option>
-                        <option value="sacred_chakra_7">Sacred 7 Chakra Matrix</option>
-                        <option value="matrix_terminal_code">Matrix Terminal Phosphor Code</option>
-                        <option value="golden_pharaoh">Egyptian Golden Pharaoh</option>
-                        <option value="holographic_foil">Holographic Iridescent Opal</option>
-                        <option value="blacklight_fluorescent">Blacklight Fluorescent UV</option>
-                        <option value="cosmic_nebula_dust">Cosmic Nebula Stardust</option>
-                        <option value="monochrome_cyber_noir">Monochrome Cyber Noir</option>
-                        <option value="fire_and_ice">Fire & Ice Dualism</option>
-                        <option value="alien_plasma">Alien Toxic Plasma</option>
-                        <option value="dragon_fire">Dragon Fire Flame</option>
-                        <option value="bubblegum_cotton_candy">Bubblegum Cotton Candy</option>
-                        <option value="desert_mirage">Desert Mirage Horizon</option>
-                        <option value="laser_cyan_pink">Laser Cyan & Neon Pink</option>
-                        <option value="deep_space_void">Deep Space Violet Void</option>
-                        <option value="random">🎲 Random Dynamic Palette</option>
-                    </select>
-                </div>
-
-                <div class="ctrl-row">
-                    <span class="ctrl-label">🌊 Color Flow & Grabbing:</span>
-                    <select id="pro-color-dir" style="width:100%;">
-                        <option value="h">Horizontal (Azimuthal 0° ➔ 360°)</option>
-                        <option value="h_rev">Horizontal Inverted (360° ➔ 0°)</option>
-                        <option value="v">Vertical (Tube Base ➔ Tip)</option>
-                        <option value="v_rev">Vertical Inverted (Tip ➔ Base)</option>
-                        <option value="diag">Diagonal Helical Twist</option>
-                        <option value="radial">Concentric Radial Pulse</option>
-                        <option value="wave_curvature">🌊 Wave Curvature Grabbing (Locks to Peaks!)</option>
-                        <option value="spiral_vortex">🌀 Polar Spiral Color Vortex</option>
-                        <option value="noise_warp">🌪️ Chaotic Simplex Noise Domain Warp</option>
-                    </select>
-                </div>
-
-                <div class="ctrl-row">
-                    <span class="ctrl-label">🔁 Harmonic Spokes:</span>
-                    <input type="range" id="ctrl-repeats" min="1" max="12" step="1" value="4">
-                    <span class="val-mono" id="ctrl-repeats-val">4x</span>
-                </div>
-                <div class="ctrl-row">
-                    <span class="ctrl-label">✏️ Line Thickness:</span>
-                    <input type="range" id="ctrl-thickness" min="1" max="8" step="0.5" value="2.5">
-                    <span class="val-mono" id="ctrl-thickness-val">2.5px</span>
-                </div>
-                <div class="ctrl-row">
-                    <span class="ctrl-label">🌈 Seamless Loop Mode:</span>
-                    <select id="ctrl-gradient-mode" style="width:100%;">
-                        <option value="cyclic">Cyclic 360° Loop (100% Zero-Seam)</option>
-                        <option value="pingpong">Ping-Pong Mirrored (A ➔ B ➔ A)</option>
-                    </select>
-                </div>
-                <div class="ctrl-row">
-                    <span class="ctrl-label">Select Generator:</span>
-                    <select id="pro-pattern-select" style="width:100%;"></select>
-                </div>
-            </div>
-
-            <!-- 8+ HYPER-SYMMETRIES & SHADERS -->
-            <div class="card-box" style="margin-top:10px;">
-                <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-bottom:6px;">8+ Hyper-Symmetries:</div>
-                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
-                    <button class="hw-btn" id="btn-sym-mh">Mirror H ↔</button>
-                    <button class="hw-btn" id="btn-sym-mv">Mirror V ↕</button>
-                    <button class="hw-btn" id="btn-sym-diag">Mirror Diag ⤡</button>
-                    <button class="hw-btn" id="btn-sym-inv180">180° Invert 🔄</button>
-                    <button class="hw-btn" id="btn-sym-k4">Kaleido 4x</button>
-                    <button class="hw-btn" id="btn-sym-k6">Kaleido 6x</button>
-                    <button class="hw-btn" id="btn-sym-k8">Kaleido 8x</button>
-                    <button class="hw-btn" id="btn-sym-k12">Kaleido 12x</button>
-                </div>
-
-                <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-top:10px; margin-bottom:6px;">Optical POV Shaders:</div>
-                <div class="ctrl-row">
-                    <span style="font-size:0.72rem; color:var(--text-muted);">POV Strobe:</span>
-                    <input type="range" id="fx-strobe" min="0" max="10" value="0">
-                    <span class="val-mono" id="fx-strobe-val">Off</span>
-                </div>
-                <div class="ctrl-row">
-                    <span style="font-size:0.72rem; color:var(--text-muted);">RGB Split:</span>
-                    <input type="range" id="fx-rgb" min="0" max="20" value="0">
-                    <span class="val-mono" id="fx-rgb-val">Off</span>
-                </div>
-                <div class="ctrl-row">
-                    <span style="font-size:0.72rem; color:var(--text-muted);">Wave Warp:</span>
-                    <input type="range" id="fx-wave" min="0" max="25" value="0">
-                    <span class="val-mono" id="fx-wave-val">Off</span>
-                </div>
-                <div class="ctrl-row">
-                    <span style="font-size:0.72rem; color:var(--text-muted);">Neon Glow:</span>
-                    <input type="range" id="fx-glow" min="0" max="20" value="0">
-                    <span class="val-mono" id="fx-glow-val">Off</span>
-                </div>
-            </div>
-        </div>
     </main>
 
     <footer class="footer-note">
@@ -536,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const sequenceQueue = [];
 
-    // --- TAB SWITCHING ---
+    // --- TAB SWITCHING (ROBUST SCROLL + ACTIVATE) ---
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -545,6 +598,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetId = this.getAttribute('data-tab');
             const targetPane = el(targetId);
             if (targetPane) targetPane.classList.add('active');
+            
+            // Auto scroll active tab into view in nav
+            this.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         });
     });
 
@@ -599,6 +655,121 @@ document.addEventListener('DOMContentLoaded', function() {
             c.classList.toggle('active', c.getAttribute('data-preset') === currentPattern);
         });
     }
+
+    // --- CUSTOM MULTI-STOP COLOR PICKER SYSTEM ---
+    let customColors = ['#ff007f', '#00ffff', '#ffd700', '#bc13fe'];
+    POI_PALETTES.custom = customColors;
+
+    function updateCustomSwatchesUI() {
+        const container = el('custom-swatches-container');
+        container.innerHTML = '';
+
+        customColors.forEach((color, idx) => {
+            const wrap = document.createElement('div');
+            wrap.style.display = 'flex';
+            wrap.style.flexDirection = 'column';
+            wrap.style.alignItems = 'center';
+            wrap.style.gap = '2px';
+
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.value = color;
+            input.className = 'custom-color-input';
+            input.style.width = '38px';
+            input.style.height = '32px';
+            input.style.padding = '0';
+            input.style.border = '2px solid rgba(255,255,255,0.3)';
+            input.style.borderRadius = '4px';
+            input.style.cursor = 'pointer';
+            input.style.background = 'transparent';
+
+            input.oninput = (e) => {
+                customColors[idx] = e.target.value;
+                POI_PALETTES.custom = customColors;
+                updateGradientPreview();
+                if (el('ctrl-palette').value === 'custom') {
+                    renderActivePattern();
+                }
+            };
+
+            const lbl = document.createElement('span');
+            lbl.style.fontSize = '0.6rem';
+            lbl.style.color = 'var(--text-muted)';
+            lbl.style.fontFamily = 'monospace';
+            lbl.innerText = color.toUpperCase();
+
+            wrap.appendChild(input);
+            wrap.appendChild(lbl);
+            container.appendChild(wrap);
+        });
+
+        updateGradientPreview();
+    }
+
+    function updateGradientPreview() {
+        const preview = el('custom-gradient-preview');
+        if (customColors.length === 1) {
+            preview.style.background = customColors[0];
+        } else {
+            preview.style.background = `linear-gradient(to right, ${customColors.join(', ')})`;
+        }
+    }
+
+    el('btn-add-swatch').onclick = () => {
+        if (customColors.length < 8) {
+            customColors.push(getRandomColorHex());
+            POI_PALETTES.custom = customColors;
+            el('ctrl-palette').value = 'custom';
+            updateCustomSwatchesUI();
+            renderActivePattern();
+        }
+    };
+
+    el('btn-del-swatch').onclick = () => {
+        if (customColors.length > 2) {
+            customColors.pop();
+            POI_PALETTES.custom = customColors;
+            el('ctrl-palette').value = 'custom';
+            updateCustomSwatchesUI();
+            renderActivePattern();
+        }
+    };
+
+    el('btn-custom-rand').onclick = () => {
+        const count = Math.floor(Math.random() * 3) + 3;
+        customColors = [];
+        for (let i = 0; i < count; i++) customColors.push(getRandomColorHex());
+        POI_PALETTES.custom = customColors;
+        el('ctrl-palette').value = 'custom';
+        updateCustomSwatchesUI();
+        renderActivePattern();
+    };
+
+    el('btn-preset-fire').onclick = () => {
+        customColors = ['#ff0000', '#ff5500', '#ffaa00', '#ffff55', '#ffffff'];
+        POI_PALETTES.custom = customColors;
+        el('ctrl-palette').value = 'custom';
+        updateCustomSwatchesUI();
+        renderActivePattern();
+    };
+
+    el('btn-preset-neon').onclick = () => {
+        customColors = ['#00ffff', '#ff007f', '#39ff14', '#bc13fe'];
+        POI_PALETTES.custom = customColors;
+        el('ctrl-palette').value = 'custom';
+        updateCustomSwatchesUI();
+        renderActivePattern();
+    };
+
+    el('btn-preset-rainbow').onclick = () => {
+        customColors = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff'];
+        POI_PALETTES.custom = customColors;
+        el('ctrl-palette').value = 'custom';
+        updateCustomSwatchesUI();
+        renderActivePattern();
+    };
+
+    updateCustomSwatchesUI();
 
     // --- MORPH TOGGLES ---
     el('morph-enable').onchange = (e) => {

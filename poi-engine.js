@@ -1,7 +1,7 @@
 /**
- * POI Studio: Algorithmic POV Generative Engine (v12.0 - Hyper-Color & Symmetry Master Suite)
+ * POI Studio: Algorithmic POV Generative Engine (v13.0 - Custom Palette Studio & Pro Suite)
  * 128+ Pure Mathematical, Aztec Step-Fret, Sacred Geometry, Optical Illusion & Quantum POV Algorithms
- * 22+ Elite Curated Palettes, 10+ Geometry Color Flow Modes, 8+ Hyper-Symmetries, Universal Seam Guardian
+ * Interactive Custom Color Picker, 25+ Curated Palettes, 10+ Color Flow Modes, 8+ Hyper-Symmetries
  */
 
 // --- COMPLETE ALGORITHMIC PATTERN DATABASE (128+ ELITE GENERATORS) ---
@@ -213,8 +213,9 @@ class SeamlessNoise {
 }
 const poiNoise = new SeamlessNoise(4242);
 
-// --- 22+ RICH CURATED PALETTES ---
+// --- 25+ RICH CURATED PALETTES & CUSTOM COLOR SLOTS ---
 const POI_PALETTES = {
+    custom: ['#ff007f', '#00ffff', '#ffd700', '#bc13fe'], // User-editable
     aztec_gold_turquoise: ['#ffd700', '#00e5ff', '#ff3d00', '#00bfa5', '#ffffff'],
     psychedelic_third_eye: ['#bc13fe', '#ff007f', '#00ffff', '#ffe600', '#050014'],
     kaleido_hyper_spectral: ['#ff0000', '#ff8000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#8000ff', '#ff00ff'],
@@ -237,6 +238,9 @@ const POI_PALETTES = {
     desert_mirage: ['#c25953', '#e4935d', '#e6c875', '#388087', '#6fb3b8'],
     laser_cyan_pink: ['#00ffff', '#ff007f', '#ffffff', '#7928ca'],
     deep_space_void: ['#000000', '#180033', '#7928ca', '#00ffff', '#ffffff'],
+    acid_rave_green: ['#39ff14', '#00ffff', '#bc13fe', '#ffff00'],
+    solar_fire_flare: ['#ff0000', '#ff5500', '#ffaa00', '#ffff55', '#ffffff'],
+    pure_high_contrast: ['#ffffff', '#000000', '#00ffff', '#ffffff'],
     random: []
 };
 
@@ -259,6 +263,9 @@ function getRandomColorHex() {
 }
 
 function getPaletteColors(paletteKey) {
+    if (paletteKey === 'custom') {
+        return POI_PALETTES.custom && POI_PALETTES.custom.length > 0 ? POI_PALETTES.custom : ['#ff007f', '#00ffff', '#ffd700'];
+    }
     if (paletteKey === 'random') {
         const count = Math.floor(Math.random() * 4) + 3;
         const cols = [];
@@ -1216,7 +1223,7 @@ POI_GENERATORS.trippy_tesseract_4d = (ctx, w, h, p, getCol) => {
             ctx.moveTo(x - h * 0.35, cy - h * 0.35); ctx.lineTo(x - h * 0.18, cy - h * 0.18);
             ctx.moveTo(x + h * 0.35, cy - h * 0.35); ctx.lineTo(x + h * 0.18, cy - h * 0.18);
             ctx.moveTo(x + h * 0.35, cy + h * 0.35); ctx.lineTo(x + h * 0.18, cy + h * 0.18);
-            ctx.moveTo(x - h * 0.35, cy - h * 0.35); ctx.lineTo(x - h * 0.18, cy - h * 0.18);
+            ctx.moveTo(x - h * 0.35, cy + h * 0.35); ctx.lineTo(x - h * 0.18, cy + h * 0.18);
             ctx.stroke();
         });
     }
@@ -2439,7 +2446,8 @@ function joinPatternSequence(canvases, options = {}) {
                             outD[idx] = 255; outD[idx + 1] = 255; outD[idx + 2] = 255; outD[idx + 3] = 255;
                         } else {
                             const src = t < 0.5 ? dataA : dataB;
-                            outD[idx] = src[idx]; outD[idx + 1] = src[idx + 1]; outD[idx + 2] = src[idx + 2]; outD[idx + 3] = src[idx + 3];
+                            outD[idx] = src[idx]; outD[idx + 1] = src[idx + 1] * bright;
+                            outD[idx + 2] = src[idx + 2]; outD[idx + 3] = src[idx + 3];
                         }
                     }
                 }

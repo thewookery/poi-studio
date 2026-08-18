@@ -1,6 +1,6 @@
 :root {
     --bg-color: #090c13;
-    --hud-bg: rgba(16, 21, 33, 0.94);
+    --hud-bg: rgba(16, 21, 33, 0.96);
     --card-bg: #121824;
     --card-bg-hover: #192234;
     --accent-color: #00adb5;
@@ -43,7 +43,7 @@ body {
     max-width: 900px;
     display: flex;
     flex-direction: column;
-    padding-bottom: 24px;
+    padding-bottom: 30px;
 }
 
 #error-log {
@@ -69,11 +69,11 @@ body {
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-    padding: 8px 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+    padding: 6px 10px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .hud-brand-row {
@@ -82,7 +82,7 @@ body {
     justify-content: space-between;
 }
 .hud-title {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     font-weight: 900;
     letter-spacing: 1px;
     color: #ffffff;
@@ -131,8 +131,8 @@ body {
 /* DUAL REAL-TIME VISUALIZERS IN HUD */
 .hud-visualizers {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 8px;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 6px;
 }
 @media (max-width: 600px) {
     .hud-visualizers { grid-template-columns: 1fr 1fr; }
@@ -142,7 +142,7 @@ body {
     background: #000000;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    padding: 4px;
+    padding: 3px 6px;
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -151,18 +151,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 0.64rem;
+    font-size: 0.62rem;
     font-weight: 700;
     color: var(--text-muted);
 }
 .telemetry-pill {
     color: var(--neon-green);
     font-family: monospace;
-    font-size: 0.62rem;
+    font-size: 0.60rem;
 }
 
 .infinite-canvas-wrap {
-    height: 48px;
+    height: 42px;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -175,7 +175,7 @@ body {
 }
 
 .strip-canvas-wrap {
-    height: 48px;
+    height: 42px;
     overflow-x: auto;
     overflow-y: hidden;
     display: flex;
@@ -185,7 +185,7 @@ body {
 }
 .strip-canvas-wrap:active { cursor: grabbing; }
 .strip-canvas-wrap canvas {
-    height: 44px;
+    height: 38px;
     image-rendering: pixelated;
 }
 
@@ -193,8 +193,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    font-size: 0.68rem;
+    gap: 10px;
+    font-size: 0.66rem;
     color: var(--text-muted);
 }
 .hud-slider-item {
@@ -210,15 +210,15 @@ body {
 }
 .val-mono {
     font-family: monospace;
-    font-size: 0.68rem;
+    font-size: 0.66rem;
     font-weight: 700;
     color: var(--accent-color);
-    min-width: 32px;
+    min-width: 30px;
     text-align: right;
 }
 
 /* ==========================================================================
-   APP NAVIGATION TABS (MOBILE HORIZONTAL SCROLL)
+   APP NAVIGATION TABS (TOUCH SCROLLABLE + WRAP AWARE)
    ========================================================================== */
 .app-tabs-nav {
     display: flex;
@@ -226,30 +226,38 @@ body {
     gap: 4px;
     overflow-x: auto;
     white-space: nowrap;
-    padding: 8px 12px;
-    background: #0d121c;
+    padding: 6px 10px;
+    background: #0b0f18;
     border-bottom: 1px solid var(--border-color);
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
 }
-.app-tabs-nav::-webkit-scrollbar { display: none; }
+.app-tabs-nav::-webkit-scrollbar {
+    height: 3px;
+}
+.app-tabs-nav::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 3px;
+}
 
 .tab-btn {
-    background: transparent;
-    border: 1px solid transparent;
+    background: #121824;
+    border: 1px solid var(--border-color);
     color: var(--text-muted);
-    padding: 6px 12px;
-    font-size: 0.74rem;
+    padding: 6px 10px;
+    font-size: 0.72rem;
     font-weight: 700;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.15s ease;
+    flex-shrink: 0;
 }
 .tab-btn:hover {
     color: var(--text-color);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.08);
 }
 .tab-btn.active {
-    background: var(--card-bg);
+    background: #192438;
     color: var(--accent-color);
     border-color: var(--accent-color);
     box-shadow: 0 0 8px var(--accent-glow);
@@ -259,12 +267,12 @@ body {
    TAB CONTENT PANES
    ========================================================================== */
 .app-tab-content {
-    padding: 12px;
+    padding: 10px 12px;
 }
 .tab-pane {
     display: none;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 .tab-pane.active {
     display: flex;
@@ -339,7 +347,7 @@ body {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 12px;
+    padding: 10px 12px;
 }
 
 /* HARDWARE BUTTONS */
