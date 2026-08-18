@@ -12,10 +12,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=56">
-
-
+    <link rel="stylesheet" href="styles.css?v=57">
+    <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
+
 <body>
 
 <div class="app-container">
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v56</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v57</span></div>
+
 
 
 
@@ -79,21 +80,25 @@
         </div>
     </header>
 
-    <!-- 4-WORKSPACE PRIMARY NAVIGATION BAR -->
+    <!-- 5-WORKSPACE PRIMARY NAVIGATION BAR -->
     <div class="workspace-mode-bar">
         <button class="mode-switch-btn active" id="btn-mode-generator" data-mode="workspace-generator">
             🎨 Generator
         </button>
         <button class="mode-switch-btn" id="btn-mode-stitcher" data-mode="workspace-stitcher">
-            🗂️ Pattern Vault & Stitcher
+            🗂️ Vault & Show
         </button>
         <button class="mode-switch-btn" id="btn-mode-banks" data-mode="workspace-banks">
-            🗃️ Bank Manager (15 Slots)
+            🗃️ Bank Manager
         </button>
         <button class="mode-switch-btn" id="btn-mode-deck" data-mode="workspace-deck">
             ⚙️ Poi Settings
         </button>
+        <button class="mode-switch-btn" id="btn-mode-firmware" data-mode="workspace-firmware">
+            ⚡ Firmware
+        </button>
     </div>
+
 
 
 
@@ -893,7 +898,11 @@
                 <button class="toggle-btn" id="btn-ble-scan-all" data-active="false" style="font-size:0.75rem; padding:6px 12px; font-weight:700;" title="Toggle between strict Open/Poi filter or all Bluetooth devices">
                     🔍 Filter: Open & Poi Only (Strict)
                 </button>
+                <button class="hw-btn" id="btn-deck-goto-firmware" style="font-size:0.75rem; color:var(--neon-green); font-weight:800; padding:6px 12px;" title="Open Web Serial Firmware Flasher">
+                    ⚡ USB Firmware Flasher & Upgrade...
+                </button>
             </div>
+
 
             <div style="margin-top:6px; font-size:0.68rem; color:var(--text-muted); line-height:1.4;">
                 <b>💡 Pairing Checklist:</b><br>
@@ -906,17 +915,268 @@
 
     </div>
 
+    <!-- ==========================================================================
+         WORKSPACE 5: FIRMWARE FLASHER & UPGRADE CENTER (WEB SERIAL)
+         ========================================================================== -->
+    <div id="workspace-firmware" style="display:none; flex-direction:column; gap:12px; padding:10px 12px;">
 
+        <!-- 1. HEADER & OVERVIEW -->
+        <div class="card-box" style="border-color:var(--neon-green); background:rgba(0, 255, 136, 0.03);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+                <div style="font-size:0.92rem; font-weight:800; color:var(--text-color); display:flex; align-items:center; gap:6px;">
+                    <span>⚡</span>
+                    <span>Open Pixel Poi — Web Serial Firmware Flasher</span>
+                </div>
+                <span class="telemetry-pill" style="color:var(--neon-green);">ESP Web Tools v10</span>
+            </div>
+            <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.5;">
+                Flash official and studio-custom firmware directly from Google Chrome, Microsoft Edge, or Opera on desktop via USB-C Web Serial. No command line or compiler setup required!
+            </div>
+        </div>
 
+        <!-- 2. SAFETY WARNING & "USE AT YOUR OWN RISK" BANNER -->
+        <div class="card-box" style="border-color:#ff4d4d; background:rgba(255, 77, 77, 0.06);">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+                <div style="font-size:0.82rem; font-weight:800; color:#ff4d4d; display:flex; align-items:center; gap:6px;">
+                    <span>⚠️</span>
+                    <span>Hardware Safety Warning & Disclaimer</span>
+                </div>
+                <span class="telemetry-pill" id="firmware-lock-status-badge" style="color:#ff4d4d;">🔒 Locked (Awaiting Consent)</span>
+            </div>
+            <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.4; margin-bottom:8px;">
+                Flashing firmware for the wrong PCB version or LED type (e.g. 55-Pixel DotStar vs 25-Pixel NeoPixel) can permanently damage your LEDs. Use entirely at your own risk!
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; background:rgba(0,0,0,0.35); padding:8px 10px; border-radius:4px; border:1px solid rgba(255,77,77,0.2);">
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.74rem; color:var(--neon-yellow); cursor:pointer; user-select:none;">
+                    <input type="checkbox" id="chk-firmware-safety-agree" style="width:16px; height:16px; accent-color:var(--neon-green);">
+                    <span>I understand the risks and accept full responsibility for flashing my Poi.</span>
+                </label>
+                <button class="hw-btn" id="btn-show-firmware-disclaimer" style="font-size:0.68rem; padding:4px 8px; color:var(--text-muted);">View Full Terms</button>
+            </div>
+        </div>
+
+        <!-- 3. STEP 1 & 2 SETUP GUIDES -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
+            <!-- STEP 1: DRIVERS -->
+            <div class="firmware-card">
+                <div style="font-size:0.8rem; font-weight:800; color:var(--text-color); display:flex; align-items:center;">
+                    <span class="firmware-step-badge">1</span>
+                    <span>Install USB Drivers</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); line-height:1.4;">
+                    ESP32-C3 uses USB Serial/JTAG. If your computer doesn't detect the controller, install these standard VCP drivers:
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
+                    <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank" rel="noopener noreferrer" style="font-size:0.7rem; color:var(--accent-color); text-decoration:underline;">
+                        🔗 Silicon Labs CP210x VCP Drivers (Windows/Mac/Linux)
+                    </a>
+                    <a href="https://ftdichip.com/drivers/vcp-drivers/" target="_blank" rel="noopener noreferrer" style="font-size:0.7rem; color:var(--accent-color); text-decoration:underline;">
+                        🔗 FTDI Virtual COM Port Drivers
+                    </a>
+                </div>
+            </div>
+
+            <!-- STEP 2: CONNECT CONTROLLER -->
+            <div class="firmware-card">
+                <div style="font-size:0.8rem; font-weight:800; color:var(--text-color); display:flex; align-items:center;">
+                    <span class="firmware-step-badge">2</span>
+                    <span>Connect Controller via USB-C</span>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); line-height:1.4;">
+                    • <b>Power ON</b> the Poi (must not be in deep sleep).<br>
+                    • <b>Battery MUST be connected</b> to the board.<br>
+                    • Connect USB-C data cable directly to your computer.<br>
+                    • On Windows: Appears as "USB JTAG/serial debug unit" in Device Manager.
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. STEP 3: FIRMWARE SELECTION & FLASH BUTTONS (ESP WEB TOOLS) -->
+        <div class="card-box" style="border-color:var(--accent-color);">
+            <div style="font-size:0.85rem; font-weight:800; color:var(--accent-color); margin-bottom:8px; display:flex; align-items:center;">
+                <span class="firmware-step-badge">3</span>
+                <span>Select Hardware Profile & Flash (Web Serial)</span>
+            </div>
+
+            <!-- OFFICIAL STOCK FIRMWARE SECTION -->
+            <div style="margin-bottom:12px;">
+                <div style="font-size:0.75rem; font-weight:800; color:var(--neon-green); margin-bottom:6px;">
+                    🌟 Official Stock Firmware (Mitch Lustig — App 2.X)
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">
+                    
+                    <!-- 55-PIXELS DOTSTAR -->
+                    <div class="firmware-card" style="border-color:rgba(57,255,20,0.3);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.78rem; font-weight:800; color:var(--neon-green);">🎯 PCB v3.0.0 (55-Pixel DotStar)</span>
+                            <span class="telemetry-pill" style="font-size:0.62rem; color:var(--neon-green);">Recommended</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.3;">
+                            • <b>LED Type:</b> SK9822 DotStar (High Density)<br>
+                            • <b>LED Count:</b> 55 LEDs per Poi<br>
+                            • <b>Speeds:</b> 1 to 2000 FPS (6 levels)
+                        </div>
+                        <div class="firmware-flash-wrap" style="margin-top:6px;">
+                            <esp-web-install-button manifest="firmware/opp_firmware/app_2.0/3.0.0-55px/manifest.json">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.74rem; padding:8px 10px; opacity:0.4;">
+                                    ⚡ Flash 55-Pixel DotStar (v3.0.0)
+                                </button>
+                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
+                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
+                                </span>
+                            </esp-web-install-button>
+                        </div>
+                    </div>
+
+                    <!-- 25-PIXELS NEOPIXEL -->
+                    <div class="firmware-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.78rem; font-weight:800; color:var(--neon-yellow);">🎯 PCB v3.0.0 (25-Pixel NeoPixel)</span>
+                            <span class="telemetry-pill" style="font-size:0.62rem;">WS2812B</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.3;">
+                            • <b>LED Type:</b> WS2812B NeoPixel<br>
+                            • <b>LED Count:</b> 25 LEDs per Poi<br>
+                            • <b>Speeds:</b> 1 to 800 FPS (6 levels)
+                        </div>
+                        <div class="firmware-flash-wrap" style="margin-top:6px;">
+                            <esp-web-install-button manifest="firmware/opp_firmware/app_2.0/3.0.0-25px/manifest.json">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.74rem; padding:8px 10px; opacity:0.4;">
+                                    ⚡ Flash 25-Pixel NeoPixel (v3.0.0)
+                                </button>
+                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
+                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
+                                </span>
+                            </esp-web-install-button>
+                        </div>
+                    </div>
+
+                    <!-- 20-PIXELS NEOPIXEL (v2.2.1) -->
+                    <div class="firmware-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.78rem; font-weight:800; color:var(--accent-color);">🎯 PCB v2.2.1 (20-Pixel NeoPixel)</span>
+                            <span class="telemetry-pill" style="font-size:0.62rem;">v2.2.1 PCB</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.3;">
+                            • <b>LED Type:</b> WS2812B NeoPixel<br>
+                            • <b>LED Count:</b> 20 LEDs per Poi<br>
+                            • <b>Speeds:</b> 1 to 600 FPS (6 levels)
+                        </div>
+                        <div class="firmware-flash-wrap" style="margin-top:6px;">
+                            <esp-web-install-button manifest="firmware/opp_firmware/app_2.0/2.2.1-20px/manifest.json">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.74rem; padding:8px 10px; opacity:0.4;">
+                                    ⚡ Flash 20-Pixel NeoPixel (v2.2.1)
+                                </button>
+                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
+                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
+                                </span>
+                            </esp-web-install-button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- STUDIO-CUSTOM & LEGACY FIRMWARE SECTION -->
+            <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:10px;">
+                <div style="font-size:0.75rem; font-weight:800; color:var(--neon-purple); margin-bottom:6px;">
+                    🔧 Custom & Legacy Firmware Options
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">
+                    
+                    <!-- CUSTOM PLATFORMIO SOURCE CODE -->
+                    <div class="firmware-card">
+                        <span style="font-size:0.78rem; font-weight:800; color:var(--neon-purple);">🛠️ Custom PlatformIO Source</span>
+                        <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.3;">
+                            Full PlatformIO source code is included in the <code>firmware/open_pixel_poi_firmware_platformio</code> folder. Edit <code>config.h</code> and compile with VSCode/PlatformIO!
+                        </div>
+                        <div style="font-size:0.65rem; color:var(--accent-color); margin-top:4px;">
+                            📁 Location: <code>./firmware/open_pixel_poi_firmware_platformio/</code>
+                        </div>
+                    </div>
+
+                    <!-- LEGACY APP 1.0 FIRMWARE -->
+                    <div class="firmware-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.78rem; font-weight:800; color:var(--text-muted);">📁 Legacy Firmware (App 1.0)</span>
+                            <span class="telemetry-pill" style="font-size:0.62rem;">v1.0 Old</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.3;">
+                            • For older v1.0 hardware setups<br>
+                            • PCB v2.2.1 (20-Pixels NeoPixel)
+                        </div>
+                        <div class="firmware-flash-wrap" style="margin-top:6px;">
+                            <esp-web-install-button manifest="firmware/opp_firmware/app_1.0/manifest.json">
+                                <button slot="activate" class="hw-btn firmware-install-btn" disabled style="width:100%; font-size:0.74rem; padding:8px 10px; opacity:0.4;">
+                                    ⚡ Flash Legacy App 1.0
+                                </button>
+                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
+                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
+                                </span>
+                            </esp-web-install-button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 5. STEP 4: POST-FLASH STARTUP TIPS -->
+        <div class="card-box" style="background:rgba(20, 30, 45, 0.6); border-color:rgba(0, 255, 136, 0.2);">
+            <div style="font-size:0.8rem; font-weight:800; color:var(--neon-green); margin-bottom:6px; display:flex; align-items:center;">
+                <span class="firmware-step-badge">4</span>
+                <span>Post-Flash Initial Boot & Setup Tips</span>
+            </div>
+            <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.5;">
+                • <b>First Boot:</b> LittleFS formatting on first boot may take 15–30 seconds. Be patient!<br>
+                • <b>Yellow Strobe:</b> A freshly flashed firmware has empty pattern slots and will display a yellow strobe until you upload patterns from Open POI Studio.<br>
+                • <b>Bluetooth Pairing:</b> Open the <b>⚙️ Poi Settings</b> tab in this app and click <b>➕ Connect / Pair Another Poi</b> to sync!
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FIRMWARE SAFETY / "USE AT YOUR OWN RISK" MODAL DIALOG -->
+    <div id="firmware-risk-modal" class="bank-picker-modal-overlay" style="display:none;">
+        <div class="bank-picker-modal-content" style="max-width:480px; border-color:#ff4d4d; background:#0b0f17;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="font-size:0.95rem; font-weight:800; color:#ff4d4d; display:flex; align-items:center; gap:6px;">
+                    <span>⚠️</span>
+                    <span>Firmware Flashing Terms & Disclaimer</span>
+                </div>
+                <button class="hw-btn" id="btn-close-risk-modal" style="font-size:0.75rem; padding:3px 8px;">✕</button>
+            </div>
+            <div style="font-size:0.74rem; color:var(--text-color); line-height:1.5; margin-bottom:12px;">
+                <p><b>Please read and confirm before flashing hardware:</b></p>
+                <ul style="margin:8px 0 8px 18px; color:var(--text-muted); font-size:0.72rem;">
+                    <li>Flashing firmware for the incorrect PCB or LED type can permanently overdrive and damage LEDs.</li>
+                    <li>Always ensure your battery is connected and your Poi is powered ON before clicking flash.</li>
+                    <li>Do NOT unplug the USB cable or close this browser window during transmission.</li>
+                    <li>Open POI Studio provides this Web Serial interface <b>as-is at your own risk</b>.</li>
+                </ul>
+            </div>
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.75rem; color:var(--neon-yellow); cursor:pointer; margin-bottom:14px; user-select:none;">
+                <input type="checkbox" id="chk-accept-modal-risk" style="width:16px; height:16px; accent-color:var(--neon-green);">
+                <span>I understand and accept full responsibility for flashing my device.</span>
+            </label>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button class="hw-btn" id="btn-risk-modal-cancel" style="font-size:0.75rem; padding:6px 14px;">Cancel</button>
+                <button class="btn-ble-upload" id="btn-risk-modal-confirm" disabled style="opacity:0.4; font-size:0.75rem; padding:6px 14px;">I Agree & Unlock</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="footer-note">
+
         100% Pure Algorithmic POV Suite. 395 Master Patterns in Single Folder. 40,000-Pixel Hardware Cap.
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=56"></script>
-<script src="poi-engine.js?v=56"></script>
-<script src="poi-ble.js?v=56"></script>
+<script src="master-vault-manifest.js?v=57"></script>
+<script src="poi-engine.js?v=57"></script>
+<script src="poi-ble.js?v=57"></script>
+
 
 
 
@@ -959,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Timeline Storyboard Queue
     const storyboardQueue = [];
 
-    // --- 4-WORKSPACE PRIMARY MODE SWITCHER ---
+    // --- 5-WORKSPACE PRIMARY MODE SWITCHER ---
     function switchWorkspace(mode) {
         activeWorkspace = mode;
         document.querySelectorAll('.mode-switch-btn').forEach(b => {
@@ -970,11 +1230,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const wGen = el('workspace-generator');
         const wBanks = el('workspace-banks');
         const wDeck = el('workspace-deck');
+        const wFirmware = el('workspace-firmware');
 
         if (wGen) wGen.style.display = (mode === 'workspace-generator') ? 'flex' : 'none';
         if (wStitcher) wStitcher.style.display = (mode === 'workspace-stitcher') ? 'flex' : 'none';
         if (wBanks) wBanks.style.display = (mode === 'workspace-banks') ? 'flex' : 'none';
         if (wDeck) wDeck.style.display = (mode === 'workspace-deck') ? 'flex' : 'none';
+        if (wFirmware) wFirmware.style.display = (mode === 'workspace-firmware') ? 'flex' : 'none';
 
         if (mode === 'workspace-generator') {
             triggerSmoothRender();
@@ -983,12 +1245,73 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-
     document.querySelectorAll('.mode-switch-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             switchWorkspace(this.getAttribute('data-mode'));
         });
     });
+
+    // --- FIRMWARE FLASHER SAFETY & DISCLAIMER CONTROLS ---
+    function setFirmwareUnlocked(isUnlocked) {
+        const chk = el('chk-firmware-safety-agree');
+        const badge = el('firmware-lock-status-badge');
+        if (chk) chk.checked = isUnlocked;
+        if (badge) {
+            badge.innerText = isUnlocked ? '🟢 Unlocked (Ready to Flash)' : '🔒 Locked (Awaiting Consent)';
+            badge.style.color = isUnlocked ? 'var(--neon-green)' : '#ff4d4d';
+        }
+
+        document.querySelectorAll('.firmware-install-btn').forEach(btn => {
+            btn.disabled = !isUnlocked;
+            btn.style.opacity = isUnlocked ? '1' : '0.4';
+            btn.style.cursor = isUnlocked ? 'pointer' : 'not-allowed';
+        });
+    }
+
+    if (el('chk-firmware-safety-agree')) {
+        el('chk-firmware-safety-agree').onchange = function() {
+            setFirmwareUnlocked(this.checked);
+        };
+    }
+
+    function openFirmwareRiskModal() {
+        const modal = el('firmware-risk-modal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeFirmwareRiskModal() {
+        const modal = el('firmware-risk-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    if (el('btn-show-firmware-disclaimer')) el('btn-show-firmware-disclaimer').onclick = openFirmwareRiskModal;
+    if (el('btn-close-risk-modal')) el('btn-close-risk-modal').onclick = closeFirmwareRiskModal;
+    if (el('btn-risk-modal-cancel')) el('btn-risk-modal-cancel').onclick = closeFirmwareRiskModal;
+
+    if (el('chk-accept-modal-risk')) {
+        el('chk-accept-modal-risk').onchange = function() {
+            const confirmBtn = el('btn-risk-modal-confirm');
+            if (confirmBtn) {
+                confirmBtn.disabled = !this.checked;
+                confirmBtn.style.opacity = this.checked ? '1' : '0.4';
+            }
+        };
+    }
+
+    if (el('btn-risk-modal-confirm')) {
+        el('btn-risk-modal-confirm').onclick = function() {
+            setFirmwareUnlocked(true);
+            closeFirmwareRiskModal();
+        };
+    }
+
+    if (el('btn-deck-goto-firmware')) {
+        el('btn-deck-goto-firmware').onclick = function() {
+            switchWorkspace('workspace-firmware');
+        };
+    }
+
+
 
 
     // --- GENERATOR SUB-TAB SWITCHING ---
