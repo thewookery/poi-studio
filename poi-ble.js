@@ -151,7 +151,7 @@
                 // Strict filters: only show devices matching Open or Poi
                 const scanConfig = (options.scanAll === true) ? {
                     acceptAllDevices: true,
-                    optionalServices: [NORDIC_UART_SERVICE, 'battery_service', 0x180F]
+                    optionalServices: [NORDIC_UART_SERVICE, 'battery_service']
                 } : {
                     filters: [
                         { namePrefix: 'Open' },
@@ -162,7 +162,7 @@
                         { namePrefix: 'Pixel' },
                         { namePrefix: 'pixel' }
                     ],
-                    optionalServices: [NORDIC_UART_SERVICE, 'battery_service', 0x180F]
+                    optionalServices: [NORDIC_UART_SERVICE, 'battery_service']
                 };
 
                 const device = await navigator.bluetooth.requestDevice(scanConfig);
@@ -177,6 +177,13 @@
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(NORDIC_UART_SERVICE);
                 const rxChar = await service.getCharacteristic(NORDIC_UART_RX_CHAR);
+                let txChar = null;
+                try {
+                    txChar = await service.getCharacteristic(NORDIC_UART_TX_CHAR);
+                } catch (e) {
+                    console.warn('[BLE] TX characteristic not available (write-only mode)');
+                }
+
                 const deviceEntry = {
                     id: device.id,
                     device: device,
@@ -226,6 +233,7 @@
                 }
             }, 2500);
         }
+
 
         async getPairedDevices() {
             if (!this.isSupported() || !navigator.bluetooth.getDevices) return [];

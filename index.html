@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v51</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v52</span></div>
+
 
 
 
@@ -2842,7 +2843,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert("Your show timeline is empty!\n\nPlease add patterns from the Vault or Generator using '➕ Add' first.");
                 return;
             }
-            const compiled = compileStoryboardFullStrip();
+            const compiled = recompileShowMaster(false);
             if (!compiled) return;
             openBankPickerModal({
                 name: `Master Show (${storyboardQueue.length} clips)`,
@@ -2852,6 +2853,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
     }
+
 
 
     // 6 Official Brightness Level Modes (Open Pixel Poi / Mitch's App)
