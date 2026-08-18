@@ -48,10 +48,10 @@
             <div class="hud-viz-box">
                 <div class="hud-viz-label">
                     <span>📏 Seamless Strip (BMP)</span>
-                    <span class="telemetry-pill" id="dim-badge">240 × 55 px</span>
+                    <span class="telemetry-pill" id="dim-badge">40 × 55 px</span>
                 </div>
                 <div class="strip-canvas-wrap" id="strip-drag-area" title="Drag horizontally to spin cylinder!">
-                    <canvas id="tile-canvas" width="480" height="55"></canvas>
+                    <canvas id="tile-canvas" width="80" height="55"></canvas>
                 </div>
             </div>
         </div>
@@ -65,10 +65,11 @@
             </div>
             <div class="hud-slider-item">
                 <span>Phase:</span>
-                <input type="range" id="phase-slider" min="0" max="240" value="0">
+                <input type="range" id="phase-slider" min="0" max="40" value="0">
                 <span id="phase-val" class="val-mono">0px</span>
             </div>
         </div>
+
 
         <!-- SMART MUTATE FEATURE LOCKS -->
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:4px; font-size:0.64rem; color:var(--text-muted); padding:3px 6px; background:rgba(0,0,0,0.35); border-radius:3px; border:1px solid rgba(255,255,255,0.06);">
@@ -266,11 +267,11 @@
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                     <span style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎯 Prop LED Height:</span>
                     <div class="hw-presets" id="gen-h-presets">
-                        <button class="hw-btn active" data-gen-h="55" data-gen-w="240">55px Standard (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-gen-h="22" data-gen-w="96">22px Mini (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-gen-h="32" data-gen-w="128">32px</button>
-                        <button class="hw-btn" data-gen-h="64" data-gen-w="256">64px</button>
-                        <button class="hw-btn" data-gen-h="144" data-gen-w="480">144px HD</button>
+                        <button class="hw-btn active" data-h="55" data-w="40">55px Standard (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-h="22" data-w="40">22px Mini (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-h="32" data-w="40">32px</button>
+                        <button class="hw-btn" data-h="64" data-w="64">64px</button>
+                        <button class="hw-btn" data-h="144" data-w="144">144px HD</button>
                     </div>
                 </div>
                 <div class="custom-dim-wrap">
@@ -284,17 +285,19 @@
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
                 <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:240px;">
                     <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green); min-width:95px;">📏 Timeline Length:</span>
-                    <input type="range" id="gen-length-slider" min="40" max="720" step="4" value="240" style="flex:1; accent-color:var(--neon-green);">
-                    <span class="val-mono" id="gen-length-val" style="min-width:55px; color:var(--neon-green);">240px</span>
+                    <input type="range" id="gen-length-slider" min="20" max="720" step="2" value="40" style="flex:1; accent-color:var(--neon-green);">
+                    <span class="val-mono" id="gen-length-val" style="min-width:55px; color:var(--neon-green);">40px</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:4px;" id="gen-len-presets">
+                    <button class="hw-btn active" data-len="40" style="font-size:0.68rem;">40px (~0.2s)</button>
                     <button class="hw-btn" data-len="120" style="font-size:0.68rem;">120px (~0.6s)</button>
-                    <button class="hw-btn active" data-len="240" style="font-size:0.68rem;">240px (~1.3s)</button>
+                    <button class="hw-btn" data-len="240" style="font-size:0.68rem;">240px (~1.3s)</button>
                     <button class="hw-btn" data-len="360" style="font-size:0.68rem;">360px (~2.0s)</button>
                     <button class="hw-btn" data-len="480" style="font-size:0.68rem;">480px (~2.6s)</button>
                 </div>
             </div>
         </div>
+
 
         <!-- SUB-NAV TABS FOR GENERATOR -->
         <nav class="app-tabs-nav" id="gen-tabs-nav">
@@ -454,11 +457,11 @@
                         🎯 Prop LED Pixel Height:
                     </div>
                     <div class="hw-presets" id="tab-h-presets">
-                        <button class="hw-btn active" data-h="55" data-w="240">55px Standard (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-h="22" data-w="96">22px Mini (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-h="32" data-w="128">32px</button>
-                        <button class="hw-btn" data-h="64" data-w="256">64px</button>
-                        <button class="hw-btn" data-h="144" data-w="480">144px HD</button>
+                        <button class="hw-btn active" data-h="55" data-w="40">55px Standard (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-h="22" data-w="40">22px Mini (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-h="32" data-w="40">32px</button>
+                        <button class="hw-btn" data-h="64" data-w="64">64px</button>
+                        <button class="hw-btn" data-h="144" data-w="144">144px HD</button>
                         <div class="custom-dim-wrap">
                             <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
                             <input type="number" id="tab-custom-h-input" value="55" min="8" max="256">
@@ -470,17 +473,18 @@
                         📏 Pattern Timeline Length (Pixels / Spin Duration):
                     </div>
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                        <input type="range" id="tab-length-slider" min="40" max="720" step="4" value="240" style="flex:1; accent-color:var(--neon-green);">
-                        <span class="val-mono" id="tab-length-val" style="min-width:60px; font-size:0.8rem; color:var(--neon-green);">240px</span>
+                        <input type="range" id="tab-length-slider" min="20" max="720" step="2" value="40" style="flex:1; accent-color:var(--neon-green);">
+                        <span class="val-mono" id="tab-length-val" style="min-width:60px; font-size:0.8rem; color:var(--neon-green);">40px</span>
                     </div>
 
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <button class="hw-btn" data-len="120">120px Micro (~0.6s)</button>
-                        <button class="hw-btn active" data-len="240">240px Standard (~1.3s)</button>
-                        <button class="hw-btn" data-len="360">360px Extended (~2.0s)</button>
-                        <button class="hw-btn" data-len="480">480px Double (~2.6s)</button>
-                        <button class="hw-btn" data-len="720">720px Mega (~4.0s)</button>
+                        <button class="hw-btn active" data-len="40">40px Micro (~0.2s)</button>
+                        <button class="hw-btn" data-len="120">120px (~0.6s)</button>
+                        <button class="hw-btn" data-len="240">240px (~1.3s)</button>
+                        <button class="hw-btn" data-len="360">360px (~2.0s)</button>
+                        <button class="hw-btn" data-len="480">480px (~2.6s)</button>
                     </div>
+
 
                     <div class="ctrl-row" style="margin-top:14px;">
                         <span class="ctrl-label">Active Equation:</span>
@@ -585,10 +589,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- WORKSPACE STATE ---
     let activeWorkspace = "workspace-stitcher";
-    let currentPattern = (window.MASTER_BMP_VAULT && window.MASTER_BMP_VAULT[0]) ? window.MASTER_BMP_VAULT[0].id : "aztec_xicalcoliuhqui_fret";
+    let currentPattern = "aztec_xicalcoliuhqui_fret";
     let currentHeight = 55;
-    let currentWidth = 240;
+    let currentWidth = 40;
     let storyboardTargetHeight = 55;
+
     let symMirrorH = false;
     let symMirrorV = false;
     let symMirrorDiag = false;
@@ -1747,13 +1752,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initial render
-    if (vaultItems.length > 0) {
-        loadPatternToActive(vaultItems[0]);
-    } else {
-        applyDimensions(currentHeight, currentWidth);
-    }
+    // Initial render: 55px tall by 40px length
+    setGeneratorHeight(55, 40);
 });
 </script>
+
 </body>
 </html>
