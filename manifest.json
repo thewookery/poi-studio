@@ -1,7 +1,8 @@
 {
-  "name": "POI Studio: Generative POV Suite",
-  "short_name": "POI Studio",
+  "name": "Open POI Studio",
+  "short_name": "Open POI",
   "description": "100% Offline Algorithmic POV Suite & Bluetooth Uplink for Open Pixel Poi",
+
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "any",
