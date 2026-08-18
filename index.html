@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v38</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v39</span></div>
+
 
 
 
@@ -230,12 +231,19 @@
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
                 <div>
                     <span style="font-size:0.88rem; font-weight:800; color:var(--text-color);">
-                        🗂️ Master BMP Pattern Vault (<span id="vault-count-badge">395 patterns</span>)
+                        🗂️ Master BMP Pattern Vault (<span id="vault-count-badge">243 patterns</span>)
                     </span>
                     <div style="font-size:0.68rem; color:var(--text-muted);">
-                        Browse, re-color & stitch 395 curated POV patterns • Tall files auto-rotated 90°
+                        Browse, re-color & stitch curated POV patterns • Tall files auto-rotated 90°
                     </div>
                 </div>
+            </div>
+
+            <!-- VAULT FOLDER FILTER TABS -->
+            <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;" id="vault-folder-filters">
+                <button class="hw-btn active" data-folder="all" id="filter-all-vault">✨ All Patterns (<span id="vault-total-count">243</span>)</button>
+                <button class="hw-btn" data-folder="patterns" id="filter-std-vault">📁 Standard (<span id="vault-std-count">214</span>)</button>
+                <button class="hw-btn" data-folder="highres" id="filter-hr-vault">💎 High-Res (<span id="vault-hr-count">29</span>)</button>
             </div>
 
             <!-- PROMINENT INTERACTIVE BMP COLOR PALETTE & RANDOM REMIX BAR -->
@@ -267,8 +275,9 @@
             <!-- SEARCH BAR -->
             <div class="search-input-wrap">
                 <span>🔍</span>
-                <input type="text" id="vault-search-input" placeholder="Search 395 patterns (e.g. skull, flame, pikachu, wave, galaxy, chaser, eye, mario, flower)...">
+                <input type="text" id="vault-search-input" placeholder="Search patterns (e.g. skull, galaxy, pikachu, wave, eye, mario, flower)...">
             </div>
+
 
             <!-- PATTERN CARDS GRID -->
             <div class="gallery-grid" id="vault-cards-grid" style="margin-top:10px; max-height:550px; overflow-y:auto; padding-right:4px;">
@@ -333,7 +342,17 @@
                 <button class="hud-btn-dl" id="btn-quick-dl-bmp" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Download Open Pixel Poi BMP">💾 Save BMP</button>
             </div>
 
+            <!-- RANDOMIZER POOL INCLUSION TOGGLES -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:8px; padding:6px 10px; background:rgba(0,0,0,0.4); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                <span style="font-size:0.72rem; font-weight:800; color:var(--neon-green);">🎲 Include in Rand:</span>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="toggle-btn" id="btn-rand-include-patterns" data-active="false" style="font-size:0.7rem; padding:5px 10px;" title="Allow randomizer to pick from 214 Standard BMP patterns">📁 Standard Patterns: OFF</button>
+                    <button class="toggle-btn" id="btn-rand-include-highres" data-active="false" style="font-size:0.7rem; padding:5px 10px;" title="Allow randomizer to pick from 29 High-Res BMP patterns">💎 High-Res: OFF</button>
+                </div>
+            </div>
+
         </div>
+
 
         <!-- 2. INTEGRATED DUAL REAL-TIME VISUALIZERS -->
         <div class="card-box" style="padding:10px 12px; background:rgba(0,0,0,0.5); border-color:rgba(0, 173, 181, 0.4);">
@@ -901,10 +920,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // =========================================================================
-    // MASTER BMP VAULT (395 UNIFIED PATTERNS)
+    // MASTER BMP VAULT (243 PATTERNS: 214 STANDARD, 29 HIGH-RES)
     // =========================================================================
     const vaultItems = window.MASTER_BMP_VAULT || [];
     let currentVaultPalette = 'original';
+    let currentVaultFolderFilter = 'all';
+
+    // Pre-initialize images for fast access
+    vaultItems.forEach(item => {
+        if (!item.cachedImg) {
+            const img = new Image();
+            img.src = item.dataUri;
+            item.cachedImg = img;
+        }
+    });
+
+    const totalStd = vaultItems.filter(m => m.folder === 'patterns').length;
+    const totalHr = vaultItems.filter(m => m.folder === 'highres').length;
+    updateBadge('vault-total-count', `${vaultItems.length}`);
+    updateBadge('vault-std-count', `${totalStd}`);
+    updateBadge('vault-hr-count', `${totalHr}`);
+
+    // Hook up vault folder filters
+    document.querySelectorAll('#vault-folder-filters button').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('#vault-folder-filters button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentVaultFolderFilter = this.getAttribute('data-folder');
+            renderVaultCards();
+        };
+    });
 
     // Hook up vault palette buttons
     document.querySelectorAll('#vault-palette-btns button').forEach(btn => {
@@ -924,10 +969,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchVal = el('vault-search-input') ? el('vault-search-input').value.toLowerCase().trim() : '';
 
         const filtered = vaultItems.filter(item => {
-            return (!searchVal || item.name.toLowerCase().includes(searchVal) || item.rawFile.toLowerCase().includes(searchVal));
+            const matchFolder = (currentVaultFolderFilter === 'all' || item.folder === currentVaultFolderFilter);
+            const matchSearch = (!searchVal || item.name.toLowerCase().includes(searchVal) || item.rawFile.toLowerCase().includes(searchVal));
+            return matchFolder && matchSearch;
         });
 
         updateBadge('vault-count-badge', `${filtered.length} pattern${filtered.length === 1 ? '' : 's'}`);
+
 
         filtered.forEach(item => {
             const card = document.createElement('div');
@@ -2059,21 +2107,71 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (el('btn-quick-mutate')) el('btn-quick-mutate').onclick = performHyperMutate;
 
+    // Toggle Randomizer Pool Buttons
+    if (el('btn-rand-include-patterns')) {
+        el('btn-rand-include-patterns').onclick = function() {
+            this.classList.toggle('active-green');
+            const isAct = this.classList.contains('active-green');
+            this.innerText = isAct ? '📁 Standard Patterns: ON' : '📁 Standard Patterns: OFF';
+        };
+    }
+
+    if (el('btn-rand-include-highres')) {
+        el('btn-rand-include-highres').onclick = function() {
+            this.classList.toggle('active-green');
+            const isAct = this.classList.contains('active-green');
+            this.innerText = isAct ? '💎 High-Res: ON' : '💎 High-Res: OFF';
+        };
+    }
+
     if (el('btn-quick-rand')) {
         el('btn-quick-rand').onclick = () => {
             const isLockGeo = el('btn-lock-geometry') && el('btn-lock-geometry').classList.contains('active');
-            if (!isLockGeo) {
-                const allKeys = Object.keys(POI_GENERATORS);
-                currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
-                if (proSelect) proSelect.value = currentPattern;
-                if (el('btn-morph-enable') && el('btn-morph-enable').classList.contains('active-green')) {
-                    if (morphASelect) morphASelect.value = currentPattern;
-                    if (morphBSelect) morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
-                }
+            const incStd = el('btn-rand-include-patterns') && el('btn-rand-include-patterns').classList.contains('active-green');
+            const incHr = el('btn-rand-include-highres') && el('btn-rand-include-highres').classList.contains('active-green');
+
+            // Build candidate pool strictly based on toggles
+            let pool = [];
+
+            // 1. Algorithmic procedural equations (always in pool)
+            const algoKeys = Object.keys(POI_GENERATORS);
+            algoKeys.forEach(k => pool.push({ type: 'algo', key: k }));
+
+            // 2. Standard BMP patterns (ONLY if button is active/ticked)
+            if (incStd) {
+                const stdItems = vaultItems.filter(i => i.folder === 'patterns');
+                stdItems.forEach(i => pool.push({ type: 'bmp', item: i }));
             }
-            performHyperMutate();
+
+            // 3. High-Res BMP patterns (ONLY if button is active/ticked)
+            if (incHr) {
+                const hrItems = vaultItems.filter(i => i.folder === 'highres');
+                hrItems.forEach(i => pool.push({ type: 'bmp', item: i }));
+            }
+
+            if (pool.length === 0) {
+                pool = algoKeys.map(k => ({ type: 'algo', key: k }));
+            }
+
+            const chosen = pool[Math.floor(Math.random() * pool.length)];
+
+            if (chosen.type === 'algo') {
+                if (!isLockGeo) {
+                    currentPattern = chosen.key;
+                    if (proSelect) proSelect.value = currentPattern;
+                    if (el('btn-morph-enable') && el('btn-morph-enable').classList.contains('active-green')) {
+                        if (morphASelect) morphASelect.value = currentPattern;
+                        if (morphBSelect) morphBSelect.value = algoKeys[Math.floor(Math.random() * algoKeys.length)];
+                    }
+                }
+                performHyperMutate();
+            } else if (chosen.type === 'bmp') {
+                loadPatternToActive(chosen.item, currentVaultPalette);
+                performHyperMutate();
+            }
         };
     }
+
 
 
 
