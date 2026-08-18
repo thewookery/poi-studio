@@ -112,44 +112,52 @@
                 </div>
             </div>
 
-            <!-- TRANSITION & FLOW CONTROLS -->
-            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px; margin-top:8px;">
-                <div class="ctrl-row" style="margin-top:0;">
-                    <span class="ctrl-label">🌊 Flow Transition:</span>
-                    <select id="stitch-trans-select" style="width:100%;">
-                        <option value="crossfade">🌊 Liquid Cosine Flow (Zero-Glitch Melt)</option>
-                        <option value="diagonal_wave">🌀 Polar Diagonal Wave Sweep (Base ➔ Tip)</option>
-                        <option value="quantum_rails">✨ Quantum Rail Interlacer (Holographic Dissolve)</option>
-                        <option value="simplex_warp">🌪️ Simplex Domain Warp (Liquid Glass)</option>
-                        <option value="black">🕶️ Dip to Black Fade</option>
-                        <option value="strobe">⚡ Stroboscopic White POV Flash</option>
-                        <option value="none">✂️ Clean Hard Cut (No Overlap)</option>
-                    </select>
+            <!-- TRANSITION & FLOW DYNAMICS (RESPONSIVE CARD) -->
+            <div class="card-box" style="margin-top:8px; background:rgba(0,0,0,0.3); border-color:var(--border-color); padding:10px 12px;">
+                <div style="font-size:0.8rem; font-weight:800; color:var(--accent-color); margin-bottom:8px;">
+                    🌊 Show Transition, Flow & Blend Dynamics:
                 </div>
 
-                <div class="ctrl-row" style="margin-top:0;">
-                    <span class="ctrl-label">⏱️ Clip Spin Duration:</span>
-                    <select id="stitch-duration-select" style="width:100%;">
-                        <option value="uniform_240">Uniform Standard (240px / ~1.3s)</option>
-                        <option value="uniform_180">Uniform Compact (180px / ~1.0s)</option>
-                        <option value="uniform_120">Uniform Micro (120px / ~0.6s)</option>
-                        <option value="proportional">Proportional (Original BMP Width)</option>
-                    </select>
+                <div class="flow-controls-grid">
+                    <div class="ctrl-row" style="margin-top:0;">
+                        <span class="ctrl-label">🌊 Flow Transition Style:</span>
+                        <select id="stitch-trans-select" style="width:100%; padding:6px 8px; font-size:0.75rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                            <option value="crossfade">🌊 Liquid Cosine Flow (Zero-Glitch Melt)</option>
+                            <option value="diagonal_wave">🌀 Polar Diagonal Wave Sweep (Base ➔ Tip)</option>
+                            <option value="quantum_rails">✨ Quantum Rail Interlacer (Holographic Dissolve)</option>
+                            <option value="simplex_warp">🌪️ Simplex Domain Warp (Liquid Glass)</option>
+                            <option value="black">🕶️ Dip to Black Fade</option>
+                            <option value="strobe">⚡ Stroboscopic White POV Flash</option>
+                            <option value="none">✂️ Clean Hard Cut (No Overlap)</option>
+                        </select>
+                    </div>
+
+                    <div class="ctrl-row" style="margin-top:0;">
+                        <span class="ctrl-label">⏱️ Clip Spin Duration:</span>
+                        <select id="stitch-duration-select" style="width:100%; padding:6px 8px; font-size:0.75rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                            <option value="uniform_240">Uniform Standard (240px / ~1.3s)</option>
+                            <option value="uniform_180">Uniform Compact (180px / ~1.0s)</option>
+                            <option value="uniform_120">Uniform Micro (120px / ~0.6s)</option>
+                            <option value="proportional">Proportional (Original BMP Width)</option>
+                        </select>
+                    </div>
+
+                    <div class="ctrl-row" style="margin-top:0;">
+                        <span class="ctrl-label">📐 Blend Overlap (Crossfade Width):</span>
+                        <input type="range" id="stitch-overlap-slider" min="0" max="96" value="28" style="accent-color:var(--neon-green);">
+                        <span class="val-mono" id="stitch-overlap-val" style="color:var(--neon-green);">28px</span>
+                    </div>
                 </div>
 
-                <div class="ctrl-row" style="margin-top:0;">
-                    <span class="ctrl-label">📐 Blend Overlap:</span>
-                    <input type="range" id="stitch-overlap-slider" min="0" max="64" value="28">
-                    <span class="val-mono" id="stitch-overlap-val">28px</span>
+                <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
+                    <label style="font-size:0.75rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="stitch-seamless-loop" checked style="accent-color:var(--neon-green);"> 
+                        <b>100% Zero-Seam Infinite Loop (Tail ➔ Head Fusion)</b>
+                    </label>
+                    <div style="font-size:0.7rem; color:var(--text-muted);" id="timeline-stats-badge">Total Length: 0px (~0 KB)</div>
                 </div>
             </div>
 
-            <div style="margin-top:8px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
-                <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                    <input type="checkbox" id="stitch-seamless-loop" checked style="accent-color:var(--neon-green);"> <b>100% Zero-Seam Infinite Loop (Tail ➔ Head Cosine Fusion)</b>
-                </label>
-                <div style="font-size:0.68rem; color:var(--text-muted);" id="timeline-stats-badge">Total Length: 0px (~0 KB)</div>
-            </div>
 
             <!-- OPEN PIXEL POI 40,000 PIXEL SD BUFFER TELEMETRY BAR -->
             <div class="card-box" style="margin-top:6px; background:#070a12; border:1px solid #1e293b; padding:8px 10px;">
