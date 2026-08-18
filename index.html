@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v34</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v35</span></div>
+
 
 
             <div class="hud-quick-actions">
@@ -96,29 +97,8 @@
                 </div>
             </div>
 
-            <!-- BMP COLOR REMIX & PALETTE OVERLAY CONTROL -->
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:8px; padding:6px 10px; background:rgba(188, 19, 254, 0.07); border:1px solid rgba(188, 19, 254, 0.3); border-radius:var(--radius-sm);">
-                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-purple);">🎨 Color Re-Map / Tint on Add:</span>
-                    <select id="vault-tint-mode" style="padding:4px 8px; font-size:0.72rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
-                        <option value="original">Original Author Colors</option>
-                        <option value="random">🎲 Random Harmonic Palette</option>
-                        <option value="fire">🔥 Flame Spectrum (Red / Gold)</option>
-                        <option value="cyber">🌈 Cyberpunk Neon (Cyan / Pink)</option>
-                        <option value="psychedelic">🔮 Psychedelic Acid (Rainbow)</option>
-                        <option value="matrix">🟢 Matrix Emerald (Lime / Cyan)</option>
-                        <option value="ocean">🌊 Deep Ocean (Aquamarine / Blue)</option>
-                        <option value="sunset">⚡ Electric Sunset (Purple / Gold)</option>
-                        <option value="invert">🕶️ Invert Luminance</option>
-                    </select>
-                </div>
-                <label style="font-size:0.7rem; color:var(--text-muted); display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" id="vault-tint-random-chk" style="accent-color:var(--neon-purple);">
-                    <span>Randomize Color Palette on Every Add</span>
-                </label>
-            </div>
-
             <!-- STORYBOARD TARGET LED HEIGHT RESIZER -->
+
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:8px; padding:6px 10px; background:rgba(0, 173, 181, 0.07); border:1px solid rgba(0, 173, 181, 0.3); border-radius:var(--radius-sm);">
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                     <span style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎯 Target Prop LED Height:</span>
@@ -242,16 +222,42 @@
             </div>
         </div>
 
-        <!-- 2. MASTER BMP PATTERN VAULT (ON SAME PAGE) -->
-        <div class="card-box">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+        <!-- 2. MASTER BMP PATTERN VAULT -->
+        <div class="card-box" style="border-color:rgba(188, 19, 254, 0.4); background:rgba(188, 19, 254, 0.03);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
                 <div>
-                    <span style="font-size:0.86rem; font-weight:800; color:var(--text-color);">
+                    <span style="font-size:0.88rem; font-weight:800; color:var(--text-color);">
                         🗂️ Master BMP Pattern Vault (<span id="vault-count-badge">395 patterns</span>)
                     </span>
                     <div style="font-size:0.68rem; color:var(--text-muted);">
-                        Click <b>➕ Add</b> to append pattern to Storyboard above • Tall files pre-rotated 90°
+                        Browse, re-color & stitch 395 curated POV patterns • Tall files auto-rotated 90°
                     </div>
+                </div>
+            </div>
+
+            <!-- PROMINENT INTERACTIVE BMP COLOR PALETTE & RANDOM REMIX BAR -->
+            <div class="card-box" style="margin-bottom:10px; background:rgba(0, 0, 0, 0.6); border:1px solid rgba(188, 19, 254, 0.5); padding:10px 12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                    <div style="font-size:0.78rem; font-weight:800; color:var(--neon-purple); display:flex; align-items:center; gap:6px;">
+                        <span>🎨 Live BMP Color Remixer & Palette Tint:</span>
+                    </div>
+                    <label style="font-size:0.72rem; color:var(--neon-green); display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:700;">
+                        <input type="checkbox" id="vault-tint-random-chk" style="accent-color:var(--neon-green); width:15px; height:15px;">
+                        <span>🎲 Randomize Colors on Every "➕ Add"</span>
+                    </label>
+                </div>
+
+                <!-- QUICK PALETTE PRESET BUTTONS (REAL-TIME LIVE TINTING) -->
+                <div style="display:flex; gap:5px; flex-wrap:wrap;" id="vault-palette-btns">
+                    <button class="hw-btn active" data-vpal="original" style="font-size:0.72rem; padding:5px 10px;">🖼️ Original BMP</button>
+                    <button class="hw-btn" data-vpal="random" style="font-size:0.72rem; padding:5px 10px; color:var(--accent-color); font-weight:800;">🎲 Shuffle / Random</button>
+                    <button class="hw-btn" data-vpal="fire" style="font-size:0.72rem; padding:5px 10px; color:#ff4d4d;">🔥 Fire & Heat</button>
+                    <button class="hw-btn" data-vpal="cyber" style="font-size:0.72rem; padding:5px 10px; color:#00ffff;">🌈 Cyber Neon</button>
+                    <button class="hw-btn" data-vpal="psychedelic" style="font-size:0.72rem; padding:5px 10px; color:#bc13fe;">🔮 Psychedelic</button>
+                    <button class="hw-btn" data-vpal="matrix" style="font-size:0.72rem; padding:5px 10px; color:#39ff14;">🟢 Matrix Emerald</button>
+                    <button class="hw-btn" data-vpal="ocean" style="font-size:0.72rem; padding:5px 10px; color:#00adb5;">🌊 Deep Ocean</button>
+                    <button class="hw-btn" data-vpal="sunset" style="font-size:0.72rem; padding:5px 10px; color:#ffb703;">⚡ Electric Sunset</button>
+                    <button class="hw-btn" data-vpal="invert" style="font-size:0.72rem; padding:5px 10px; color:#e0e6ed;">🕶️ Invert</button>
                 </div>
             </div>
 
@@ -266,6 +272,7 @@
                 <!-- Dynamically populated pattern cards -->
             </div>
         </div>
+
 
     </div>
 
@@ -831,6 +838,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // MASTER BMP VAULT (395 UNIFIED PATTERNS)
     // =========================================================================
     const vaultItems = window.MASTER_BMP_VAULT || [];
+    let currentVaultPalette = 'original';
+
+    // Hook up vault palette buttons
+    document.querySelectorAll('#vault-palette-btns button').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('#vault-palette-btns button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentVaultPalette = this.getAttribute('data-vpal');
+            renderVaultCards();
+        };
+    });
 
     function renderVaultCards() {
         const grid = el('vault-cards-grid');
@@ -849,8 +867,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const card = document.createElement('div');
             card.className = `vault-card ${currentPattern === item.id ? 'active' : ''}`;
 
+            let imgSrc = item.dataUri;
+            if (currentVaultPalette && currentVaultPalette !== 'original') {
+                const tempC = document.createElement('canvas');
+                tempC.width = item.width;
+                tempC.height = item.height;
+                tempC.getContext('2d').drawImage(item.cachedImg, 0, 0);
+                const remapped = remapBmpCanvas(tempC, currentVaultPalette);
+                imgSrc = remapped.toDataURL('image/png');
+            }
+
             card.innerHTML = `
-                <img class="vault-card-img" src="${item.dataUri}" alt="${item.name}" title="Click to View / Spin Pattern">
+                <img class="vault-card-img" src="${imgSrc}" alt="${item.name}" title="Click to View / Spin Pattern">
                 <div class="vault-card-meta">
                     <div class="vault-card-name" title="${item.name}">${item.name}</div>
                     <div class="vault-card-dims">${item.width}×${item.height} px ${item.wasRotated ? '🔄 90°' : ''}</div>
@@ -867,7 +895,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 imgEl.onclick = () => {
                     document.querySelectorAll('.vault-card').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
-                    loadPatternToActive(item);
+                    loadPatternToActive(item, currentVaultPalette);
                 };
             }
 
@@ -919,13 +947,21 @@ document.addEventListener('DOMContentLoaded', function() {
         item.cachedImg = newImg;
     }
 
-    function loadPatternToActive(item) {
+    function loadPatternToActive(item, paletteMode) {
         currentPattern = item.id;
         currentWidth = item.width;
         currentHeight = item.height;
         baseCanvas.width = currentWidth;
         baseCanvas.height = currentHeight;
-        baseCanvas.getContext('2d').drawImage(item.cachedImg, 0, 0);
+        
+        let c = document.createElement('canvas');
+        c.width = item.width;
+        c.height = item.height;
+        c.getContext('2d').drawImage(item.cachedImg, 0, 0);
+        if (paletteMode && paletteMode !== 'original') {
+            c = remapBmpCanvas(c, paletteMode);
+        }
+        baseCanvas.getContext('2d').drawImage(c, 0, 0);
 
         // LOCK KALEIDO FOR MASTER BMPs
         symKaleido = 0;
@@ -1015,10 +1051,8 @@ document.addEventListener('DOMContentLoaded', function() {
         c.height = item.height;
         c.getContext('2d').drawImage(item.cachedImg, 0, 0);
 
-        // Check if color re-map / tint is enabled
-        const tintSelect = el('vault-tint-mode');
         const randomChk = el('vault-tint-random-chk');
-        let mode = tintSelect ? tintSelect.value : 'original';
+        let mode = currentVaultPalette;
         if (randomChk && randomChk.checked) {
             mode = 'random';
         }
@@ -1038,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         updateStoryboardUI();
     }
+
 
 
     function updateStoryboardUI() {
