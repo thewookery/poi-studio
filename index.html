@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v42</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v43</span></div>
+
 
 
 
@@ -657,18 +658,35 @@
                         <span class="telemetry-pill" id="bank-assigned-count-badge" style="color:var(--neon-green);">0 / 15 Assigned</span>
                     </div>
                     <div style="font-size:0.68rem; color:var(--text-muted);">
-                        Populate and flash all 15 pattern slots across 3 hardware banks directly to your Open Pixel Poi.
+                        All slots are automatically resampled to your exact hardware LED height (<span id="bank-active-height-indicator" style="color:var(--neon-green); font-weight:800;">55px</span>).
                     </div>
                 </div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                     <button class="btn-ble-upload" id="btn-bank-flash-all" style="font-size:0.75rem; padding:7px 12px;" title="Sequentially flash all populated slots to connected Poi">
                         ⚡ Flash All Populated to Poi
                     </button>
-                    <button class="hw-btn" id="btn-bank-random-fill" style="font-size:0.72rem; color:var(--accent-color); font-weight:800;" title="Randomly fill all empty slots from Vault">
+                    <button class="hw-btn" id="btn-bank-random-fill" style="font-size:0.72rem; color:var(--accent-color); font-weight:800;" title="Randomly fill all empty slots from Vault (Auto-Resized)">
                         🎲 Random 15 Auto-Fill
                     </button>
                     <button class="hw-btn" id="btn-bank-clear-all" style="font-size:0.72rem; color:#ff4d4d;" title="Clear all 15 slots">
                         🗑️ Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- TARGET LED RESOLUTION & RESCALE BAR -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding:6px 8px; background:rgba(0,0,0,0.3); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:0.72rem; font-weight:800; color:var(--neon-yellow);">🎯 Hardware LED Height:</span>
+                    <div style="display:flex; gap:4px;" id="bank-height-presets">
+                        <button class="hw-btn active" data-h="55" style="font-size:0.68rem; padding:4px 8px;" title="55-LED DotStar / High Density Poi">55px (DotStar)</button>
+                        <button class="hw-btn" data-h="25" style="font-size:0.68rem; padding:4px 8px;" title="25-LED NeoPixel Kit">25px (NeoPixel)</button>
+                        <button class="hw-btn" data-h="36" style="font-size:0.68rem; padding:4px 8px;" title="36-LED Custom Poi">36px (Custom)</button>
+                    </div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="hw-btn" id="btn-bank-rescale-all" style="font-size:0.7rem; color:var(--neon-purple); font-weight:800; padding:4px 10px;" title="Resample and fit all 15 slots to target LED height">
+                        🔄 Rescale All 15 to <span id="bank-rescale-target-label">55px</span>
                     </button>
                 </div>
             </div>
@@ -681,6 +699,7 @@
                 <button class="hw-btn" data-bank-filter="2">📁 Bank 3 (Slots 1–5)</button>
             </div>
         </div>
+
 
         <!-- 2. INTERACTIVE 3-BANK CONTAINER (BANKS 1, 2, 3) -->
         <div id="banks-container" style="display:flex; flex-direction:column; gap:14px;">
@@ -2760,11 +2779,53 @@ document.addEventListener('DOMContentLoaded', function() {
     const BANK_COUNT = 3;
     const BANK_SLOT_COUNT = 5;
     const TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT; // 15
-    const STORAGE_KEY_BANKS = 'open_poi_bank_slots_v2';
+    const STORAGE_KEY_BANKS = 'open_poi_bank_slots_v3';
 
     let bankSlots = [];
     let currentBankFilter = 'all';
+    let bankTargetHeight = 55;
     let pendingBankAssignData = null;
+
+    /**
+     * Resamples any image or canvas to exact target hardware LED height and optimal length
+     */
+    async function resamplePatternForBank(source, targetH, targetW) {
+        targetH = parseInt(targetH) || bankTargetHeight || currentHeight || 55;
+
+        let imgOrCanvas = source;
+        if (typeof source === 'string') {
+            imgOrCanvas = await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load pattern image for resampling'));
+                img.src = source;
+            });
+        }
+
+        const origW = imgOrCanvas.width || (imgOrCanvas.naturalWidth || 40);
+        const origH = imgOrCanvas.height || (imgOrCanvas.naturalHeight || 55);
+
+        let finalW = targetW;
+        if (!finalW || finalW <= 0) {
+            finalW = Math.max(10, Math.min(240, Math.round(origW * (targetH / origH))));
+        }
+
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = finalW;
+        outCanvas.height = targetH;
+        const ctx = outCanvas.getContext('2d', { willReadFrequently: true });
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(imgOrCanvas, 0, 0, origW, origH, 0, 0, finalW, targetH);
+
+        return {
+            canvas: outCanvas,
+            dataUri: outCanvas.toDataURL('image/png'),
+            width: finalW,
+            height: targetH
+        };
+    }
 
     function loadSavedBankSlots() {
         try {
@@ -2803,18 +2864,22 @@ document.addEventListener('DOMContentLoaded', function() {
         renderBankSlotsGrid();
     }
 
-    function assignPatternToBankSlot(bankIdx, slotIdx, patternData) {
+    async function assignPatternToBankSlot(bankIdx, slotIdx, patternData) {
         const globalIdx = bankIdx * BANK_SLOT_COUNT + slotIdx;
         if (globalIdx < 0 || globalIdx >= TOTAL_BANK_SLOTS) return;
+
+        // Automatically resample to exact hardware target height
+        const targetH = bankTargetHeight || currentHeight || 55;
+        const resampled = await resamplePatternForBank(patternData.dataUri || patternData.canvas, targetH, patternData.targetWidth);
 
         bankSlots[globalIdx] = {
             globalIndex: globalIdx,
             bankIndex: bankIdx,
             slotIndex: slotIdx,
             name: patternData.name || `Pattern ${globalIdx + 1}`,
-            dataUri: patternData.dataUri,
-            width: patternData.width || 40,
-            height: patternData.height || 55,
+            dataUri: resampled.dataUri,
+            width: resampled.width,
+            height: resampled.height,
             isAssigned: true
         };
 
@@ -2832,9 +2897,56 @@ document.addEventListener('DOMContentLoaded', function() {
             name: `Empty Slot ${s + 1}`,
             dataUri: null,
             width: 40,
-            height: 55,
+            height: bankTargetHeight || 55,
             isAssigned: false
         };
+        saveBankSlots();
+    }
+
+    async function rescaleAllBankSlots(newHeight) {
+        newHeight = parseInt(newHeight) || bankTargetHeight || 55;
+        bankTargetHeight = newHeight;
+
+        for (let i = 0; i < TOTAL_BANK_SLOTS; i++) {
+            const slot = bankSlots[i];
+            if (slot && slot.isAssigned && slot.dataUri) {
+                try {
+                    const resampled = await resamplePatternForBank(slot.dataUri, newHeight);
+                    slot.dataUri = resampled.dataUri;
+                    slot.width = resampled.width;
+                    slot.height = resampled.height;
+                } catch(e) {
+                    console.error('Failed to rescale slot:', i, e);
+                }
+            }
+        }
+        saveBankSlots();
+        updateBadge('bank-active-height-indicator', `${newHeight}px`);
+        updateBadge('bank-rescale-target-label', `${newHeight}px`);
+    }
+
+    async function randomFillEmptyBankSlots() {
+        if (!vaultItems || vaultItems.length === 0) return;
+        const targetH = bankTargetHeight || currentHeight || 55;
+
+        for (let i = 0; i < TOTAL_BANK_SLOTS; i++) {
+            const slot = bankSlots[i];
+            if (!slot.isAssigned) {
+                const randItem = vaultItems[Math.floor(Math.random() * vaultItems.length)];
+                if (randItem) {
+                    try {
+                        const resampled = await resamplePatternForBank(randItem.dataUri, targetH);
+                        slot.name = randItem.name;
+                        slot.dataUri = resampled.dataUri;
+                        slot.width = resampled.width;
+                        slot.height = resampled.height;
+                        slot.isAssigned = true;
+                    } catch(e) {
+                        console.error('Error auto-resampling random item:', e);
+                    }
+                }
+            }
+        }
         saveBankSlots();
     }
 
@@ -2845,6 +2957,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const assignedCount = bankSlots.filter(s => s.isAssigned).length;
         updateBadge('bank-assigned-count-badge', `${assignedCount} / 15 Assigned`);
+        updateBadge('bank-active-height-indicator', `${bankTargetHeight}px`);
+        updateBadge('bank-rescale-target-label', `${bankTargetHeight}px`);
 
         for (let b = 0; b < BANK_COUNT; b++) {
             if (currentBankFilter !== 'all' && currentBankFilter !== `${b}`) continue;
@@ -2860,12 +2974,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-size:0.84rem; font-weight:800; color:var(--text-color);">📁 Bank ${b + 1}</span>
                         <span class="telemetry-pill" style="color:${bankPopulated > 0 ? 'var(--neon-green)' : 'var(--text-muted)'}; font-size:0.65rem;">
-                            ${bankPopulated} / 5 Assigned
+                            ${bankPopulated} / 5 Assigned • ${bankTargetHeight}px LEDs
                         </span>
                     </div>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
                         <button class="hw-btn" data-bank-action="play-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--accent-color);" title="Switch connected poi to Bank ${b + 1}">
-                            ▶️ Select Bank ${b + 1}
+                            ▶️ Play Bank ${b + 1}
                         </button>
                         <button class="hw-btn" data-bank-action="flash-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-green);" title="Flash this 5-slot bank over BLE">
                             🚀 Flash Bank ${b + 1}
@@ -2899,7 +3013,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.innerHTML = `
                     <div class="bank-slot-header">
                         <span style="color:var(--neon-green);">Bank ${slot.bankIndex + 1} • Slot ${slot.slotIndex + 1}</span>
-                        <span class="telemetry-pill" style="font-size:0.6rem; ${slot.isAssigned ? 'color:var(--neon-green);' : 'color:var(--text-muted);'}">
+                        <span class="telemetry-pill" style="font-size:0.62rem; ${slot.isAssigned ? 'color:var(--neon-green);' : 'color:var(--text-muted);'}">
                             ${slot.isAssigned ? `${slot.width}×${slot.height}px` : 'Unassigned'}
                         </span>
                     </div>
@@ -2966,7 +3080,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const previewWrap = card.querySelector('.bank-slot-preview-wrap');
                 if (previewWrap) {
-                    previewWrap.onclick = () => {
+                    previewWrap.onclick = async () => {
                         if (slot.isAssigned) {
                             loadBankSlotToGenerator(slot);
                         } else {
@@ -2978,7 +3092,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                             name = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-                            assignPatternToBankSlot(slot.bankIndex, slot.slotIndex, {
+                            await assignPatternToBankSlot(slot.bankIndex, slot.slotIndex, {
                                 name: name,
                                 dataUri: curUri,
                                 width: currentWidth,
@@ -3196,23 +3310,6 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(hideInlineProgress, 3000);
     }
 
-    function randomFillEmptyBankSlots() {
-        if (!vaultItems || vaultItems.length === 0) return;
-        bankSlots.forEach(slot => {
-            if (!slot.isAssigned) {
-                const randItem = vaultItems[Math.floor(Math.random() * vaultItems.length)];
-                if (randItem) {
-                    slot.name = randItem.name;
-                    slot.dataUri = randItem.dataUri;
-                    slot.width = randItem.width;
-                    slot.height = randItem.height;
-                    slot.isAssigned = true;
-                }
-            }
-        });
-        saveBankSlots();
-    }
-
     // Hook up Generator Send-to-Bank button
     if (el('btn-gen-send-bank')) {
         el('btn-gen-send-bank').onclick = () => {
@@ -3236,6 +3333,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hook up Bank Manager top actions
     if (el('btn-bank-flash-all')) el('btn-bank-flash-all').onclick = flashAllPopulatedBankSlots;
     if (el('btn-bank-random-fill')) el('btn-bank-random-fill').onclick = randomFillEmptyBankSlots;
+    if (el('btn-bank-rescale-all')) {
+        el('btn-bank-rescale-all').onclick = () => {
+            rescaleAllBankSlots(bankTargetHeight);
+        };
+    }
     if (el('btn-bank-clear-all')) {
         el('btn-bank-clear-all').onclick = () => {
             if (confirm('Clear all 15 pattern slots across all 3 banks?')) {
@@ -3245,6 +3347,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
     }
+
+    // Hook up Bank Height Preset buttons
+    document.querySelectorAll('#bank-height-presets button').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('#bank-height-presets button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const h = parseInt(this.getAttribute('data-h')) || 55;
+            bankTargetHeight = h;
+            updateBadge('bank-active-height-indicator', `${h}px`);
+            updateBadge('bank-rescale-target-label', `${h}px`);
+            rescaleAllBankSlots(h);
+        };
+    });
 
     // Hook up Bank Filter buttons
     document.querySelectorAll('#bank-filter-nav button').forEach(btn => {
@@ -3258,11 +3373,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Hook up Modal slot picker buttons
     document.querySelectorAll('.bank-slot-pick-btn').forEach(btn => {
-        btn.onclick = function() {
+        btn.onclick = async function() {
             if (!pendingBankAssignData) return;
             const b = parseInt(this.getAttribute('data-b'));
             const s = parseInt(this.getAttribute('data-s'));
-            assignPatternToBankSlot(b, s, pendingBankAssignData);
+            await assignPatternToBankSlot(b, s, pendingBankAssignData);
             closeBankPickerModal();
         };
     });
@@ -3273,6 +3388,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.id === 'bank-picker-modal-overlay') closeBankPickerModal();
         };
     }
+
 
     // Register 100% Offline Festival Service Worker (PWA) with Auto-Update
     if ('serviceWorker' in navigator) {

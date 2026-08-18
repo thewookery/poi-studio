@@ -1025,58 +1025,62 @@ select {
 
 /* HARDWARE BANK MANAGER STYLING */
 .bank-section-box {
-    background: rgba(14, 20, 32, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(13, 19, 31, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: var(--radius-md);
-    padding: 12px;
+    padding: 14px;
     margin-bottom: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 .bank-slots-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 10px;
-    margin-top: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
 }
 
 .bank-slot-card {
-    background: #101622;
+    background: #0d1320;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-sm);
-    padding: 8px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    transition: all 0.2s ease;
+    gap: 7px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
 }
 
 .bank-slot-card:hover {
     border-color: var(--accent-color);
-    box-shadow: 0 0 12px rgba(0, 173, 181, 0.2);
+    box-shadow: 0 0 16px rgba(0, 173, 181, 0.25);
+    transform: translateY(-2px);
 }
 
 .bank-slot-card.populated {
-    border-color: rgba(57, 255, 20, 0.35);
+    border-color: rgba(57, 255, 20, 0.4);
+    background: linear-gradient(180deg, rgba(57, 255, 20, 0.03) 0%, #0d1320 100%);
 }
 
 .bank-slot-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 800;
 }
 
 .bank-slot-preview-wrap {
-    height: 70px;
-    background: #080c14;
+    height: 80px;
+    background: #060910;
     border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    position: relative;
 }
 
 .bank-slot-canvas {
@@ -1087,17 +1091,17 @@ select {
 }
 
 .bank-slot-empty-label {
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     font-style: italic;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
 }
 
 .bank-slot-meta {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
@@ -1108,18 +1112,18 @@ select {
 .bank-slot-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    margin-top: 4px;
+    gap: 5px;
+    margin-top: 2px;
 }
 
 .bank-slot-btn {
-    background: #161e2e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #141c2c;
+    border: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--text-color);
-    padding: 5px 6px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    border-radius: 3px;
+    padding: 6px 8px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border-radius: 4px;
     cursor: pointer;
     text-align: center;
     transition: all 0.15s ease;
@@ -1129,9 +1133,11 @@ select {
     background: var(--card-bg-hover);
     border-color: var(--accent-color);
     color: #ffffff;
+    box-shadow: 0 0 8px rgba(0, 173, 181, 0.4);
 }
 
 /* BANK SELECTION MODAL / QUICK DIALOG */
+
 .bank-picker-modal-overlay {
     position: fixed;
     top: 0;
