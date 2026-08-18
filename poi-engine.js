@@ -2820,15 +2820,31 @@ async function loadBmpOrImageFile(file) {
     });
 }
 
-// --- POIBOI VAULT INTEGRATION (81 OFFICIAL BMPS) ---
-function registerPoiBoiVault() {
-    if (!window.POIBOI_VAULT || !Array.isArray(window.POIBOI_VAULT)) return;
-    
-    const vaultItems = [];
-    window.POIBOI_VAULT.forEach(item => {
-        const genKey = item.id;
-        vaultItems.push({ v: genKey, l: `🔥 ${item.name}` });
+// --- ROTATE CANVAS 90 DEGREES CLOCKWISE ---
+function rotateCanvas90(srcCanvas) {
+    const w = srcCanvas.width;
+    const h = srcCanvas.height;
+    const out = document.createElement('canvas');
+    out.width = h;
+    out.height = w;
+    const ctx = out.getContext('2d');
+    ctx.translate(h, 0);
+    ctx.rotate(Math.PI / 2);
+    ctx.drawImage(srcCanvas, 0, 0);
+    return out;
+}
 
+// --- MASTER BMP VAULT INTEGRATION (559 OFFICIAL BMPS) ---
+function registerMasterBmpVault() {
+    if (!window.MASTER_BMP_VAULT || !Array.isArray(window.MASTER_BMP_VAULT)) return;
+    
+    const catMap = {};
+    window.MASTER_BMP_VAULT.forEach(item => {
+        const cat = item.category || "Design Collection";
+        if (!catMap[cat]) catMap[cat] = [];
+        catMap[cat].push(item);
+
+        const genKey = item.id;
         const img = new Image();
         img.src = item.dataUri;
         item.cachedImg = img;
@@ -2840,9 +2856,12 @@ function registerPoiBoiVault() {
         };
     });
 
-    POI_PATTERN_DB.unshift({
-        cat: "🔥 PoiBoi Classic Patterns (81 Official BMPs)",
-        items: vaultItems
+    Object.keys(catMap).reverse().forEach(cat => {
+        const items = catMap[cat].map(item => ({ v: item.id, l: `🖼️ ${item.name}` }));
+        POI_PATTERN_DB.unshift({
+            cat: `📁 ${cat} (${items.length})`,
+            items: items
+        });
     });
 }
 
@@ -2862,4 +2881,6 @@ window.shiftCanvasPhase = shiftCanvasPhase;
 window.canvasToBmpBlob = canvasToBmpBlob;
 window.parseBmpArrayBuffer = parseBmpArrayBuffer;
 window.loadBmpOrImageFile = loadBmpOrImageFile;
-window.registerPoiBoiVault = registerPoiBoiVault;
+window.rotateCanvas90 = rotateCanvas90;
+window.registerMasterBmpVault = registerMasterBmpVault;
+

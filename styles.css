@@ -40,7 +40,7 @@ body {
 
 .app-container {
     width: 100%;
-    max-width: 900px;
+    max-width: 960px;
     display: flex;
     flex-direction: column;
     padding-bottom: 30px;
@@ -215,6 +215,43 @@ body {
     color: var(--accent-color);
     min-width: 30px;
     text-align: right;
+}
+
+/* ==========================================================================
+   PRIMARY WORKSPACE MODE SWITCHER (TWO DEDICATED SECTIONS)
+   ========================================================================== */
+.workspace-mode-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 8px 10px;
+    background: #070a10;
+    border-bottom: 2px solid var(--border-color);
+}
+.mode-switch-btn {
+    background: #101624;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 9px 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.mode-switch-btn:hover {
+    color: var(--text-color);
+    background: #172134;
+}
+.mode-switch-btn.active {
+    background: #17263c;
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 12px var(--accent-glow);
 }
 
 /* ==========================================================================
@@ -428,59 +465,201 @@ select {
     cursor: pointer;
 }
 
-/* MULTI-PATTERN SEQUENCER */
-.sequence-timeline {
+/* ==========================================================================
+   STITCHER STORYBOARD TIMELINE
+   ========================================================================== */
+.storyboard-timeline {
     background: #080b12;
-    border: 1px dashed var(--border-color);
-    border-radius: var(--radius-sm);
-    min-height: 55px;
-    padding: 6px;
+    border: 1px dashed var(--accent-color);
+    border-radius: var(--radius-md);
+    min-height: 78px;
+    padding: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
-.timeline-item {
+.storyboard-node {
     position: relative;
     background: #141926;
     border: 1px solid var(--accent-color);
-    border-radius: 4px;
-    padding: 3px;
+    border-radius: var(--radius-sm);
+    padding: 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 3px;
     flex-shrink: 0;
+    min-width: 85px;
 }
-.timeline-item canvas {
-    height: 32px;
+.storyboard-node canvas {
+    height: 38px;
+    max-width: 110px;
     image-rendering: pixelated;
     border-radius: 2px;
+    background: #000;
 }
-.timeline-item-title {
-    font-size: 0.56rem;
-    color: var(--text-muted);
-    margin-top: 2px;
-    max-width: 55px;
+.storyboard-node-title {
+    font-size: 0.60rem;
+    color: var(--text-color);
+    font-weight: 800;
+    max-width: 80px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.timeline-del-btn {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: var(--danger-color);
-    color: #fff;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    font-size: 9px;
+.storyboard-node-actions {
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: bold;
+    gap: 3px;
 }
+.storyboard-btn-mini {
+    background: #1e293b;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-size: 0.58rem;
+    padding: 2px 4px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+.storyboard-btn-mini:hover {
+    background: var(--accent-color);
+    color: #000;
+}
+
+/* CATEGORY FILTER PILLS */
+.cat-filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 6px 0;
+    -webkit-overflow-scrolling: touch;
+}
+.cat-pill-btn {
+    background: #141926;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+.cat-pill-btn:hover {
+    background: #1d273a;
+    color: #fff;
+}
+.cat-pill-btn.active {
+    background: var(--accent-color);
+    color: #0c0f17;
+    border-color: var(--accent-color);
+    font-weight: 800;
+}
+
+/* VAULT CARDS */
+.vault-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+}
+.vault-card:hover {
+    border-color: var(--accent-color);
+    background: var(--card-bg-hover);
+}
+.vault-card.active {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 8px rgba(255, 46, 99, 0.3);
+}
+.vault-card-img {
+    height: 42px;
+    max-width: 100%;
+    image-rendering: pixelated;
+    border-radius: 2px;
+    background: #000;
+    cursor: pointer;
+}
+.vault-card-meta {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+}
+.vault-card-name {
+    font-size: 0.70rem;
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.vault-card-dims {
+    font-size: 0.58rem;
+    color: var(--neon-green);
+    font-family: monospace;
+}
+.vault-card-btns {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 4px;
+    margin-top: 2px;
+}
+.btn-add-timeline {
+    background: linear-gradient(135deg, #00adb5, #39ff14);
+    color: #0c0f17;
+    font-size: 0.65rem;
+    font-weight: 900;
+    border: none;
+    border-radius: 3px;
+    padding: 3px 6px;
+    cursor: pointer;
+    flex: 1;
+}
+.btn-rotate-card {
+    background: #1c2436;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-size: 0.65rem;
+    padding: 3px 5px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.btn-rotate-card:hover {
+    background: var(--neon-purple);
+    color: #fff;
+}
+
+.search-input-wrap {
+    display: flex;
+    align-items: center;
+    background: #0b0f17;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    gap: 6px;
+}
+.search-input-wrap input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 0.75rem;
+    outline: none;
+    width: 100%;
+}
+
 .btn-join-add {
     background: #192234;
     border: 1px solid var(--accent-color);
@@ -502,136 +681,6 @@ select {
     cursor: pointer;
 }
 
-/* BMP IMPORT & MASTER STITCHER STUDIO */
-.bmp-dropzone {
-    background: rgba(0, 173, 181, 0.04);
-    border: 2px dashed var(--accent-color);
-    border-radius: var(--radius-md);
-    padding: 16px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-.bmp-dropzone:hover, .bmp-dropzone.dragover {
-    background: rgba(0, 173, 181, 0.12);
-    border-color: var(--neon-green);
-    box-shadow: 0 0 12px var(--accent-glow);
-}
-.bmp-dropzone-icon {
-    font-size: 1.8rem;
-}
-.bmp-dropzone-title {
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: #ffffff;
-}
-.bmp-dropzone-sub {
-    font-size: 0.68rem;
-    color: var(--text-muted);
-}
-
-.bmp-deck-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 10px;
-    margin-top: 10px;
-}
-.bmp-deck-card {
-    background: #141926;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    transition: border-color 0.15s ease;
-}
-.bmp-deck-card:hover {
-    border-color: var(--accent-color);
-}
-.bmp-deck-preview {
-    height: 48px;
-    background: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 3px;
-    overflow: hidden;
-}
-.bmp-deck-preview canvas {
-    max-width: 100%;
-    max-height: 100%;
-    image-rendering: pixelated;
-}
-.bmp-deck-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.64rem;
-}
-.bmp-deck-name {
-    font-weight: 800;
-    color: var(--text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 110px;
-}
-.bmp-deck-dims {
-    color: var(--neon-green);
-    font-family: monospace;
-}
-.bmp-deck-btns {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    justify-content: space-between;
-}
-.bmp-btn-mini {
-    background: #1c2436;
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    font-size: 0.64rem;
-    padding: 3px 6px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-weight: 700;
-}
-.bmp-btn-mini:hover {
-    background: var(--accent-color);
-    color: #000;
-}
-
-.search-input-wrap {
-    display: flex;
-    align-items: center;
-    background: #0b0f17;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 4px 10px;
-    gap: 6px;
-}
-.search-input-wrap input {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 0.75rem;
-    outline: none;
-    width: 100%;
-}
-
-.poiboi-card-img {
-    height: 38px;
-    image-rendering: pixelated;
-    border-radius: 2px;
-    margin-bottom: 4px;
-    max-width: 100%;
-}
-
 .footer-note {
     text-align: center;
     font-size: 0.68rem;
@@ -639,5 +688,3 @@ select {
     margin-top: 12px;
     padding: 0 12px;
 }
-
-
