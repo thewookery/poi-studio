@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v39</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v40</span></div>
+
 
 
 
@@ -809,10 +810,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const el = (id) => document.getElementById(id);
     const updateBadge = (id, val) => { const e = el(id); if (e) e.innerText = val; };
 
-    // Register master BMP patterns into engine
-    if (typeof registerMasterBmpVault === 'function') {
-        registerMasterBmpVault();
-    }
 
     // --- WORKSPACE STATE (Default: Algorithmic Generator) ---
     let activeWorkspace = "workspace-generator";
@@ -1009,7 +1006,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 imgEl.onclick = () => {
                     document.querySelectorAll('.vault-card').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
-                    loadPatternToActive(item, currentVaultPalette);
+                    loadPatternToActive(item);
+
                 };
             }
 
@@ -1061,21 +1059,19 @@ document.addEventListener('DOMContentLoaded', function() {
         item.cachedImg = newImg;
     }
 
-    function loadPatternToActive(item, paletteMode) {
+    function loadPatternToActive(item) {
         currentPattern = item.id;
         currentWidth = item.width;
         currentHeight = item.height;
         baseCanvas.width = currentWidth;
         baseCanvas.height = currentHeight;
         
-        let c = document.createElement('canvas');
-        c.width = item.width;
-        c.height = item.height;
-        c.getContext('2d').drawImage(item.cachedImg, 0, 0);
-        if (paletteMode && paletteMode !== 'original') {
-            c = remapBmpCanvas(c, paletteMode);
-        }
-        baseCanvas.getContext('2d').drawImage(c, 0, 0);
+        ['gen-length-slider', 'tab-length-slider'].forEach(id => {
+            if (el(id)) el(id).value = currentWidth;
+        });
+        ['gen-length-val', 'tab-length-val'].forEach(id => {
+            updateBadge(id, `${currentWidth}px`);
+        });
 
         // LOCK KALEIDO FOR MASTER BMPs
         symKaleido = 0;
@@ -1090,6 +1086,7 @@ document.addEventListener('DOMContentLoaded', function() {
         triggerSmoothRender();
         updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
     }
+
 
     // --- BMP COLOR REMAPPING / PALETTE OVERLAY ENGINE ---
     function remapBmpCanvas(srcCanvas, mode) {
@@ -1529,10 +1526,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 customColors[idx] = e.target.value;
                 POI_PALETTES.custom = customColors;
                 updateGradientPreview();
-                if (el('ctrl-palette') && el('ctrl-palette').value === 'custom') {
-                    triggerSmoothRender();
-                }
+                if (el('ctrl-palette')) el('ctrl-palette').value = 'custom';
+                triggerSmoothRender();
             };
+
 
             const lbl = document.createElement('span');
             lbl.style.fontSize = '0.6rem';
@@ -1796,6 +1793,91 @@ document.addEventListener('DOMContentLoaded', function() {
         renderActivePattern(true);
     }
 
+    function hexToRgb(hex) {
+        if (!hex || typeof hex !== 'string') return [0, 240, 255];
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        const num = parseInt(hex, 16) || 0;
+        return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    }
+
+    function applyPaletteToBmpCanvas(srcCanvas, paletteKey, customCols, colorDir) {
+        const c = document.createElement('canvas');
+        c.width = srcCanvas.width;
+        c.height = srcCanvas.height;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(srcCanvas, 0, 0);
+
+        if (paletteKey === 'original') return c;
+
+        const imgData = ctx.getImageData(0, 0, c.width, c.height);
+        const data = imgData.data;
+
+        // Resolve active palette colors
+        let palRgbList = [];
+        if (paletteKey === 'custom' && Array.isArray(customCols) && customCols.length > 0) {
+            palRgbList = customCols.map(h => hexToRgb(h));
+        } else if (window.POI_PALETTES && window.POI_PALETTES[paletteKey]) {
+            palRgbList = window.POI_PALETTES[paletteKey].map(h => hexToRgb(h));
+        } else {
+            palRgbList = [[0, 240, 255], [188, 19, 254], [255, 46, 99], [255, 215, 0]];
+        }
+
+        if (palRgbList.length === 0) return c;
+        if (palRgbList.length === 1) palRgbList.push(palRgbList[0]);
+
+        function samplePalette(t) {
+            t = Math.max(0, Math.min(1, t));
+            const idx = t * (palRgbList.length - 1);
+            const i0 = Math.floor(idx);
+            const i1 = Math.min(palRgbList.length - 1, i0 + 1);
+            const frac = idx - i0;
+            const c0 = palRgbList[i0];
+            const c1 = palRgbList[i1];
+            return [
+                Math.round(c0[0] + (c1[0] - c0[0]) * frac),
+                Math.round(c0[1] + (c1[1] - c0[1]) * frac),
+                Math.round(c0[2] + (c1[2] - c0[2]) * frac)
+            ];
+        }
+
+        const w = c.width;
+        const h = c.height;
+
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const idx = (y * w + x) * 4;
+                const r = data[idx], g = data[idx+1], b = data[idx+2], a = data[idx+3];
+                if (a === 0) continue;
+
+                // Calculate luminance of the source BMP pixel
+                const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                if (lum < 0.03) continue;
+
+                let posFactor = 0;
+                if (colorDir === 'v' || colorDir === 'v_rev') posFactor = y / h;
+                else if (colorDir === 'h' || colorDir === 'h_rev') posFactor = x / w;
+                else if (colorDir === 'diag') posFactor = (x / w + y / h) * 0.5;
+                else if (colorDir === 'radial') {
+                    const dx = (x - w/2) / (w/2);
+                    const dy = (y - h/2) / (h/2);
+                    posFactor = Math.min(1, Math.sqrt(dx*dx + dy*dy));
+                }
+
+                const t = (lum * 0.7 + posFactor * 0.3) % 1.0;
+                const [nr, ng, nb] = samplePalette(t);
+
+                const brightnessScale = Math.min(1, lum * 1.3);
+                data[idx] = Math.round(nr * brightnessScale);
+                data[idx+1] = Math.round(ng * brightnessScale);
+                data[idx+2] = Math.round(nb * brightnessScale);
+            }
+        }
+
+        ctx.putImageData(imgData, 0, 0);
+        return c;
+    }
+
     // --- CORE RENDERING (SINGLE PATTERN GENERATOR) ---
     function renderActivePattern(isTransition = false) {
         const w = currentWidth;
@@ -1820,7 +1902,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const isMorph = el('btn-morph-enable') ? el('btn-morph-enable').classList.contains('active-green') : false;
 
-        if (isMorph) {
+        if (typeof currentPattern === 'string' && currentPattern.startsWith('bmp_')) {
+            const vaultItem = vaultItems.find(v => v.id === currentPattern);
+            if (vaultItem && vaultItem.cachedImg) {
+                const tempC = document.createElement('canvas');
+                tempC.width = w;
+                tempC.height = h;
+                const tctx = tempC.getContext('2d');
+                tctx.drawImage(vaultItem.cachedImg, 0, 0, w, h);
+                const remapped = applyPaletteToBmpCanvas(tempC, paletteKey, customColors, colorDir);
+                ctx.drawImage(remapped, 0, 0);
+            }
+        } else if (isMorph) {
             const modelA = morphASelect ? morphASelect.value : 'aztec_xicalcoliuhqui_fret';
             const modelB = morphBSelect ? morphBSelect.value : 'sacred_third_eye_mandala';
             const flowStyle = el('morph-flow-style') ? el('morph-flow-style').value : 'azimuthal_flow';
@@ -1832,6 +1925,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 genFn(ctx, w, h, params, colSampler);
             }
         }
+
 
         // Symmetries
         applyMultiSymmetry(baseCanvas, {
@@ -2166,9 +2260,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 performHyperMutate();
             } else if (chosen.type === 'bmp') {
-                loadPatternToActive(chosen.item, currentVaultPalette);
+                loadPatternToActive(chosen.item);
                 performHyperMutate();
             }
+
         };
     }
 

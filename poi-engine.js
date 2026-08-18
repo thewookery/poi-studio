@@ -2927,37 +2927,6 @@ function rotateCanvas90(srcCanvas) {
     return out;
 }
 
-// --- MASTER BMP VAULT INTEGRATION (559 OFFICIAL BMPS) ---
-function registerMasterBmpVault() {
-    if (!window.MASTER_BMP_VAULT || !Array.isArray(window.MASTER_BMP_VAULT)) return;
-    
-    const catMap = {};
-    window.MASTER_BMP_VAULT.forEach(item => {
-        const cat = item.category || "Design Collection";
-        if (!catMap[cat]) catMap[cat] = [];
-        catMap[cat].push(item);
-
-        const genKey = item.id;
-        const img = new Image();
-        img.src = item.dataUri;
-        item.cachedImg = img;
-
-        POI_GENERATORS[genKey] = (ctx, w, h, params, colSampler) => {
-            if (img.complete && img.naturalWidth > 0) {
-                ctx.drawImage(img, 0, 0, w, h);
-            }
-        };
-    });
-
-    Object.keys(catMap).reverse().forEach(cat => {
-        const items = catMap[cat].map(item => ({ v: item.id, l: `🖼️ ${item.name}` }));
-        POI_PATTERN_DB.unshift({
-            cat: `📁 ${cat} (${items.length})`,
-            items: items
-        });
-    });
-}
-
 window.POI_PATTERN_DB = POI_PATTERN_DB;
 window.POI_PALETTES = POI_PALETTES;
 window.POI_GENERATORS = POI_GENERATORS;
@@ -2975,5 +2944,3 @@ window.canvasToBmpBlob = canvasToBmpBlob;
 window.parseBmpArrayBuffer = parseBmpArrayBuffer;
 window.loadBmpOrImageFile = loadBmpOrImageFile;
 window.rotateCanvas90 = rotateCanvas90;
-window.registerMasterBmpVault = registerMasterBmpVault;
-
