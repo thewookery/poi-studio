@@ -590,6 +590,17 @@
                 <button class="storyboard-btn-mini" id="btn-ble-modal-close" style="font-size:0.9rem; padding:4px 8px;">✕</button>
             </div>
 
+            <!-- CONNECTED POI DEVICES LIST -->
+            <div style="display:flex; flex-direction:column; gap:4px; background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green);">🪄 Connected Poi (<span id="ble-connected-count-badge">0</span>):</span>
+                    <button class="hw-btn" id="btn-ble-add-poi" style="font-size:0.68rem; color:var(--neon-green); font-weight:800;">➕ Connect Another Poi</button>
+                </div>
+                <div id="ble-devices-list" style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
+                    <div style="font-size:0.68rem; color:var(--text-muted);">No Poi connected. Click below to pair!</div>
+                </div>
+            </div>
+
             <!-- LIVE UPLOAD PROGRESS (Only visible during transfer) -->
             <div id="ble-upload-section" style="display:none; flex-direction:column; gap:6px; background:rgba(0,0,0,0.4); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--neon-purple);">
                 <div style="display:flex; justify-content:space-between; font-size:0.72rem; font-weight:700;">
@@ -604,7 +615,7 @@
 
             <!-- HARDWARE CONTROL DECK (Active when connected) -->
             <div id="ble-controls-section" style="display:flex; flex-direction:column; gap:8px;">
-                <div style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎛️ Real-Time Poi Hardware Deck:</div>
+                <div style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎛️ Simultaneous Broadcast Controls (All Connected Poi):</div>
 
                 <div class="ctrl-row">
                     <span class="ctrl-label">☀️ LED Brightness:</span>
@@ -631,6 +642,12 @@
                     </div>
                 </div>
 
+                <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+                    <button class="hw-btn" id="ble-btn-loop-bank" style="font-size:0.68rem; color:var(--neon-purple);">♾️ Loop Bank</button>
+                    <button class="hw-btn" id="ble-btn-loop-all" style="font-size:0.68rem; color:var(--neon-yellow);">🌐 Loop All Banks</button>
+                </div>
+            </div>
+
             <!-- SCAN OPTIONS & TROUBLESHOOTING GUIDE -->
             <div style="background:rgba(0, 173, 181, 0.05); border:1px solid rgba(0, 173, 181, 0.25); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.7rem;">
                 <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; color:var(--accent-color);">
@@ -639,19 +656,20 @@
                 </label>
                 <div style="margin-top:6px; font-size:0.65rem; color:var(--text-muted); line-height:1.4;">
                     <b>💡 Pairing Checklist:</b><br>
-                    • <b>Power ON</b> your Open Pixel Poi (LEDs should light up).<br>
-                    • <b>Close/Disconnect Mobile App</b>: ESP32 only pairs with 1 device at a time.<br>
-                    • Ensure <b>PC Bluetooth is turned ON</b> in Windows Settings.<br>
+                    • <b>Pair Left Poi, then click "➕ Connect Another Poi" to pair Right Poi!</b><br>
+                    • <b>Power ON</b> both Poi.<br>
+                    • <b>Close/Disconnect Phone App</b>: ESP32 only pairs with 1 device at a time.<br>
                     • Supported in <b>Google Chrome</b>, <b>Microsoft Edge</b>, and <b>Android Chromium</b>.
                 </div>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; border-top:1px solid var(--border-color); padding-top:8px;">
                 <button class="ble-connect-btn" id="ble-modal-connect-btn">📡 Scan & Connect Poi</button>
-                <button class="btn-ble-upload" id="ble-modal-upload-active-btn">🚀 Upload Active Pattern</button>
+                <button class="btn-ble-upload" id="ble-modal-upload-active-btn">🚀 Broadcast Active Pattern</button>
             </div>
         </div>
     </div>
+
 
 
     <footer class="footer-note">
@@ -1862,7 +1880,52 @@ document.addEventListener('DOMContentLoaded', function() {
         bleBankSel.innerHTML = opts;
     }
 
-    // Toggle BLE Connection
+    // Render connected devices in BLE modal list
+    function renderConnectedDevicesList(devices) {
+        devices = devices || [];
+        updateBadge('ble-connected-count-badge', `${devices.length}`);
+        const listEl = el('ble-devices-list');
+        if (!listEl) return;
+
+        if (devices.length === 0) {
+            listEl.innerHTML = '<div style="font-size:0.68rem; color:var(--text-muted); padding:4px 6px; background:#0b0f17; border-radius:4px;">No Poi connected. Click "Scan & Connect Poi" below to pair!</div>';
+            return;
+        }
+
+        let html = '';
+        devices.forEach((d, idx) => {
+            const role = (devices.length === 2) ? (idx === 0 ? ' (Left Poi)' : ' (Right Poi)') : '';
+            html += `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#121824; border:1px solid rgba(0,255,136,0.3); border-radius:4px; padding:4px 8px; font-size:0.72rem;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="color:var(--neon-green);">🟢</span>
+                        <b>${d.name}${role}</b>
+                    </div>
+                    <button class="storyboard-btn-mini" onclick="window.OpenPixelPoiBLE.disconnectDevice('${d.id}')" style="font-size:0.65rem; color:#ff4d4d; border-color:#ff4d4d; padding:2px 6px;">✕</button>
+                </div>
+            `;
+        });
+        listEl.innerHTML = html;
+    }
+
+    // Connect / Add another Poi device to pair
+    async function connectAnotherPoi() {
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
+            alert("Web Bluetooth is not supported in this browser.\n\nPlease open this app in Google Chrome, Microsoft Edge, Opera, or Android Chromium to connect directly to your Open Pixel Poi!");
+            return;
+        }
+
+        const isScanAll = el('ble-scan-all-chk') ? el('ble-scan-all-chk').checked : true;
+        try {
+            await OpenPixelPoiBLE.connectDevice({ scanAll: isScanAll });
+        } catch (err) {
+            if (err.name !== 'NotFoundError') {
+                console.warn('[BLE Connection Error]', err);
+            }
+        }
+    }
+
+    // Toggle BLE Connection / Open Modal
     async function toggleBleConnection() {
         if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
             alert("Web Bluetooth is not supported in this browser.\n\nPlease open this app in Google Chrome, Microsoft Edge, Opera, or Android Chromium to connect directly to your Open Pixel Poi!");
@@ -1870,22 +1933,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (OpenPixelPoiBLE.isConnected) {
-            await OpenPixelPoiBLE.disconnect();
+            openBleModal();
         } else {
-            const isScanAll = el('ble-scan-all-chk') ? el('ble-scan-all-chk').checked : true;
-            try {
-                await OpenPixelPoiBLE.connect({ scanAll: isScanAll });
-            } catch (err) {
-                if (err.name !== 'NotFoundError') {
-                    console.warn('[BLE Connection Error]', err);
-                }
-            }
+            await connectAnotherPoi();
         }
     }
 
-
     if (el('btn-ble-connect')) el('btn-ble-connect').onclick = toggleBleConnection;
-    if (el('ble-modal-connect-btn')) el('ble-modal-connect-btn').onclick = toggleBleConnection;
+    if (el('ble-modal-connect-btn')) el('ble-modal-connect-btn').onclick = connectAnotherPoi;
+    if (el('btn-ble-add-poi')) el('btn-ble-add-poi').onclick = connectAnotherPoi;
 
     // BLE State Listener
     if (window.OpenPixelPoiBLE) {
@@ -1893,33 +1949,43 @@ document.addEventListener('DOMContentLoaded', function() {
             const connectBtns = [el('btn-ble-connect'), el('ble-modal-connect-btn')];
             const statusBadge = el('ble-modal-status');
             const titleBadge = el('ble-modal-title');
+            const devCount = (data.devices || []).length;
 
-            if (state === 'connected') {
-                connectBtns.forEach(b => {
-                    if (b) {
-                        b.classList.add('connected');
-                        b.innerText = `🟢 ${data.deviceName || 'Pixel Poi'}`;
-                        b.title = 'Click to disconnect Open Pixel Poi';
-                    }
-                });
-                if (statusBadge) statusBadge.innerText = `Status: Connected to ${data.deviceName} (Ready)`;
-                if (titleBadge) titleBadge.innerText = `🟢 ${data.deviceName}`;
+            renderConnectedDevicesList(data.devices || []);
+
+            if (data.isConnected && devCount > 0) {
+                const label = devCount === 1 
+                    ? `🟢 1 Poi (${data.devices[0].name})` 
+                    : `🟢 ${devCount} Poi Connected (Pair Sync)`;
+                
+                if (el('btn-ble-connect')) {
+                    el('btn-ble-connect').classList.add('connected');
+                    el('btn-ble-connect').innerText = label;
+                    el('btn-ble-connect').title = 'Click to open BLE Hardware Deck';
+                }
+                if (el('ble-modal-connect-btn')) {
+                    el('ble-modal-connect-btn').innerText = '➕ Add Another Poi';
+                }
+                if (statusBadge) statusBadge.innerText = `Status: ${devCount} Poi Connected & Synchronized`;
+                if (titleBadge) titleBadge.innerText = `🟢 ${devCount} Poi Connected (Sync Broadcast)`;
             } else if (state === 'connecting') {
-                connectBtns.forEach(b => { if (b) b.innerText = '⏳ Connecting...'; });
+                if (el('btn-ble-connect')) el('btn-ble-connect').innerText = '⏳ Scanning & Connecting...';
                 if (statusBadge) statusBadge.innerText = 'Status: Scanning & Connecting...';
             } else {
-                connectBtns.forEach(b => {
-                    if (b) {
-                        b.classList.remove('connected');
-                        b.innerText = '📡 Connect Poi (BLE)';
-                        b.title = 'Connect Open Pixel Poi via Web Bluetooth';
-                    }
-                });
+                if (el('btn-ble-connect')) {
+                    el('btn-ble-connect').classList.remove('connected');
+                    el('btn-ble-connect').innerText = '📡 Connect Poi (BLE)';
+                    el('btn-ble-connect').title = 'Connect Open Pixel Poi via Web Bluetooth';
+                }
+                if (el('ble-modal-connect-btn')) {
+                    el('ble-modal-connect-btn').innerText = '📡 Scan & Connect Poi';
+                }
                 if (statusBadge) statusBadge.innerText = 'Status: Disconnected';
                 if (titleBadge) titleBadge.innerText = 'Open Pixel Poi BLE Uplink';
             }
         });
     }
+
 
     // Upload Active Pattern (Canvas) to Poi over BLE
     async function uploadActivePatternToPoi() {

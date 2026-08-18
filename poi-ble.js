@@ -47,16 +47,22 @@
 
     class OpenPixelPoiBLEClient {
         constructor() {
-            this.device = null;
-            this.server = null;
-            this.service = null;
-            this.rxCharacteristic = null;
-            this.txCharacteristic = null;
-            this.isConnected = false;
+            this.devices = []; // Array of { id, device, server, service, rxCharacteristic, txCharacteristic, name }
             this.isUploading = false;
-            this.deviceName = 'Open Pixel Poi';
             this.stateListeners = [];
             this.maxPacketSize = 500; // Safe chunk size below 509 MTU
+        }
+
+        get isConnected() {
+            return this.devices.length > 0;
+        }
+
+        get count() {
+            return this.devices.length;
+        }
+
+        get deviceNames() {
+            return this.devices.map(function(d) { return d.name; });
         }
 
         isSupported() {
@@ -69,29 +75,28 @@
             }
         }
 
-        _notifyState(state, data = {}) {
-            this.stateListeners.forEach(fn => {
+        _notifyState(state, data) {
+            data = data || {};
+            this.stateListeners.forEach(function(fn) {
                 try {
-                    fn(state, {
+                    fn(state, Object.assign({
                         isConnected: this.isConnected,
-                        deviceName: this.deviceName,
-                        ...data
-                    });
+                        count: this.count,
+                        devices: this.devices.map(function(d) { return { id: d.id, name: d.name }; })
+                    }, data));
                 } catch (e) {
                     console.error('[BLE Callback Error]', e);
                 }
-            });
+            }.bind(this));
         }
 
-        async connect(options) {
+        async connectDevice(options) {
             options = options || {};
             if (!this.isSupported()) {
                 throw new Error('Web Bluetooth is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Android Chromium.');
             }
 
             try {
-                this._notifyState('connecting');
-
                 const scanConfig = (options.scanAll === true) ? {
                     acceptAllDevices: true,
                     optionalServices: [NORDIC_UART_SERVICE]
@@ -110,13 +115,12 @@
                     optionalServices: [NORDIC_UART_SERVICE]
                 };
 
-                // Request BLE Device
+                let device;
                 try {
-                    this.device = await navigator.bluetooth.requestDevice(scanConfig);
+                    device = await navigator.bluetooth.requestDevice(scanConfig);
                 } catch (e) {
                     if (e.name !== 'NotFoundError' && !options.scanAll) {
-                        // Fallback to scan all devices
-                        this.device = await navigator.bluetooth.requestDevice({
+                        device = await navigator.bluetooth.requestDevice({
                             acceptAllDevices: true,
                             optionalServices: [NORDIC_UART_SERVICE]
                         });
@@ -125,65 +129,105 @@
                     }
                 }
 
-                this.deviceName = this.device.name || 'Open Pixel Poi';
+                // Check if already in list
+                const existing = this.devices.find(function(d) { return d.device.id === device.id; });
+                if (existing) {
+                    this._notifyState('connected', { device: existing });
+                    return existing;
+                }
 
-                this.device.addEventListener('gattserverdisconnected', () => {
-                    this.isConnected = false;
-                    this.rxCharacteristic = null;
-                    this.txCharacteristic = null;
-                    this._notifyState('disconnected');
-                });
-
-                // Connect GATT Server
-                this.server = await this.device.gatt.connect();
-                this.service = await this.server.getPrimaryService(NORDIC_UART_SERVICE);
-                this.rxCharacteristic = await this.service.getCharacteristic(NORDIC_UART_RX_CHAR);
-
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(NORDIC_UART_SERVICE);
+                const rxChar = await service.getCharacteristic(NORDIC_UART_RX_CHAR);
+                let txChar = null;
                 try {
-                    this.txCharacteristic = await this.service.getCharacteristic(NORDIC_UART_TX_CHAR);
+                    txChar = await service.getCharacteristic(NORDIC_UART_TX_CHAR);
                 } catch (e) {
                     console.warn('[BLE] TX characteristic not available (write-only mode)');
                 }
 
-                this.isConnected = true;
-                this._notifyState('connected', { deviceName: this.deviceName });
-                return true;
+                const deviceEntry = {
+                    id: device.id,
+                    device: device,
+                    server: server,
+                    service: service,
+                    rxCharacteristic: rxChar,
+                    txCharacteristic: txChar,
+                    name: device.name || ('Open Pixel Poi #' + (this.devices.length + 1))
+                };
+
+                device.addEventListener('gattserverdisconnected', function() {
+                    this.devices = this.devices.filter(function(d) { return d.id !== device.id; });
+                    this._notifyState('disconnected', { disconnectedId: device.id });
+                }.bind(this));
+
+                this.devices.push(deviceEntry);
+                this._notifyState('connected', { addedDevice: deviceEntry });
+                return deviceEntry;
             } catch (err) {
-                this.isConnected = false;
                 this._notifyState('error', { error: err.message });
                 throw err;
             }
         }
 
-
-        async disconnect() {
-            if (this.device && this.device.gatt && this.device.gatt.connected) {
-                await this.device.gatt.disconnect();
+        async disconnectDevice(id) {
+            const entry = this.devices.find(function(d) { return d.id === id; });
+            if (entry && entry.device.gatt && entry.device.gatt.connected) {
+                await entry.device.gatt.disconnect();
             }
-            this.isConnected = false;
+            this.devices = this.devices.filter(function(d) { return d.id !== id; });
             this._notifyState('disconnected');
         }
 
-        async _writeChunk(bytes) {
-            if (!this.isConnected || !this.rxCharacteristic) {
+        async disconnectAll() {
+            for (let i = 0; i < this.devices.length; i++) {
+                try {
+                    if (this.devices[i].device.gatt && this.devices[i].device.gatt.connected) {
+                        await this.devices[i].device.gatt.disconnect();
+                    }
+                } catch (e) {}
+            }
+            this.devices = [];
+            this._notifyState('disconnected');
+        }
+
+        // Backward compatibility wrappers
+        async connect(options) {
+            return this.connectDevice(options);
+        }
+
+        async disconnect() {
+            return this.disconnectAll();
+        }
+
+        async _writeChunkToAll(bytes) {
+            if (this.devices.length === 0) {
                 throw new Error('No Open Pixel Poi connected via Bluetooth.');
             }
 
             const buffer = new Uint8Array(bytes);
-            if (this.rxCharacteristic.writeValueWithoutResponse) {
-                await this.rxCharacteristic.writeValueWithoutResponse(buffer);
-            } else {
-                await this.rxCharacteristic.writeValue(buffer);
-            }
+            const promises = this.devices.map(function(d) {
+                if (d.rxCharacteristic.writeValueWithoutResponse) {
+                    return d.rxCharacteristic.writeValueWithoutResponse(buffer).catch(function(err) {
+                        console.warn('[BLE Write Error on ' + d.name + ']', err);
+                    });
+                } else {
+                    return d.rxCharacteristic.writeValue(buffer).catch(function(err) {
+                        console.warn('[BLE Write Error on ' + d.name + ']', err);
+                    });
+                }
+            });
+
+            await Promise.all(promises);
         }
 
         async _sendMessage(messageBytes) {
-            const packet = [START_BYTE, ...messageBytes, END_BYTE];
-            await this._writeChunk(packet);
+            const packet = [START_BYTE].concat(messageBytes).concat([END_BYTE]);
+            await this._writeChunkToAll(packet);
         }
 
         /**
-         * Set LED Brightness on Poi
+         * Set LED Brightness on all connected Poi
          * @param {number} brightness 0 (off) to 255 (max)
          */
         async setBrightness(brightness) {
@@ -192,7 +236,7 @@
         }
 
         /**
-         * Set Animation Speed (Frames per second / Hz)
+         * Set Animation Speed (Frames per second / Hz) on all connected Poi
          * @param {number} speedHz 1 to 65535
          */
         async setSpeed(speedHz) {
@@ -205,7 +249,7 @@
         }
 
         /**
-         * Change Active Pattern Slot (0-15)
+         * Change Active Pattern Slot (0-15) on all connected Poi
          */
         async setPatternSlot(slotIndex) {
             const slot = Math.max(0, Math.min(15, parseInt(slotIndex) || 0));
@@ -213,14 +257,14 @@
         }
 
         /**
-         * Auto-Loop All Patterns in current bank
+         * Auto-Loop All Patterns in current bank on all connected Poi
          */
         async loopAllPatterns() {
             await this._sendMessage([COMM_CODES.CC_SET_PATTERN_ALL]);
         }
 
         /**
-         * Change Active Bank (0-15)
+         * Change Active Bank (0-15) on all connected Poi
          */
         async setBank(bankIndex) {
             const bank = Math.max(0, Math.min(15, parseInt(bankIndex) || 0));
@@ -228,7 +272,7 @@
         }
 
         /**
-         * Auto-Loop All Banks
+         * Auto-Loop All Banks on all connected Poi
          */
         async loopAllBanks() {
             await this._sendMessage([COMM_CODES.CC_SET_BANK_ALL]);
@@ -266,26 +310,29 @@
             }
 
             return {
-                width,
-                height,
-                rgbData
+                width: width,
+                height: height,
+                rgbData: rgbData
             };
         }
 
         /**
-         * Upload a Pattern Canvas directly to Open Pixel Poi over BLE
+         * Upload a Pattern Canvas simultaneously to all connected Open Pixel Poi over BLE
          * @param {HTMLCanvasElement} canvas The canvas to upload
          * @param {Function} progressCallback Optional callback (progress: 0.0 - 1.0, details)
          */
-        async uploadPattern(canvas, progressCallback = null) {
-            if (!this.isConnected) {
+        async uploadPattern(canvas, progressCallback) {
+            if (this.devices.length === 0) {
                 throw new Error('Please connect your Open Pixel Poi via Bluetooth first.');
             }
             if (this.isUploading) {
                 throw new Error('Another pattern upload is already in progress.');
             }
 
-            const { width, height, rgbData } = this.canvasToPatternBytes(canvas);
+            const data = this.canvasToPatternBytes(canvas);
+            const width = data.width;
+            const height = data.height;
+            const rgbData = data.rgbData;
             this.isUploading = true;
 
             try {
@@ -305,14 +352,14 @@
                 const chunkSize = this.maxPacketSize;
                 const totalChunks = Math.ceil(fullPacket.length / chunkSize);
 
-                console.log('[BLE Upload] Starting upload of ' + width + 'x' + height + ' pattern (' + fullPacket.length + ' bytes in ' + totalChunks + ' packets)...');
+                console.log('[BLE Upload] Starting simultaneous broadcast of ' + width + 'x' + height + ' pattern to ' + this.devices.length + ' poi (' + fullPacket.length + ' bytes in ' + totalChunks + ' packets)...');
 
                 for (let i = 0; i < totalChunks; i++) {
                     const start = i * chunkSize;
                     const end = Math.min(start + chunkSize, fullPacket.length);
                     const chunk = fullPacket.subarray(start, end);
 
-                    await this._writeChunk(chunk);
+                    await this._writeChunkToAll(chunk);
 
                     const progress = (i + 1) / totalChunks;
                     if (progressCallback) {
@@ -320,16 +367,16 @@
                             chunk: i + 1,
                             totalChunks: totalChunks,
                             sentBytes: end,
-                            totalBytes: fullPacket.length
+                            totalBytes: fullPacket.length,
+                            deviceCount: this.devices.length
                         });
                     }
 
-                    // Pacing delay (15ms) to give ESP32 Bluetooth stack and flash time to process
-                    await new Promise(r => setTimeout(r, 15));
+                    // Pacing delay (15ms)
+                    await new Promise(function(r) { setTimeout(r, 15); });
                 }
 
-                console.log('[BLE Upload] Pattern successfully uploaded and saved to Open Pixel Poi!');
-
+                console.log('[BLE Upload] Pattern successfully broadcasted to all ' + this.devices.length + ' Open Pixel Poi!');
                 return true;
             } finally {
                 this.isUploading = false;
