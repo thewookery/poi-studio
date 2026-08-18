@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v32</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v33</span></div>
+
             <div class="hud-quick-actions">
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
                 <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi over BLE">🚀 Upload (BLE)</button>
@@ -60,12 +61,13 @@
             🎨 Generator
         </button>
         <button class="mode-switch-btn" id="btn-mode-stitcher" data-mode="workspace-stitcher">
-            🎬 Storyboard & Vault
+            🗂️ Pattern Vault & Stitcher
         </button>
         <button class="mode-switch-btn" id="btn-mode-deck" data-mode="workspace-deck">
             ⚙️ Poi Settings
         </button>
     </div>
+
 
 
 
@@ -145,9 +147,10 @@
 
                     <div class="ctrl-row" style="margin-top:0;">
                         <span class="ctrl-label">📐 Blend Overlap (Crossfade Width):</span>
-                        <input type="range" id="stitch-overlap-slider" min="0" max="96" value="28" style="accent-color:var(--neon-green);">
-                        <span class="val-mono" id="stitch-overlap-val" style="color:var(--neon-green);">28px</span>
+                        <input type="range" id="stitch-overlap-slider" min="0" max="96" value="0" style="accent-color:var(--neon-green);">
+                        <span class="val-mono" id="stitch-overlap-val" style="color:var(--neon-green);">0px</span>
                     </div>
+
                 </div>
 
                 <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
@@ -1107,8 +1110,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
         const transition = el('stitch-trans-select') ? el('stitch-trans-select').value : 'crossfade';
-        const overlap = parseInt(el('stitch-overlap-slider') ? el('stitch-overlap-slider').value : 28);
+        const overlap = parseInt(el('stitch-overlap-slider') ? el('stitch-overlap-slider').value : 0);
         const seamlessLoop = el('stitch-seamless-loop') ? el('stitch-seamless-loop').checked : true;
+
 
         const compiled = joinPatternSequence(normalizedCanvases, { 
             transition, 
