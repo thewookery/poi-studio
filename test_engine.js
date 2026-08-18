@@ -1,4 +1,4 @@
-// Test suite for POI Studio Engine v10.0 (Optical Illusions & Geometry Morphing Engine)
+// Test suite for POI Studio Engine v11.0 (Aztec Step-Frets, Third-Eye Mandalas, and Mobile Suite)
 const fs = require('fs');
 const path = require('path');
 
@@ -6,7 +6,7 @@ global.window = global;
 const code = fs.readFileSync(path.join(__dirname, 'poi-engine.js'), 'utf8');
 eval(code);
 
-console.log("=== Testing POI Studio Engine v10.0 (Optical Illusions & Geometry Morphing Engine) ===");
+console.log("=== Testing POI Studio Engine v11.0 ===");
 
 let totalPatterns = 0;
 let missing = [];
@@ -25,7 +25,7 @@ if (missing.length > 0) {
     console.error(`Missing generators for: ${missing.join(', ')}`);
     process.exit(1);
 } else {
-    console.log("✓ All 118+ pure mathematical and optical illusion generator functions exist!");
+    console.log("✓ All 128+ pure mathematical, Aztec, and sacred geometry generator functions exist!");
 }
 
 function createMockContext(w, h) {
@@ -45,7 +45,7 @@ function createMockContext(w, h) {
 
 const w = 96, h = 55;
 const mockCtx = createMockContext(w, h);
-const sampler = window.createColorSampler('laser_cyan_pink', 'h', 'cyclic');
+const sampler = window.createColorSampler('aztec_gold_turquoise', 'h', 'cyclic');
 const params = { chaos: 0.5, scale: 1.0, thickness: 2.5, spacing: 1.8 };
 
 let tested = 0;
@@ -58,6 +58,6 @@ for (const [key, genFn] of Object.entries(window.POI_GENERATORS)) {
         process.exit(1);
     }
 }
-console.log(`✓ Tested all ${tested} mathematical & optical illusion generators successfully!`);
+console.log(`✓ Tested all ${tested} mathematical & Aztec generators successfully!`);
 
 console.log("ALL TESTS PASSED! ✨");

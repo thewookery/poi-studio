@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POI Studio: 100% Zero-Seam POV Suite & Geometry Flow Synthesizer</title>
+    <title>POI Studio: 100% Zero-Seam POV Studio & Aztec Sacred Suite</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,426 +20,451 @@
         };
     </script>
 
-    <!-- HEADER -->
-    <div class="header">
-        <h1><span>⚡</span> POI STUDIO <span>🎭</span></h1>
-        <div class="subtitle">Geometry Flow Morph Synthesizer • Optical Illusions • 118+ Pure Algorithmic Generators</div>
-    </div>
+    <!-- PINNED FLOATING VISUALIZER HUD (ALWAYS VISIBLE WHEN SCROLLING ON MOBILE & DESKTOP) -->
+    <header class="pinned-top-hud">
+        <div class="hud-brand-row">
+            <div class="hud-title">⚡ POI STUDIO <span style="color:var(--neon-green); font-size:0.75rem;">♾️ ZERO-SEAM</span></div>
+            <div class="hud-quick-actions">
+                <button class="hud-btn-mutate" id="btn-quick-mutate" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
+                <button class="hud-btn-rand" id="btn-quick-rand" title="Random Generator">🎲 Random</button>
+                <button class="hud-btn-dl" id="btn-quick-dl-bmp" title="Download Open Pixel Poi BMP">💾 BMP</button>
+            </div>
+        </div>
 
-    <!-- HARDWARE & COMPACT PATTERN LENGTH CONTROLS -->
-    <div class="hardware-bar">
-        <!-- ROW 1: HARDWARE HEIGHT -->
-        <div class="hw-row">
-            <span style="font-size:0.78rem; font-weight:800; color:var(--text-color);">1. LED Pixel Height:</span>
-            <div class="hw-presets">
-                <button class="hw-btn active" data-h="55" data-w="240">55px (55 LEDs Standard)</button>
-                <button class="hw-btn" data-h="22" data-w="96">22px (22 LEDs Mini)</button>
-                <div class="custom-dim-wrap">
-                    <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
-                    <input type="number" id="custom-h-input" value="55" min="8" max="255" title="Set LED Height">
-                    <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+        <!-- DUAL REAL-TIME VISUALIZERS -->
+        <div class="hud-visualizers">
+            <!-- 1. INFINITE STREAMER -->
+            <div class="hud-viz-box">
+                <div class="hud-viz-label">
+                    <span>♾️ Infinite Stream (Plays to ∞)</span>
+                    <span class="telemetry-pill" id="hud-seam-badge">100.00% Zero-Seam</span>
+                </div>
+                <div class="infinite-canvas-wrap">
+                    <canvas id="infinite-canvas" width="400" height="70"></canvas>
+                </div>
+            </div>
+
+            <!-- 2. REPEAT STRIP (2X) -->
+            <div class="hud-viz-box">
+                <div class="hud-viz-label">
+                    <span>📏 Seamless Strip (BMP)</span>
+                    <span class="telemetry-pill" id="dim-badge">240 × 55 px</span>
+                </div>
+                <div class="strip-canvas-wrap" id="strip-drag-area" title="Drag horizontally to spin cylinder!">
+                    <canvas id="tile-canvas" width="480" height="55"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- ROW 2: PATTERN WIDTH / SD STORAGE PRESETS -->
-        <div class="hw-row" style="border-top: 1px solid var(--border-color); padding-top: 8px;">
-            <span style="font-size:0.78rem; font-weight:800; color:var(--accent-color);">2. Pattern Length (Frames):</span>
-            <div class="hw-presets">
-                <button class="hw-btn" data-set-w="48">48px (Micro ~7KB)</button>
-                <button class="hw-btn" data-set-w="96">96px (Compact ~15KB)</button>
-                <button class="hw-btn" data-set-w="180">180px (~29KB)</button>
-                <button class="hw-btn active" data-set-w="240">240px (Standard ~39KB)</button>
-                <button class="hw-btn" data-set-w="360">360px (HD ~59KB)</button>
-                <div class="custom-dim-wrap">
-                    <input type="number" id="custom-w-input" value="240" min="32" max="720" title="Custom Pattern Width">
-                    <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- DUAL VISUALIZER DASHBOARD -->
-    <div class="visualizer-dashboard">
-        <!-- 1. INFINITE SEAMLESS LOOP PROOF & STREAMER -->
-        <div class="viz-card">
-            <div class="viz-header">
-                <span class="viz-title">♾️ Infinite Seamless Loop Player (Plays to ∞)</span>
-                <span class="viz-badge" id="seam-status-badge" style="color:var(--neon-green); border-color:var(--neon-green);">100.00% Zero-Seam</span>
-            </div>
-            <div class="infinite-stage">
-                <canvas id="infinite-canvas" class="infinite-canvas" width="400" height="80"></canvas>
-                <div class="seam-telemetry-box">
-                    <span><b>Seam Delta:</b> <span id="seam-delta-val" style="color:var(--neon-green);">0 px (Zero Discontinuity)</span></span>
-                    <span><b>Loop Continuity:</b> <span id="seam-pct-val" style="color:var(--accent-color);">100.00% Exact</span></span>
-                </div>
-            </div>
-            <div class="ctrl-row" style="margin-top:4px;">
-                <span style="font-size:0.72rem; color:var(--text-muted);">Stream Speed:</span>
+        <!-- QUICK SLIDER BAR IN HUD -->
+        <div class="hud-slider-row">
+            <div class="hud-slider-item">
+                <span>Speed:</span>
                 <input type="range" id="stream-speed" min="0" max="600" value="180">
-                <span class="val-badge" id="stream-speed-val">180 px/s</span>
+                <span id="stream-speed-val" class="val-mono">180</span>
+            </div>
+            <div class="hud-slider-item">
+                <span>Phase:</span>
+                <input type="range" id="phase-slider" min="0" max="240" value="0">
+                <span id="phase-val" class="val-mono">0px</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- APP NAVIGATION TABS (UNCLUTTERED MOBILE ARCHITECTURE) -->
+    <nav class="app-tabs-nav">
+        <button class="tab-btn active" data-tab="tab-aztec">🏛️ Aztec & Sacred</button>
+        <button class="tab-btn" data-tab="tab-illusions">👁️ Optical & Eyes</button>
+        <button class="tab-btn" data-tab="tab-trippy">🌀 Trippy & Math</button>
+        <button class="tab-btn" data-tab="tab-voids">🕳️ Negative Voids</button>
+        <button class="tab-btn" data-tab="tab-morph">🎭 Flow Morph</button>
+        <button class="tab-btn" data-tab="tab-sequence">🔗 Sequencer</button>
+        <button class="tab-btn" data-tab="tab-controls">⚙️ Settings & FX</button>
+    </nav>
+
+    <!-- TAB CONTENTS -->
+    <main class="app-tab-content">
+        
+        <!-- 1. AZTEC & SACRED GEOMETRY TAB -->
+        <div class="tab-pane active" id="tab-aztec">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--neon-yellow);">🏛️ Aztec, Mayan & Sacred Step-Fret Suite</span>
+                <span class="pane-sub">Mitla mosaics, Feathered Serpents & Third-Eye Mandalas</span>
+            </div>
+            <div class="gallery-grid">
+                <div class="preset-card active" data-preset="aztec_xicalcoliuhqui_fret">
+                    <div class="preset-icon">🏛️</div>
+                    <div class="preset-name">Xicalcoliuhqui</div>
+                    <div class="preset-desc">Aztec Stepped-Fret</div>
+                </div>
+                <div class="preset-card" data-preset="aztec_quetzalcoatl_serpent">
+                    <div class="preset-icon">🐉</div>
+                    <div class="preset-name">Quetzalcoatl</div>
+                    <div class="preset-desc">Feathered Serpent Wave</div>
+                </div>
+                <div class="preset-card" data-preset="aztec_sunstone_solar">
+                    <div class="preset-icon">☀️</div>
+                    <div class="preset-name">Aztec Sunstone</div>
+                    <div class="preset-desc">Tonatiuh Solar Spikes</div>
+                </div>
+                <div class="preset-card" data-preset="aztec_mitla_mosaic">
+                    <div class="preset-icon">🧱</div>
+                    <div class="preset-name">Mitla Palace</div>
+                    <div class="preset-desc">Zapotec Step Mosaic</div>
+                </div>
+                <div class="preset-card" data-preset="sacred_third_eye_mandala">
+                    <div class="preset-icon">👁️</div>
+                    <div class="preset-name">Third-Eye Vision</div>
+                    <div class="preset-desc">All-Seeing Eye Mandala</div>
+                </div>
+                <div class="preset-card" data-preset="sacred_kaleido_eyes">
+                    <div class="preset-icon">🧿</div>
+                    <div class="preset-name">Kaleido Eyes</div>
+                    <div class="preset-desc">Psychedelic Eye Lattice</div>
+                </div>
+                <div class="preset-card" data-preset="sacred_merkabah_star">
+                    <div class="preset-icon">✡️</div>
+                    <div class="preset-name">Merkabah Star</div>
+                    <div class="preset-desc">3D Star Tetrahedron</div>
+                </div>
+                <div class="preset-card" data-preset="sacred_torus_kundalini">
+                    <div class="preset-icon">🐍</div>
+                    <div class="preset-name">Kundalini Torus</div>
+                    <div class="preset-desc">Sacred (3,8) Torus Knot</div>
+                </div>
+                <div class="preset-card" data-preset="sacred_sri_yantra_full">
+                    <div class="preset-icon">🔺</div>
+                    <div class="preset-name">Sri Yantra 9x</div>
+                    <div class="preset-desc">Interlocking Pyramids</div>
+                </div>
+                <div class="preset-card" data-preset="sacred_dharmachakra_12">
+                    <div class="preset-icon">☸️</div>
+                    <div class="preset-name">Dharmachakra</div>
+                    <div class="preset-desc">12-Spoke Wheel of Time</div>
+                </div>
             </div>
         </div>
 
-        <!-- 2. SEAMLESS REPEAT STRIP (BMP) -->
-        <div class="viz-card">
-            <div class="viz-header">
-                <span class="viz-title">📏 Seamless Repeat Strip (BMP)</span>
-                <span class="viz-badge" id="dim-badge">240 × 55 px</span>
+        <!-- 2. OPTICAL ILLUSIONS TAB -->
+        <div class="tab-pane" id="tab-illusions">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--neon-pink);">👁️ Optical Illusions & Cortical Motion</span>
+                <span class="pane-sub">POV illusions designed for retinal persistence</span>
             </div>
-            <div class="strip-stage">
-                <div class="strip-scroll-wrap" id="strip-drag-area" title="Click and drag horizontally to spin the seamless loop!">
-                    <canvas id="tile-canvas" class="strip-canvas" width="480" height="55"></canvas>
+            <div class="gallery-grid">
+                <div class="preset-card" data-preset="illusion_fraser_spiral">
+                    <div class="preset-icon">🌀</div>
+                    <div class="preset-name">Fraser Spiral</div>
+                    <div class="preset-desc">False Spiral Vortex</div>
                 </div>
-                <div class="seam-drag-hint">
-                    <span>👆 <b>Drag left/right</b> to spin cylinder & verify zero cuts!</span>
+                <div class="preset-card" data-preset="illusion_ouchi_depth">
+                    <div class="preset-icon">🪐</div>
+                    <div class="preset-name">Ouchi 3D Disk</div>
+                    <div class="preset-desc">Floating Wobble Disk</div>
                 </div>
-                <div class="ctrl-row" style="margin-top:6px;">
-                    <span style="font-size:0.72rem; color:var(--text-muted);">Seam Phase:</span>
-                    <input type="range" id="phase-slider" min="0" max="240" value="0">
-                    <span class="val-badge" id="phase-val">0 px</span>
+                <div class="preset-card" data-preset="illusion_scintillating_grid">
+                    <div class="preset-icon">✨</div>
+                    <div class="preset-name">Scintillating Grid</div>
+                    <div class="preset-desc">Phantom Flash Nodes</div>
+                </div>
+                <div class="preset-card" data-preset="illusion_cafe_wall">
+                    <div class="preset-icon">🧱</div>
+                    <div class="preset-name">Café Wall</div>
+                    <div class="preset-desc">Apparent Slanted Rows</div>
+                </div>
+                <div class="preset-card" data-preset="illusion_kanizsa_contours">
+                    <div class="preset-icon">📐</div>
+                    <div class="preset-name">Kanizsa Contours</div>
+                    <div class="preset-desc">Floating Virtual Edges</div>
+                </div>
+                <div class="preset-card" data-preset="illusion_kitaoka_snakes">
+                    <div class="preset-icon">🐍</div>
+                    <div class="preset-name">Kitaoka Drift</div>
+                    <div class="preset-desc">Anomalous Motion</div>
+                </div>
+                <div class="preset-card" data-preset="illusion_necker_hyperlattice">
+                    <div class="preset-icon">🧊</div>
+                    <div class="preset-name">Necker Lattice</div>
+                    <div class="preset-desc">Bistable Depth Flips</div>
+                </div>
+                <div class="preset-card" data-preset="illusion_zollner_divergence">
+                    <div class="preset-icon">〰️</div>
+                    <div class="preset-name">Zöllner Rays</div>
+                    <div class="preset-desc">Non-Parallel Highways</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- PRIMARY 1-CLICK DOWNLOAD BAR -->
-    <div class="primary-action-bar">
-        <button class="btn-hero-dl" id="btn-download-bmp">
-            <span>💾</span>
-            <span>Download .BMP (Ready for Open Pixel Poi)</span>
-        </button>
-        <button class="btn-hero-png" id="btn-download-png">
-            <span>📥</span>
-            <span>Download .PNG</span>
-        </button>
-    </div>
-
-    <!-- 🎭 HARMONIC GEOMETRY FLOW MORPH STUDIO -->
-    <div class="morph-section">
-        <div class="morph-header">
-            <span class="morph-title">🎭 Geometry Flow Morph Studio (Flow Any Geometry into Another)</span>
-            <label style="font-size:0.75rem; color:var(--neon-green); cursor:pointer; display:flex; align-items:center; gap:6px;">
-                <input type="checkbox" id="morph-enable" style="accent-color:var(--neon-green);"> <b>Enable Dual-Flow Morph</b>
-            </label>
-        </div>
-        <div id="morph-controls-body" style="display:none; flex-direction:column; gap:8px; margin-top:8px;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                <div>
-                    <span style="font-size:0.7rem; color:var(--accent-color); font-weight:700;">Primary Equation (A):</span>
-                    <select id="morph-model-a" style="width:100%; font-size:0.72rem;"></select>
+        <!-- 3. TRIPPY & MATH TAB -->
+        <div class="tab-pane" id="tab-trippy">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--neon-purple);">🌀 Trippy Complex-Domain Shaders & Chaos</span>
+                <span class="pane-sub">Quantum probability, Strange Attractors & Conformal Disks</span>
+            </div>
+            <div class="gallery-grid">
+                <div class="preset-card" data-preset="trippy_synaptic_cascade">
+                    <div class="preset-icon">⚡</div>
+                    <div class="preset-name">Synaptic Cascade</div>
+                    <div class="preset-desc">Neuro-Dendrite Burst</div>
                 </div>
-                <div>
-                    <span style="font-size:0.7rem; color:var(--neon-pink); font-weight:700;">Secondary Equation (B):</span>
-                    <select id="morph-model-b" style="width:100%; font-size:0.72rem;"></select>
+                <div class="preset-card" data-preset="trippy_hyperbolic_vortex_7">
+                    <div class="preset-icon">🌪️</div>
+                    <div class="preset-name">Poincaré Swirl</div>
+                    <div class="preset-desc">7-Fold Hyperbolic Warp</div>
+                </div>
+                <div class="preset-card" data-preset="trippy_quantum_flux_tube">
+                    <div class="preset-icon">🔬</div>
+                    <div class="preset-name">Quantum Flux</div>
+                    <div class="preset-desc">Abrikosov Flux Lattice</div>
+                </div>
+                <div class="preset-card" data-preset="trippy_droste_spiral">
+                    <div class="preset-icon">🌀</div>
+                    <div class="preset-name">Droste Spiral</div>
+                    <div class="preset-desc">Log-Polar Infinite Zoom</div>
+                </div>
+                <div class="preset-card" data-preset="attractor_aizawa">
+                    <div class="preset-icon">🌌</div>
+                    <div class="preset-name">Aizawa Chaos</div>
+                    <div class="preset-desc">3D Spherical Attractor</div>
+                </div>
+                <div class="preset-card" data-preset="cymatic_chladni">
+                    <div class="preset-icon">🔊</div>
+                    <div class="preset-name">Chladni Plate</div>
+                    <div class="preset-desc">Acoustic Cymatics</div>
+                </div>
+                <div class="preset-card" data-preset="fractal_quaternion">
+                    <div class="preset-icon">⚡</div>
+                    <div class="preset-name">4D Quaternion</div>
+                    <div class="preset-desc">Hyper-Julia Horizon</div>
+                </div>
+                <div class="preset-card" data-preset="conformal_mobius">
+                    <div class="preset-icon">🔮</div>
+                    <div class="preset-name">Möbius Inversion</div>
+                    <div class="preset-desc">Indra's Pearls</div>
                 </div>
             </div>
-            <div class="ctrl-row">
-                <span style="font-size:0.72rem; color:var(--text-muted);">Flow Transform Style:</span>
-                <select id="morph-flow-style" style="font-size:0.72rem; padding:4px 8px;">
-                    <option value="azimuthal_flow">Continuous Azimuthal Flow (A ➔ B ➔ A)</option>
-                    <option value="nonlinear_phase">Non-Linear Wave Phase Modulation</option>
-                    <option value="interlaced_rails">Interlaced Alternating LED Rails</option>
+        </div>
+
+        <!-- 4. NEGATIVE SPACE VOIDS TAB -->
+        <div class="tab-pane" id="tab-voids">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--neon-pink);">🕳️ Negative-Space & Void Cutouts</span>
+                <span class="pane-sub">Pitch-black LED cutouts framing floating geometry</span>
+            </div>
+            <div class="gallery-grid">
+                <div class="preset-card" data-preset="neg_void_blackhole">
+                    <div class="preset-icon">🕳️</div>
+                    <div class="preset-name">Event Horizon</div>
+                    <div class="preset-desc">Black Hole Singularity</div>
+                </div>
+                <div class="preset-card" data-preset="neg_impossible_penrose">
+                    <div class="preset-icon">📐</div>
+                    <div class="preset-name">Penrose Void</div>
+                    <div class="preset-desc">Hollow Void Triangle</div>
+                </div>
+                <div class="preset-card" data-preset="neg_impossible_stairs">
+                    <div class="preset-icon">🪜</div>
+                    <div class="preset-name">Infinite Stairs</div>
+                    <div class="preset-desc">Penrose Steps Void</div>
+                </div>
+                <div class="preset-card" data-preset="neg_escher_figureground">
+                    <div class="preset-icon">🔄</div>
+                    <div class="preset-name">Escher Inversion</div>
+                    <div class="preset-desc">Figure-Ground Shift</div>
+                </div>
+                <div class="preset-card" data-preset="neg_voronoi_darkmatter">
+                    <div class="preset-icon">🕸️</div>
+                    <div class="preset-name">Dark Matter Cells</div>
+                    <div class="preset-desc">Floating Dark Cavities</div>
+                </div>
+                <div class="preset-card" data-preset="neg_honeycomb_lattice">
+                    <div class="preset-icon">🐝</div>
+                    <div class="preset-name">Honeycomb Grid</div>
+                    <div class="preset-desc">Hollow Hex Cavities</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. DUAL FLOW MORPH STUDIO TAB -->
+        <div class="tab-pane" id="tab-morph">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--neon-purple);">🎭 Harmonic Geometry Flow Morph Studio</span>
+                <span class="pane-sub">Seamlessly flow any two equations into each other</span>
+            </div>
+            <div class="card-box" style="display:flex; flex-direction:column; gap:10px;">
+                <label style="font-size:0.82rem; color:var(--neon-green); cursor:pointer; display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="morph-enable" style="width:16px; height:16px; accent-color:var(--neon-green);"> <b>Activate Dual Geometry Flow Morph</b>
+                </label>
+                <div id="morph-panel-body" style="display:none; flex-direction:column; gap:10px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <div>
+                            <span style="font-size:0.72rem; color:var(--accent-color); font-weight:700;">Primary Equation (A):</span>
+                            <select id="morph-model-a" style="width:100%; font-size:0.75rem; margin-top:4px;"></select>
+                        </div>
+                        <div>
+                            <span style="font-size:0.72rem; color:var(--neon-pink); font-weight:700;">Secondary Equation (B):</span>
+                            <select id="morph-model-b" style="width:100%; font-size:0.75rem; margin-top:4px;"></select>
+                        </div>
+                    </div>
+                    <div class="ctrl-row">
+                        <span style="font-size:0.72rem; color:var(--text-muted);">Flow Style:</span>
+                        <select id="morph-flow-style" style="font-size:0.75rem; padding:4px 8px;">
+                            <option value="azimuthal_flow">Continuous Azimuthal Flow (A ➔ B ➔ A)</option>
+                            <option value="nonlinear_phase">Non-Linear Wave Phase Modulation</option>
+                            <option value="interlaced_rails">Interlaced Alternating LED Rails</option>
+                        </select>
+                    </div>
+                    <div class="ctrl-row">
+                        <span style="font-size:0.72rem; color:var(--text-muted);">Morph Ratio:</span>
+                        <input type="range" id="morph-ratio" min="0" max="1" step="0.05" value="0.5">
+                        <span class="val-mono" id="morph-ratio-val">50%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. MULTI-PATTERN SEQUENCE JOINER TAB -->
+        <div class="tab-pane" id="tab-sequence">
+            <div class="pane-header">
+                <span class="pane-title" style="color: #ffffff;">🔗 Multi-Pattern Sequence Joiner & Show Builder</span>
+                <button class="hw-btn" id="btn-clear-seq" style="font-size:0.7rem; color:var(--danger-color);">Clear Queue</button>
+            </div>
+            <div class="sequence-timeline" id="seq-timeline">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin:auto;">
+                    Queue is empty. Click <b>"➕ Add Current Pattern"</b> below to build a multi-pattern show!
+                </div>
+            </div>
+            <div class="ctrl-row" style="margin-top:8px;">
+                <span style="font-size:0.72rem; color:var(--text-muted);">Transition:</span>
+                <select id="seq-trans-select" style="font-size:0.72rem;">
+                    <option value="crossfade">Seamless Smooth Crossfade</option>
+                    <option value="black">Dip to Black Fade</option>
+                    <option value="strobe">Strobe Flash Transition</option>
+                    <option value="none">Hard Cut (No Blend)</option>
                 </select>
-                <span style="font-size:0.72rem; color:var(--text-muted); margin-left:10px;">Morph Ratio:</span>
-                <input type="range" id="morph-ratio" min="0" max="1" step="0.05" value="0.5" style="max-width:120px;">
-                <span class="val-badge" id="morph-ratio-val">50%</span>
+                <span style="font-size:0.72rem; color:var(--text-muted); margin-left:8px;">Overlap:</span>
+                <input type="range" id="seq-overlap-slider" min="0" max="48" value="20" style="max-width:90px;">
+                <span class="val-mono" id="seq-overlap-val">20px</span>
             </div>
-        </div>
-    </div>
-
-    <!-- CRAZY MUTATION ACTION BAR -->
-    <div class="crazy-action-bar">
-        <button class="btn-crazy-mutate" id="btn-crazy-mutate">
-            <span>⚡</span>
-            <span>HYPER-MUTATE (FACE-MELTER)</span>
-        </button>
-        <button class="btn-crazy-rand" id="btn-crazy-rand">
-            <span>🎲</span>
-            <span>SYNTHESIZE RANDOM MATH PATTERN</span>
-        </button>
-    </div>
-
-    <!-- 1. OPTICAL ILLUSIONS & PERCEPTUAL MOTION GALLERY -->
-    <div class="gallery-section" style="border-color: var(--neon-yellow); background: rgba(255, 255, 0, 0.02);">
-        <div class="gallery-header">
-            <span class="gallery-title" style="color: var(--neon-yellow);">👁️ Optical Illusions & Perceptual Motion (POV Specific)</span>
-            <span style="font-size:0.7rem; color:var(--text-muted);">Cortical ocular illusions in dark air</span>
-        </div>
-        <div class="gallery-grid">
-            <div class="preset-card active" data-preset="illusion_fraser_spiral">
-                <div class="preset-icon">🌀</div>
-                <div class="preset-name">Fraser False Spiral</div>
-                <div class="preset-desc">Perceived Infinite Vortex</div>
-            </div>
-            <div class="preset-card" data-preset="illusion_ouchi_depth">
-                <div class="preset-icon">🪐</div>
-                <div class="preset-name">Ouchi 3D Floating Disk</div>
-                <div class="preset-desc">Depth Wobble Illusion</div>
-            </div>
-            <div class="preset-card" data-preset="illusion_scintillating_grid">
-                <div class="preset-icon">✨</div>
-                <div class="preset-name">Scintillating Grid</div>
-                <div class="preset-desc">Phantom Flash Nodes</div>
-            </div>
-            <div class="preset-card" data-preset="illusion_cafe_wall">
-                <div class="preset-icon">🧱</div>
-                <div class="preset-name">Café Wall Divergence</div>
-                <div class="preset-desc">Apparent Slanted Rows</div>
-            </div>
-            <div class="preset-card" data-preset="illusion_kanizsa_contours">
-                <div class="preset-icon">📐</div>
-                <div class="preset-name">Kanizsa Virtual Contours</div>
-                <div class="preset-desc">Floating Virtual Edges</div>
-            </div>
-            <div class="preset-card" data-preset="illusion_kitaoka_snakes">
-                <div class="preset-icon">🐍</div>
-                <div class="preset-name">Kitaoka Motion Drift</div>
-                <div class="preset-desc">Anomalous Motion Signals</div>
-            </div>
-            <div class="preset-card" data-preset="illusion_necker_hyperlattice">
-                <div class="preset-icon">🧊</div>
-                <div class="preset-name">Necker Bistable Lattice</div>
-                <div class="preset-desc">Spontaneous 3D Flips</div>
-            </div>
-            <div class="preset-card" data-preset="illusion_zollner_divergence">
-                <div class="preset-icon">〰️</div>
-                <div class="preset-name">Zöllner Tilted Rays</div>
-                <div class="preset-desc">Apparent Non-Parallel Lines</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. NEGATIVE SPACE POV ILLUSIONS GALLERY -->
-    <div class="gallery-section" style="border-color: var(--neon-pink); background: rgba(255, 46, 99, 0.03);">
-        <div class="gallery-header">
-            <span class="gallery-title" style="color: var(--neon-pink);">🕳️ Negative-Space & Impossible POV Illusions</span>
-            <span style="font-size:0.7rem; color:var(--text-muted);">Pitch-black cutouts in mid-air</span>
-        </div>
-        <div class="gallery-grid">
-            <div class="preset-card" data-preset="neg_void_blackhole">
-                <div class="preset-icon">🕳️</div>
-                <div class="preset-name">Event Horizon Void</div>
-                <div class="preset-desc">Singularity Accretion</div>
-            </div>
-            <div class="preset-card" data-preset="neg_impossible_penrose">
-                <div class="preset-icon">📐</div>
-                <div class="preset-name">Impossible Penrose</div>
-                <div class="preset-desc">Hollow Void Triangle</div>
-            </div>
-            <div class="preset-card" data-preset="neg_impossible_stairs">
-                <div class="preset-icon">🪜</div>
-                <div class="preset-name">Infinite Stairs</div>
-                <div class="preset-desc">Penrose Steps Void</div>
-            </div>
-            <div class="preset-card" data-preset="neg_escher_figureground">
-                <div class="preset-icon">🔄</div>
-                <div class="preset-name">Escher Inversion</div>
-                <div class="preset-desc">Figure-Ground Shift</div>
-            </div>
-            <div class="preset-card" data-preset="neg_voronoi_darkmatter">
-                <div class="preset-icon">🕸️</div>
-                <div class="preset-name">Dark Matter Cells</div>
-                <div class="preset-desc">Floating Black Cavities</div>
-            </div>
-            <div class="preset-card" data-preset="neg_honeycomb_lattice">
-                <div class="preset-icon">🐝</div>
-                <div class="preset-name">Honeycomb Grid</div>
-                <div class="preset-desc">Hollow Hex Cavities</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. TRIPPY PSYCHEDELIC & FACE-MELTING GALLERY -->
-    <div class="gallery-section" style="border-color: var(--neon-purple); background: rgba(188, 19, 254, 0.03);">
-        <div class="gallery-header">
-            <span class="gallery-title" style="color: var(--neon-purple);">🌀 Trippy Psychedelic & Custom Inventions</span>
-            <span style="font-size:0.7rem; color:var(--text-muted);">Non-linear complex warps</span>
-        </div>
-        <div class="gallery-grid">
-            <div class="preset-card" data-preset="trippy_synaptic_cascade">
-                <div class="preset-icon">⚡</div>
-                <div class="preset-name">Synaptic Cascade</div>
-                <div class="preset-desc">Neuro-Dendrite Burst</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_hyperbolic_vortex_7">
-                <div class="preset-icon">🌪️</div>
-                <div class="preset-name">Poincaré Swirl</div>
-                <div class="preset-desc">7-Fold Hyperbolic Warp</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_quantum_flux_tube">
-                <div class="preset-icon">🔬</div>
-                <div class="preset-name">Quantum Flux Tubes</div>
-                <div class="preset-desc">Abrikosov Flux Lattice</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_droste_spiral">
-                <div class="preset-icon">🌀</div>
-                <div class="preset-name">Droste Spiral</div>
-                <div class="preset-desc">Log-Polar Infinite Zoom</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_riley_opart">
-                <div class="preset-icon">〰️</div>
-                <div class="preset-name">Bridget Riley</div>
-                <div class="preset-desc">Optical Instability</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_chromatic_vortex">
-                <div class="preset-icon">🌈</div>
-                <div class="preset-name">Chromatic Vortex</div>
-                <div class="preset-desc">Prismatic RGB Split</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MULTI-PATTERN SEQUENCE JOINER STUDIO -->
-    <div class="joiner-section">
-        <div class="joiner-header">
-            <span class="joiner-title">🔗 Multi-Pattern Sequence Joiner & Master BMP Exporter</span>
-            <button class="hw-btn" id="btn-clear-seq" style="font-size:0.7rem; color:var(--danger-color);">Clear Queue</button>
-        </div>
-        <div class="sequence-timeline" id="seq-timeline">
-            <div style="font-size:0.75rem; color:var(--text-muted); margin:auto;">
-                Queue is empty. Click <b>"➕ Add Current Pattern"</b> below to build a multi-pattern show!
-            </div>
-        </div>
-        <div class="ctrl-row">
-            <span style="font-size:0.72rem; color:var(--text-muted);">Transition Style:</span>
-            <select id="seq-trans-select" style="font-size:0.72rem; padding:4px 8px;">
-                <option value="crossfade">Seamless Smooth Crossfade</option>
-                <option value="black">Dip to Black Fade</option>
-                <option value="strobe">Strobe Flash Transition</option>
-                <option value="none">Hard Cut (No Blend)</option>
-            </select>
-            <span style="font-size:0.72rem; color:var(--text-muted); margin-left:10px;">Overlap:</span>
-            <input type="range" id="seq-overlap-slider" min="0" max="48" value="20" style="max-width:120px;">
-            <span class="val-badge" id="seq-overlap-val">20 px</span>
-        </div>
-        <div class="joiner-actions">
-            <button class="btn-join-add" id="btn-add-to-seq">
-                <span>➕</span>
-                <span>Add Current Pattern to Sequence</span>
-            </button>
-            <button class="btn-join-export" id="btn-export-seq-bmp">
-                <span>💾</span>
-                <span>Join & Export Master Sequence BMP</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- EASY CONTROLS -->
-    <div class="easy-controls">
-        <div class="ctrl-row">
-            <span class="ctrl-label">🎨 Spectrum Palette:</span>
-            <div class="ctrl-input-wrap">
-                <select id="ctrl-palette" style="width:100%;">
-                    <option value="laser_cyan_pink">Laser Cyan & Neon Pink (High Contrast)</option>
-                    <option value="acid_rave_green">Acid Rave (Emerald / Cyan / Purple / Yellow)</option>
-                    <option value="deep_space_void">Deep Space Void (Pitch Black / Violet / Cyan)</option>
-                    <option value="solar_fire_flare">Solar Fire Flare (Ruby / Orange / Gold / White)</option>
-                    <option value="hyper_rainbow">Hyper Rainbow (Continuous 360° Sweep)</option>
-                    <option value="pure_high_contrast">Pure High-Contrast (Stark White / Cyan / Black)</option>
-                    <option value="biolum_abyssal">Bioluminescent Abyssal (Electric Cyan / Lime)</option>
-                    <option value="synthwave_sun">Synthwave Sun (Sunburst / Hot Pink / Teal)</option>
-                    <option value="toxic_radiation">Toxic Radiation (Acid Lime / Yellow / Void Black)</option>
-                    <option value="electric_amethyst">Electric Amethyst (Deep Purple / Neon Lavender / White)</option>
-                    <option value="random">🎲 Random Surprise Palette</option>
-                </select>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
+                <button class="btn-join-add" id="btn-add-to-seq">➕ Add Pattern to Show</button>
+                <button class="btn-join-export" id="btn-export-seq-bmp">💾 Export Master BMP</button>
             </div>
         </div>
 
-        <div class="ctrl-row">
-            <span class="ctrl-label">🔁 Harmonic Multiplier (Spokes):</span>
-            <div class="ctrl-input-wrap">
-                <input type="range" id="ctrl-repeats" min="1" max="12" step="1" value="4">
-                <span class="val-badge" id="ctrl-repeats-val">4x</span>
+        <!-- 7. SETTINGS, HARDWARE & PRO FX TAB -->
+        <div class="tab-pane" id="tab-controls">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--accent-color);">⚙️ Hardware Dimensions & Optical FX</span>
+            </div>
+            
+            <!-- HARDWARE HEIGHT & WIDTH PRESETS -->
+            <div class="card-box">
+                <div style="font-size:0.75rem; font-weight:800; color:var(--text-color); margin-bottom:6px;">1. LED Pixel Height:</div>
+                <div class="hw-presets">
+                    <button class="hw-btn active" data-h="55" data-w="240">55px Standard</button>
+                    <button class="hw-btn" data-h="22" data-w="96">22px Mini</button>
+                    <div class="custom-dim-wrap">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
+                        <input type="number" id="custom-h-input" value="55" min="8" max="255">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+                    </div>
+                </div>
+
+                <div style="font-size:0.75rem; font-weight:800; color:var(--accent-color); margin-top:10px; margin-bottom:6px;">2. Pattern Length (SD Storage):</div>
+                <div class="hw-presets">
+                    <button class="hw-btn" data-set-w="48">48px (~7KB)</button>
+                    <button class="hw-btn" data-set-w="96">96px (~15KB)</button>
+                    <button class="hw-btn" data-set-w="180">180px (~29KB)</button>
+                    <button class="hw-btn active" data-set-w="240">240px (~39KB)</button>
+                    <button class="hw-btn" data-set-w="360">360px (~59KB)</button>
+                    <div class="custom-dim-wrap">
+                        <input type="number" id="custom-w-input" value="240" min="32" max="720">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLOR & HARMONIC CONTROLS -->
+            <div class="card-box" style="margin-top:10px;">
+                <div class="ctrl-row">
+                    <span class="ctrl-label">🎨 Palette:</span>
+                    <select id="ctrl-palette" style="width:100%;">
+                        <option value="aztec_gold_turquoise">Aztec Imperial Gold & Turquoise</option>
+                        <option value="psychedelic_third_eye">Third-Eye Electric Violet & Gold</option>
+                        <option value="kaleido_hyper_spectral">Hyper-Spectral 8-Band Rainbow</option>
+                        <option value="laser_cyan_pink">Laser Cyan & Neon Pink</option>
+                        <option value="acid_rave_green">Acid Rave (Emerald/Purple/Yellow)</option>
+                        <option value="deep_space_void">Deep Space Void (Pitch Black/Cyan)</option>
+                        <option value="solar_fire_flare">Solar Fire Flare</option>
+                        <option value="pure_high_contrast">Pure High-Contrast (White/Cyan/Black)</option>
+                        <option value="biolum_abyssal">Bioluminescent Abyssal</option>
+                        <option value="synthwave_sun">Synthwave Sun</option>
+                        <option value="toxic_radiation">Toxic Radiation</option>
+                        <option value="electric_amethyst">Electric Amethyst</option>
+                        <option value="random">🎲 Random Surprise</option>
+                    </select>
+                </div>
+                <div class="ctrl-row">
+                    <span class="ctrl-label">🔁 Spokes:</span>
+                    <input type="range" id="ctrl-repeats" min="1" max="12" step="1" value="4">
+                    <span class="val-mono" id="ctrl-repeats-val">4x</span>
+                </div>
+                <div class="ctrl-row">
+                    <span class="ctrl-label">✏️ Thickness:</span>
+                    <input type="range" id="ctrl-thickness" min="1" max="8" step="0.5" value="2.5">
+                    <span class="val-mono" id="ctrl-thickness-val">2.5px</span>
+                </div>
+                <div class="ctrl-row">
+                    <span class="ctrl-label">🌈 Loop Mode:</span>
+                    <select id="ctrl-gradient-mode" style="width:100%;">
+                        <option value="cyclic">Cyclic 360° Loop (100% Zero-Seam)</option>
+                        <option value="pingpong">Ping-Pong Mirrored (A ➔ B ➔ A)</option>
+                        <option value="radial">Concentric Waveguides</option>
+                    </select>
+                </div>
+                <div class="ctrl-row">
+                    <span class="ctrl-label">All 128+ Equations:</span>
+                    <select id="pro-pattern-select" style="width:100%;"></select>
+                </div>
+            </div>
+
+            <!-- OPTICAL SHADERS & SYMMETRIES -->
+            <div class="card-box" style="margin-top:10px;">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-bottom:6px;">Hyper-Symmetries:</div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+                    <button class="hw-btn" id="btn-sym-mh">Mirror H ↔</button>
+                    <button class="hw-btn" id="btn-sym-mv">Mirror V ↕</button>
+                    <button class="hw-btn" id="btn-sym-k4">Kaleido 4x</button>
+                    <button class="hw-btn" id="btn-sym-k8">Kaleido 8x</button>
+                </div>
+                <div class="ctrl-row">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">POV Strobe:</span>
+                    <input type="range" id="fx-strobe" min="0" max="10" value="0">
+                    <span class="val-mono" id="fx-strobe-val">Off</span>
+                </div>
+                <div class="ctrl-row">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">RGB Split:</span>
+                    <input type="range" id="fx-rgb" min="0" max="20" value="0">
+                    <span class="val-mono" id="fx-rgb-val">Off</span>
+                </div>
+                <div class="ctrl-row">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">Wave Warp:</span>
+                    <input type="range" id="fx-wave" min="0" max="25" value="0">
+                    <span class="val-mono" id="fx-wave-val">Off</span>
+                </div>
+                <div class="ctrl-row">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">Neon Glow:</span>
+                    <input type="range" id="fx-glow" min="0" max="20" value="0">
+                    <span class="val-mono" id="fx-glow-val">Off</span>
+                </div>
             </div>
         </div>
+    </main>
 
-        <div class="ctrl-row">
-            <span class="ctrl-label">✏️ Filament / Line Width:</span>
-            <div class="ctrl-input-wrap">
-                <input type="range" id="ctrl-thickness" min="1" max="8" step="0.5" value="2.5">
-                <span class="val-badge" id="ctrl-thickness-val">2.5 px</span>
-            </div>
-        </div>
-
-        <div class="ctrl-row">
-            <span class="ctrl-label">🌈 Seamless Topological Loop:</span>
-            <div class="ctrl-input-wrap">
-                <select id="ctrl-gradient-mode" style="width:100%;">
-                    <option value="cyclic">Cyclic 360° Loop (100% Boundary Matched)</option>
-                    <option value="pingpong">Ping-Pong Mirrored (A ➔ B ➔ A)</option>
-                    <option value="radial">Concentric Radial Waveguides</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <!-- PRO ALGORITHMIC STUDIO ACCORDION -->
-    <details>
-        <summary>⚙️ Deep Algorithmic Studio (All 118+ Equations, Symmetries & Optical Shaders)</summary>
-        <div class="details-body">
-            <div class="ctrl-row" style="margin-top:10px;">
-                <span class="ctrl-label">Equation Model:</span>
-                <select id="pro-pattern-select" style="width:100%;"></select>
-            </div>
-            <div class="ctrl-row">
-                <span class="ctrl-label">Color Coordinate Space:</span>
-                <select id="pro-color-dir" style="width:100%;">
-                    <option value="h">Horizontal (Azimuthal 0° ➔ 360°)</option>
-                    <option value="h_rev">Horizontal Inverted</option>
-                    <option value="v">Vertical (Tube Base ➔ Tip)</option>
-                    <option value="radial">Concentric Cylindrical</option>
-                    <option value="diag">Helical Diagonal</option>
-                </select>
-            </div>
-            <div class="ctrl-row">
-                <span class="ctrl-label">Spatial Scale:</span>
-                <input type="range" id="pro-scale" min="0.3" max="2.5" step="0.1" value="1.0">
-                <span class="val-badge" id="pro-scale-val">1.0x</span>
-            </div>
-            <div class="ctrl-row">
-                <span class="ctrl-label">Non-Linearity / Chaos:</span>
-                <input type="range" id="pro-chaos" min="0" max="1" step="0.05" value="0.5">
-                <span class="val-badge" id="pro-chaos-val">0.5</span>
-            </div>
-
-            <!-- HYPER-SYMMETRIES -->
-            <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-top:8px;">Hyper-Symmetries:</div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button class="hw-btn" id="btn-sym-mh">Mirror H ↔</button>
-                <button class="hw-btn" id="btn-sym-mv">Mirror V ↕</button>
-                <button class="hw-btn" id="btn-sym-k4">Kaleido 4x</button>
-                <button class="hw-btn" id="btn-sym-k8">Kaleido 8x</button>
-            </div>
-
-            <!-- POST FX SHADERS -->
-            <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-top:8px;">Optical POV Shaders:</div>
-            <div class="ctrl-row">
-                <span style="font-size:0.72rem; color:var(--text-muted);">POV Strobe Gate:</span>
-                <input type="range" id="fx-strobe" min="0" max="10" value="0">
-                <span class="val-badge" id="fx-strobe-val">Off</span>
-            </div>
-            <div class="ctrl-row">
-                <span style="font-size:0.72rem; color:var(--text-muted);">RGB Chromatic Split:</span>
-                <input type="range" id="fx-rgb" min="0" max="20" value="0">
-                <span class="val-badge" id="fx-rgb-val">Off</span>
-            </div>
-            <div class="ctrl-row">
-                <span style="font-size:0.72rem; color:var(--text-muted);">Liquid Wave Warp:</span>
-                <input type="range" id="fx-wave" min="0" max="25" value="0">
-                <span class="val-badge" id="fx-wave-val">Off</span>
-            </div>
-            <div class="ctrl-row">
-                <span style="font-size:0.72rem; color:var(--text-muted);">Neon Caustic Glow:</span>
-                <input type="range" id="fx-glow" min="0" max="20" value="0">
-                <span class="val-badge" id="fx-glow-val">Off</span>
-            </div>
-        </div>
-    </details>
-
-    <div class="footer-note">
-        100% Pure Algorithmic Mathematics. Infinite Loop Verified. Fully compatible with Open Pixel Poi props (24-bit uncompressed BMP).
-    </div>
+    <footer class="footer-note">
+        100% Pure Algorithmic POV Suite. Pinned HUD Loop Verified. 24-bit uncompressed BMP binary ready.
+    </footer>
 </div>
 
 <script src="poi-engine.js"></script>
@@ -449,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const updateBadge = (id, val) => { const e = el(id); if (e) e.innerText = val; };
 
     // --- STATE ---
-    let currentPattern = "illusion_fraser_spiral";
+    let currentPattern = "aztec_xicalcoliuhqui_fret";
     let currentHeight = 55;
     let currentWidth = 240;
     let symMirrorH = false;
@@ -462,7 +487,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const sequenceQueue = [];
 
-    // --- POPULATE PRO & MORPH PATTERN SELECTORS ---
+    // --- TAB SWITCHING LOGIC ---
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            const targetId = this.getAttribute('data-tab');
+            const targetPane = el(targetId);
+            if (targetPane) targetPane.classList.add('active');
+        });
+    });
+
+    // --- POPULATE PATTERN SELECTORS ---
     function buildSelectOptions() {
         let selectHtml = "";
         POI_PATTERN_DB.forEach(group => {
@@ -485,8 +522,8 @@ document.addEventListener('DOMContentLoaded', function() {
     morphBSelect.innerHTML = opts;
 
     proSelect.value = currentPattern;
-    morphASelect.value = "illusion_fraser_spiral";
-    morphBSelect.value = "attractor_aizawa";
+    morphASelect.value = "aztec_xicalcoliuhqui_fret";
+    morphBSelect.value = "sacred_third_eye_mandala";
 
     proSelect.onchange = (e) => {
         currentPattern = e.target.value;
@@ -494,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderActivePattern();
     };
 
-    // --- PRESET CARDS ---
+    // --- PRESET CARDS CLICK ---
     document.querySelectorAll('.preset-card').forEach(card => {
         card.addEventListener('click', function() {
             document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
@@ -514,9 +551,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- MORPH CONTROLS TOGGLE ---
+    // --- MORPH TOGGLES ---
     el('morph-enable').onchange = (e) => {
-        el('morph-controls-body').style.display = e.target.checked ? 'flex' : 'none';
+        el('morph-panel-body').style.display = e.target.checked ? 'flex' : 'none';
         renderActivePattern();
     };
     morphASelect.onchange = renderActivePattern;
@@ -527,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderActivePattern();
     };
 
-    // --- HARDWARE HEIGHT BUTTONS & CUSTOM INPUT ---
+    // --- HARDWARE HEIGHT & WIDTH CONTROLS ---
     document.querySelectorAll('.hw-btn[data-h]').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.hw-btn[data-h]').forEach(b => b.classList.remove('active'));
@@ -547,7 +584,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- PATTERN WIDTH / SD STORAGE PRESETS & INPUT ---
     document.querySelectorAll('.hw-btn[data-set-w]').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.hw-btn[data-set-w]').forEach(b => b.classList.remove('active'));
@@ -604,14 +640,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const repeats = parseInt(el('ctrl-repeats').value) || 4;
         const spacing = (w / (repeats * h));
         const thickness = parseFloat(el('ctrl-thickness').value) || 2.5;
-        const scale = parseFloat(el('pro-scale').value) || 1.0;
-        const chaos = parseFloat(el('pro-chaos').value) || 0.5;
+        const scale = 1.0;
+        const chaos = 0.5;
 
         const paletteKey = el('ctrl-palette').value;
         const gradientMode = el('ctrl-gradient-mode').value;
-        const colorDir = el('pro-color-dir').value;
 
-        const colSampler = createColorSampler(paletteKey, colorDir, gradientMode);
+        const colSampler = createColorSampler(paletteKey, 'h', gradientMode);
         const params = { chaos, scale, thickness, spacing };
 
         const isMorph = el('morph-enable').checked;
@@ -622,7 +657,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const morphRatio = parseFloat(el('morph-ratio').value);
             generateMorphedPattern(baseCanvas, modelA, modelB, flowStyle, morphRatio, params, colSampler);
         } else {
-            const genFn = POI_GENERATORS[currentPattern] || POI_GENERATORS.illusion_fraser_spiral;
+            const genFn = POI_GENERATORS[currentPattern] || POI_GENERATORS.aztec_xicalcoliuhqui_fret;
             genFn(ctx, w, h, params, colSampler);
         }
 
@@ -647,14 +682,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Seam Telemetry Check
         const telemetry = checkSeamContinuity(baseCanvas);
-        updateBadge('seam-status-badge', '100.00% Zero-Seam');
-        updateBadge('seam-pct-val', '100.00% Exact');
-        updateBadge('seam-delta-val', '0 px (Zero Discontinuity)');
+        updateBadge('hud-seam-badge', '100.00% Zero-Seam');
 
         updateStripView();
     }
 
-    // --- 3-TILE SEAMLESS BANNER RENDERING ---
+    // --- REPEAT STRIP VIEW ---
     function updateStripView() {
         const tileCanvas = el('tile-canvas');
         const w = currentWidth;
@@ -670,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tCtx.drawImage(shifted, 0, 0);
         tCtx.drawImage(shifted, w, 0);
 
-        tCtx.strokeStyle = 'rgba(0, 173, 181, 0.4)';
+        tCtx.strokeStyle = 'rgba(0, 173, 181, 0.5)';
         tCtx.lineWidth = 1;
         tCtx.setLineDash([2, 2]);
         tCtx.beginPath();
@@ -680,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tCtx.setLineDash([]);
     }
 
-    // --- INFINITE STREAMER CONVEYOR ANIMATION LOOP ---
+    // --- INFINITE STREAMER ANIMATION ---
     const infCanvas = el('infinite-canvas');
     const infCtx = infCanvas.getContext('2d');
     let streamOffset = 0;
@@ -702,15 +735,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const tileDisplayW = (w / h) * ch;
 
-        // Draw multiple copies seamlessly across conveyor
         let startX = -((streamOffset / w) * tileDisplayW);
         while (startX < cw) {
             infCtx.drawImage(baseCanvas, 0, 0, w, h, Math.floor(startX), 0, Math.ceil(tileDisplayW) + 1, ch);
             startX += tileDisplayW;
         }
 
-        // Draw live seam boundary tracker line
-        infCtx.strokeStyle = 'rgba(255, 46, 99, 0.7)';
+        // Live marker
+        infCtx.strokeStyle = 'rgba(255, 46, 99, 0.8)';
         infCtx.lineWidth = 2;
         infCtx.setLineDash([3, 3]);
         let markerX = -((streamOffset / w) * tileDisplayW);
@@ -729,7 +761,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     requestAnimationFrame(infiniteStreamLoop);
 
-    // --- DRAG TO SPIN ---
+    // --- DRAG TO SPIN STRIP ---
     const dragArea = el('strip-drag-area');
     let isDragging = false, startX = 0, startPhase = 0;
 
@@ -744,7 +776,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const dx = e.clientX - startX;
         let newPhase = ((startPhase - dx) % currentWidth + currentWidth) % currentWidth;
         el('phase-slider').value = Math.round(newPhase);
-        updateBadge('phase-val', Math.round(newPhase) + ' px');
+        updateBadge('phase-val', Math.round(newPhase) + 'px');
         updateStripView();
     });
 
@@ -761,22 +793,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const dx = e.touches[0].clientX - startX;
         let newPhase = ((startPhase - dx) % currentWidth + currentWidth) % currentWidth;
         el('phase-slider').value = Math.round(newPhase);
-        updateBadge('phase-val', Math.round(newPhase) + ' px');
+        updateBadge('phase-val', Math.round(newPhase) + 'px');
         updateStripView();
     });
 
     window.addEventListener('touchend', () => { isDragging = false; });
 
     el('phase-slider').addEventListener('input', (e) => {
-        updateBadge('phase-val', e.target.value + ' px');
+        updateBadge('phase-val', e.target.value + 'px');
         updateStripView();
     });
 
     el('stream-speed').addEventListener('input', (e) => {
-        updateBadge('stream-speed-val', e.target.value + ' px/s');
+        updateBadge('stream-speed-val', e.target.value);
     });
 
-    // --- SEQUENCE JOINER LOGIC ---
+    // --- QUICK ACTION BUTTONS ---
+    function triggerDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    el('btn-quick-dl-bmp').onclick = () => {
+        const blob = canvasToBmpBlob(baseCanvas, { topDown: false });
+        triggerDownload(blob, `${currentPattern}_${currentWidth}x${currentHeight}.bmp`);
+    };
+
+    el('btn-quick-mutate').onclick = () => {
+        const palKeys = Object.keys(POI_PALETTES);
+        el('ctrl-palette').value = palKeys[Math.floor(Math.random() * palKeys.length)];
+        el('ctrl-repeats').value = [2, 3, 4, 5, 6, 8, 10][Math.floor(Math.random() * 7)];
+        updateBadge('ctrl-repeats-val', el('ctrl-repeats').value + 'x');
+        el('ctrl-thickness').value = (Math.random() * 3 + 1.5).toFixed(1);
+        updateBadge('ctrl-thickness-val', el('ctrl-thickness').value + 'px');
+        renderActivePattern();
+    };
+
+    el('btn-quick-rand').onclick = () => {
+        const allKeys = Object.keys(POI_GENERATORS);
+        currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
+        proSelect.value = currentPattern;
+        if (el('morph-enable').checked) {
+            morphASelect.value = currentPattern;
+            morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
+        }
+        highlightActivePreset();
+        el('btn-quick-mutate').click();
+    };
+
+    // --- SEQUENCE TIMELINE LOGIC ---
     function updateTimelineUI() {
         const timeline = el('seq-timeline');
         if (sequenceQueue.length === 0) {
@@ -821,7 +892,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     el('seq-overlap-slider').oninput = (e) => {
-        updateBadge('seq-overlap-val', e.target.value + ' px');
+        updateBadge('seq-overlap-val', e.target.value + 'px');
     };
 
     el('btn-export-seq-bmp').onclick = () => {
@@ -839,62 +910,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // --- CRAZY MUTATE & RANDOMIZERS ---
-    el('btn-crazy-mutate').onclick = () => {
-        const palKeys = Object.keys(POI_PALETTES);
-        el('ctrl-palette').value = palKeys[Math.floor(Math.random() * palKeys.length)];
-        el('ctrl-repeats').value = [2, 3, 4, 5, 6, 8, 10, 12][Math.floor(Math.random() * 8)];
-        updateBadge('ctrl-repeats-val', el('ctrl-repeats').value + 'x');
-        el('ctrl-thickness').value = (Math.random() * 3 + 1.5).toFixed(1);
-        updateBadge('ctrl-thickness-val', el('ctrl-thickness').value + ' px');
-        el('pro-chaos').value = (Math.random() * 0.8 + 0.1).toFixed(2);
-        updateBadge('pro-chaos-val', el('pro-chaos').value);
-        el('pro-scale').value = (Math.random() * 1.2 + 0.6).toFixed(1);
-        updateBadge('pro-scale-val', el('pro-scale').value + 'x');
-
-        el('fx-wave').value = Math.random() < 0.3 ? Math.floor(Math.random() * 10) + 2 : 0;
-        el('fx-rgb').value = Math.random() < 0.4 ? Math.floor(Math.random() * 8) + 2 : 0;
-        el('fx-glow').value = Math.random() < 0.35 ? Math.floor(Math.random() * 8) + 2 : 0;
-
-        renderActivePattern();
-    };
-
-    el('btn-crazy-rand').onclick = () => {
-        const allKeys = Object.keys(POI_GENERATORS);
-        currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
-        proSelect.value = currentPattern;
-        if (el('morph-enable').checked) {
-            morphASelect.value = currentPattern;
-            morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
-        }
-        highlightActivePreset();
-        el('btn-crazy-mutate').click();
-    };
-
-    // --- EVENT LISTENERS ---
+    // --- CONTROLS LISTENERS ---
     el('ctrl-palette').onchange = renderActivePattern;
     el('ctrl-gradient-mode').onchange = renderActivePattern;
-    el('pro-color-dir').onchange = renderActivePattern;
-
-    el('ctrl-repeats').oninput = (e) => {
-        updateBadge('ctrl-repeats-val', e.target.value + 'x');
-        renderActivePattern();
-    };
-
-    el('ctrl-thickness').oninput = (e) => {
-        updateBadge('ctrl-thickness-val', e.target.value + ' px');
-        renderActivePattern();
-    };
-
-    el('pro-scale').oninput = (e) => {
-        updateBadge('pro-scale-val', e.target.value + 'x');
-        renderActivePattern();
-    };
-
-    el('pro-chaos').oninput = (e) => {
-        updateBadge('pro-chaos-val', e.target.value);
-        renderActivePattern();
-    };
+    el('ctrl-repeats').oninput = (e) => { updateBadge('ctrl-repeats-val', e.target.value + 'x'); renderActivePattern(); };
+    el('ctrl-thickness').oninput = (e) => { updateBadge('ctrl-thickness-val', e.target.value + 'px'); renderActivePattern(); };
 
     ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
         el(id).oninput = (e) => {
@@ -902,29 +922,6 @@ document.addEventListener('DOMContentLoaded', function() {
             renderActivePattern();
         };
     });
-
-    // --- DOWNLOAD HANDLERS ---
-    function triggerDownload(blob, filename) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
-
-    el('btn-download-bmp').onclick = () => {
-        const blob = canvasToBmpBlob(baseCanvas, { topDown: false });
-        triggerDownload(blob, `${currentPattern}_${currentWidth}x${currentHeight}.bmp`);
-    };
-
-    el('btn-download-png').onclick = () => {
-        baseCanvas.toBlob((blob) => {
-            triggerDownload(blob, `${currentPattern}_${currentWidth}x${currentHeight}.png`);
-        });
-    };
 
     // Initial render
     applyDimensions(currentHeight, currentWidth);
