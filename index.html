@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v46</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v47</span></div>
+
 
 
 
@@ -2576,8 +2577,30 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // Inline BLE Progress Helpers
+    function showInlineProgress(labelText, pctValue, detailText) {
+        const inlineProg = el('inline-ble-progress');
+        const fill = el('inline-ble-fill');
+        const pct = el('inline-ble-pct');
+        const details = el('inline-ble-details');
+        const label = el('inline-ble-label');
+
+        if (inlineProg) inlineProg.style.display = 'flex';
+        if (label && labelText) label.innerText = labelText;
+        if (fill && typeof pctValue === 'number') fill.style.width = `${Math.min(100, Math.max(0, pctValue))}%`;
+        if (pct && typeof pctValue === 'number') pct.innerText = `${Math.round(pctValue)}%`;
+        if (details && detailText) details.innerText = detailText;
+    }
+
+    function hideInlineProgress() {
+        const inlineProg = el('inline-ble-progress');
+        if (inlineProg) inlineProg.style.display = 'none';
+    }
+
+
     // Upload Active Pattern (Canvas) to Poi over BLE (Seamless Inline Progress)
     async function uploadActivePatternToPoi() {
+
         if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
             alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
             return;

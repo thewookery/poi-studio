@@ -380,22 +380,25 @@
             const slot = Math.max(0, Math.min(4, parseInt(slotIndex) || 0));
 
             // 1. Select target bank and slot on all connected poi
+            // Give the ESP32 400-500ms to read and close any open LittleFS pattern file
             await this.setBank(bank);
-            await new Promise(r => setTimeout(r, 150));
+            await new Promise(r => setTimeout(r, 400));
             await this.setPatternSlot(slot);
-            await new Promise(r => setTimeout(r, 150));
+            await new Promise(r => setTimeout(r, 500));
 
-            // 2. Upload pattern
+            // 2. Upload pattern (CC_SET_PATTERN packets saved to active bank/slot LittleFS file)
             const result = await this.uploadPattern(canvas, progressCallback, pacingDelayMs);
 
-            // 3. Re-trigger bank and slot playback so ESP32 reloads and displays the new slot!
-            await new Promise(r => setTimeout(r, 350));
-            await this.setBank(bank);
-            await new Promise(r => setTimeout(r, 150));
+            // 3. Post-upload settle delay so ESP32 LittleFS commits the write
+            await new Promise(r => setTimeout(r, 500));
+
+            // 4. Re-trigger slot playback so ESP32 immediately reloads and displays the new pattern on LEDs!
             await this.setPatternSlot(slot);
+            await new Promise(r => setTimeout(r, 200));
 
             return result;
         }
+
 
 
 
