@@ -1,7 +1,7 @@
 /**
- * POI Studio: Algorithmic POV Generative Engine (v11.0 - Mobile Pro & Aztec Sacred Suite)
+ * POI Studio: Algorithmic POV Generative Engine (v12.0 - Hyper-Color & Symmetry Master Suite)
  * 128+ Pure Mathematical, Aztec Step-Fret, Sacred Geometry, Optical Illusion & Quantum POV Algorithms
- * Geometry Flow Morph Engine, Universal Seam Guardian & Master BMP Joiner
+ * 22+ Elite Curated Palettes, 10+ Geometry Color Flow Modes, 8+ Hyper-Symmetries, Universal Seam Guardian
  */
 
 // --- COMPLETE ALGORITHMIC PATTERN DATABASE (128+ ELITE GENERATORS) ---
@@ -213,20 +213,30 @@ class SeamlessNoise {
 }
 const poiNoise = new SeamlessNoise(4242);
 
-// --- COLOR PALETTES & CYCLIC COLOR SAMPLER ---
+// --- 22+ RICH CURATED PALETTES ---
 const POI_PALETTES = {
     aztec_gold_turquoise: ['#ffd700', '#00e5ff', '#ff3d00', '#00bfa5', '#ffffff'],
     psychedelic_third_eye: ['#bc13fe', '#ff007f', '#00ffff', '#ffe600', '#050014'],
     kaleido_hyper_spectral: ['#ff0000', '#ff8000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#8000ff', '#ff00ff'],
+    cyberpunk_neon_2077: ['#ff0055', '#00ffff', '#ffe600', '#7928ca', '#ffffff'],
+    vaporwave_sunset: ['#ff71ce', '#01cdfe', '#05ffa1', '#b967ff', '#fffb96'],
+    biolum_jellyfish: ['#001f3f', '#00adb5', '#00ffcc', '#ffffff', '#7928ca'],
+    volcanic_magma: ['#ff0000', '#ff4500', '#ffa500', '#ffff00', '#1a0000'],
+    northern_lights_aurora: ['#00ff87', '#60efff', '#0061ff', '#bc13fe', '#ffffff'],
+    sacred_chakra_7: ['#e7040f', '#fa7e1e', '#f4ee15', '#10d075', '#0facf3', '#492f92', '#86299b'],
+    matrix_terminal_code: ['#003b00', '#008f11', '#00ff66', '#ffffff', '#001100'],
+    golden_pharaoh: ['#103778', '#0593a2', '#ff7a00', '#e2d810', '#ffffff'],
+    holographic_foil: ['#e0c3fc', '#8ec5fc', '#fbc2eb', '#a6c1ee', '#ffffff'],
+    blacklight_fluorescent: ['#bc13fe', '#ff007f', '#39ff14', '#00ffff', '#ffff00'],
+    cosmic_nebula_dust: ['#0d0221', '#241734', '#2e2157', '#fdff6a', '#ff007f', '#00ffff'],
+    monochrome_cyber_noir: ['#ffffff', '#888888', '#222222', '#000000', '#ffffff'],
+    fire_and_ice: ['#00ffff', '#0077be', '#ffffff', '#ff3300', '#ff9900'],
+    alien_plasma: ['#39ff14', '#ccff00', '#7928ca', '#00ffff'],
+    dragon_fire: ['#300000', '#800000', '#ff0000', '#ff8c00', '#ffd700'],
+    bubblegum_cotton_candy: ['#ff9a9e', '#fecfef', '#a1c4fd', '#c2e9fb'],
+    desert_mirage: ['#c25953', '#e4935d', '#e6c875', '#388087', '#6fb3b8'],
     laser_cyan_pink: ['#00ffff', '#ff007f', '#ffffff', '#7928ca'],
-    acid_rave_green: ['#39ff14', '#00ffff', '#bc13fe', '#ffff00'],
     deep_space_void: ['#000000', '#180033', '#7928ca', '#00ffff', '#ffffff'],
-    solar_fire_flare: ['#ff0000', '#ff5500', '#ffaa00', '#ffff55', '#ffffff'],
-    pure_high_contrast: ['#ffffff', '#000000', '#00ffff', '#ffffff'],
-    biolum_abyssal: ['#001f3f', '#088f8f', '#00ffff', '#39ff14'],
-    synthwave_sun: ['#f3e600', '#ff00a0', '#4d0096', '#01c1ec'],
-    toxic_radiation: ['#00ff00', '#ccff00', '#000000', '#39ff14'],
-    electric_amethyst: ['#bc13fe', '#e0aaff', '#7b2cbf', '#ffffff'],
     random: []
 };
 
@@ -250,7 +260,10 @@ function getRandomColorHex() {
 
 function getPaletteColors(paletteKey) {
     if (paletteKey === 'random') {
-        return [getRandomColorHex(), getRandomColorHex(), getRandomColorHex(), getRandomColorHex()];
+        const count = Math.floor(Math.random() * 4) + 3;
+        const cols = [];
+        for (let i = 0; i < count; i++) cols.push(getRandomColorHex());
+        return cols;
     }
     return POI_PALETTES[paletteKey] || POI_PALETTES.aztec_gold_turquoise;
 }
@@ -281,6 +294,7 @@ function samplePalette(colors, t, mode = 'cyclic') {
     }
 }
 
+// --- DYNAMIC COLOR FLOW & GEOMETRY GRABBING SAMPLER ---
 function createColorSampler(paletteKey, direction, seamlessMode = 'cyclic') {
     const colors = getPaletteColors(paletteKey);
     return function(x, y, w, h, offset = 0) {
@@ -294,11 +308,26 @@ function createColorSampler(paletteKey, direction, seamlessMode = 'cyclic') {
             case 'v': t = normY; break;
             case 'v_rev': t = 1 - normY; break;
             case 'diag': t = (normX + normY) * 0.5; break;
-            case 'radial': t = normY; break;
+            case 'radial': t = Math.abs(normY - 0.5) * 2; break;
+            case 'wave_curvature': {
+                const wave = Math.sin(normX * Math.PI * 4) * Math.cos(normY * Math.PI * 2);
+                t = (normX + wave * 0.3 + 1) % 1;
+                break;
+            }
+            case 'noise_warp': {
+                const n = poiNoise.sampleCylinder(x, y, w, h, 2, 2.0);
+                t = (normX + n * 0.5) % 1;
+                break;
+            }
+            case 'spiral_vortex': {
+                const r = Math.abs(normY - 0.5) * 2 + 0.1;
+                t = ((normX * 2 + Math.log(r) * 0.5) % 1 + 1) % 1;
+                break;
+            }
             default: t = normX;
         }
 
-        const isHorizontal = (direction === 'h' || direction === 'h_rev' || direction === 'diag');
+        const isHorizontal = (direction === 'h' || direction === 'h_rev' || direction === 'diag' || direction === 'wave_curvature' || direction === 'noise_warp' || direction === 'spiral_vortex');
         const effectiveMode = isHorizontal ? seamlessMode : 'linear';
         return samplePalette(colors, t + offset, effectiveMode);
     };
@@ -310,7 +339,7 @@ function drawToroidal(ctx, w, h, drawFn) {
     drawFn(w);
 }
 
-// --- 128+ PROCEDURAL GENERATORS ---
+// --- PROCEDURAL GENERATORS SUITE ---
 const POI_GENERATORS = {};
 
 // 1. AZTEC, MAYAN & SACRED STEP-FRET SUITE
@@ -324,7 +353,6 @@ POI_GENERATORS.aztec_xicalcoliuhqui_fret = (ctx, w, h, p, getCol) => {
             const x = cx + ox;
             ctx.strokeStyle = getCol(cx + stepW * 0.5, h / 2, w, h, r / repeats);
             ctx.beginPath();
-            // Stepped pyramid + spiral fret meander (Xicalcoliuhqui)
             ctx.moveTo(x, h * 0.85);
             ctx.lineTo(x + stepW * 0.25, h * 0.85);
             ctx.lineTo(x + stepW * 0.25, h * 0.65);
@@ -338,7 +366,6 @@ POI_GENERATORS.aztec_xicalcoliuhqui_fret = (ctx, w, h, p, getCol) => {
             ctx.lineTo(x + stepW * 0.75, h * 0.35);
             ctx.stroke();
 
-            // Inverted interlocking bottom step
             ctx.strokeStyle = getCol(cx + stepW * 0.5, h / 2, w, h, (r + 0.5) / repeats);
             ctx.beginPath();
             ctx.moveTo(x + stepW * 0.05, h * 0.55);
@@ -355,7 +382,6 @@ POI_GENERATORS.aztec_quetzalcoatl_serpent = (ctx, w, h, p, getCol) => {
     const amp = (h * 0.35) * p.scale;
     ctx.lineWidth = p.thickness * 1.5;
     drawToroidal(ctx, w, h, (ox) => {
-        // Dual interlocking serpent bodies
         for (let x = 0; x < w; x += 2) {
             const t1 = (x / w) * Math.PI * 2 * cycles;
             const t2 = ((x + 2) / w) * Math.PI * 2 * cycles;
@@ -364,13 +390,11 @@ POI_GENERATORS.aztec_quetzalcoatl_serpent = (ctx, w, h, p, getCol) => {
             ctx.strokeStyle = getCol(x, y1, w, h);
             ctx.beginPath(); ctx.moveTo(x + ox, y1); ctx.lineTo(x + 2 + ox, y2); ctx.stroke();
 
-            // Counter-phase feathered crest
             const yb1 = h / 2 - Math.sin(t1) * amp;
             const yb2 = h / 2 - Math.sin(t2) * amp;
             ctx.strokeStyle = getCol(x, yb1, w, h, 0.5);
             ctx.beginPath(); ctx.moveTo(x + ox, yb1); ctx.lineTo(x + 2 + ox, yb2); ctx.stroke();
 
-            // Stepped dragon scale spikes
             if (x % 12 === 0) {
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(x + ox - 1, y1 - 4, 3, 8);
@@ -393,7 +417,6 @@ POI_GENERATORS.aztec_sunstone_solar = (ctx, w, h, p, getCol) => {
             ctx.fillStyle = getCol(cx, cy, w, h);
             ctx.beginPath(); ctx.arc(x, cy, rCore, 0, Math.PI * 2); ctx.fill();
 
-            // Solar ray teeth
             ctx.strokeStyle = getCol(cx, cy, w, h, 0.3);
             ctx.lineWidth = p.thickness;
             for (let a = 0; a < 16; a++) {
@@ -404,7 +427,6 @@ POI_GENERATORS.aztec_sunstone_solar = (ctx, w, h, p, getCol) => {
                 ctx.lineTo(x + rOuter * Math.cos(ang), cy + rOuter * Math.sin(ang));
                 ctx.stroke();
             }
-            // Outer stepped ring
             ctx.strokeStyle = '#ffffff';
             ctx.strokeRect(x - rSpikes, cy - rSpikes, rSpikes * 2, rSpikes * 2);
         });
@@ -424,7 +446,6 @@ POI_GENERATORS.aztec_mitla_mosaic = (ctx, w, h, p, getCol) => {
                 ctx.strokeStyle = getCol(i * stepX, j * stepY, w, h, (i + j) / (cols + 4));
                 ctx.lineWidth = p.thickness;
                 ctx.strokeRect(x + 2, cy + 2, stepX - 4, stepY - 4);
-                // Step diamond in center
                 ctx.beginPath();
                 ctx.moveTo(x + stepX * 0.5, cy + 2);
                 ctx.lineTo(x + stepX - 2, cy + stepY * 0.5);
@@ -446,7 +467,6 @@ POI_GENERATORS.sacred_third_eye_mandala = (ctx, w, h, p, getCol) => {
         const eyeH = (h * 0.28) * p.scale;
         drawToroidal(ctx, w, h, (ox) => {
             const x = cx + ox;
-            // Eyelid almond curves
             ctx.lineWidth = p.thickness * 1.5;
             ctx.strokeStyle = getCol(cx, cy, w, h);
             ctx.beginPath();
@@ -455,7 +475,6 @@ POI_GENERATORS.sacred_third_eye_mandala = (ctx, w, h, p, getCol) => {
             ctx.quadraticCurveTo(x, cy + eyeH * 1.4, x - eyeW, cy);
             ctx.stroke();
 
-            // Iris & Radiating Vision Rays
             const rIris = eyeH * 0.85;
             for (let a = 0; a < 12; a++) {
                 const ang = (a * Math.PI * 2) / 12;
@@ -465,11 +484,9 @@ POI_GENERATORS.sacred_third_eye_mandala = (ctx, w, h, p, getCol) => {
                 ctx.lineTo(x + rIris * Math.cos(ang), cy + rIris * Math.sin(ang));
                 ctx.stroke();
             }
-            // Pupil Void
             ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(x, cy, eyeH * 0.35, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x - 2, cy - 2, 2, 0, Math.PI * 2); ctx.fill();
 
-            // Radiating brow eyelashes
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 1;
             for (let a = 1; a <= 5; a++) {
@@ -492,13 +509,11 @@ POI_GENERATORS.sacred_kaleido_eyes = (ctx, w, h, p, getCol) => {
                 const x = cx + ox;
                 ctx.lineWidth = p.thickness;
                 ctx.strokeStyle = getCol(cx, cy, w, h, (i * 2 + j) / 10);
-                // Eye almond
                 ctx.beginPath();
                 ctx.moveTo(x - stepX * 0.4, cy);
                 ctx.quadraticCurveTo(x, cy - stepY * 0.4, x + stepX * 0.4, cy);
                 ctx.quadraticCurveTo(x, cy + stepY * 0.4, x - stepX * 0.4, cy);
                 ctx.stroke();
-                // Glowing Pupil
                 ctx.fillStyle = getCol(cx, cy, w, h, 0.5);
                 ctx.beginPath(); ctx.arc(x, cy, stepY * 0.25, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = '#000000';
@@ -519,12 +534,9 @@ POI_GENERATORS.sacred_merkabah_star = (ctx, w, h, p, getCol) => {
             const x = cx + ox;
             ctx.strokeStyle = getCol(cx, cy, w, h);
             ctx.lineWidth = p.thickness;
-            // Upward triangle
             ctx.beginPath(); ctx.moveTo(x, cy - s); ctx.lineTo(x + s * 0.86, cy + s * 0.5); ctx.lineTo(x - s * 0.86, cy + s * 0.5); ctx.closePath(); ctx.stroke();
-            // Downward triangle
             ctx.strokeStyle = getCol(cx, cy, w, h, 0.4);
             ctx.beginPath(); ctx.moveTo(x, cy + s); ctx.lineTo(x + s * 0.86, cy - s * 0.5); ctx.lineTo(x - s * 0.86, cy - s * 0.5); ctx.closePath(); ctx.stroke();
-            // 3D Isometric central diagonals
             ctx.strokeStyle = '#ffffff';
             ctx.beginPath();
             ctx.moveTo(x, cy - s); ctx.lineTo(x, cy + s);
@@ -541,7 +553,6 @@ POI_GENERATORS.sacred_torus_kundalini = (ctx, w, h, p, getCol) => {
     drawToroidal(ctx, w, h, (ox) => {
         for (let x = 0; x < w; x += 2) {
             const t = (x / w) * Math.PI * 2 * cycles;
-            // (3, 8) Torus knot parametric
             const r = (h * 0.35) * (1 + 0.3 * Math.cos(8 * t));
             const y1 = h / 2 + r * Math.sin(3 * t);
             const y2 = h / 2 + r * Math.sin(3 * (t + 0.1));
@@ -561,7 +572,6 @@ POI_GENERATORS.sacred_sri_yantra_full = (ctx, w, h, p, getCol) => {
         drawToroidal(ctx, w, h, (ox) => {
             const x = cx + ox;
             ctx.lineWidth = p.thickness;
-            // 9 Interlocking triangles
             for (let t = 0; t < 5; t++) {
                 const offY = (t - 2) * (s * 0.18);
                 const scaleT = s * (1 - t * 0.12);
@@ -1206,7 +1216,7 @@ POI_GENERATORS.trippy_tesseract_4d = (ctx, w, h, p, getCol) => {
             ctx.moveTo(x - h * 0.35, cy - h * 0.35); ctx.lineTo(x - h * 0.18, cy - h * 0.18);
             ctx.moveTo(x + h * 0.35, cy - h * 0.35); ctx.lineTo(x + h * 0.18, cy - h * 0.18);
             ctx.moveTo(x + h * 0.35, cy + h * 0.35); ctx.lineTo(x + h * 0.18, cy + h * 0.18);
-            ctx.moveTo(x - h * 0.35, cy + h * 0.35); ctx.lineTo(x - h * 0.18, cy + h * 0.18);
+            ctx.moveTo(x - h * 0.35, cy - h * 0.35); ctx.lineTo(x - h * 0.18, cy - h * 0.18);
             ctx.stroke();
         });
     }
@@ -2273,7 +2283,7 @@ POI_GENERATORS.strobe_diamond_lattice = (ctx, w, h, p, getCol) => {
     }
 };
 
-// --- HARMONIC GEOMETRY FLOW MORPH ENGINE (DUAL-EQUATION SYNTHESIZER) ---
+// --- HARMONIC GEOMETRY FLOW MORPH ENGINE ---
 function generateMorphedPattern(destCanvas, modelA, modelB, flowStyle, morphRatio, params, colSampler) {
     const w = destCanvas.width;
     const h = destCanvas.height;
@@ -2515,28 +2525,26 @@ function applyMandalaMode(srcCanvas, segments = 8) {
     }
 }
 
-function applyMultiSymmetry(canvas, { mirrorH, mirrorV, kaleido }) {
-    if (!mirrorH && !mirrorV && (!kaleido || kaleido === 0)) return;
+// --- 8+ HYPER-SYMMETRIES ENGINE ---
+function applyMultiSymmetry(canvas, { mirrorH, mirrorV, mirrorDiag, invert180, kaleido }) {
     const w = canvas.width;
     const h = canvas.height;
-    const temp = document.createElement('canvas');
-    temp.width = w; temp.height = h;
-    temp.getContext('2d').drawImage(canvas, 0, 0);
-
     const ctx = canvas.getContext('2d');
 
     if (mirrorH) {
+        const temp = document.createElement('canvas'); temp.width = w; temp.height = h;
+        temp.getContext('2d').drawImage(canvas, 0, 0);
         ctx.save();
         ctx.clearRect(w / 2, 0, w / 2, h);
         ctx.translate(w, 0);
         ctx.scale(-1, 1);
         ctx.drawImage(temp, 0, 0, w / 2, h, 0, 0, w / 2, h);
         ctx.restore();
-        temp.getContext('2d').clearRect(0, 0, w, h);
-        temp.getContext('2d').drawImage(canvas, 0, 0);
     }
 
     if (mirrorV) {
+        const temp = document.createElement('canvas'); temp.width = w; temp.height = h;
+        temp.getContext('2d').drawImage(canvas, 0, 0);
         ctx.save();
         ctx.clearRect(0, h / 2, w, h / 2);
         ctx.translate(0, h);
@@ -2545,7 +2553,31 @@ function applyMultiSymmetry(canvas, { mirrorH, mirrorV, kaleido }) {
         ctx.restore();
     }
 
-    if (kaleido && kaleido >= 4) applyMandalaMode(canvas, kaleido);
+    if (invert180) {
+        const temp = document.createElement('canvas'); temp.width = w; temp.height = h;
+        temp.getContext('2d').drawImage(canvas, 0, 0);
+        ctx.save();
+        ctx.globalAlpha = 0.65;
+        ctx.translate(w / 2, h / 2);
+        ctx.rotate(Math.PI);
+        ctx.drawImage(temp, -w / 2, -h / 2);
+        ctx.restore();
+    }
+
+    if (mirrorDiag) {
+        const temp = document.createElement('canvas'); temp.width = w; temp.height = h;
+        temp.getContext('2d').drawImage(canvas, 0, 0);
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.translate(w, h);
+        ctx.scale(-1, -1);
+        ctx.drawImage(temp, 0, 0);
+        ctx.restore();
+    }
+
+    if (kaleido && kaleido >= 3) {
+        applyMandalaMode(canvas, kaleido);
+    }
 }
 
 function applyPostFX(canvas, fx) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POI Studio: 100% Zero-Seam POV Studio & Aztec Sacred Suite</title>
+    <title>POI Studio: 100% Zero-Seam POV Suite & Aztec Sacred Suite</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,12 +20,12 @@
         };
     </script>
 
-    <!-- PINNED FLOATING VISUALIZER HUD (ALWAYS VISIBLE WHEN SCROLLING ON MOBILE & DESKTOP) -->
+    <!-- PINNED FLOATING VISUALIZER HUD (ALWAYS VISIBLE DURING SCROLLING) -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
             <div class="hud-title">⚡ POI STUDIO <span style="color:var(--neon-green); font-size:0.75rem;">♾️ ZERO-SEAM</span></div>
             <div class="hud-quick-actions">
-                <button class="hud-btn-mutate" id="btn-quick-mutate" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
+                <button class="hud-btn-mutate" id="btn-quick-mutate" title="Hyper-Mutate Palette & Geometry">⚡ Hyper-Mutate</button>
                 <button class="hud-btn-rand" id="btn-quick-rand" title="Random Generator">🎲 Random</button>
                 <button class="hud-btn-dl" id="btn-quick-dl-bmp" title="Download Open Pixel Poi BMP">💾 BMP</button>
             </div>
@@ -79,7 +79,7 @@
         <button class="tab-btn" data-tab="tab-voids">🕳️ Negative Voids</button>
         <button class="tab-btn" data-tab="tab-morph">🎭 Flow Morph</button>
         <button class="tab-btn" data-tab="tab-sequence">🔗 Sequencer</button>
-        <button class="tab-btn" data-tab="tab-controls">⚙️ Settings & FX</button>
+        <button class="tab-btn" data-tab="tab-controls">🎨 Colors & Symmetries</button>
     </nav>
 
     <!-- TAB CONTENTS -->
@@ -352,14 +352,30 @@
             </div>
         </div>
 
-        <!-- 7. SETTINGS, HARDWARE & PRO FX TAB -->
+        <!-- 7. COLORS, SYMMETRIES & PRO FX TAB -->
         <div class="tab-pane" id="tab-controls">
             <div class="pane-header">
-                <span class="pane-title" style="color: var(--accent-color);">⚙️ Hardware Dimensions & Optical FX</span>
+                <span class="pane-title" style="color: var(--accent-color);">🎨 22+ Palettes, Geometry Color Grabbing & Symmetries</span>
+            </div>
+
+            <!-- MUTATION VARIABILITY TOGGLES -->
+            <div class="card-box" style="border-color:var(--neon-pink); background:rgba(255, 46, 99, 0.04);">
+                <div style="font-size:0.78rem; font-weight:800; color:var(--neon-pink); margin-bottom:6px;">⚡ Hyper-Mutation Variability:</div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="mut-include-sym" checked style="accent-color:var(--neon-pink);"> <b>Include Symmetries in Mutate (Mirror/Kaleido)</b>
+                    </label>
+                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="mut-include-fx" checked style="accent-color:var(--neon-pink);"> <b>Include Optical Shaders in Mutate (Wave/RGB/Glow)</b>
+                    </label>
+                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="mut-include-flow" checked style="accent-color:var(--neon-pink);"> <b>Include Color Flow Grabbing Modes in Mutate</b>
+                    </label>
+                </div>
             </div>
             
             <!-- HARDWARE HEIGHT & WIDTH PRESETS -->
-            <div class="card-box">
+            <div class="card-box" style="margin-top:10px;">
                 <div style="font-size:0.75rem; font-weight:800; color:var(--text-color); margin-bottom:6px;">1. LED Pixel Height:</div>
                 <div class="hw-presets">
                     <button class="hw-btn active" data-h="55" data-w="240">55px Standard</button>
@@ -385,59 +401,90 @@
                 </div>
             </div>
 
-            <!-- COLOR & HARMONIC CONTROLS -->
+            <!-- 22+ RICH PALETTES & FLOW MODES -->
             <div class="card-box" style="margin-top:10px;">
                 <div class="ctrl-row">
-                    <span class="ctrl-label">🎨 Palette:</span>
+                    <span class="ctrl-label">🎨 22+ Spectrum Palettes:</span>
                     <select id="ctrl-palette" style="width:100%;">
                         <option value="aztec_gold_turquoise">Aztec Imperial Gold & Turquoise</option>
                         <option value="psychedelic_third_eye">Third-Eye Electric Violet & Gold</option>
                         <option value="kaleido_hyper_spectral">Hyper-Spectral 8-Band Rainbow</option>
+                        <option value="cyberpunk_neon_2077">Cyberpunk Neon 2077 (Pink/Cyan/Yellow)</option>
+                        <option value="vaporwave_sunset">Vaporwave Sunset (Pastel/Lavender)</option>
+                        <option value="biolum_jellyfish">Bioluminescent Deep Jellyfish</option>
+                        <option value="volcanic_magma">Volcanic Molten Magma</option>
+                        <option value="northern_lights_aurora">Northern Lights Aurora Borealis</option>
+                        <option value="sacred_chakra_7">Sacred 7 Chakra Matrix</option>
+                        <option value="matrix_terminal_code">Matrix Terminal Phosphor Code</option>
+                        <option value="golden_pharaoh">Egyptian Golden Pharaoh</option>
+                        <option value="holographic_foil">Holographic Iridescent Opal</option>
+                        <option value="blacklight_fluorescent">Blacklight Fluorescent UV</option>
+                        <option value="cosmic_nebula_dust">Cosmic Nebula Stardust</option>
+                        <option value="monochrome_cyber_noir">Monochrome Cyber Noir</option>
+                        <option value="fire_and_ice">Fire & Ice Dualism</option>
+                        <option value="alien_plasma">Alien Toxic Plasma</option>
+                        <option value="dragon_fire">Dragon Fire Flame</option>
+                        <option value="bubblegum_cotton_candy">Bubblegum Cotton Candy</option>
+                        <option value="desert_mirage">Desert Mirage Horizon</option>
                         <option value="laser_cyan_pink">Laser Cyan & Neon Pink</option>
-                        <option value="acid_rave_green">Acid Rave (Emerald/Purple/Yellow)</option>
-                        <option value="deep_space_void">Deep Space Void (Pitch Black/Cyan)</option>
-                        <option value="solar_fire_flare">Solar Fire Flare</option>
-                        <option value="pure_high_contrast">Pure High-Contrast (White/Cyan/Black)</option>
-                        <option value="biolum_abyssal">Bioluminescent Abyssal</option>
-                        <option value="synthwave_sun">Synthwave Sun</option>
-                        <option value="toxic_radiation">Toxic Radiation</option>
-                        <option value="electric_amethyst">Electric Amethyst</option>
-                        <option value="random">🎲 Random Surprise</option>
+                        <option value="deep_space_void">Deep Space Violet Void</option>
+                        <option value="random">🎲 Random Dynamic Palette</option>
                     </select>
                 </div>
+
                 <div class="ctrl-row">
-                    <span class="ctrl-label">🔁 Spokes:</span>
+                    <span class="ctrl-label">🌊 Color Flow & Grabbing:</span>
+                    <select id="pro-color-dir" style="width:100%;">
+                        <option value="h">Horizontal (Azimuthal 0° ➔ 360°)</option>
+                        <option value="h_rev">Horizontal Inverted (360° ➔ 0°)</option>
+                        <option value="v">Vertical (Tube Base ➔ Tip)</option>
+                        <option value="v_rev">Vertical Inverted (Tip ➔ Base)</option>
+                        <option value="diag">Diagonal Helical Twist</option>
+                        <option value="radial">Concentric Radial Pulse</option>
+                        <option value="wave_curvature">🌊 Wave Curvature Grabbing (Locks to Peaks!)</option>
+                        <option value="spiral_vortex">🌀 Polar Spiral Color Vortex</option>
+                        <option value="noise_warp">🌪️ Chaotic Simplex Noise Domain Warp</option>
+                    </select>
+                </div>
+
+                <div class="ctrl-row">
+                    <span class="ctrl-label">🔁 Harmonic Spokes:</span>
                     <input type="range" id="ctrl-repeats" min="1" max="12" step="1" value="4">
                     <span class="val-mono" id="ctrl-repeats-val">4x</span>
                 </div>
                 <div class="ctrl-row">
-                    <span class="ctrl-label">✏️ Thickness:</span>
+                    <span class="ctrl-label">✏️ Line Thickness:</span>
                     <input type="range" id="ctrl-thickness" min="1" max="8" step="0.5" value="2.5">
                     <span class="val-mono" id="ctrl-thickness-val">2.5px</span>
                 </div>
                 <div class="ctrl-row">
-                    <span class="ctrl-label">🌈 Loop Mode:</span>
+                    <span class="ctrl-label">🌈 Seamless Loop Mode:</span>
                     <select id="ctrl-gradient-mode" style="width:100%;">
                         <option value="cyclic">Cyclic 360° Loop (100% Zero-Seam)</option>
                         <option value="pingpong">Ping-Pong Mirrored (A ➔ B ➔ A)</option>
-                        <option value="radial">Concentric Waveguides</option>
                     </select>
                 </div>
                 <div class="ctrl-row">
-                    <span class="ctrl-label">All 128+ Equations:</span>
+                    <span class="ctrl-label">Select Generator:</span>
                     <select id="pro-pattern-select" style="width:100%;"></select>
                 </div>
             </div>
 
-            <!-- OPTICAL SHADERS & SYMMETRIES -->
+            <!-- 8+ HYPER-SYMMETRIES & SHADERS -->
             <div class="card-box" style="margin-top:10px;">
-                <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-bottom:6px;">Hyper-Symmetries:</div>
+                <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-bottom:6px;">8+ Hyper-Symmetries:</div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
                     <button class="hw-btn" id="btn-sym-mh">Mirror H ↔</button>
                     <button class="hw-btn" id="btn-sym-mv">Mirror V ↕</button>
+                    <button class="hw-btn" id="btn-sym-diag">Mirror Diag ⤡</button>
+                    <button class="hw-btn" id="btn-sym-inv180">180° Invert 🔄</button>
                     <button class="hw-btn" id="btn-sym-k4">Kaleido 4x</button>
+                    <button class="hw-btn" id="btn-sym-k6">Kaleido 6x</button>
                     <button class="hw-btn" id="btn-sym-k8">Kaleido 8x</button>
+                    <button class="hw-btn" id="btn-sym-k12">Kaleido 12x</button>
                 </div>
+
+                <div style="font-size:0.75rem; font-weight:700; color:var(--neon-purple); margin-top:10px; margin-bottom:6px;">Optical POV Shaders:</div>
                 <div class="ctrl-row">
                     <span style="font-size:0.72rem; color:var(--text-muted);">POV Strobe:</span>
                     <input type="range" id="fx-strobe" min="0" max="10" value="0">
@@ -479,6 +526,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentWidth = 240;
     let symMirrorH = false;
     let symMirrorV = false;
+    let symMirrorDiag = false;
+    let symInvert180 = false;
     let symKaleido = 0;
 
     let baseCanvas = document.createElement('canvas');
@@ -487,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const sequenceQueue = [];
 
-    // --- TAB SWITCHING LOGIC ---
+    // --- TAB SWITCHING ---
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -625,8 +674,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     setupSymBtn('btn-sym-mh', () => { symMirrorH = !symMirrorH; });
     setupSymBtn('btn-sym-mv', () => { symMirrorV = !symMirrorV; });
-    setupSymBtn('btn-sym-k4', () => { symKaleido = (symKaleido === 4 ? 0 : 4); el('btn-sym-k8').classList.remove('active'); });
-    setupSymBtn('btn-sym-k8', () => { symKaleido = (symKaleido === 8 ? 0 : 8); el('btn-sym-k4').classList.remove('active'); });
+    setupSymBtn('btn-sym-diag', () => { symMirrorDiag = !symMirrorDiag; });
+    setupSymBtn('btn-sym-inv180', () => { symInvert180 = !symInvert180; });
+
+    function setKaleido(kVal, btnId) {
+        const btn = el(btnId);
+        btn.onclick = () => {
+            ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => el(id).classList.remove('active'));
+            if (symKaleido === kVal) {
+                symKaleido = 0;
+            } else {
+                symKaleido = kVal;
+                btn.classList.add('active');
+            }
+            renderActivePattern();
+        };
+    }
+    setKaleido(4, 'btn-sym-k4');
+    setKaleido(6, 'btn-sym-k6');
+    setKaleido(8, 'btn-sym-k8');
+    setKaleido(12, 'btn-sym-k12');
 
     // --- CORE RENDERING ---
     function renderActivePattern() {
@@ -644,9 +711,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const chaos = 0.5;
 
         const paletteKey = el('ctrl-palette').value;
+        const colorDir = el('pro-color-dir').value;
         const gradientMode = el('ctrl-gradient-mode').value;
 
-        const colSampler = createColorSampler(paletteKey, 'h', gradientMode);
+        const colSampler = createColorSampler(paletteKey, colorDir, gradientMode);
         const params = { chaos, scale, thickness, spacing };
 
         const isMorph = el('morph-enable').checked;
@@ -665,6 +733,8 @@ document.addEventListener('DOMContentLoaded', function() {
         applyMultiSymmetry(baseCanvas, {
             mirrorH: symMirrorH,
             mirrorV: symMirrorV,
+            mirrorDiag: symMirrorDiag,
+            invert180: symInvert180,
             kaleido: symKaleido
         });
 
@@ -808,7 +878,70 @@ document.addEventListener('DOMContentLoaded', function() {
         updateBadge('stream-speed-val', e.target.value);
     });
 
-    // --- QUICK ACTION BUTTONS ---
+    // --- ENHANCED HYPER-MUTATOR & RANDOMIZERS (WILDCARD VARIABILITY) ---
+    function performHyperMutate() {
+        const palKeys = Object.keys(POI_PALETTES);
+        el('ctrl-palette').value = palKeys[Math.floor(Math.random() * palKeys.length)];
+
+        if (el('mut-include-flow').checked) {
+            const flowModes = ['h', 'h_rev', 'v', 'v_rev', 'diag', 'radial', 'wave_curvature', 'spiral_vortex', 'noise_warp'];
+            el('pro-color-dir').value = flowModes[Math.floor(Math.random() * flowModes.length)];
+        }
+
+        el('ctrl-repeats').value = [2, 3, 4, 5, 6, 8, 10, 12][Math.floor(Math.random() * 8)];
+        updateBadge('ctrl-repeats-val', el('ctrl-repeats').value + 'x');
+
+        el('ctrl-thickness').value = (Math.random() * 3.5 + 1.2).toFixed(1);
+        updateBadge('ctrl-thickness-val', el('ctrl-thickness').value + 'px');
+
+        if (el('mut-include-sym').checked) {
+            symMirrorH = Math.random() < 0.35;
+            symMirrorV = Math.random() < 0.35;
+            symMirrorDiag = Math.random() < 0.25;
+            symInvert180 = Math.random() < 0.25;
+            const kChoices = [0, 0, 0, 4, 6, 8, 12];
+            symKaleido = kChoices[Math.floor(Math.random() * kChoices.length)];
+
+            el('btn-sym-mh').classList.toggle('active', symMirrorH);
+            el('btn-sym-mv').classList.toggle('active', symMirrorV);
+            el('btn-sym-diag').classList.toggle('active', symMirrorDiag);
+            el('btn-sym-inv180').classList.toggle('active', symInvert180);
+            ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => el(id).classList.remove('active'));
+            if (symKaleido === 4) el('btn-sym-k4').classList.add('active');
+            if (symKaleido === 6) el('btn-sym-k6').classList.add('active');
+            if (symKaleido === 8) el('btn-sym-k8').classList.add('active');
+            if (symKaleido === 12) el('btn-sym-k12').classList.add('active');
+        }
+
+        if (el('mut-include-fx').checked) {
+            el('fx-wave').value = Math.random() < 0.3 ? Math.floor(Math.random() * 12) + 3 : 0;
+            el('fx-rgb').value = Math.random() < 0.4 ? Math.floor(Math.random() * 8) + 2 : 0;
+            el('fx-glow').value = Math.random() < 0.35 ? Math.floor(Math.random() * 8) + 2 : 0;
+            el('fx-strobe').value = Math.random() < 0.15 ? Math.floor(Math.random() * 6) + 2 : 0;
+
+            ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
+                updateBadge(id + '-val', el(id).value === "0" ? "Off" : el(id).value + "px");
+            });
+        }
+
+        renderActivePattern();
+    }
+
+    el('btn-quick-mutate').onclick = performHyperMutate;
+
+    el('btn-quick-rand').onclick = () => {
+        const allKeys = Object.keys(POI_GENERATORS);
+        currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
+        proSelect.value = currentPattern;
+        if (el('morph-enable').checked) {
+            morphASelect.value = currentPattern;
+            morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
+        }
+        highlightActivePreset();
+        performHyperMutate();
+    };
+
+    // --- DOWNLOAD HANDLERS ---
     function triggerDownload(blob, filename) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -823,28 +956,6 @@ document.addEventListener('DOMContentLoaded', function() {
     el('btn-quick-dl-bmp').onclick = () => {
         const blob = canvasToBmpBlob(baseCanvas, { topDown: false });
         triggerDownload(blob, `${currentPattern}_${currentWidth}x${currentHeight}.bmp`);
-    };
-
-    el('btn-quick-mutate').onclick = () => {
-        const palKeys = Object.keys(POI_PALETTES);
-        el('ctrl-palette').value = palKeys[Math.floor(Math.random() * palKeys.length)];
-        el('ctrl-repeats').value = [2, 3, 4, 5, 6, 8, 10][Math.floor(Math.random() * 7)];
-        updateBadge('ctrl-repeats-val', el('ctrl-repeats').value + 'x');
-        el('ctrl-thickness').value = (Math.random() * 3 + 1.5).toFixed(1);
-        updateBadge('ctrl-thickness-val', el('ctrl-thickness').value + 'px');
-        renderActivePattern();
-    };
-
-    el('btn-quick-rand').onclick = () => {
-        const allKeys = Object.keys(POI_GENERATORS);
-        currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
-        proSelect.value = currentPattern;
-        if (el('morph-enable').checked) {
-            morphASelect.value = currentPattern;
-            morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
-        }
-        highlightActivePreset();
-        el('btn-quick-mutate').click();
     };
 
     // --- SEQUENCE TIMELINE LOGIC ---
@@ -912,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- CONTROLS LISTENERS ---
     el('ctrl-palette').onchange = renderActivePattern;
+    el('pro-color-dir').onchange = renderActivePattern;
     el('ctrl-gradient-mode').onchange = renderActivePattern;
     el('ctrl-repeats').oninput = (e) => { updateBadge('ctrl-repeats-val', e.target.value + 'x'); renderActivePattern(); };
     el('ctrl-thickness').oninput = (e) => { updateBadge('ctrl-thickness-val', e.target.value + 'px'); renderActivePattern(); };
