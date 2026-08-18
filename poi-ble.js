@@ -502,9 +502,9 @@
 
 
         /**
-         * Upload a Pattern Canvas directly into a specific Bank (0-2) and Slot (0-4)
+         * Upload a Pattern Canvas directly into a specific Bank and Slot (0-4)
          * @param {HTMLCanvasElement} canvas The pattern canvas to upload
-         * @param {number} bankIndex 0 to 2 (Bank 1 to 3)
+         * @param {number} bankIndex 0 to 15 (e.g. Bank 1 to 4)
          * @param {number} slotIndex 0 to 4 (Slot 1 to 5)
          * @param {Function} progressCallback Optional callback (progress: 0.0 - 1.0, info)
          * @param {number} pacingDelayMs Optional delay between packets
@@ -514,8 +514,9 @@
                 throw new Error('Please connect your Open Pixel Poi via Bluetooth first.');
             }
 
-            const bank = Math.max(0, Math.min(2, parseInt(bankIndex) || 0));
+            const bank = Math.max(0, Math.min(15, parseInt(bankIndex) || 0));
             const slot = Math.max(0, Math.min(4, parseInt(slotIndex) || 0));
+
 
             // 1. Select target bank and slot on all connected poi
             // Give the ESP32 400-500ms to read and close any open LittleFS pattern file

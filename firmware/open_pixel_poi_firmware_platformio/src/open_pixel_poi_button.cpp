@@ -144,8 +144,8 @@ public:
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK2_HOLD){
-        // 7 options, 500ms each, 0-3500ms, offset by 500 for initial press animation
-        int selection = ((millis() - downTime - 500) % 3500) / 500;
+        // 9 options, 500ms each, 0-4500ms, offset by 500 for initial press animation
+        int selection = ((millis() - downTime - 500) % 4500) / 500;
         if(selection == 0){
           config.setPatternBank(0, true);
           config.displayState = DS_PATTERN;
@@ -159,23 +159,32 @@ public:
           config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
         }else if(selection == 3){
-          config.displayState = DS_PATTERN_ALL_ALL;
+          config.setPatternBank(3, true);
+          config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
         }else if(selection == 4){
+          config.displayState = DS_PATTERN_ALL_ALL;
+          config.displayStateLastUpdated = millis();
+        }else if(selection == 5){
           config.setPatternBank(0, true);
           config.displayState = DS_PATTERN_ALL;
           config.displayStateLastUpdated = millis();
-        }else if(selection == 5){
+        }else if(selection == 6){
           config.setPatternBank(1, true);
           config.displayState = DS_PATTERN_ALL;
           config.displayStateLastUpdated = millis();
-        }else{
+        }else if(selection == 7){
           config.setPatternBank(2, true);
+          config.displayState = DS_PATTERN_ALL;
+          config.displayStateLastUpdated = millis();
+        }else{
+          config.setPatternBank(3, true);
           config.displayState = DS_PATTERN_ALL;
           config.displayStateLastUpdated = millis();
         }
         buttonState = BS_INITIAL;
-      }else if(buttonState == BS_CLICK3_HOLD){
+      }
+else if(buttonState == BS_CLICK3_HOLD){
         if(millis() - downTime < 1000){
           config.setLedBrightness(config.ledBrightnessOptions[0]);
         }else if(millis() - downTime < 1500){

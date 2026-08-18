@@ -9,7 +9,7 @@
 Open pixel poi have a single button menu which gives access to
 
 1. Power on/off
-1. 15 pattern slots (split into 3 pattern banks w/ auto cycle options)
+1. 20 pattern slots (split into 4 pattern banks w/ auto cycle options)
 1. 5 Brightness levels
 1. 10 speeds
 1. Voltage display
@@ -43,17 +43,18 @@ loop back to the first pattern.
 ## Changing pattern banks
 A single press, followed by a press and hold will show the pink
 dot pattern cycling animation, and then ramp up through the pattern
-bank slots. There are 3 slots, which hold 5 patterns each. Release
+bank slots. There are 4 slots (Banks 1–4), which hold 5 patterns each (20 total). Release
 the hold at the desired bank to select it.
 
 ## Auto pattern cycling
-When changing pattern banks, keep holding past the 3rd bank, and 
+When changing pattern banks, keep holding past the 4th bank, and 
 blue dots will appear indicating which bank(s) will be set to auto 
-cycle. First (after the 3rd bank selection) is all 3, which will 
-cycle all 15 patterns, followed by 1st, 2nd, and 3rd banks. 
+cycle. First (after the 4th bank selection) is all 4, which will 
+cycle all 20 patterns, followed by 1st, 2nd, 3rd, and 4th banks. 
 Release the hold when the desired bank(s) are indicated and the 
-poi will auto cycle the patterns in the sleected bank(s), 
-changing the pattern every 10 seconds.
+poi will auto cycle the patterns in the selected bank(s), 
+changing the pattern every user-selected interval (default 10 seconds).
+
 
 ## Changing Brightness
 A double press, followed by a press and hold will show the white

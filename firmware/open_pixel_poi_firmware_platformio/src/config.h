@@ -16,8 +16,9 @@
 
 // These limits max out the available space in the current partition scheme. They are also hardcoded in the app.
 #define PATTERN_BANK_SIZE 5
-#define PATTERN_BANK_COUNT 3
+#define PATTERN_BANK_COUNT 4
 #define PATTERN_PIXEL_LIMIT 40000
+
 #define PATTERN_SHUFFLE_DURATION 10 // This one is editable
 
 

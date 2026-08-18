@@ -176,39 +176,44 @@ class OpenPixelPoiLED {
           }
         }
       }else if(config.displayState == DS_BANK){
-        int chunkSize = max(2, (config.ledCount - 2)/3);
-        int pressTime = (millis() - config.displayStateLastUpdated) % 3500;
-        if (pressTime < 1500){
+        int chunkSize = max(2, (config.ledCount - 2)/4);
+        int pressTime = (millis() - config.displayStateLastUpdated) % 4500;
+        if (pressTime < 2000){
           for (int j=1; j-1 <= pressTime/500; j+=1){
             for(int k=(j-1) * chunkSize; k < j*chunkSize -1; k++){
               ledStrip->SetPixelColor(k, RgbColor(0xFF, 0x00, 0xFF));
             }
           }
         }else{
-          for (int j=0; j < 3; j+=1){
+          for (int j=0; j < 4; j+=1){
             for(int k=j * chunkSize; k < ((j + 1) * chunkSize) -1; k++){
                 ledStrip->SetPixelColor(k, RgbColor(0xFF, 0x00, 0xFF));
-                if (pressTime < 2000){
+                if (pressTime < 2500){
                   if(chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2)){
                     ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
                   }
-                }else if (pressTime < 2500){
+                }else if (pressTime < 3000){
                   if(j == 0 && (chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2))){
                     ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
                   }
-                }else if (pressTime < 3000){
+                }else if (pressTime < 3500){
                   if(j == 1 && (chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2))){
                     ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
                   }
-                }else if (pressTime < 3500){
+                }else if (pressTime < 4000){
                   if(j == 2 && (chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2))){
+                    ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
+                  }
+                }else if (pressTime < 4500){
+                  if(j == 3 && (chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2))){
                     ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
                   }
                 }
             }
           }
         }
-      }else if(config.displayState == DS_BRIGHTNESS){
+      }
+else if(config.displayState == DS_BRIGHTNESS){
         // Override brightness without saving it. Button will save it upon release.
         if(millis() - config.displayStateLastUpdated < 500){
           config.ledBrightness = config.ledBrightnessOptions[0];
