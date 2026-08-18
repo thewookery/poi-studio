@@ -453,6 +453,17 @@
         }
 
         /**
+         * Change Active Bank and Pattern Slot simultaneously on all connected Poi
+         */
+        async setBankAndSlot(bankIndex, slotIndex) {
+            const bank = Math.max(0, Math.min(15, parseInt(bankIndex) || 0));
+            const slot = Math.max(0, Math.min(15, parseInt(slotIndex) || 0));
+            await this._sendMessage([COMM_CODES.CC_SET_BANK, bank]);
+            await new Promise(r => setTimeout(r, 40));
+            await this._sendMessage([COMM_CODES.CC_SET_PATTERN_SLOT, slot]);
+        }
+
+        /**
          * Auto-Loop All Banks on all connected Poi
          */
         async loopAllBanks(durationSeconds) {
@@ -462,6 +473,7 @@
             }
             await this._sendMessage([COMM_CODES.CC_SET_BANK_ALL]);
         }
+
 
 
         /**

@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=54">
+    <link rel="stylesheet" href="styles.css?v=55">
 
 
 </head>
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v54</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v55</span></div>
+
 
 
 
@@ -912,9 +913,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=54"></script>
-<script src="poi-engine.js?v=54"></script>
-<script src="poi-ble.js?v=54"></script>
+<script src="master-vault-manifest.js?v=55"></script>
+<script src="poi-engine.js?v=55"></script>
+<script src="poi-ble.js?v=55"></script>
+
 
 
 <script>
@@ -3346,9 +3348,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     playBtn.onclick = async (e) => {
                         e.stopPropagation();
                         if (OpenPixelPoiBLE.isConnected) {
-                            await OpenPixelPoiBLE.setBank(slot.bankIndex);
-                            await new Promise(r => setTimeout(r, 60));
-                            await OpenPixelPoiBLE.setPatternSlot(slot.slotIndex);
+                            if (typeof OpenPixelPoiBLE.setBankAndSlot === 'function') {
+                                await OpenPixelPoiBLE.setBankAndSlot(slot.bankIndex, slot.slotIndex);
+                            } else {
+                                await OpenPixelPoiBLE.setBank(slot.bankIndex);
+                                await OpenPixelPoiBLE.setPatternSlot(slot.slotIndex);
+                            }
                         } else {
                             alert('Connect your Open Pixel Poi via Bluetooth first to switch slots!');
                         }
@@ -3403,14 +3408,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (playBankBtn) {
                 playBankBtn.onclick = async () => {
                     if (OpenPixelPoiBLE.isConnected) {
-                        await OpenPixelPoiBLE.setBank(b);
-                        await new Promise(r => setTimeout(r, 60));
-                        await OpenPixelPoiBLE.setPatternSlot(0);
+                        if (typeof OpenPixelPoiBLE.setBankAndSlot === 'function') {
+                            await OpenPixelPoiBLE.setBankAndSlot(b, 0);
+                        } else {
+                            await OpenPixelPoiBLE.setBank(b);
+                            await OpenPixelPoiBLE.setPatternSlot(0);
+                        }
                     } else {
                         alert('Connect your Open Pixel Poi via Bluetooth first!');
                     }
                 };
             }
+
 
             const flashBankBtn = bankSection.querySelector('[data-bank-action="flash-bank"]');
             if (flashBankBtn) {
