@@ -12,7 +12,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=54">
+
 
 </head>
 <body>
@@ -32,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v53</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v54</span></div>
+
 
 
 
@@ -910,9 +912,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js"></script>
-<script src="poi-engine.js"></script>
-<script src="poi-ble.js"></script>
+<script src="master-vault-manifest.js?v=54"></script>
+<script src="poi-engine.js?v=54"></script>
+<script src="poi-ble.js?v=54"></script>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -2980,8 +2983,10 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.classList.toggle('active', btnSec === currentLoopIntervalSec);
         });
 
-        if (notifyBle && OpenPixelPoiBLE.isConnected) {
-            OpenPixelPoiBLE.setPatternShuffleDuration(currentLoopIntervalSec);
+        if (notifyBle && window.OpenPixelPoiBLE && OpenPixelPoiBLE.isConnected) {
+            if (typeof OpenPixelPoiBLE.setPatternShuffleDuration === 'function') {
+                OpenPixelPoiBLE.setPatternShuffleDuration(currentLoopIntervalSec);
+            }
         }
     }
 
@@ -3002,7 +3007,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle Auto-Loop Active Bank
     async function toggleLoopActiveBank() {
-        if (!OpenPixelPoiBLE.isConnected) {
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isConnected) {
             alert("Please connect your Open Pixel Poi via Bluetooth first.");
             return;
         }
@@ -3014,19 +3019,23 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.remove('active'));
             const currentSlot = el('ble-ctrl-slot') ? parseInt(el('ble-ctrl-slot').value) || 0 : 0;
-            await OpenPixelPoiBLE.setPatternSlot(currentSlot);
+            if (typeof OpenPixelPoiBLE.setPatternSlot === 'function') {
+                await OpenPixelPoiBLE.setPatternSlot(currentSlot);
+            }
         } else {
             isLoopingBankActive = true;
             isLoopingAllActive = false;
             document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.add('active'));
             document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.remove('active'));
-            await OpenPixelPoiBLE.loopAllPatterns(currentLoopIntervalSec);
+            if (typeof OpenPixelPoiBLE.loopAllPatterns === 'function') {
+                await OpenPixelPoiBLE.loopAllPatterns(currentLoopIntervalSec);
+            }
         }
     }
 
     // Toggle Auto-Loop All Banks
     async function toggleLoopAllBanks() {
-        if (!OpenPixelPoiBLE.isConnected) {
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isConnected) {
             alert("Please connect your Open Pixel Poi via Bluetooth first.");
             return;
         }
@@ -3038,18 +3047,23 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.remove('active'));
             const currentSlot = el('ble-ctrl-slot') ? parseInt(el('ble-ctrl-slot').value) || 0 : 0;
-            await OpenPixelPoiBLE.setPatternSlot(currentSlot);
+            if (typeof OpenPixelPoiBLE.setPatternSlot === 'function') {
+                await OpenPixelPoiBLE.setPatternSlot(currentSlot);
+            }
         } else {
             isLoopingAllActive = true;
             isLoopingBankActive = false;
             document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.add('active'));
             document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.remove('active'));
-            await OpenPixelPoiBLE.loopAllBanks(currentLoopIntervalSec);
+            if (typeof OpenPixelPoiBLE.loopAllBanks === 'function') {
+                await OpenPixelPoiBLE.loopAllBanks(currentLoopIntervalSec);
+            }
         }
     }
 
     document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.onclick = toggleLoopActiveBank);
     document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.onclick = toggleLoopAllBanks);
+
 
 
     // =========================================================================
