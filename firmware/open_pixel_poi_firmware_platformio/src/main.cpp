@@ -22,17 +22,22 @@ void setup() {
   #ifdef DEBUG
     Serial.begin(19200);
     Serial.setDebugOutput(true);
-    // while(!Serial);  // required for Serial.print* to work correctly
   #endif
 
-  debugf("Open Pixel POI\n");
-  debugf("Setup Begin\n");
+  debugf("Open Pixel POI - Hardened Engine\n");
+  debugf("Setup Begin. Free Heap: %d bytes\n", ESP.getFreeHeap());
+
+  // MEMORY INTEGRITY GUARDRAIL:
+  // Ensure pattern buffer exists; if initial heap was constrained, allocate safe fallback
+  if (config.pattern == NULL) {
+    config.pattern = (uint8_t *) malloc(10000 * 3 * sizeof(uint8_t));
+  }
 
   config.setup();
   led.setup();
   ble.setup();
   button.setup();
-  debugf("- Setup Complete\n");
+  debugf("- Setup Complete. Running Free Heap: %d bytes\n", ESP.getFreeHeap());
 }
 
 void loop() {

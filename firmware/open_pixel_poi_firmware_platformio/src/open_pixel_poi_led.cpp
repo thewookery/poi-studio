@@ -77,45 +77,45 @@ class OpenPixelPoiLED {
           lastFrameIndex = frameIndex;
         }
 
-        // Check if pattern cross-fade/blend is active
-        bool isBlending = (config.blendMode > 0 && config.prevPattern != NULL && config.prevFrameCount > 0 && (millis() - config.blendStartTime < config.blendDurationMs));
-        float blendAlpha = isBlending ? ((float)(millis() - config.blendStartTime) / (float)config.blendDurationMs) : 1.0f;
-        int prevFrameIdx = (isBlending && config.prevFrameCount > 0) ? (frameIndex % config.prevFrameCount) : 0;
+        // Zero-RAM Transition Engine
+        bool isTransitioning = (config.blendMode > 0 && (millis() - config.blendStartTime < config.blendDurationMs));
+        float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)config.blendDurationMs) : 1.0f;
 
         for (int j=0; j<config.ledCount; j++){
           red = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 0];
           green = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 1];
           blue = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 2];
 
-          // Apply Pattern Blend Modes
-          if (isBlending) {
-            uint8_t oldR = config.prevPattern[prevFrameIdx*config.prevFrameHeight*3 + j%config.prevFrameHeight*3 + 0];
-            uint8_t oldG = config.prevPattern[prevFrameIdx*config.prevFrameHeight*3 + j%config.prevFrameHeight*3 + 1];
-            uint8_t oldB = config.prevPattern[prevFrameIdx*config.prevFrameHeight*3 + j%config.prevFrameHeight*3 + 2];
-
+          // Apply Zero-RAM Transition Modes
+          if (isTransitioning) {
             if (config.blendMode == 1) {
-              // Cross-Fade (Linear Lerp)
-              red = (uint8_t)((1.0f - blendAlpha) * oldR + blendAlpha * red);
-              green = (uint8_t)((1.0f - blendAlpha) * oldG + blendAlpha * green);
-              blue = (uint8_t)((1.0f - blendAlpha) * oldB + blendAlpha * blue);
+              // 1. Smooth Fade-In (Linear ramp)
+              red = (uint8_t)(red * tProgress);
+              green = (uint8_t)(green * tProgress);
+              blue = (uint8_t)(blue * tProgress);
             } else if (config.blendMode == 2) {
-              // Additive Glow Blend
-              red = min(255, (int)(oldR * (1.0f - blendAlpha) + red));
-              green = min(255, (int)(oldG * (1.0f - blendAlpha) + green));
-              blue = min(255, (int)(oldB * (1.0f - blendAlpha) + blue));
-            } else if (config.blendMode == 3) {
-              // Screen Blend
-              red = 255 - ((255 - oldR) * (255 - (uint8_t)(red * blendAlpha)) / 255);
-              green = 255 - ((255 - oldG) * (255 - (uint8_t)(green * blendAlpha)) / 255);
-              blue = 255 - ((255 - oldB) * (255 - (uint8_t)(blue * blendAlpha)) / 255);
-            } else if (config.blendMode == 4) {
-              // Curtain / Strip Wipe
-              int wipeThreshold = (int)(blendAlpha * config.ledCount);
-              if (j > wipeThreshold) {
-                red = oldR; green = oldG; blue = oldB;
+              // 2. Energy Flash Pulse
+              if (tProgress < 0.25f) {
+                uint8_t burst = (uint8_t)((1.0f - (tProgress / 0.25f)) * 255);
+                red = min(255, (int)(red + burst));
+                green = min(255, (int)(green + burst));
+                blue = min(255, (int)(blue + burst));
               }
+            } else if (config.blendMode == 3) {
+              // 3. Curtain Wipe In (Wipes along strip)
+              int wipeLimit = (int)(tProgress * config.ledCount);
+              if (j > wipeLimit) {
+                red = 0; green = 0; blue = 0;
+              }
+            } else if (config.blendMode == 4) {
+              // 4. Glow Pulse In
+              float pulse = 0.4f + 0.6f * tProgress;
+              red = (uint8_t)(red * pulse);
+              green = (uint8_t)(green * pulse);
+              blue = (uint8_t)(blue * pulse);
             }
           }
+
 
           // Apply Real-Time Color Palette Filter
           if (config.paletteFxMode > 0) {

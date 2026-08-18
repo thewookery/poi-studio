@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPoi - Studio FX & Blend Edition (55px DotStar)",
-  "version": "2026.4.55-fx",
+  "name": "OpenPixelPoi - Studio FX Edition (55px DotStar)",
+  "version": "2026.4.55-fx-hardened",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
