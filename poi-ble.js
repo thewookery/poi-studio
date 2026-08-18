@@ -42,8 +42,12 @@
         CC_SET_BRIGHTNESS_OPTIONS: 0x11,
         CC_SET_SPEED_OPTION: 0x12,
         CC_SET_SPEED_OPTIONS: 0x13,
-        CC_SET_PATTERN_SHUFFLE_DURATION: 0x14
+        CC_SET_PATTERN_SHUFFLE_DURATION: 0x14,
+        CC_SET_PALETTE_FX: 0x15,
+        CC_SET_BLEND_MODE: 0x16,
+        CC_SET_PALETTE_SPEED: 0x17
     };
+
 
     class OpenPixelPoiBLEClient {
         constructor() {
@@ -498,6 +502,31 @@
             }
             await this._sendMessage([COMM_CODES.CC_SET_BANK_ALL]);
         }
+
+        /**
+         * Set Real-Time Color Palette Filter (0=Normal, 1=Rainbow, 2=Cyberpunk, 3=Fire, 4=Matrix, 5=Acid, 6=Ice)
+         */
+        async setPaletteFX(paletteId) {
+            const id = Math.max(0, Math.min(6, parseInt(paletteId) || 0));
+            await this._sendMessage([COMM_CODES.CC_SET_PALETTE_FX, id]);
+        }
+
+        /**
+         * Set Pattern Transition Blend Mode (0=Cut, 1=CrossFade, 2=Additive, 3=Screen, 4=CurtainWipe)
+         */
+        async setBlendMode(modeId) {
+            const mode = Math.max(0, Math.min(4, parseInt(modeId) || 0));
+            await this._sendMessage([COMM_CODES.CC_SET_BLEND_MODE, mode]);
+        }
+
+        /**
+         * Set Palette Color Cycle Speed (1-10)
+         */
+        async setPaletteSpeed(speed) {
+            const spd = Math.max(1, Math.min(10, parseInt(speed) || 3));
+            await this._sendMessage([COMM_CODES.CC_SET_PALETTE_SPEED, spd]);
+        }
+
 
 
 

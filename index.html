@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=61">
+    <link rel="stylesheet" href="styles.css?v=62">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v61</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v62</span></div>
+
 
 
 
@@ -888,8 +889,47 @@
             </div>
         </div>
 
+        <!-- 2.5 LIVE FX & BLEND ENGINE (CUSTOM FX FIRMWARE CONTROLS) -->
+        <div class="card-box" style="border-color:var(--neon-purple); background:rgba(188, 19, 254, 0.04);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:0.82rem; font-weight:800; color:var(--neon-purple);">🎨 Live Color Palette & Blend Engine:</span>
+                <span class="telemetry-pill" style="color:var(--neon-purple); font-size:0.62rem; font-weight:800;">FX Edition</span>
+            </div>
+
+            <!-- COLOR PALETTE FILTER BUTTONS -->
+            <div style="margin-bottom:8px;">
+                <div style="font-size:0.7rem; font-weight:700; color:var(--text-color); margin-bottom:4px;">
+                    🌈 Real-Time Color Palette Filter:
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(100px, 1fr)); gap:4px;" id="fx-palette-buttons">
+                    <button class="hw-btn active" data-pal="0" style="font-size:0.68rem; padding:5px 2px;">⚪ Normal</button>
+                    <button class="hw-btn" data-pal="1" style="font-size:0.68rem; padding:5px 2px; color:var(--neon-green);">🌈 Rainbow</button>
+                    <button class="hw-btn" data-pal="2" style="font-size:0.68rem; padding:5px 2px; color:var(--neon-cyan);">🌆 Cyberpunk</button>
+                    <button class="hw-btn" data-pal="3" style="font-size:0.68rem; padding:5px 2px; color:#ff7700;">🔥 Fire/Lava</button>
+                    <button class="hw-btn" data-pal="4" style="font-size:0.68rem; padding:5px 2px; color:var(--neon-green);">🟩 Matrix</button>
+                    <button class="hw-btn" data-pal="5" style="font-size:0.68rem; padding:5px 2px; color:var(--neon-pink);">⚡ Acid Wave</button>
+                    <button class="hw-btn" data-pal="6" style="font-size:0.68rem; padding:5px 2px; color:#a0e0ff;">❄️ Glacial Ice</button>
+                </div>
+            </div>
+
+            <!-- PATTERN TRANSITION BLEND MODES -->
+            <div>
+                <div style="font-size:0.7rem; font-weight:700; color:var(--text-color); margin-bottom:4px;">
+                    🔀 Pattern Transition Blend Mode:
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(100px, 1fr)); gap:4px;" id="fx-blend-buttons">
+                    <button class="hw-btn" data-blend="0" style="font-size:0.68rem; padding:5px 2px;">✂️ Cut</button>
+                    <button class="hw-btn active" data-blend="1" style="font-size:0.68rem; padding:5px 2px; color:var(--neon-green);">✨ Cross-Fade</button>
+                    <button class="hw-btn" data-blend="2" style="font-size:0.68rem; padding:5px 2px; color:var(--neon-yellow);">💥 Additive Glow</button>
+                    <button class="hw-btn" data-blend="3" style="font-size:0.68rem; padding:5px 2px; color:var(--neon-purple);">🎞️ Screen</button>
+                    <button class="hw-btn" data-blend="4" style="font-size:0.68rem; padding:5px 2px; color:var(--neon-cyan);">🏁 Curtain Wipe</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 3. ADVANCED PRECISION SLIDERS & FINE-TUNING (COLLAPSIBLE) -->
         <details class="card-box" style="background:rgba(0,0,0,0.5); border-color:var(--border-color);">
+
             <summary style="font-size:0.78rem; font-weight:800; color:var(--text-color); cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center;">
                 <span>⚙️ Advanced Precision Sliders & BLE Timing</span>
                 <span style="font-size:0.7rem; color:var(--accent-color);">Tap to Expand ▼</span>
@@ -1145,6 +1185,31 @@
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
                     
+                    <!-- 55-PIXELS DOTSTAR FX & BLEND EDITION -->
+                    <div class="firmware-card" style="border-color:rgba(188,19,254,0.5); background:rgba(188,19,254,0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.8rem; font-weight:800; color:var(--neon-purple);">🚀 Custom PCB v3.0.0 (55px • FX & Blend Edition)</span>
+                            <span class="telemetry-pill" style="color:var(--neon-purple); font-size:0.62rem; font-weight:800;">FX Engine</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-color); line-height:1.4; margin-top:2px;">
+                            • <b>LED Type:</b> SK9822 DotStar High Density (55 LEDs)<br>
+                            • <b>7 Color Palette Filters:</b> Rainbow, Cyberpunk, Fire, Matrix, Acid, Ice<br>
+                            • <b>5 Pattern Blend Modes:</b> Cross-fade, Additive Glow, Screen, Wipe<br>
+                            • <b>Button Triggers:</b> Triple-click palette cycle • Quad-click blend cycle<br>
+                            • <b>4 Hardware Banks (20 Slots)</b> • Up to 2000 FPS
+                        </div>
+                        <div class="firmware-flash-wrap" style="margin-top:8px;">
+                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4; background:linear-gradient(135deg, var(--neon-purple), var(--neon-pink));">
+                                    ⚡ Flash 55px FX & Blend Edition
+                                </button>
+                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
+                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
+                                </span>
+                            </esp-web-install-button>
+                        </div>
+                    </div>
+
                     <!-- 55-PIXELS DOTSTAR 4-BANK CUSTOM BUILD -->
                     <div class="firmware-card" style="border-color:rgba(0,255,136,0.4); background:rgba(0,255,136,0.04);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1171,6 +1236,7 @@
                     </div>
 
                 </div>
+
             </div>
 
             <!-- 3. LEGACY FIRMWARE & SOURCE CODE SECTION -->
@@ -1270,9 +1336,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=61"></script>
-<script src="poi-engine.js?v=61"></script>
-<script src="poi-ble.js?v=61"></script>
+<script src="master-vault-manifest.js?v=62"></script>
+<script src="poi-engine.js?v=62"></script>
+<script src="poi-ble.js?v=62"></script>
+
 
 
 
@@ -3392,10 +3459,39 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // Live FX & Blend Engine Event Handlers
+    let currentPaletteFx = 0;
+    let currentBlendMode = 1;
+
+    document.querySelectorAll('#fx-palette-buttons button').forEach(btn => {
+        btn.onclick = async () => {
+            const palId = parseInt(btn.getAttribute('data-pal')) || 0;
+            currentPaletteFx = palId;
+            document.querySelectorAll('#fx-palette-buttons button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (OpenPixelPoiBLE.isConnected && typeof OpenPixelPoiBLE.setPaletteFX === 'function') {
+                await OpenPixelPoiBLE.setPaletteFX(palId);
+            }
+        };
+    });
+
+    document.querySelectorAll('#fx-blend-buttons button').forEach(btn => {
+        btn.onclick = async () => {
+            const blendId = parseInt(btn.getAttribute('data-blend')) || 0;
+            currentBlendMode = blendId;
+            document.querySelectorAll('#fx-blend-buttons button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (OpenPixelPoiBLE.isConnected && typeof OpenPixelPoiBLE.setBlendMode === 'function') {
+                await OpenPixelPoiBLE.setBlendMode(blendId);
+            }
+        };
+    });
+
     // Auto-Loop Switch Interval State
     let currentLoopIntervalSec = 10;
     let isLoopingBankActive = false;
     let isLoopingAllActive = false;
+
 
     function setLoopInterval(sec, notifyBle = true) {
         currentLoopIntervalSec = Math.max(1, Math.min(255, parseInt(sec) || 10));

@@ -67,21 +67,113 @@ class OpenPixelPoiLED {
       // Clear previous data
       ledStrip->ClearTo(RgbColor(0,0,0));
 
-      // Render output
+      // Render output with Pattern Blend Engine & Color Palette FX
       if(config.displayState == DS_PATTERN || config.displayState == DS_PATTERN_ALL  || config.displayState == DS_PATTERN_ALL_ALL){
+        if(config.frameCount == 0 || config.frameHeight == 0) return;
         frameIndex = ((micros() - (config.displayStateLastUpdated * 1000)) / (1000000/(config.animationSpeed))) % config.frameCount;
         if(lastFrameIndex == frameIndex){
           return;
         }else{
           lastFrameIndex = frameIndex;
         }
+
+        // Check if pattern cross-fade/blend is active
+        bool isBlending = (config.blendMode > 0 && config.prevPattern != NULL && config.prevFrameCount > 0 && (millis() - config.blendStartTime < config.blendDurationMs));
+        float blendAlpha = isBlending ? ((float)(millis() - config.blendStartTime) / (float)config.blendDurationMs) : 1.0f;
+        int prevFrameIdx = (isBlending && config.prevFrameCount > 0) ? (frameIndex % config.prevFrameCount) : 0;
+
         for (int j=0; j<config.ledCount; j++){
           red = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 0];
           green = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 1];
           blue = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 2];
-          ledStrip->SetPixelColor(config.ledCount-1-j, RgbColor(red, green, blue)); // Invert display, this makes a veritical image right side up at the top of a poi's arc, when it is upside down.
+
+          // Apply Pattern Blend Modes
+          if (isBlending) {
+            uint8_t oldR = config.prevPattern[prevFrameIdx*config.prevFrameHeight*3 + j%config.prevFrameHeight*3 + 0];
+            uint8_t oldG = config.prevPattern[prevFrameIdx*config.prevFrameHeight*3 + j%config.prevFrameHeight*3 + 1];
+            uint8_t oldB = config.prevPattern[prevFrameIdx*config.prevFrameHeight*3 + j%config.prevFrameHeight*3 + 2];
+
+            if (config.blendMode == 1) {
+              // Cross-Fade (Linear Lerp)
+              red = (uint8_t)((1.0f - blendAlpha) * oldR + blendAlpha * red);
+              green = (uint8_t)((1.0f - blendAlpha) * oldG + blendAlpha * green);
+              blue = (uint8_t)((1.0f - blendAlpha) * oldB + blendAlpha * blue);
+            } else if (config.blendMode == 2) {
+              // Additive Glow Blend
+              red = min(255, (int)(oldR * (1.0f - blendAlpha) + red));
+              green = min(255, (int)(oldG * (1.0f - blendAlpha) + green));
+              blue = min(255, (int)(oldB * (1.0f - blendAlpha) + blue));
+            } else if (config.blendMode == 3) {
+              // Screen Blend
+              red = 255 - ((255 - oldR) * (255 - (uint8_t)(red * blendAlpha)) / 255);
+              green = 255 - ((255 - oldG) * (255 - (uint8_t)(green * blendAlpha)) / 255);
+              blue = 255 - ((255 - oldB) * (255 - (uint8_t)(blue * blendAlpha)) / 255);
+            } else if (config.blendMode == 4) {
+              // Curtain / Strip Wipe
+              int wipeThreshold = (int)(blendAlpha * config.ledCount);
+              if (j > wipeThreshold) {
+                red = oldR; green = oldG; blue = oldB;
+              }
+            }
+          }
+
+          // Apply Real-Time Color Palette Filter
+          if (config.paletteFxMode > 0) {
+            uint8_t lum = (uint8_t)((red * 77 + green * 150 + blue * 29) >> 8);
+            if (config.paletteFxMode == 1) {
+              // 1. RAINBOW HUE CYCLE
+              uint8_t hue = (uint8_t)((millis() * config.paletteSpeed / 25) & 0xFF);
+              uint8_t region = hue / 43;
+              uint8_t rem = (hue - (region * 43)) * 6;
+              uint8_t p = (lum * 75) >> 8;
+              uint8_t q = (lum * (255 - ((180 * rem) >> 8))) >> 8;
+              uint8_t t = (lum * (255 - ((180 * (255 - rem)) >> 8))) >> 8;
+              switch (region % 6) {
+                case 0: red = lum; green = t; blue = p; break;
+                case 1: red = q; green = lum; blue = p; break;
+                case 2: red = p; green = lum; blue = t; break;
+                case 3: red = p; green = q; blue = lum; break;
+                case 4: red = t; green = p; blue = lum; break;
+                default: red = lum; green = p; blue = q; break;
+              }
+            } else if (config.paletteFxMode == 2) {
+              // 2. CYBERPUNK NEON (Cyan & Magenta Duotone)
+              red = lum;
+              green = (uint8_t)((lum * 130) / 255);
+              blue = (uint8_t)(255 - (lum * 90) / 255);
+            } else if (config.paletteFxMode == 3) {
+              // 3. FIRE & LAVA (Black -> Crimson -> Orange -> Gold -> White)
+              if (lum < 85) {
+                red = lum * 3; green = 0; blue = 0;
+              } else if (lum < 170) {
+                red = 255; green = (lum - 85) * 3; blue = 0;
+              } else {
+                red = 255; green = 255; blue = (lum - 170) * 3;
+              }
+            } else if (config.paletteFxMode == 4) {
+              // 4. MATRIX PHOSPHOR GREEN
+              if (lum > 220) {
+                red = lum; green = 255; blue = lum;
+              } else {
+                red = (lum * 25) / 255; green = lum; blue = (lum * 35) / 255;
+              }
+            } else if (config.paletteFxMode == 5) {
+              // 5. ACID VAPORWAVE
+              red = 255 - red;
+              green = (green > 128) ? 255 : (green * 2);
+              blue = 255 - blue;
+            } else if (config.paletteFxMode == 6) {
+              // 6. GLACIAL ICE
+              red = (lum * 130) / 255;
+              green = (lum * 220) / 255;
+              blue = (lum < 40) ? (lum * 6) : 255;
+            }
+          }
+
+          ledStrip->SetPixelColor(config.ledCount-1-j, RgbColor(red, green, blue)); // Invert display for POV arc
         }
-      }else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 || config.displayState == DS_WAITING3 || config.displayState == DS_WAITING4 || config.displayState == DS_WAITING5){
+      }
+else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 || config.displayState == DS_WAITING3 || config.displayState == DS_WAITING4 || config.displayState == DS_WAITING5){
         // 500ms or till interupted
         if(config.displayState == DS_WAITING){
           // Blue for blinky!

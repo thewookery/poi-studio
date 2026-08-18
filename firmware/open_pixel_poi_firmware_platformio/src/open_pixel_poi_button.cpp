@@ -236,18 +236,21 @@ else if(buttonState == BS_CLICK3_HOLD){
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
-    // Tripple press detected after timeout, do nothing
+    // Triple press detected after timeout, cycle Color Palette FX
     if(buttonState == BS_CLICK3_UP && millis() - downTime >= 500){
+      config.setPaletteFxMode((config.paletteFxMode + 1) % 7);
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
-    // Quad press detected after timeout, do nothing
+    // Quad press detected after timeout, cycle Blend Transition Mode
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 500){
+      config.setBlendMode((config.blendMode + 1) % 5);
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
+
     // Penta press detected after timeout, display voltage
     if(buttonState == BS_CLICK5_UP && millis() - downTime >= 500){
       config.displayState = DS_VOLTAGE2;

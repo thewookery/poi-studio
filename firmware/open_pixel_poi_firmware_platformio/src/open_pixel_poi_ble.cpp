@@ -73,7 +73,11 @@ enum CommCode {
   CC_SET_SPEED_OPTION,            // 18
   CC_SET_SPEED_OPTIONS,           // 19
   CC_SET_PATTERN_SHUFFLE_DURATION,// 20
+  CC_SET_PALETTE_FX,              // 21
+  CC_SET_BLEND_MODE,              // 22
+  CC_SET_PALETTE_SPEED,           // 23
 };
+
 
 class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallbacks{
   
@@ -303,10 +307,32 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
             }else{
               bleSendError();
             }
+          }else if(requestCode == CC_SET_PALETTE_FX){
+            if(bleStatus[2] >= 0 && bleStatus[2] <= 6){
+              config.setPaletteFxMode(bleStatus[2]);
+              bleSendSuccess();
+            }else{
+              bleSendError();
+            }
+          }else if(requestCode == CC_SET_BLEND_MODE){
+            if(bleStatus[2] >= 0 && bleStatus[2] <= 4){
+              config.setBlendMode(bleStatus[2]);
+              bleSendSuccess();
+            }else{
+              bleSendError();
+            }
+          }else if(requestCode == CC_SET_PALETTE_SPEED){
+            if(bleStatus[2] >= 1 && bleStatus[2] <= 10){
+              config.setPaletteSpeed(bleStatus[2]);
+              bleSendSuccess();
+            }else{
+              bleSendError();
+            }
           }else{
             debugf("Recieved message with unknown code!\n");
             bleSendError();
           }
+
         }else{
           if(multipartPattern == 0 && bleStatus[0] == 0xD0 && static_cast<CommCode>(bleStatus[1]) == CC_SET_PATTERN){
             debugf("Start multipart pattern! %d bits\n", bleStatus[2] * (bleStatus[3] << 8 | bleStatus[4]));

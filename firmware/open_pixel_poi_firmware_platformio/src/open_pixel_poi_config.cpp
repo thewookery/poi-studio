@@ -68,6 +68,17 @@ class OpenPixelPoiConfig {
     uint16_t frameCount;
     uint8_t *pattern = (uint8_t *) malloc(PATTERN_PIXEL_LIMIT * 3 * sizeof(uint8_t));
     uint32_t patternLength;
+
+    // Real-Time FX & Blend Engine
+    uint8_t paletteFxMode = 0; // 0=Normal, 1=Rainbow, 2=Cyberpunk, 3=Fire, 4=Matrix, 5=Acid, 6=Ice
+    uint8_t blendMode = 1;     // 0=Cut, 1=CrossFade, 2=Additive Glow, 3=Screen, 4=Curtain Wipe
+    uint8_t paletteSpeed = 3;  // 1-10 speed multiplier
+    unsigned long blendStartTime = 0;
+    uint16_t blendDurationMs = 1200; // 1.2s transition
+    uint8_t prevFrameHeight = 0;
+    uint16_t prevFrameCount = 0;
+    uint8_t *prevPattern = (uint8_t *) malloc(PATTERN_PIXEL_LIMIT * 3 * sizeof(uint8_t));
+
     // Sequencer
     uint8_t *sequencer = (uint8_t *) malloc(1785*sizeof(uint8_t)); // 255 Instruction max (7 bits per instruction)
     uint16_t sequencerLength;
@@ -76,6 +87,21 @@ class OpenPixelPoiConfig {
 
     // Variables
     long configLastUpdated;
+
+    void setPaletteFxMode(uint8_t mode) {
+      this->paletteFxMode = mode % 7;
+      this->configLastUpdated = millis();
+    }
+
+    void setBlendMode(uint8_t mode) {
+      this->blendMode = mode % 5;
+      this->configLastUpdated = millis();
+    }
+
+    void setPaletteSpeed(uint8_t speed) {
+      this->paletteSpeed = max((uint8_t)1, min((uint8_t)10, speed));
+      this->configLastUpdated = millis();
+    }
 
     void setHardwareVersion(uint8_t hardwareVersion) {
       debugf("Save Hardware Version = %d\n", hardwareVersion);
@@ -120,7 +146,7 @@ class OpenPixelPoiConfig {
       preferences.putChar("brightnessOp5", this->ledBrightnessOptions[5]);
       this->configLastUpdated = millis();
     }
-    
+
     void setAnimationSpeed(uint16_t animationSpeed) {
       debugf("Save Speed = %d\n", animationSpeed);
       this->animationSpeed = animationSpeed;
@@ -147,6 +173,16 @@ class OpenPixelPoiConfig {
 
     void setPatternSlot(uint8_t patternSlot, bool save) {
       debugf("Save Pattern Slot = %d\n", patternSlot);
+
+      // Preserve previous pattern for cross-fade / blend transition
+      if (this->blendMode > 0 && this->frameHeight > 0 && this->frameCount > 0 && this->pattern != NULL && this->prevPattern != NULL) {
+        this->prevFrameHeight = this->frameHeight;
+        this->prevFrameCount = min((uint16_t)100, this->frameCount);
+        size_t prevBytes = this->prevFrameHeight * this->prevFrameCount * 3;
+        memcpy(this->prevPattern, this->pattern, min(prevBytes, (size_t)(PATTERN_PIXEL_LIMIT * 3)));
+        this->blendStartTime = millis();
+      }
+
       this->patternSlot = patternSlot;
       if(save){
         preferences.putChar("patternSlot", this->patternSlot);
@@ -162,6 +198,7 @@ class OpenPixelPoiConfig {
       
       this->configLastUpdated = millis();
     }
+
 
     void setPatternBank(uint8_t patternBank, bool save) {
       this->patternBank = patternBank;
