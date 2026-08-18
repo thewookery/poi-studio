@@ -278,12 +278,30 @@
         }
 
         /**
+         * Set LED Brightness Option Level (0 to 5) on all connected Poi
+         * @param {number} optionIndex 0 to 5
+         */
+        async setBrightnessOption(optionIndex) {
+            const opt = Math.max(0, Math.min(5, parseInt(optionIndex) || 0));
+            await this._sendMessage([COMM_CODES.CC_SET_BRIGHTNESS_OPTION, opt]);
+        }
+
+        /**
          * Set LED Brightness on all connected Poi
          * @param {number} brightness 0 (off) to 255 (max)
          */
         async setBrightness(brightness) {
             const b = Math.max(0, Math.min(255, Math.round(brightness)));
             await this._sendMessage([COMM_CODES.CC_SET_BRIGHTNESS, b]);
+        }
+
+        /**
+         * Set Animation Speed Option Level (0 to 5) on all connected Poi
+         * @param {number} optionIndex 0 to 5
+         */
+        async setSpeedOption(optionIndex) {
+            const opt = Math.max(0, Math.min(5, parseInt(optionIndex) || 0));
+            await this._sendMessage([COMM_CODES.CC_SET_SPEED_OPTION, opt]);
         }
 
         /**
@@ -298,6 +316,7 @@
                 s & 0xFF
             ]);
         }
+
 
         /**
          * Change Active Pattern Slot (0-15) on all connected Poi

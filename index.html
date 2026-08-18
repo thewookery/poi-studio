@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v40</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v41</span></div>
+
 
 
 
@@ -673,38 +674,35 @@
                 <span class="telemetry-pill" id="ble-sync-indicator" style="font-size:0.65rem; color:var(--neon-green);">🟢 Broadcast Active</span>
             </div>
 
-            <!-- 5 OFFICIAL BRIGHTNESS LEVELS -->
+            <!-- 6 OFFICIAL BRIGHTNESS LEVEL MODES (MITCH'S OPEN PIXEL POI) -->
             <div style="margin-bottom:12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-yellow);">☀️ LED Brightness (5 Levels):</span>
-                    <span class="val-mono" id="ble-preset-b-val" style="color:var(--neon-yellow); font-size:0.75rem;">Level 3 • 55% (140)</span>
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-yellow);">☀️ LED Brightness (Levels 1–6):</span>
+                    <span class="val-mono" id="ble-preset-b-val" style="color:var(--neon-yellow); font-size:0.75rem;">Level 3 (Normal)</span>
                 </div>
-                <div class="hw-presets" id="ble-b-presets">
-                    <button class="hw-btn" data-b-val="38" data-b-label="Level 1 • 15% (38)">1: 15% Eco</button>
-                    <button class="hw-btn" data-b-val="89" data-b-label="Level 2 • 35% (89)">2: 35% Dim</button>
-                    <button class="hw-btn active" data-b-val="140" data-b-label="Level 3 • 55% (140)">3: 55% Normal</button>
-                    <button class="hw-btn" data-b-val="204" data-b-label="Level 4 • 80% (204)">4: 80% Bright</button>
-                    <button class="hw-btn" data-b-val="255" data-b-label="Level 5 • 100% (255)">5: 100% Max</button>
+                <div class="hw-presets" id="ble-b-presets" style="display:flex; gap:6px;">
+                    <button class="hw-btn" data-b-opt="0" data-b-val="1" data-b-label="Level 1 (Ultra Eco • 1)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">1</button>
+                    <button class="hw-btn" data-b-opt="1" data-b-val="4" data-b-label="Level 2 (Dim • 4)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">2</button>
+                    <button class="hw-btn active" data-b-opt="2" data-b-val="10" data-b-label="Level 3 (Normal • 10)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">3</button>
+                    <button class="hw-btn" data-b-opt="3" data-b-val="25" data-b-label="Level 4 (Medium • 25)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">4</button>
+                    <button class="hw-btn" data-b-opt="4" data-b-val="50" data-b-label="Level 5 (Bright • 50)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">5</button>
+                    <button class="hw-btn" data-b-opt="5" data-b-val="100" data-b-label="Level 6 (Max • 100)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">6</button>
                 </div>
             </div>
 
-            <!-- 10 OFFICIAL SPEED (FPS) LEVELS -->
+            <!-- 6 OFFICIAL SPEED (FPS) LEVEL MODES (MITCH'S OPEN PIXEL POI) -->
             <div style="margin-bottom:12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green);">⏩ Spin Speed / FPS (10 Levels):</span>
-                    <span class="val-mono" id="ble-preset-s-val" style="color:var(--neon-green); font-size:0.75rem;">Level 6 • 180 FPS (Default)</span>
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green);">⏩ Spin Speed / FPS (Levels 1–6):</span>
+                    <span class="val-mono" id="ble-preset-s-val" style="color:var(--neon-green); font-size:0.75rem;">Level 4 (100 FPS)</span>
                 </div>
-                <div class="hw-presets" id="ble-s-presets" style="display:flex; flex-wrap:wrap; gap:4px;">
-                    <button class="hw-btn" data-s-val="30" data-s-label="Level 1 • 30 FPS" style="flex:1; min-width:60px;">1: 30</button>
-                    <button class="hw-btn" data-s-val="60" data-s-label="Level 2 • 60 FPS" style="flex:1; min-width:60px;">2: 60</button>
-                    <button class="hw-btn" data-s-val="90" data-s-label="Level 3 • 90 FPS" style="flex:1; min-width:60px;">3: 90</button>
-                    <button class="hw-btn" data-s-val="120" data-s-label="Level 4 • 120 FPS" style="flex:1; min-width:60px;">4: 120</button>
-                    <button class="hw-btn" data-s-val="150" data-s-label="Level 5 • 150 FPS" style="flex:1; min-width:60px;">5: 150</button>
-                    <button class="hw-btn active" data-s-val="180" data-s-label="Level 6 • 180 FPS (Default)" style="flex:1; min-width:60px;">6: 180 (Def)</button>
-                    <button class="hw-btn" data-s-val="210" data-s-label="Level 7 • 210 FPS" style="flex:1; min-width:60px;">7: 210</button>
-                    <button class="hw-btn" data-s-val="240" data-s-label="Level 8 • 240 FPS" style="flex:1; min-width:60px;">8: 240</button>
-                    <button class="hw-btn" data-s-val="300" data-s-label="Level 9 • 300 FPS" style="flex:1; min-width:60px;">9: 300</button>
-                    <button class="hw-btn" data-s-val="360" data-s-label="Level 10 • 360 FPS" style="flex:1; min-width:60px;">10: 360</button>
+                <div class="hw-presets" id="ble-s-presets" style="display:flex; gap:6px;">
+                    <button class="hw-btn" data-s-opt="0" data-s-val="1" data-s-label="Level 1 (1 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">1</button>
+                    <button class="hw-btn" data-s-opt="1" data-s-val="3" data-s-label="Level 2 (3 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">2</button>
+                    <button class="hw-btn" data-s-opt="2" data-s-val="30" data-s-label="Level 3 (30 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">3</button>
+                    <button class="hw-btn active" data-s-opt="3" data-s-val="100" data-s-label="Level 4 (100 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">4</button>
+                    <button class="hw-btn" data-s-opt="4" data-s-val="400" data-s-label="Level 5 (400 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">5</button>
+                    <button class="hw-btn" data-s-opt="5" data-s-val="600" data-s-label="Level 6 (600 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">6</button>
                 </div>
             </div>
 
@@ -737,15 +735,15 @@
 
             <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
                 <div class="ctrl-row">
-                    <span class="ctrl-label">☀️ Precision Brightness (1-255):</span>
-                    <input type="range" id="ble-ctrl-brightness" min="1" max="255" value="140" style="accent-color:var(--neon-yellow);">
-                    <span class="val-mono" id="ble-ctrl-brightness-val">140</span>
+                    <span class="ctrl-label">☀️ Precision Brightness (1-100):</span>
+                    <input type="range" id="ble-ctrl-brightness" min="1" max="100" value="10" style="accent-color:var(--neon-yellow);">
+                    <span class="val-mono" id="ble-ctrl-brightness-val">10</span>
                 </div>
 
                 <div class="ctrl-row">
-                    <span class="ctrl-label">⏩ Precision Speed (10-600 FPS):</span>
-                    <input type="range" id="ble-ctrl-speed" min="10" max="600" value="180" style="accent-color:var(--neon-green);">
-                    <span class="val-mono" id="ble-ctrl-speed-val">180 Hz</span>
+                    <span class="ctrl-label">⏩ Precision Speed (1-600 FPS):</span>
+                    <input type="range" id="ble-ctrl-speed" min="1" max="600" value="100" style="accent-color:var(--neon-green);">
+                    <span class="val-mono" id="ble-ctrl-speed-val">100 Hz</span>
                 </div>
 
                 <div class="ctrl-row">
@@ -755,6 +753,7 @@
                 </div>
             </div>
         </details>
+
 
 
         <!-- 3. HARDWARE FLASH MEMORY & SAFETY DIAGNOSTICS -->
@@ -2582,44 +2581,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (el('btn-export-cinema-ble')) el('btn-export-cinema-ble').onclick = uploadMasterShowToPoi;
 
-    // 5 Official Brightness Level Presets (Open Pixel Poi)
+    // 6 Official Brightness Level Modes (Open Pixel Poi / Mitch's App)
     document.querySelectorAll('#ble-b-presets button').forEach(btn => {
         btn.onclick = function() {
             document.querySelectorAll('#ble-b-presets button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            const val = parseInt(this.getAttribute('data-b-val'));
+            const opt = parseInt(this.getAttribute('data-b-opt')) || 0;
+            const val = parseInt(this.getAttribute('data-b-val')) || 10;
             const label = this.getAttribute('data-b-label');
             updateBadge('ble-preset-b-val', label);
             if (el('ble-ctrl-brightness')) {
                 el('ble-ctrl-brightness').value = val;
                 updateBadge('ble-ctrl-brightness-val', `${val}`);
             }
-            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setBrightness(val);
+            if (OpenPixelPoiBLE.isConnected) {
+                OpenPixelPoiBLE.setBrightnessOption(opt);
+                OpenPixelPoiBLE.setBrightness(val);
+            }
         };
     });
 
-    // 10 Official Speed (FPS) Presets (Open Pixel Poi)
+    // 6 Official Speed (FPS) Level Modes (Open Pixel Poi / Mitch's App)
     document.querySelectorAll('#ble-s-presets button').forEach(btn => {
         btn.onclick = function() {
             document.querySelectorAll('#ble-s-presets button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            const val = parseInt(this.getAttribute('data-s-val'));
+            const opt = parseInt(this.getAttribute('data-s-opt')) || 0;
+            const val = parseInt(this.getAttribute('data-s-val')) || 100;
             const label = this.getAttribute('data-s-label');
             updateBadge('ble-preset-s-val', label);
             if (el('ble-ctrl-speed')) {
                 el('ble-ctrl-speed').value = val;
                 updateBadge('ble-ctrl-speed-val', `${val} Hz`);
             }
-            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setSpeed(val);
+            if (OpenPixelPoiBLE.isConnected) {
+                OpenPixelPoiBLE.setSpeedOption(opt);
+                OpenPixelPoiBLE.setSpeed(val);
+            }
         };
     });
 
-    // Real-Time Hardware Deck Controls (Advanced Sliders)
+    // Real-Time Hardware Deck Controls (Advanced Precision Sliders)
     if (el('ble-ctrl-brightness')) {
         el('ble-ctrl-brightness').oninput = (e) => {
             const val = parseInt(e.target.value);
             updateBadge('ble-ctrl-brightness-val', `${val}`);
-            updateBadge('ble-preset-b-val', `Custom: ${val} / 255`);
+            updateBadge('ble-preset-b-val', `Custom: ${val} / 100`);
             document.querySelectorAll('#ble-b-presets button').forEach(b => b.classList.remove('active'));
             if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setBrightness(val);
         };
@@ -2634,6 +2641,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setSpeed(val);
         };
     }
+
 
     if (el('ble-ctrl-slot')) {
 
