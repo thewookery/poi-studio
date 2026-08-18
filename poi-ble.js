@@ -75,6 +75,50 @@
             }
         }
 
+        /**
+         * Calculate accurate battery status and percentage using Mitch Lustig's Open Pixel Poi voltage curve:
+         * - Green (Full / Healthy): >= 3.90V (~75% - 100%)
+         * - Yellow (Medium / Nominal): 3.50V - 3.90V (~25% - 75%)
+         * - Red (Low / Critical): <= 3.45V (< 25%)
+         */
+        parseBatteryData(rawVal) {
+            if (rawVal === null || rawVal === undefined) return null;
+            let val = Number(rawVal);
+            if (isNaN(val)) return null;
+
+            // If raw voltage in millivolts (e.g. 3300 - 4200)
+            if (val > 1000) {
+                val = val / 1000.0;
+            }
+            
+            // If voltage in volts (3.25V - 4.20V)
+            if (val > 2.0 && val <= 5.0) {
+                // LiPo 1S curve mapping based on Mitch's thresholds
+                let pct = Math.round(((val - 3.45) / (4.15 - 3.45)) * 100);
+                pct = Math.max(0, Math.min(100, pct));
+                return {
+                    percent: pct,
+                    voltage: val.toFixed(2),
+                    status: (val >= 3.90) ? 'green' : (val >= 3.50 ? 'yellow' : 'red'),
+                    icon: (val >= 3.90) ? '🟢' : (val >= 3.50 ? '🟡' : '🔴'),
+                    label: (val >= 3.90) ? 'Good' : (val >= 3.50 ? 'Medium' : 'Low')
+                };
+            }
+
+            // If percentage (0 - 100)
+            let pct = Math.max(0, Math.min(100, Math.round(val)));
+            let status = (pct >= 70) ? 'green' : (pct >= 30 ? 'yellow' : 'red');
+            let icon = (pct >= 70) ? '🟢' : (pct >= 30) ? '🟡' : '🔴';
+            let label = (pct >= 70) ? 'Good' : (pct >= 30) ? 'Medium' : 'Low';
+            return {
+                percent: pct,
+                voltage: (3.45 + (pct / 100) * 0.70).toFixed(2),
+                status: status,
+                icon: icon,
+                label: label
+            };
+        }
+
         _notifyState(state, data) {
             data = data || {};
             this.stateListeners.forEach(function(fn) {
@@ -82,7 +126,14 @@
                     fn(state, Object.assign({
                         isConnected: this.isConnected,
                         count: this.count,
-                        devices: this.devices.map(function(d) { return { id: d.id, name: d.name }; })
+                        devices: this.devices.map(function(d) { 
+                            return { 
+                                id: d.id, 
+                                name: d.name,
+                                batteryLevel: d.batteryLevel,
+                                batteryInfo: d.batteryInfo
+                            }; 
+                        })
                     }, data));
                 } catch (e) {
                     console.error('[BLE Callback Error]', e);
@@ -135,13 +186,15 @@
 
                 // 1-Time Startup Battery Check (Non-polling)
                 let batteryLevel = null;
+                let batteryInfo = null;
                 try {
                     const batService = await server.getPrimaryService('battery_service');
                     if (batService) {
                         const batChar = await batService.getCharacteristic('battery_level');
                         const val = await batChar.readValue();
                         batteryLevel = val.getUint8(0);
-                        console.log(`[BLE] 🔋 Startup Battery for ${device.name}: ${batteryLevel}%`);
+                        batteryInfo = this.parseBatteryData(batteryLevel);
+                        console.log(`[BLE] 🔋 Startup Battery for ${device.name}:`, batteryInfo);
                     }
                 } catch (e) {
                     // Battery service not enabled in stock firmware
@@ -155,6 +208,7 @@
                     rxCharacteristic: rxChar,
                     txCharacteristic: txChar,
                     batteryLevel: batteryLevel,
+                    batteryInfo: batteryInfo,
                     name: device.name || ('Open Pixel Poi #' + (this.devices.length + 1))
                 };
 
@@ -201,12 +255,14 @@
 
                         // 1-Time Startup Battery Check (Non-polling)
                         let batteryLevel = null;
+                        let batteryInfo = null;
                         try {
                             const batService = await server.getPrimaryService('battery_service');
                             if (batService) {
                                 const batChar = await batService.getCharacteristic('battery_level');
                                 const val = await batChar.readValue();
                                 batteryLevel = val.getUint8(0);
+                                batteryInfo = this.parseBatteryData(batteryLevel);
                             }
                         } catch (e) {}
 
@@ -218,6 +274,7 @@
                             rxCharacteristic: rxChar,
                             txCharacteristic: txChar,
                             batteryLevel: batteryLevel,
+                            batteryInfo: batteryInfo,
                             name: device.name || ('Open Pixel Poi #' + (this.devices.length + 1))
                         };
 
@@ -238,6 +295,7 @@
             }
             return connectedCount;
         }
+
 
 
         async disconnectDevice(id) {

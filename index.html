@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v49</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v50</span></div>
+
 
 
 
@@ -2583,9 +2584,20 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '';
         devices.forEach((d, idx) => {
             const role = (devices.length === 2) ? (idx === 0 ? ' (Left Poi)' : ' (Right Poi)') : '';
-            const batBadge = (typeof d.batteryLevel === 'number') 
-                ? `<span style="font-size:0.68rem; font-weight:800; color:${d.batteryLevel > 20 ? 'var(--neon-green)' : '#ff3366'}; background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:3px; border:1px solid rgba(255,255,255,0.1);">🔋 ${d.batteryLevel}%</span>` 
-                : `<span style="font-size:0.68rem; font-weight:700; color:var(--neon-green); background:rgba(0,255,136,0.1); padding:2px 6px; border-radius:3px;">🟢 Live</span>`;
+            let batBadge = `<span style="font-size:0.68rem; font-weight:700; color:var(--neon-green); background:rgba(0,255,136,0.1); padding:2px 6px; border-radius:3px;">🟢 Live</span>`;
+
+            if (d.batteryInfo) {
+                const info = d.batteryInfo;
+                const colorVar = info.status === 'green' ? 'var(--neon-green)' : (info.status === 'yellow' ? 'var(--neon-yellow)' : '#ff3366');
+                batBadge = `<span style="font-size:0.68rem; font-weight:800; color:${colorVar}; background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:3px; border:1px solid rgba(255,255,255,0.1);">${info.icon} ${info.percent}% (${info.label})</span>`;
+            } else if (typeof d.batteryLevel === 'number') {
+                const info = window.OpenPixelPoiBLE ? OpenPixelPoiBLE.parseBatteryData(d.batteryLevel) : null;
+                if (info) {
+                    const colorVar = info.status === 'green' ? 'var(--neon-green)' : (info.status === 'yellow' ? 'var(--neon-yellow)' : '#ff3366');
+                    batBadge = `<span style="font-size:0.68rem; font-weight:800; color:${colorVar}; background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:3px; border:1px solid rgba(255,255,255,0.1);">${info.icon} ${info.percent}% (${info.label})</span>`;
+                }
+            }
+
             html += `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#121824; border:1px solid rgba(0,255,136,0.3); border-radius:4px; padding:6px 10px; font-size:0.72rem;">
                     <div style="display:flex; align-items:center; gap:8px;">
@@ -2681,12 +2693,17 @@ document.addEventListener('DOMContentLoaded', function() {
             renderConnectedDevicesList(data.devices || []);
 
             if (data.isConnected && devCount > 0) {
-                let batStr = '';
-                const devsWithBat = (data.devices || []).filter(d => typeof d.batteryLevel === 'number');
-                if (devsWithBat.length > 0) {
-                    batStr = ` [🔋 ` + devsWithBat.map(d => `${d.batteryLevel}%`).join(', ') + `]`;
-                }
+                let batBadges = [];
+                (data.devices || []).forEach(d => {
+                    if (d.batteryInfo) {
+                        batBadges.push(`${d.batteryInfo.icon} ${d.batteryInfo.percent}%`);
+                    } else if (typeof d.batteryLevel === 'number') {
+                        const p = OpenPixelPoiBLE.parseBatteryData(d.batteryLevel);
+                        if (p) batBadges.push(`${p.icon} ${p.percent}%`);
+                    }
+                });
 
+                const batStr = batBadges.length > 0 ? ` [${batBadges.join(', ')}]` : '';
                 const label = devCount === 1 
                     ? `🟢 1 Poi${batStr}` 
                     : `🟢 ${devCount} Poi${batStr}`;
@@ -2707,6 +2724,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 
 
 
