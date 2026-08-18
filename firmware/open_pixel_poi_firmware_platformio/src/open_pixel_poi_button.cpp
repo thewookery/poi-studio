@@ -124,10 +124,11 @@ public:
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK5_DOWN && millis() - downTime >= 500){ // Click5 Hold
         buttonState = BS_CLICK5_HOLD;
-        // Do Nothing (display pattern)
-        config.displayState = DS_PATTERN;
+        // Trigger live visual palette picker menu
+        config.displayState = DS_PALETTE_MENU;
         config.displayStateLastUpdated = millis();
       }
+
     }else{
       if(buttonState == BS_CLICK_DOWN){
         buttonState = BS_CLICK_UP;
@@ -219,6 +220,11 @@ else if(buttonState == BS_CLICK3_HOLD){
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK5_HOLD){
+        // 25 Palettes, 400ms per option (0 to 10,000ms)
+        int palIndex = ((millis() - downTime - 500) / 400) % 25;
+        config.setPaletteFxMode(palIndex);
+        config.displayState = DS_PATTERN;
+        config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
       }
     }
@@ -238,11 +244,12 @@ else if(buttonState == BS_CLICK3_HOLD){
     }
     // Triple press detected after timeout, cycle Color Palette FX
     if(buttonState == BS_CLICK3_UP && millis() - downTime >= 500){
-      config.setPaletteFxMode((config.paletteFxMode + 1) % 7);
+      config.setPaletteFxMode((config.paletteFxMode + 1) % 25);
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
+
     // Quad press detected after timeout, cycle Blend Transition Mode
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 500){
       config.setBlendMode((config.blendMode + 1) % 5);

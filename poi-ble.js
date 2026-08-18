@@ -507,9 +507,10 @@
          * Set Real-Time Color Palette Filter (0=Normal, 1=Rainbow, 2=Cyberpunk, 3=Fire, 4=Matrix, 5=Acid, 6=Ice)
          */
         async setPaletteFX(paletteId) {
-            const id = Math.max(0, Math.min(6, parseInt(paletteId) || 0));
+            const id = Math.max(0, Math.min(24, parseInt(paletteId) || 0));
             await this._sendMessage([COMM_CODES.CC_SET_PALETTE_FX, id]);
         }
+
 
         /**
          * Set Pattern Transition Blend Mode (0=Cut, 1=CrossFade, 2=Additive, 3=Screen, 4=CurtainWipe)

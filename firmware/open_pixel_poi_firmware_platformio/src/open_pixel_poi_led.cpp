@@ -17,7 +17,109 @@
 #define debugf_noprefix(...)
 #endif
 
+// 25 Zero-RAM Real-Time Color Palettes
+static inline void applyPaletteFX(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t mode, unsigned long timeMs, uint8_t speed) {
+  if (mode == 0) return; // 0: Normal RGB
+
+  uint8_t lum = (uint8_t)((red * 77 + green * 150 + blue * 29) >> 8);
+
+  switch (mode) {
+    case 1: { // 1. RAINBOW HUE CYCLE
+      uint8_t hue = (uint8_t)((timeMs * speed / 25) & 0xFF);
+      uint8_t region = hue / 43;
+      uint8_t rem = (hue - (region * 43)) * 6;
+      uint8_t p = (lum * 75) >> 8;
+      uint8_t q = (lum * (255 - ((180 * rem) >> 8))) >> 8;
+      uint8_t t = (lum * (255 - ((180 * (255 - rem)) >> 8))) >> 8;
+      switch (region % 6) {
+        case 0: red = lum; green = t; blue = p; break;
+        case 1: red = q; green = lum; blue = p; break;
+        case 2: red = p; green = lum; blue = t; break;
+        case 3: red = p; green = q; blue = lum; break;
+        case 4: red = t; green = p; blue = lum; break;
+        default: red = lum; green = p; blue = q; break;
+      }
+      break;
+    }
+    case 2: // 2. CYBERPUNK NEON (Cyan & Magenta)
+      red = lum; green = (uint8_t)((lum * 130) / 255); blue = (uint8_t)(255 - (lum * 90) / 255);
+      break;
+    case 3: // 3. FIRE & LAVA (Black -> Crimson -> Orange -> Gold -> White)
+      if (lum < 85) { red = lum * 3; green = 0; blue = 0; }
+      else if (lum < 170) { red = 255; green = (lum - 85) * 3; blue = 0; }
+      else { red = 255; green = 255; blue = (lum - 170) * 3; }
+      break;
+    case 4: // 4. MATRIX PHOSPHOR GREEN
+      if (lum > 220) { red = lum; green = 255; blue = lum; }
+      else { red = (lum * 25) / 255; green = lum; blue = (lum * 35) / 255; }
+      break;
+    case 5: // 5. ACID VAPORWAVE
+      red = 255 - red; green = (green > 128) ? 255 : (green * 2); blue = 255 - blue;
+      break;
+    case 6: // 6. GLACIAL ICE (Navy -> Aqua -> Diamond White)
+      red = (lum * 130) / 255; green = (lum * 220) / 255; blue = (lum < 40) ? (lum * 6) : 255;
+      break;
+    case 7: // 7. SUNSET DUSK (Royal Purple -> Amber -> Warm Gold)
+      if (lum < 128) { red = (lum * 180) / 128; green = 0; blue = 120 + (lum * 80) / 128; }
+      else { red = 255; green = ((lum - 128) * 200) / 127; blue = 200 - ((lum - 128) * 150) / 127; }
+      break;
+    case 8: // 8. FOREST MOSS (Deep Pine Green -> Chartreuse Lime)
+      red = (lum * 118) / 255; green = lum; blue = (lum * 20) / 255;
+      break;
+    case 9: // 9. ELECTRIC VIOLET (Deep Indigo -> Vivid Violet -> White)
+      red = (lum * 200) / 255; green = (lum > 180) ? (lum - 180) * 3 : 0; blue = (lum < 100) ? lum * 2 : 255;
+      break;
+    case 10: // 10. VAPORWAVE PASTEL (Coral Pink -> Turquoise Mint)
+      red = (uint8_t)(160 + (lum * 95) / 255); green = (uint8_t)(100 + (lum * 120) / 255); blue = (uint8_t)(255 - (lum * 60) / 255);
+      break;
+    case 11: // 11. MONOCHROME PHOSPHOR (High-Contrast Black & White)
+      red = lum; green = lum; blue = lum;
+      break;
+    case 12: // 12. AMBER GOLD (Rich Honey -> Warm Gold)
+      red = lum; green = (uint8_t)((lum * 180) / 255); blue = 0;
+      break;
+    case 13: // 13. DEEP OCEAN (Ultramarine -> Sea Teal)
+      red = 0; green = (uint8_t)((lum * 200) / 255); blue = lum;
+      break;
+    case 14: // 14. MAGMA OBSIDIAN (Charcoal -> Ruby Crimson -> Molten Gold)
+      if (lum < 100) { red = (lum * 200) / 100; green = 0; blue = 0; }
+      else { red = 255; green = ((lum - 100) * 190) / 155; blue = ((lum - 100) * 30) / 155; }
+      break;
+    case 15: // 15. RADIOACTIVE TOXIC (Chartreuse & Acid Green)
+      red = (uint8_t)((lum * 180) / 255); green = 255; blue = 0;
+      break;
+    case 16: // 16. COTTON CANDY (Bubblegum Pink & Sky Blue)
+      red = (lum > 128) ? 255 : (lum * 2); green = (uint8_t)((lum * 100) / 255); blue = (lum < 128) ? 255 : (255 - (lum - 128) * 2);
+      break;
+    case 17: // 17. GALAXY NEBULA (Deep Indigo -> Nebula Magenta -> Starlight)
+      red = (uint8_t)((lum * 224) / 255); green = (lum > 200) ? (lum - 200) * 4 : 0; blue = (uint8_t)(100 + (lum * 155) / 255);
+      break;
+    case 18: // 18. NEON LIME (Electric Yellow-Green)
+      red = (uint8_t)((lum * 198) / 255); green = 255; blue = 0;
+      break;
+    case 19: // 19. PLASMA BEAM (Sapphire -> Electric Purple -> White)
+      red = (uint8_t)((lum * 150) / 255); green = (lum > 210) ? (lum - 210) * 5 : 0; blue = lum;
+      break;
+    case 20: // 20. INFERNO SCARLET (Burgundy -> Flame Scarlet)
+      red = lum; green = (uint8_t)((lum * 70) / 255); blue = (uint8_t)((lum * 20) / 255);
+      break;
+    case 21: // 21. BIOLUMINESCENCE (Abyssal Teal -> Seafoam Green)
+      red = 0; green = lum; blue = (uint8_t)((lum * 170) / 255);
+      break;
+    case 22: // 22. CANDY APPLE (Cherry Red & Gloss White)
+      red = lum; green = (lum > 180) ? (lum - 180) * 3 : 0; blue = (lum > 180) ? (lum - 180) * 3 : 0;
+      break;
+    case 23: // 23. GOLD & PLATINUM (Champagne Gold & Platinum)
+      red = lum; green = (uint8_t)((lum * 210) / 255); blue = (uint8_t)((lum * 120) / 255);
+      break;
+    case 24: // 24. PSYCHEDELIC WARP (Negative Chroma Inversion)
+      red = 255 - blue; green = 255 - red; blue = 255 - green;
+      break;
+  }
+}
+
 class OpenPixelPoiLED {
+
   private:
     OpenPixelPoiConfig& config;
     uint8_t red;
@@ -117,62 +219,15 @@ class OpenPixelPoiLED {
           }
 
 
-          // Apply Real-Time Color Palette Filter
+          // Apply Real-Time Color Palette Filter (25 Zero-RAM Palettes)
           if (config.paletteFxMode > 0) {
-            uint8_t lum = (uint8_t)((red * 77 + green * 150 + blue * 29) >> 8);
-            if (config.paletteFxMode == 1) {
-              // 1. RAINBOW HUE CYCLE
-              uint8_t hue = (uint8_t)((millis() * config.paletteSpeed / 25) & 0xFF);
-              uint8_t region = hue / 43;
-              uint8_t rem = (hue - (region * 43)) * 6;
-              uint8_t p = (lum * 75) >> 8;
-              uint8_t q = (lum * (255 - ((180 * rem) >> 8))) >> 8;
-              uint8_t t = (lum * (255 - ((180 * (255 - rem)) >> 8))) >> 8;
-              switch (region % 6) {
-                case 0: red = lum; green = t; blue = p; break;
-                case 1: red = q; green = lum; blue = p; break;
-                case 2: red = p; green = lum; blue = t; break;
-                case 3: red = p; green = q; blue = lum; break;
-                case 4: red = t; green = p; blue = lum; break;
-                default: red = lum; green = p; blue = q; break;
-              }
-            } else if (config.paletteFxMode == 2) {
-              // 2. CYBERPUNK NEON (Cyan & Magenta Duotone)
-              red = lum;
-              green = (uint8_t)((lum * 130) / 255);
-              blue = (uint8_t)(255 - (lum * 90) / 255);
-            } else if (config.paletteFxMode == 3) {
-              // 3. FIRE & LAVA (Black -> Crimson -> Orange -> Gold -> White)
-              if (lum < 85) {
-                red = lum * 3; green = 0; blue = 0;
-              } else if (lum < 170) {
-                red = 255; green = (lum - 85) * 3; blue = 0;
-              } else {
-                red = 255; green = 255; blue = (lum - 170) * 3;
-              }
-            } else if (config.paletteFxMode == 4) {
-              // 4. MATRIX PHOSPHOR GREEN
-              if (lum > 220) {
-                red = lum; green = 255; blue = lum;
-              } else {
-                red = (lum * 25) / 255; green = lum; blue = (lum * 35) / 255;
-              }
-            } else if (config.paletteFxMode == 5) {
-              // 5. ACID VAPORWAVE
-              red = 255 - red;
-              green = (green > 128) ? 255 : (green * 2);
-              blue = 255 - blue;
-            } else if (config.paletteFxMode == 6) {
-              // 6. GLACIAL ICE
-              red = (lum * 130) / 255;
-              green = (lum * 220) / 255;
-              blue = (lum < 40) ? (lum * 6) : 255;
-            }
+            applyPaletteFX(red, green, blue, config.paletteFxMode, millis(), config.paletteSpeed);
           }
 
           ledStrip->SetPixelColor(config.ledCount-1-j, RgbColor(red, green, blue)); // Invert display for POV arc
         }
       }
+
 else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 || config.displayState == DS_WAITING3 || config.displayState == DS_WAITING4 || config.displayState == DS_WAITING5){
         // 500ms or till interupted
         if(config.displayState == DS_WAITING){
@@ -340,7 +395,18 @@ else if(config.displayState == DS_BRIGHTNESS){
             ledStrip->SetPixelColor(j, RgbColor(red, 0, 0));
           }
         }
+      }else if(config.displayState == DS_PALETTE_MENU){
+        // Live Visual Palette Preview Menu while holding Click 5
+        // 25 Palettes, 400ms each (10,000ms full loop)
+        int palIndex = ((millis() - config.displayStateLastUpdated) / 400) % 25;
+        for (int j=0; j<config.ledCount; j++){
+          uint8_t sampleLum = (uint8_t)((j * 255) / max(1, config.ledCount - 1));
+          uint8_t r = sampleLum, g = sampleLum, b = sampleLum;
+          applyPaletteFX(r, g, b, palIndex, millis(), config.paletteSpeed);
+          ledStrip->SetPixelColor(j, RgbColor(r, g, b));
+        }
       }
+
 
       // Super low voltage, only display red
       if(config.batteryState == BAT_CRITICAL && (config.displayState == DS_PATTERN || config.displayState == DS_PATTERN_ALL)){

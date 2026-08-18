@@ -29,8 +29,10 @@ enum DisplayState {
   DS_BANK,
   DS_BRIGHTNESS,
   DS_SPEED,
-  DS_SHUTDOWN
+  DS_SHUTDOWN,
+  DS_PALETTE_MENU
 };
+
 
 enum BatteryState {
   BAT_OK,
@@ -86,9 +88,10 @@ class OpenPixelPoiConfig {
     long configLastUpdated;
 
     void setPaletteFxMode(uint8_t mode) {
-      this->paletteFxMode = mode % 7;
+      this->paletteFxMode = mode % 25;
       this->configLastUpdated = millis();
     }
+
 
     void setBlendMode(uint8_t mode) {
       this->blendMode = mode % 5;
