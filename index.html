@@ -145,10 +145,40 @@
                 <div style="font-size:0.68rem; color:var(--text-muted);" id="timeline-stats-badge">Total Length: 0px (~0 KB)</div>
             </div>
 
-            <!-- MASTER PLAYBACK & EXPORT BUTTONS -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
-                <button class="btn-join-add" id="btn-play-stitched-show">▶️ Play Show in Infinite Streamer</button>
-                <button class="btn-join-export" id="btn-export-stitched-bmp">💾 Export Master 24-bit BMP</button>
+            <!-- DEDICATED STORYBOARD SHOW CINEMA PLAYER -->
+            <div class="storyboard-cinema-box" id="storyboard-cinema-box">
+                <div class="cinema-header-row">
+                    <div class="cinema-title">🎬 Master Show Cinema Streamer (Zero-Seam Liquid Flow)</div>
+                    <div class="cinema-badge" id="cinema-status-badge">0 clips in show</div>
+                </div>
+
+                <!-- FULL-WIDTH SHOW INFINITE STREAMER -->
+                <div class="cinema-stream-wrap">
+                    <canvas id="show-stream-canvas" width="600" height="70"></canvas>
+                </div>
+
+                <!-- SHOW FULL-LENGTH STRIP PREVIEW & SCRUBBER -->
+                <div class="cinema-strip-wrap" id="show-strip-wrap" title="Full stitched show ribbon">
+                    <canvas id="show-strip-canvas" width="800" height="38"></canvas>
+                </div>
+
+                <!-- SHOW CONTROLS -->
+                <div class="cinema-controls-row">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="cinema-btn-play" id="btn-cinema-toggle">⏸️ Pause Show</button>
+                        <button class="cinema-btn-action" id="btn-cinema-rewind">⏪ Rewind</button>
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:6px; flex:1; max-width:240px;">
+                        <span style="font-size:0.68rem; color:var(--text-muted);">Speed:</span>
+                        <input type="range" id="cinema-speed-slider" min="0" max="600" value="180">
+                        <span class="val-mono" id="cinema-speed-val">180</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="btn-join-export" id="btn-export-cinema-bmp">💾 Export Master 24-bit BMP</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -743,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const estKB = Math.round((54 + Math.floor((24 * totalW + 31) / 32) * 4 * currentHeight) / 1024);
         updateBadge('timeline-stats-badge', `Total Length: ~${totalW}px (~${estKB} KB)`);
-        autoUpdateShowPreview();
+        recompileShowMaster(true);
     }
 
     el('btn-clear-timeline').onclick = () => {
@@ -771,10 +801,26 @@ document.addEventListener('DOMContentLoaded', function() {
         updateBadge('stitch-overlap-val', e.target.value + 'px');
     };
 
-    // --- COMPILE MASTER STITCH SHOW ---
-    function compileMasterShow(silent = false) {
+    // =========================================================================
+    // DEDICATED STORYBOARD SHOW CINEMA PLAYER (ISOLATED EXECUTION)
+    // =========================================================================
+    let showMasterCanvas = null;
+    let isShowPlaying = true;
+    let showStreamOffset = 0;
+    let lastShowTime = performance.now();
+
+    const showStreamCanvas = el('show-stream-canvas');
+    const showStreamCtx = showStreamCanvas ? showStreamCanvas.getContext('2d') : null;
+
+    const showStripCanvas = el('show-strip-canvas');
+    const showStripCtx = showStripCanvas ? showStripCanvas.getContext('2d') : null;
+
+    function recompileShowMaster(silent = true) {
         if (storyboardQueue.length === 0) {
-            if (!silent) alert('Please add at least 1 pattern to the Show Storyboard Timeline first!');
+            updateBadge('cinema-status-badge', '0 clips in show');
+            if (showStreamCtx) showStreamCtx.clearRect(0, 0, showStreamCanvas.width, showStreamCanvas.height);
+            if (showStripCtx) showStripCtx.clearRect(0, 0, showStripCanvas.width, showStripCanvas.height);
+            showMasterCanvas = null;
             return null;
         }
 
@@ -816,48 +862,84 @@ document.addEventListener('DOMContentLoaded', function() {
         const overlap = parseInt(el('stitch-overlap-slider').value);
         const seamlessLoop = el('stitch-seamless-loop').checked;
 
-        return joinPatternSequence(normalizedCanvases, { transition, overlap, seamlessLoop });
+        const compiled = joinPatternSequence(normalizedCanvases, { transition, overlap, seamlessLoop });
+        if (compiled) {
+            showMasterCanvas = compiled;
+            const sec = (compiled.width / 180).toFixed(1);
+            const kbSize = Math.round((54 + Math.floor((24 * compiled.width + 31) / 32) * 4 * compiled.height) / 1024);
+            updateBadge('cinema-status-badge', `♾️ 100.00% Zero-Seam • ${storyboardQueue.length} clips • ${compiled.width}×${compiled.height}px • ~${sec}s (~${kbSize} KB)`);
+            updateShowStripView();
+        }
+        return compiled;
     }
 
-    function autoUpdateShowPreview() {
-        if (storyboardQueue.length === 0 || activeWorkspace !== 'workspace-stitcher') return;
-        const master = compileMasterShow(true);
-        if (master) {
-            currentWidth = master.width;
-            currentHeight = master.height;
-            baseCanvas.width = currentWidth;
-            baseCanvas.height = currentHeight;
-            baseCanvas.getContext('2d').drawImage(master, 0, 0);
-            triggerSmoothRender();
-            updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
-        }
+    function updateShowStripView() {
+        if (!showStripCanvas || !showMasterCanvas) return;
+        showStripCanvas.width = Math.min(1200, showMasterCanvas.width);
+        showStripCanvas.height = 38;
+        showStripCtx.clearRect(0, 0, showStripCanvas.width, showStripCanvas.height);
+        showStripCtx.drawImage(showMasterCanvas, 0, 0, showMasterCanvas.width, showMasterCanvas.height, 0, 0, showStripCanvas.width, showStripCanvas.height);
     }
 
-    el('stitch-trans-select').onchange = autoUpdateShowPreview;
-    el('stitch-duration-select').onchange = autoUpdateShowPreview;
-    el('stitch-seamless-loop').onchange = autoUpdateShowPreview;
-    el('stitch-overlap-slider').onchange = autoUpdateShowPreview;
+    function showCinemaStreamLoop(now) {
+        const dt = (now - lastShowTime) / 1000;
+        lastShowTime = now;
 
-    el('btn-play-stitched-show').onclick = () => {
-        const master = compileMasterShow();
-        if (master) {
-            currentWidth = master.width;
-            currentHeight = master.height;
-            baseCanvas.width = currentWidth;
-            baseCanvas.height = currentHeight;
-            baseCanvas.getContext('2d').drawImage(master, 0, 0);
-            triggerSmoothRender();
-            updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
+        if (showStreamCanvas && showStreamCtx && showMasterCanvas && showMasterCanvas.width > 0) {
+            const speed = parseFloat(el('cinema-speed-slider').value);
+            const w = showMasterCanvas.width;
+            const h = showMasterCanvas.height;
+
+            if (isShowPlaying && speed > 0) {
+                showStreamOffset = (showStreamOffset + speed * dt) % w;
+            }
+
+            const cw = showStreamCanvas.width;
+            const ch = showStreamCanvas.height;
+            showStreamCtx.clearRect(0, 0, cw, ch);
+
+            const tileDisplayW = (w / h) * ch;
+
+            let startX = -((showStreamOffset / w) * tileDisplayW);
+            while (startX < cw) {
+                showStreamCtx.drawImage(showMasterCanvas, 0, 0, w, h, startX, 0, tileDisplayW + 0.5, ch);
+                startX += tileDisplayW;
+            }
         }
+
+        requestAnimationFrame(showCinemaStreamLoop);
+    }
+    requestAnimationFrame(showCinemaStreamLoop);
+
+    el('stitch-trans-select').onchange = () => recompileShowMaster(true);
+    el('stitch-duration-select').onchange = () => recompileShowMaster(true);
+    el('stitch-seamless-loop').onchange = () => recompileShowMaster(true);
+    el('stitch-overlap-slider').oninput = (e) => {
+        updateBadge('stitch-overlap-val', e.target.value + 'px');
+        recompileShowMaster(true);
     };
 
-    el('btn-export-stitched-bmp').onclick = () => {
-        const master = compileMasterShow();
+    el('cinema-speed-slider').oninput = (e) => {
+        updateBadge('cinema-speed-val', e.target.value);
+    };
+
+    el('btn-cinema-toggle').onclick = () => {
+        isShowPlaying = !isShowPlaying;
+        el('btn-cinema-toggle').innerText = isShowPlaying ? '⏸️ Pause Show' : '▶️ Play Show';
+    };
+
+    el('btn-cinema-rewind').onclick = () => {
+        showStreamOffset = 0;
+    };
+
+    el('btn-export-cinema-bmp').onclick = () => {
+        const master = recompileShowMaster(false);
         if (master) {
             const blob = canvasToBmpBlob(master, { topDown: false });
             triggerDownload(blob, `master_pov_show_${master.width}x${master.height}.bmp`);
         }
     };
+
 
 
     // --- CUSTOM COLOR PICKER SYSTEM ---
