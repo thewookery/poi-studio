@@ -2380,22 +2380,31 @@ function joinPatternSequence(canvases, options = {}) {
     const h = canvases[0].height;
     const transition = options.transition || 'crossfade';
     const overlap = Math.max(0, parseInt(options.overlap !== undefined ? options.overlap : 24));
-    const isSeamlessLoop = !!options.seamlessLoop;
+    const maxTotalPixels = parseInt(options.maxTotalPixels || 40000);
+    const maxAllowedWidth = Math.max(1, Math.floor(maxTotalPixels / h));
+    let isSeamlessLoop = !!options.seamlessLoop;
 
     if (canvases.length === 1 && !isSeamlessLoop) {
         const out = document.createElement('canvas');
-        out.width = canvases[0].width; out.height = h;
+        out.width = Math.min(canvases[0].width, maxAllowedWidth);
+        out.height = h;
         out.getContext('2d').drawImage(canvases[0], 0, 0);
         return out;
     }
 
-    let totalW = 0;
+    let rawTotalW = 0;
     canvases.forEach((c, idx) => {
-        totalW += c.width;
-        if (idx > 0 && transition !== 'none') totalW -= overlap;
+        rawTotalW += c.width;
+        if (idx > 0 && transition !== 'none') rawTotalW -= overlap;
     });
 
-    if (totalW * h > 80000) totalW = Math.floor(80000 / h);
+    let isCapped = false;
+    let totalW = rawTotalW;
+    if (totalW > maxAllowedWidth) {
+        totalW = maxAllowedWidth;
+        isCapped = true;
+        isSeamlessLoop = true; // Auto-loop when reaching max 40,000 pixels!
+    }
 
     const outCanvas = document.createElement('canvas');
     outCanvas.width = Math.max(1, totalW);
@@ -2408,13 +2417,14 @@ function joinPatternSequence(canvases, options = {}) {
 
     let currentX = 0;
     for (let i = 0; i < canvases.length; i++) {
+        if (currentX >= totalW) break;
         const img = canvases[i];
         if (i === 0 || transition === 'none' || overlap === 0) {
             ctx.drawImage(img, currentX, 0);
             currentX += img.width;
         } else {
             const prevX = currentX - overlap;
-            const blendW = overlap;
+            const blendW = Math.min(overlap, Math.max(1, totalW - prevX));
             ctx.drawImage(img, blendW, 0, img.width - blendW, h, currentX, 0, img.width - blendW, h);
 
             const tempA = document.createElement('canvas');
@@ -2438,20 +2448,16 @@ function joinPatternSequence(canvases, options = {}) {
 
                     let t = u;
                     if (transition === 'crossfade' || transition === 'liquid_cosine') {
-                        // Raised cosine with 5th-order smoothstep for zero luminance dip
                         t = 0.5 * (1 - Math.cos(u * Math.PI));
                     } else if (transition === 'diagonal_wave') {
-                        // Diagonal wave sweep from base to tip
                         const wave = Math.sin(normY * Math.PI) * 0.35;
                         t = Math.max(0, Math.min(1, u + wave * (1 - u)));
                         t = 0.5 * (1 - Math.cos(t * Math.PI));
                     } else if (transition === 'quantum_rails') {
-                        // Interleaved alternating LED rails
                         const railOffset = (by % 2 === 0) ? -0.2 : 0.2;
                         t = Math.max(0, Math.min(1, u + railOffset));
                         t = t * t * (3 - 2 * t);
                     } else if (transition === 'simplex_warp') {
-                        // Domain warped liquid flow
                         const n = poiNoise.sampleCylinder(bx, by, blendW, h, 2, 2.0);
                         t = Math.max(0, Math.min(1, u + (n - 0.5) * 0.4));
                         t = 0.5 * (1 - Math.cos(t * Math.PI));
@@ -2475,7 +2481,6 @@ function joinPatternSequence(canvases, options = {}) {
                         continue;
                     }
 
-                    // Linear Gamma Energy Blend (Zero Muddy Bands)
                     const rA = toLinear(dataA[idx]), gA = toLinear(dataA[idx + 1]), bA = toLinear(dataA[idx + 2]);
                     const rB = toLinear(dataB[idx]), gB = toLinear(dataB[idx + 1]), bB = toLinear(dataB[idx + 2]);
 
@@ -2493,17 +2498,18 @@ function joinPatternSequence(canvases, options = {}) {
     // 100% Zero-Seam Loop Closure (Head <-> Tail Flow Fusion)
     if (isSeamlessLoop && overlap > 0 && outCanvas.width > overlap * 2) {
         const w = outCanvas.width;
-        const head = ctx.getImageData(0, 0, overlap, h);
-        const tail = ctx.getImageData(w - overlap, 0, overlap, h);
+        const actualOverlap = Math.min(overlap, Math.floor(w / 4));
+        const head = ctx.getImageData(0, 0, actualOverlap, h);
+        const tail = ctx.getImageData(w - actualOverlap, 0, actualOverlap, h);
         const headD = head.data;
         const tailD = tail.data;
 
-        for (let bx = 0; bx < overlap; bx++) {
-            const u = (bx + 0.5) / overlap;
-            const t = 0.5 * (1 - Math.cos(u * Math.PI)); // Cosine S-curve
+        for (let bx = 0; bx < actualOverlap; bx++) {
+            const u = (bx + 0.5) / actualOverlap;
+            const t = 0.5 * (1 - Math.cos(u * Math.PI));
 
             for (let by = 0; by < h; by++) {
-                const idx = (by * overlap + bx) * 4;
+                const idx = (by * actualOverlap + bx) * 4;
 
                 const rT = toLinear(tailD[idx]), gT = toLinear(tailD[idx + 1]), bT = toLinear(tailD[idx + 2]);
                 const rH = toLinear(headD[idx]), gH = toLinear(headD[idx + 1]), bH = toLinear(headD[idx + 2]);
@@ -2517,12 +2523,13 @@ function joinPatternSequence(canvases, options = {}) {
             }
         }
         ctx.putImageData(head, 0, 0);
-        ctx.putImageData(tail, w - overlap, 0);
+        ctx.putImageData(tail, w - actualOverlap, 0);
     }
 
     applyPerfectSeamGuardian(outCanvas, 8);
     return outCanvas;
 }
+
 
 
 // --- VERIFY SEAM CONTINUITY MATH ---

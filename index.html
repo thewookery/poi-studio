@@ -164,6 +164,23 @@
                 <div style="font-size:0.68rem; color:var(--text-muted);" id="timeline-stats-badge">Total Length: 0px (~0 KB)</div>
             </div>
 
+            <!-- OPEN PIXEL POI 40,000 PIXEL SD BUFFER TELEMETRY BAR -->
+            <div class="card-box" style="margin-top:6px; background:#070a12; border:1px solid #1e293b; padding:8px 10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                    <span style="font-size:0.72rem; font-weight:800; color:var(--text-color);">
+                        💾 Open Pixel Poi SD Buffer Capacity:
+                    </span>
+                    <span class="telemetry-pill" id="sb-memory-pct-badge" style="font-size:0.72rem; color:var(--neon-green);">0 / 40,000 px (0.0%) • SAFE FOR POI</span>
+                </div>
+                <div style="height:6px; background:#121824; border-radius:3px; overflow:hidden; border:1px solid #1e293b;">
+                    <div id="sb-memory-progress-bar" style="height:100%; width:0%; background:linear-gradient(to right, #00adb5, #39ff14); transition:width 0.2s ease;"></div>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px; font-size:0.64rem; color:var(--text-muted);">
+                    <span>Max Allowed: <b style="color:#fff;" id="sb-max-w-badge">727 px</b> width at <span id="sb-cur-h-badge">55px</span> height</span>
+                    <span id="sb-loop-notice-badge" style="color:var(--neon-green); font-weight:700;">♾️ Auto-Loops at 40,000 Pixels</span>
+                </div>
+            </div>
+
             <!-- DEDICATED STORYBOARD SHOW CINEMA PLAYER -->
             <div class="storyboard-cinema-box" id="storyboard-cinema-box">
                 <div class="cinema-header-row">
@@ -902,9 +919,43 @@ document.addEventListener('DOMContentLoaded', function() {
         const overlap = parseInt(el('stitch-overlap-slider').value);
         const seamlessLoop = el('stitch-seamless-loop').checked;
 
-        const compiled = joinPatternSequence(normalizedCanvases, { transition, overlap, seamlessLoop });
+        const compiled = joinPatternSequence(normalizedCanvases, { 
+            transition, 
+            overlap, 
+            seamlessLoop,
+            maxTotalPixels: 40000 
+        });
+
         if (compiled) {
             showMasterCanvas = compiled;
+            const totalPixels = compiled.width * compiled.height;
+            const maxPixels = 40000;
+            const pct = Math.min(100, (totalPixels / maxPixels) * 100).toFixed(1);
+            const maxW = Math.floor(maxPixels / targetH);
+            const isAtLimit = (totalPixels >= maxPixels);
+
+            updateBadge('sb-max-w-badge', `${maxW} px`);
+            updateBadge('sb-cur-h-badge', `${targetH}px`);
+
+            const bar = el('sb-memory-progress-bar');
+            if (bar) {
+                bar.style.width = `${pct}%`;
+                bar.style.background = isAtLimit 
+                    ? 'linear-gradient(to right, #ffd700, #ff2e63)' 
+                    : (pct > 75 ? 'linear-gradient(to right, #00adb5, #ffd700)' : 'linear-gradient(to right, #00adb5, #39ff14)');
+            }
+
+            const badge = el('sb-memory-pct-badge');
+            if (badge) {
+                if (isAtLimit) {
+                    badge.innerText = `40,000 / 40,000 px (100.0%) • 🔒 CAPPED AT MAX & LOOPED`;
+                    badge.style.color = 'var(--neon-pink)';
+                } else {
+                    badge.innerText = `${totalPixels.toLocaleString()} / 40,000 px (${pct}%) • SAFE FOR POI`;
+                    badge.style.color = 'var(--neon-green)';
+                }
+            }
+
             const sec = (compiled.width / 180).toFixed(1);
             const kbSize = Math.round((54 + Math.floor((24 * compiled.width + 31) / 32) * 4 * compiled.height) / 1024);
             updateBadge('cinema-status-badge', `♾️ 100.00% Zero-Seam • ${storyboardQueue.length} clips • ${compiled.width}×${compiled.height}px • ~${sec}s (~${kbSize} KB)`);
@@ -912,6 +963,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return compiled;
     }
+
 
     function updateShowStripView() {
         if (!showStripCanvas || !showMasterCanvas) return;
