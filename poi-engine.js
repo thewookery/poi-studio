@@ -1,11 +1,23 @@
 /**
- * POI Studio: Algorithmic POV Generative Engine (v9.5 - 100% Zero-Seam Guaranteed)
- * 102 Pure Mathematical, Quantum, Chaotic, Negative-Space & Trippy POV Algorithms
- * Universal Zero-Seam Guardian, Infinite Loop Verification Engine & Master BMP Joiner
+ * POI Studio: Algorithmic POV Generative Engine (v10.0 - "Turned Up to 11")
+ * 118+ Pure Mathematical, Optical Illusion, Quantum, Chaotic & Trippy POV Algorithms
+ * Geometry Flow Morph Engine (Dual-Equation Synthesizer), Universal Seam Guardian & Master BMP Joiner
  */
 
-// --- COMPLETE ALGORITHMIC PATTERN DATABASE (102 ELITE GENERATORS) ---
+// --- COMPLETE ALGORITHMIC PATTERN DATABASE (118+ ELITE GENERATORS) ---
 const POI_PATTERN_DB = [
+    { cat: "👁️ Optical Illusions & Perceptual Motion (POV Specialized)", items: [
+        {v:"illusion_fraser_spiral", l:"Fraser False Spiral Vortex"},
+        {v:"illusion_ouchi_depth", l:"Ouchi 3D Floating Disk Illusion"},
+        {v:"illusion_scintillating_grid", l:"Scintillating Grid Phantom Flashes"},
+        {v:"illusion_cafe_wall", l:"Café Wall Divergence Slant"},
+        {v:"illusion_kanizsa_contours", l:"Kanizsa Virtual Contours (No Borders)"},
+        {v:"illusion_kitaoka_snakes", l:"Kitaoka Anomalous Motion Drift"},
+        {v:"illusion_poggendorff_tilt", l:"Poggendorff Transverse Shift"},
+        {v:"illusion_zollner_divergence", l:"Zöllner Tilted Laser Highways"},
+        {v:"illusion_necker_hyperlattice", l:"Necker Bistable Hyper-Lattice"},
+        {v:"illusion_hering_curvature", l:"Hering Radial Ray Curvature"}
+    ]},
     { cat: "🕳️ Negative-Space & Impossible POV Illusions", items: [
         {v:"neg_void_blackhole", l:"Event Horizon Singularity Void"},
         {v:"neg_impossible_penrose", l:"Impossible Penrose Void Triangle"},
@@ -26,6 +38,11 @@ const POI_PATTERN_DB = [
         {v:"trippy_droste_spiral", l:"Log-Polar Droste Infinite Spiral"},
         {v:"trippy_riley_opart", l:"Bridget Riley Optical Instability"},
         {v:"trippy_chromatic_vortex", l:"Prismatic Chromatic Dispersion Vortex"},
+        {v:"trippy_synaptic_cascade", l:"Deep Synaptic Neuro-Cascade"},
+        {v:"trippy_hyperbolic_vortex_7", l:"7-Fold Poincaré Hyperbolic Swirl"},
+        {v:"trippy_quantum_flux_tube", l:"Abrikosov Quantum Flux Lattice"},
+        {v:"trippy_riemann_hypersphere", l:"Riemann Hypersphere Cascade"},
+        {v:"trippy_biomorph_labyrinth", l:"Biomorph Morphogenetic Matrix"},
         {v:"trippy_4d_clifford_torus", l:"4D Clifford Torus Twister"},
         {v:"trippy_tesseract_4d", l:"4D Tesseract Wireframe Projection"},
         {v:"trippy_moebius_strip_twist", l:"3D Möbius Strip Phase Twist"},
@@ -279,10 +296,300 @@ function drawToroidal(ctx, w, h, drawFn) {
     drawFn(w);
 }
 
-// --- 102 PROCEDURAL GENERATORS ---
+// --- 118+ PROCEDURAL GENERATORS ---
 const POI_GENERATORS = {};
 
-// 1. NEGATIVE SPACE & IMPOSSIBLE POV ILLUSIONS
+// 1. OPTICAL ILLUSIONS & PERCEPTUAL MOTION
+POI_GENERATORS.illusion_fraser_spiral = (ctx, w, h, p, getCol) => {
+    const rings = Math.max(2, Math.round(5 * p.spacing));
+    const step = w / rings;
+    for (let r = 0; r < rings; r++) {
+        const cx = (r + 0.5) * step;
+        const cy = h / 2;
+        const radius = (h * 0.42) * p.scale;
+        drawToroidal(ctx, w, h, (ox) => {
+            const x = cx + ox;
+            ctx.lineWidth = p.thickness;
+            for (let c = 1; c <= 4; c++) {
+                const rad = (radius / 4) * c;
+                for (let a = 0; a < 24; a++) {
+                    const ang = (a * Math.PI * 2) / 24;
+                    const tilt = ang + 0.35; // Tilted cords produce false spiral perception
+                    const px = x + rad * Math.cos(ang);
+                    const py = cy + rad * Math.sin(ang);
+                    ctx.strokeStyle = (a % 2 === 0) ? getCol(px, py, w, h) : '#ffffff';
+                    ctx.beginPath();
+                    ctx.moveTo(px, py);
+                    ctx.lineTo(px + (rad * 0.25) * Math.cos(tilt), py + (rad * 0.25) * Math.sin(tilt));
+                    ctx.stroke();
+                }
+            }
+        });
+    }
+};
+
+POI_GENERATORS.illusion_ouchi_depth = (ctx, w, h, p, getCol) => {
+    const disks = Math.max(2, Math.round(4 * p.spacing));
+    const step = w / disks;
+    for (let x = 0; x < w; x++) {
+        for (let y = 0; y < h; y++) {
+            const dIdx = Math.floor(x / step);
+            const cx = (dIdx + 0.5) * step;
+            const cy = h / 2;
+            let dx = Math.abs(x - cx); if (dx > w / 2) dx = w - dx;
+            const dy = y - cy;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const inDisk = dist < (h * 0.28 * p.scale);
+
+            // Ouchi illusion: Orthogonal stripe orientation induces perceptual 3D floating
+            if (inDisk) {
+                if ((Math.floor(x / 3) % 2 === 0)) {
+                    ctx.fillStyle = getCol(x, y, w, h); ctx.fillRect(x, y, 1, 1);
+                }
+            } else {
+                if ((Math.floor(y / 3) % 2 === 0)) {
+                    ctx.fillStyle = getCol(x, y, w, h, 0.4); ctx.fillRect(x, y, 1, 1);
+                }
+            }
+        }
+    }
+};
+
+POI_GENERATORS.illusion_scintillating_grid = (ctx, w, h, p, getCol) => {
+    const cols = Math.max(4, Math.round(12 * p.spacing));
+    const stepX = w / cols;
+    const stepY = h / 4;
+    ctx.fillStyle = '#0a0d14'; ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < cols; i++) {
+        drawToroidal(ctx, w, h, (ox) => {
+            ctx.fillStyle = getCol(i * stepX, h / 2, w, h);
+            ctx.fillRect(i * stepX + ox - 2, 0, 4, h);
+        });
+    }
+    for (let j = 0; j < 4; j++) {
+        ctx.fillStyle = getCol(w / 2, j * stepY, w, h, 0.5);
+        ctx.fillRect(0, (j + 0.5) * stepY - 2, w, 4);
+    }
+    // High-contrast intersection dots produce scintillating phantom flashes
+    for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < 4; j++) {
+            drawToroidal(ctx, w, h, (ox) => {
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc(i * stepX + ox, (j + 0.5) * stepY, 3.5, 0, Math.PI * 2); ctx.fill();
+            });
+        }
+    }
+};
+
+POI_GENERATORS.illusion_cafe_wall = (ctx, w, h, p, getCol) => {
+    const rows = 6;
+    const stepY = h / rows;
+    const blockW = Math.max(8, Math.round(w / (8 * p.spacing)));
+    for (let r = 0; r < rows; r++) {
+        const offset = (r % 2 === 0 ? 0 : blockW * 0.5);
+        for (let x = 0; x < w; x += blockW) {
+            const isWhite = (Math.floor((x + offset) / blockW) % 2 === 0);
+            drawToroidal(ctx, w, h, (ox) => {
+                ctx.fillStyle = isWhite ? getCol(x, r * stepY, w, h) : '#000000';
+                ctx.fillRect(x + offset + ox, r * stepY + 1, blockW, stepY - 2);
+            });
+        }
+        // Continuous mortar lines appear dramatically tilted
+        ctx.fillStyle = '#667788'; ctx.fillRect(0, r * stepY, w, 1.5);
+    }
+};
+
+POI_GENERATORS.illusion_kanizsa_contours = (ctx, w, h, p, getCol) => {
+    const count = Math.max(2, Math.round(4 * p.spacing));
+    const step = w / count;
+    ctx.fillStyle = '#080a10'; ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < count; i++) {
+        const cx = (i + 0.5) * step;
+        const cy = h / 2;
+        const s = (h * 0.35) * p.scale;
+        drawToroidal(ctx, w, h, (ox) => {
+            const x = cx + ox;
+            ctx.fillStyle = getCol(cx, cy, w, h);
+            // 4 Pac-Man corner inducers
+            const r = h * 0.12;
+            const corners = [
+                {px: x - s, py: cy - s, sa: 0, ea: Math.PI * 1.5},
+                {px: x + s, py: cy - s, sa: Math.PI * 0.5, ea: Math.PI * 2},
+                {px: x + s, py: cy + s, sa: Math.PI, ea: Math.PI * 0.5},
+                {px: x - s, py: cy + s, sa: Math.PI * 1.5, ea: Math.PI}
+            ];
+            corners.forEach(c => {
+                ctx.beginPath(); ctx.moveTo(c.px, c.py); ctx.arc(c.px, c.py, r, c.sa, c.ea); ctx.closePath(); ctx.fill();
+            });
+        });
+    }
+};
+
+POI_GENERATORS.illusion_kitaoka_snakes = (ctx, w, h, p, getCol) => {
+    const cols = Math.max(3, Math.round(6 * p.spacing));
+    const step = w / cols;
+    for (let i = 0; i < cols; i++) {
+        const cx = (i + 0.5) * step;
+        const cy = h / 2;
+        const rad = (h * 0.4) * p.scale;
+        drawToroidal(ctx, w, h, (ox) => {
+            const x = cx + ox;
+            for (let a = 0; a < 16; a++) {
+                const a1 = (a * Math.PI * 2) / 16;
+                const a2 = ((a + 1) * Math.PI * 2) / 16;
+                // Luminance sequence: Light -> White -> Dark -> Black drives anomalous motion
+                const lumColors = [getCol(cx, cy, w, h), '#ffffff', '#002244', '#000000'];
+                ctx.fillStyle = lumColors[a % 4];
+                ctx.beginPath(); ctx.moveTo(x, cy); ctx.arc(x, cy, rad, a1, a2); ctx.closePath(); ctx.fill();
+            }
+        });
+    }
+};
+
+POI_GENERATORS.illusion_poggendorff_tilt = (ctx, w, h, p, getCol) => {
+    const bars = Math.max(2, Math.round(4 * p.spacing));
+    const step = w / bars;
+    ctx.lineWidth = p.thickness * 1.5;
+    for (let i = 0; i < bars; i++) {
+        const cx = (i + 0.5) * step;
+        drawToroidal(ctx, w, h, (ox) => {
+            const x = cx + ox;
+            ctx.strokeStyle = getCol(cx, h / 2, w, h);
+            ctx.beginPath(); ctx.moveTo(x - step * 0.4, 0); ctx.lineTo(x + step * 0.4, h); ctx.stroke();
+            ctx.fillStyle = '#000000'; ctx.fillRect(x - 10, 0, 20, h);
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(x - 10, 0, 2, h); ctx.fillRect(x + 8, 0, 2, h);
+        });
+    }
+};
+
+POI_GENERATORS.illusion_zollner_divergence = (ctx, w, h, p, getCol) => {
+    for (let line = 1; line <= 3; line++) {
+        const y = (h / 4) * line;
+        ctx.strokeStyle = getCol(w / 2, y, w, h);
+        ctx.lineWidth = p.thickness;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        const slant = (line % 2 === 0 ? 0.6 : -0.6);
+        for (let x = 0; x < w; x += 12) {
+            ctx.beginPath(); ctx.moveTo(x - 6 * slant, y - 8); ctx.lineTo(x + 6 * slant, y + 8); ctx.stroke();
+        }
+    }
+};
+
+POI_GENERATORS.illusion_necker_hyperlattice = (ctx, w, h, p, getCol) => {
+    const count = Math.max(2, Math.round(4 * p.spacing));
+    const step = w / count;
+    for (let i = 0; i < count; i++) {
+        const cx = (i + 0.5) * step;
+        const cy = h / 2;
+        const s = (h * 0.35) * p.scale;
+        drawToroidal(ctx, w, h, (ox) => {
+            const x = cx + ox;
+            ctx.strokeStyle = getCol(cx, cy, w, h);
+            ctx.lineWidth = p.thickness;
+            ctx.strokeRect(x - s * 0.6, cy - s * 0.6, s, s);
+            ctx.strokeStyle = '#ffffff';
+            ctx.strokeRect(x - s * 0.4, cy - s * 0.4, s, s);
+            ctx.beginPath();
+            ctx.moveTo(x - s * 0.6, cy - s * 0.6); ctx.lineTo(x - s * 0.4, cy - s * 0.4);
+            ctx.moveTo(x + s * 0.4, cy - s * 0.6); ctx.lineTo(x + s * 0.6, cy - s * 0.4);
+            ctx.moveTo(x + s * 0.4, cy + s * 0.4); ctx.lineTo(x + s * 0.6, cy + s * 0.6);
+            ctx.moveTo(x - s * 0.6, cy + s * 0.4); ctx.lineTo(x - s * 0.4, cy + s * 0.6);
+            ctx.stroke();
+        });
+    }
+};
+
+POI_GENERATORS.illusion_hering_curvature = (ctx, w, h, p, getCol) => {
+    const centers = Math.max(1, Math.round(3 * p.spacing));
+    const step = w / centers;
+    for (let c = 0; c < centers; c++) {
+        const cx = (c + 0.5) * step;
+        drawToroidal(ctx, w, h, (ox) => {
+            const x = cx + ox;
+            ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+            ctx.lineWidth = 1;
+            for (let a = 0; a < 16; a++) {
+                const ang = (a * Math.PI) / 16;
+                ctx.beginPath(); ctx.moveTo(x - h * Math.cos(ang), h / 2 - h * Math.sin(ang)); ctx.lineTo(x + h * Math.cos(ang), h / 2 + h * Math.sin(ang)); ctx.stroke();
+            }
+            // Two parallel lines appear bowed outwards
+            ctx.strokeStyle = getCol(cx, h / 2, w, h);
+            ctx.lineWidth = p.thickness * 1.5;
+            ctx.beginPath(); ctx.moveTo(x - step * 0.5, h * 0.35); ctx.lineTo(x + step * 0.5, h * 0.35); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x - step * 0.5, h * 0.65); ctx.lineTo(x + step * 0.5, h * 0.65); ctx.stroke();
+        });
+    }
+};
+
+// 2. TRIPPY CUSTOM INVENTIONS
+POI_GENERATORS.trippy_synaptic_cascade = (ctx, w, h, p, getCol) => {
+    for (let x = 0; x < w; x++) {
+        const n1 = poiNoise.sampleCylinder(x, 0, w, h, 6, 2.0);
+        for (let y = 0; y < h; y++) {
+            const n2 = poiNoise.sampleCylinder(x + 10, y + 10, w, h, 12, 4.0);
+            const synapse = Math.sin(n1 * 20 + n2 * 10);
+            if (synapse > 0.6 * p.scale) {
+                ctx.fillStyle = getCol(x, y, w, h, synapse); ctx.fillRect(x, y, 1, 1);
+            }
+        }
+    }
+};
+
+POI_GENERATORS.trippy_hyperbolic_vortex_7 = (ctx, w, h, p, getCol) => {
+    for (let x = 0; x < w; x++) {
+        const theta = (x / w) * Math.PI * 2 * 7;
+        for (let y = 0; y < h; y++) {
+            const r = Math.abs((y / h) - 0.5) * 4.0 + 0.1;
+            const swirl = Math.sin(theta + Math.log(r) * 12);
+            if (swirl > 0.25) {
+                ctx.fillStyle = getCol(x, y, w, h, (swirl + 1) * 0.5); ctx.fillRect(x, y, 1, 1);
+            }
+        }
+    }
+};
+
+POI_GENERATORS.trippy_quantum_flux_tube = (ctx, w, h, p, getCol) => {
+    const tubes = Math.max(3, Math.round(8 * p.spacing));
+    const step = w / tubes;
+    for (let i = 0; i < tubes; i++) {
+        const cx = (i + 0.5) * step;
+        drawToroidal(ctx, w, h, (ox) => {
+            const x = cx + ox;
+            ctx.fillStyle = getCol(cx, h / 2, w, h);
+            ctx.fillRect(x - 2, 0, 4, h);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x - 1, (i % 2 === 0 ? h * 0.2 : h * 0.7), 2, h * 0.2);
+        });
+    }
+};
+
+POI_GENERATORS.trippy_riemann_hypersphere = (ctx, w, h, p, getCol) => {
+    for (let x = 0; x < w; x++) {
+        const u = (x / w) * Math.PI * 4;
+        for (let y = 0; y < h; y++) {
+            const v = (y / h) * Math.PI * 4;
+            const s = (Math.sin(u) * Math.cos(v)) / (1.5 + Math.cos(u) * Math.sin(v));
+            if (Math.abs(s) > 0.3 * p.scale) {
+                ctx.fillStyle = getCol(x, y, w, h, Math.abs(s)); ctx.fillRect(x, y, 1, 1);
+            }
+        }
+    }
+};
+
+POI_GENERATORS.trippy_biomorph_labyrinth = (ctx, w, h, p, getCol) => {
+    for (let x = 0; x < w; x++) {
+        const u = (x / w) * Math.PI * 6;
+        for (let y = 0; y < h; y++) {
+            const v = (y / h) * Math.PI * 6;
+            const bio = Math.cos(u) + Math.cos(v) + Math.cos(u - v) + Math.sin(u * 2 + v * 2) * 0.5;
+            if (Math.abs(bio) < 0.3 * p.scale) {
+                ctx.fillStyle = getCol(x, y, w, h); ctx.fillRect(x, y, 1, 1);
+            }
+        }
+    }
+};
+
+// 3. NEGATIVE SPACE & IMPOSSIBLE POV ILLUSIONS
 POI_GENERATORS.neg_void_blackhole = (ctx, w, h, p, getCol) => {
     const holes = Math.max(2, Math.round(4 * p.spacing));
     const step = w / holes;
@@ -293,20 +600,17 @@ POI_GENERATORS.neg_void_blackhole = (ctx, w, h, p, getCol) => {
             const hIdx = Math.floor(x / step);
             const cx = (hIdx + 0.5) * step;
             const cy = h / 2;
-            let dx = Math.abs(x - cx);
-            if (dx > w / 2) dx = w - dx;
+            let dx = Math.abs(x - cx); if (dx > w / 2) dx = w - dx;
             const dy = y - cy;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < rVoid) continue;
             else if (dist < rCorona) {
                 const t = 1 - (dist - rVoid) / (rCorona - rVoid);
-                ctx.fillStyle = getCol(x, y, w, h, t * 1.5);
-                ctx.fillRect(x, y, 1, 1);
+                ctx.fillStyle = getCol(x, y, w, h, t * 1.5); ctx.fillRect(x, y, 1, 1);
             } else {
                 const n = poiNoise.sampleCylinder(x, y, w, h, 3, 2.0);
                 if (n > 0.65) {
-                    ctx.fillStyle = getCol(x, y, w, h, 0.2);
-                    ctx.fillRect(x, y, 1, 1);
+                    ctx.fillStyle = getCol(x, y, w, h, 0.2); ctx.fillRect(x, y, 1, 1);
                 }
             }
         }
@@ -316,8 +620,7 @@ POI_GENERATORS.neg_void_blackhole = (ctx, w, h, p, getCol) => {
 POI_GENERATORS.neg_impossible_penrose = (ctx, w, h, p, getCol) => {
     const count = Math.max(2, Math.round(4 * p.spacing));
     const step = w / count;
-    ctx.fillStyle = getCol(w / 2, h / 2, w, h);
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = getCol(w / 2, h / 2, w, h); ctx.fillRect(0, 0, w, h);
     for (let i = 0; i < count; i++) {
         const cx = (i + 0.5) * step;
         const cy = h / 2;
@@ -355,8 +658,7 @@ POI_GENERATORS.neg_escher_figureground = (ctx, w, h, p, getCol) => {
             const v = (y / h) * Math.PI * 4;
             const escher = Math.sin(u) * Math.cos(v) + Math.cos(u * 2) * Math.sin(v * 2);
             if (escher > 0.1) {
-                ctx.fillStyle = getCol(x, y, w, h, escher);
-                ctx.fillRect(x, y, 1, 1);
+                ctx.fillStyle = getCol(x, y, w, h, escher); ctx.fillRect(x, y, 1, 1);
             }
         }
     }
@@ -392,8 +694,7 @@ POI_GENERATORS.neg_voronoi_stellar_web = (ctx, w, h, p, getCol) => {
             const n2 = poiNoise.sampleCylinder(x + 10, y + 10, w, h, 6, 4.0);
             const filament = Math.abs(n1 - n2);
             if (filament < 0.08 * p.scale) {
-                ctx.fillStyle = getCol(x, y, w, h, 1 - filament / 0.08);
-                ctx.fillRect(x, y, 1, 1);
+                ctx.fillStyle = getCol(x, y, w, h, 1 - filament / 0.08); ctx.fillRect(x, y, 1, 1);
             }
         }
     }
@@ -528,7 +829,7 @@ POI_GENERATORS.neg_chladni_nodal_void = (ctx, w, h, p, getCol) => {
     }
 };
 
-// 2. TRIPPY PSYCHEDELIC & FACE-MELTERS
+// 4. TRIPPY PSYCHEDELIC & FACE-MELTERS
 POI_GENERATORS.trippy_droste_spiral = (ctx, w, h, p, getCol) => {
     const arms = Math.max(2, Math.round(4 * p.spacing));
     for (let x = 0; x < w; x++) {
@@ -803,7 +1104,7 @@ POI_GENERATORS.trippy_kaleido_octagram = (ctx, w, h, p, getCol) => {
     }
 };
 
-// 3. QUANTUM MECHANICS
+// 5. QUANTUM MECHANICS
 POI_GENERATORS.quantum_laguerre = (ctx, w, h, p, getCol) => {
     const l = Math.max(1, Math.round(3 * p.spacing));
     for (let x = 0; x < w; x++) {
@@ -896,7 +1197,7 @@ POI_GENERATORS.quantum_dirac_comb = (ctx, w, h, p, getCol) => {
     }
 };
 
-// 4. STRANGE ATTRACTORS
+// 6. STRANGE ATTRACTORS
 POI_GENERATORS.attractor_aizawa = (ctx, w, h, p, getCol) => {
     let x = 0.1, y = 0, z = 0;
     const a = 0.95, b = 0.7, c = 0.6, d = 3.5, e = 0.25, f = 0.1;
@@ -1047,7 +1348,7 @@ POI_GENERATORS.attractor_lorenz = (ctx, w, h, p, getCol) => {
     }
 };
 
-// 5. REACTION-DIFFUSION
+// 7. REACTION-DIFFUSION
 POI_GENERATORS.rd_gray_scott_maze = (ctx, w, h, p, getCol) => {
     const imgData = ctx.createImageData(w, h);
     const data = imgData.data;
@@ -1120,7 +1421,7 @@ POI_GENERATORS.rd_turing_hex = (ctx, w, h, p, getCol) => {
     }
 };
 
-// 6. CYMATICS
+// 8. CYMATICS
 POI_GENERATORS.cymatic_chladni = (ctx, w, h, p, getCol) => {
     const n = Math.max(1, Math.round(3 * p.spacing));
     const m = n + 1;
@@ -1208,7 +1509,7 @@ POI_GENERATORS.cymatic_harmonic_sum = (ctx, w, h, p, getCol) => {
 
 POI_GENERATORS.cymatic_modal_lines = (ctx, w, h, p, getCol) => POI_GENERATORS.cymatic_chladni(ctx, w, h, p, getCol);
 
-// 7. CONFORMAL MAPPING & COMPLEX ANALYSIS
+// 9. CONFORMAL MAPPING & COMPLEX ANALYSIS
 POI_GENERATORS.conformal_mobius = (ctx, w, h, p, getCol) => {
     const k = Math.max(1, Math.round(3 * p.spacing));
     for (let x = 0; x < w; x++) {
@@ -1303,7 +1604,7 @@ POI_GENERATORS.quasicrystal_penrose = (ctx, w, h, p, getCol) => {
     }
 };
 
-// 8. 4D FRACTALS & NON-LINEAR MAPS
+// 10. 4D FRACTALS & NON-LINEAR MAPS
 POI_GENERATORS.fractal_quaternion = (ctx, w, h, p, getCol) => {
     const cycles = Math.max(1, Math.round(2 * p.spacing));
     for (let x = 0; x < w; x++) {
@@ -1403,7 +1704,7 @@ POI_GENERATORS.fractal_gyroid = (ctx, w, h, p, getCol) => {
     }
 };
 
-// 9. FLUID DYNAMICS
+// 11. FLUID DYNAMICS
 POI_GENERATORS.fluid_karman = (ctx, w, h, p, getCol) => {
     const vortices = Math.max(2, Math.round(4 * p.spacing));
     const step = w / vortices;
@@ -1465,7 +1766,7 @@ POI_GENERATORS.fluid_kelvin = (ctx, w, h, p, getCol) => {
 
 POI_GENERATORS.fluid_streamlines = (ctx, w, h, p, getCol) => POI_GENERATORS.fluid_kelvin(ctx, w, h, p, getCol);
 
-// 10. SACRED HYPER-GEOMETRY
+// 12. SACRED HYPER-GEOMETRY
 POI_GENERATORS.sacred_muqarnas = (ctx, w, h, p, getCol) => {
     const stars = Math.max(1, Math.round(3 * p.spacing));
     const step = w / stars;
@@ -1574,7 +1875,7 @@ POI_GENERATORS.sacred_flower_3d = (ctx, w, h, p, getCol) => {
 
 POI_GENERATORS.sacred_rosette_12 = (ctx, w, h, p, getCol) => POI_GENERATORS.sacred_muqarnas(ctx, w, h, p, getCol);
 
-// 11. HARMONICS & MOIRE
+// 13. HARMONICS & MOIRE
 POI_GENERATORS.moire_interference = (ctx, w, h, p, getCol) => {
     for (let i = 0; i < 6; i++) {
         ctx.lineWidth = p.thickness;
@@ -1642,7 +1943,7 @@ POI_GENERATORS.plasma_3d_cyl = (ctx, w, h, p, getCol) => {
     ctx.putImageData(imgData, 0, 0);
 };
 
-// 12. STROBOSCOPIC LASER PHYSICS
+// 14. STROBOSCOPIC LASER PHYSICS
 POI_GENERATORS.strobe_diffraction = (ctx, w, h, p, getCol) => {
     const spokes = Math.max(4, Math.round(12 * p.spacing));
     const step = w / spokes;
@@ -1690,7 +1991,57 @@ POI_GENERATORS.strobe_diamond_lattice = (ctx, w, h, p, getCol) => {
     }
 };
 
-// --- UNIVERSAL ZERO-SEAM CONTINUITY GUARDIAN (100.00% SEAMLESS GUARANTEED) ---
+// --- HARMONIC GEOMETRY FLOW MORPH ENGINE (DUAL-EQUATION SYNTHESIZER) ---
+function generateMorphedPattern(destCanvas, modelA, modelB, flowStyle, morphRatio, params, colSampler) {
+    const w = destCanvas.width;
+    const h = destCanvas.height;
+
+    const genA = POI_GENERATORS[modelA] || POI_GENERATORS.neg_void_blackhole;
+    const genB = POI_GENERATORS[modelB] || POI_GENERATORS.illusion_fraser_spiral;
+
+    const canvasA = document.createElement('canvas'); canvasA.width = w; canvasA.height = h;
+    const canvasB = document.createElement('canvas'); canvasB.width = w; canvasB.height = h;
+
+    genA(canvasA.getContext('2d'), w, h, params, colSampler);
+    genB(canvasB.getContext('2d'), w, h, params, colSampler);
+
+    const ctx = destCanvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+
+    const dataA = canvasA.getContext('2d').getImageData(0, 0, w, h).data;
+    const dataB = canvasB.getContext('2d').getImageData(0, 0, w, h).data;
+    const outImg = ctx.createImageData(w, h);
+    const outD = outImg.data;
+
+    for (let x = 0; x < w; x++) {
+        const normX = x / w;
+        for (let y = 0; y < h; y++) {
+            const idx = (y * w + x) * 4;
+
+            let t = morphRatio;
+            if (flowStyle === 'azimuthal_flow') {
+                // A -> B -> A continuous seamless loop across azimuth 0° -> 180° -> 360°
+                const cycle = (1 - Math.cos(normX * Math.PI * 2)) * 0.5;
+                t = cycle * morphRatio;
+            } else if (flowStyle === 'interlaced_rails') {
+                // Alternating LED pixel rows
+                t = (y % 2 === 0) ? (1 - morphRatio) : morphRatio;
+            } else if (flowStyle === 'nonlinear_phase') {
+                // Non-linear spatial phase modulation
+                const wave = Math.sin(normX * Math.PI * 4 + (y / h) * Math.PI * 2);
+                t = Math.max(0, Math.min(1, morphRatio + wave * 0.35));
+            }
+
+            outD[idx] = dataA[idx] * (1 - t) + dataB[idx] * t;
+            outD[idx + 1] = dataA[idx + 1] * (1 - t) + dataB[idx + 1] * t;
+            outD[idx + 2] = dataA[idx + 2] * (1 - t) + dataB[idx + 2] * t;
+            outD[idx + 3] = Math.max(dataA[idx + 3], dataB[idx + 3]);
+        }
+    }
+    ctx.putImageData(outImg, 0, 0);
+}
+
+// --- UNIVERSAL ZERO-SEAM CONTINUITY GUARDIAN ---
 function applyPerfectSeamGuardian(canvas, blendWidth = 6) {
     const w = canvas.width;
     const h = canvas.height;
@@ -1699,12 +2050,10 @@ function applyPerfectSeamGuardian(canvas, blendWidth = 6) {
     const imgData = ctx.getImageData(0, 0, w, h);
     const data = imgData.data;
 
-    // Harmonize the boundaries using raised-cosine phase fusion
     for (let y = 0; y < h; y++) {
         const left0 = (y * w + 0) * 4;
         const rightEnd = (y * w + (w - 1)) * 4;
 
-        // If there is any minute delta between column 0 and column W-1:
         if (data[left0] !== data[rightEnd] || data[left0+1] !== data[rightEnd+1] || data[left0+2] !== data[rightEnd+2]) {
             for (let bx = 0; bx < blendWidth; bx++) {
                 const leftX = bx;
@@ -2054,6 +2403,7 @@ window.POI_PALETTES = POI_PALETTES;
 window.POI_GENERATORS = POI_GENERATORS;
 window.poiNoise = poiNoise;
 window.createColorSampler = createColorSampler;
+window.generateMorphedPattern = generateMorphedPattern;
 window.joinPatternSequence = joinPatternSequence;
 window.checkSeamContinuity = checkSeamContinuity;
 window.applyPerfectSeamGuardian = applyPerfectSeamGuardian;

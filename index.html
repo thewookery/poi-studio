@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POI Studio: 100% Guaranteed Seamless POV Engine & Algorithmic Math Suite</title>
+    <title>POI Studio: 100% Zero-Seam POV Suite & Geometry Flow Synthesizer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -22,8 +22,8 @@
 
     <!-- HEADER -->
     <div class="header">
-        <h1><span>⚡</span> POI STUDIO <span>♾️</span></h1>
-        <div class="subtitle">100% Guaranteed Zero-Seam POV Engine • 102 Pure Algorithmic Generators • SD-Card Length Optimizer</div>
+        <h1><span>⚡</span> POI STUDIO <span>🎭</span></h1>
+        <div class="subtitle">Geometry Flow Morph Synthesizer • Optical Illusions • 118+ Pure Algorithmic Generators</div>
     </div>
 
     <!-- HARDWARE & COMPACT PATTERN LENGTH CONTROLS -->
@@ -115,6 +115,39 @@
         </button>
     </div>
 
+    <!-- 🎭 HARMONIC GEOMETRY FLOW MORPH STUDIO -->
+    <div class="morph-section">
+        <div class="morph-header">
+            <span class="morph-title">🎭 Geometry Flow Morph Studio (Flow Any Geometry into Another)</span>
+            <label style="font-size:0.75rem; color:var(--neon-green); cursor:pointer; display:flex; align-items:center; gap:6px;">
+                <input type="checkbox" id="morph-enable" style="accent-color:var(--neon-green);"> <b>Enable Dual-Flow Morph</b>
+            </label>
+        </div>
+        <div id="morph-controls-body" style="display:none; flex-direction:column; gap:8px; margin-top:8px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div>
+                    <span style="font-size:0.7rem; color:var(--accent-color); font-weight:700;">Primary Equation (A):</span>
+                    <select id="morph-model-a" style="width:100%; font-size:0.72rem;"></select>
+                </div>
+                <div>
+                    <span style="font-size:0.7rem; color:var(--neon-pink); font-weight:700;">Secondary Equation (B):</span>
+                    <select id="morph-model-b" style="width:100%; font-size:0.72rem;"></select>
+                </div>
+            </div>
+            <div class="ctrl-row">
+                <span style="font-size:0.72rem; color:var(--text-muted);">Flow Transform Style:</span>
+                <select id="morph-flow-style" style="font-size:0.72rem; padding:4px 8px;">
+                    <option value="azimuthal_flow">Continuous Azimuthal Flow (A ➔ B ➔ A)</option>
+                    <option value="nonlinear_phase">Non-Linear Wave Phase Modulation</option>
+                    <option value="interlaced_rails">Interlaced Alternating LED Rails</option>
+                </select>
+                <span style="font-size:0.72rem; color:var(--text-muted); margin-left:10px;">Morph Ratio:</span>
+                <input type="range" id="morph-ratio" min="0" max="1" step="0.05" value="0.5" style="max-width:120px;">
+                <span class="val-badge" id="morph-ratio-val">50%</span>
+            </div>
+        </div>
+    </div>
+
     <!-- CRAZY MUTATION ACTION BAR -->
     <div class="crazy-action-bar">
         <button class="btn-crazy-mutate" id="btn-crazy-mutate">
@@ -127,14 +160,64 @@
         </button>
     </div>
 
-    <!-- 1. NEGATIVE SPACE POV ILLUSIONS GALLERY -->
+    <!-- 1. OPTICAL ILLUSIONS & PERCEPTUAL MOTION GALLERY -->
+    <div class="gallery-section" style="border-color: var(--neon-yellow); background: rgba(255, 255, 0, 0.02);">
+        <div class="gallery-header">
+            <span class="gallery-title" style="color: var(--neon-yellow);">👁️ Optical Illusions & Perceptual Motion (POV Specific)</span>
+            <span style="font-size:0.7rem; color:var(--text-muted);">Cortical ocular illusions in dark air</span>
+        </div>
+        <div class="gallery-grid">
+            <div class="preset-card active" data-preset="illusion_fraser_spiral">
+                <div class="preset-icon">🌀</div>
+                <div class="preset-name">Fraser False Spiral</div>
+                <div class="preset-desc">Perceived Infinite Vortex</div>
+            </div>
+            <div class="preset-card" data-preset="illusion_ouchi_depth">
+                <div class="preset-icon">🪐</div>
+                <div class="preset-name">Ouchi 3D Floating Disk</div>
+                <div class="preset-desc">Depth Wobble Illusion</div>
+            </div>
+            <div class="preset-card" data-preset="illusion_scintillating_grid">
+                <div class="preset-icon">✨</div>
+                <div class="preset-name">Scintillating Grid</div>
+                <div class="preset-desc">Phantom Flash Nodes</div>
+            </div>
+            <div class="preset-card" data-preset="illusion_cafe_wall">
+                <div class="preset-icon">🧱</div>
+                <div class="preset-name">Café Wall Divergence</div>
+                <div class="preset-desc">Apparent Slanted Rows</div>
+            </div>
+            <div class="preset-card" data-preset="illusion_kanizsa_contours">
+                <div class="preset-icon">📐</div>
+                <div class="preset-name">Kanizsa Virtual Contours</div>
+                <div class="preset-desc">Floating Virtual Edges</div>
+            </div>
+            <div class="preset-card" data-preset="illusion_kitaoka_snakes">
+                <div class="preset-icon">🐍</div>
+                <div class="preset-name">Kitaoka Motion Drift</div>
+                <div class="preset-desc">Anomalous Motion Signals</div>
+            </div>
+            <div class="preset-card" data-preset="illusion_necker_hyperlattice">
+                <div class="preset-icon">🧊</div>
+                <div class="preset-name">Necker Bistable Lattice</div>
+                <div class="preset-desc">Spontaneous 3D Flips</div>
+            </div>
+            <div class="preset-card" data-preset="illusion_zollner_divergence">
+                <div class="preset-icon">〰️</div>
+                <div class="preset-name">Zöllner Tilted Rays</div>
+                <div class="preset-desc">Apparent Non-Parallel Lines</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. NEGATIVE SPACE POV ILLUSIONS GALLERY -->
     <div class="gallery-section" style="border-color: var(--neon-pink); background: rgba(255, 46, 99, 0.03);">
         <div class="gallery-header">
             <span class="gallery-title" style="color: var(--neon-pink);">🕳️ Negative-Space & Impossible POV Illusions</span>
             <span style="font-size:0.7rem; color:var(--text-muted);">Pitch-black cutouts in mid-air</span>
         </div>
         <div class="gallery-grid">
-            <div class="preset-card active" data-preset="neg_void_blackhole">
+            <div class="preset-card" data-preset="neg_void_blackhole">
                 <div class="preset-icon">🕳️</div>
                 <div class="preset-name">Event Horizon Void</div>
                 <div class="preset-desc">Singularity Accretion</div>
@@ -159,41 +242,36 @@
                 <div class="preset-name">Dark Matter Cells</div>
                 <div class="preset-desc">Floating Black Cavities</div>
             </div>
-            <div class="preset-card" data-preset="neg_voronoi_stellar_web">
-                <div class="preset-icon">🌌</div>
-                <div class="preset-name">Cosmic Web Voids</div>
-                <div class="preset-desc">Filamentary Voids</div>
-            </div>
             <div class="preset-card" data-preset="neg_honeycomb_lattice">
                 <div class="preset-icon">🐝</div>
                 <div class="preset-name">Honeycomb Grid</div>
                 <div class="preset-desc">Hollow Hex Cavities</div>
             </div>
-            <div class="preset-card" data-preset="neg_hollow_mandala">
-                <div class="preset-icon">🌸</div>
-                <div class="preset-name">Hollow Mandala</div>
-                <div class="preset-desc">Floating Dark Core</div>
-            </div>
-            <div class="preset-card" data-preset="neg_schwarz_minimal_void">
-                <div class="preset-icon">🫧</div>
-                <div class="preset-name">Schwarz P Void</div>
-                <div class="preset-desc">Minimal Surface Holes</div>
-            </div>
-            <div class="preset-card" data-preset="neg_chladni_nodal_void">
-                <div class="preset-icon">🔊</div>
-                <div class="preset-name">Nodal Void Lanes</div>
-                <div class="preset-desc">Acoustic Zero Lines</div>
-            </div>
         </div>
     </div>
 
-    <!-- 2. TRIPPY PSYCHEDELIC & FACE-MELTING GALLERY -->
+    <!-- 3. TRIPPY PSYCHEDELIC & FACE-MELTING GALLERY -->
     <div class="gallery-section" style="border-color: var(--neon-purple); background: rgba(188, 19, 254, 0.03);">
         <div class="gallery-header">
-            <span class="gallery-title" style="color: var(--neon-purple);">🌀 Trippy Psychedelic & Face-Melting Shaders</span>
+            <span class="gallery-title" style="color: var(--neon-purple);">🌀 Trippy Psychedelic & Custom Inventions</span>
             <span style="font-size:0.7rem; color:var(--text-muted);">Non-linear complex warps</span>
         </div>
         <div class="gallery-grid">
+            <div class="preset-card" data-preset="trippy_synaptic_cascade">
+                <div class="preset-icon">⚡</div>
+                <div class="preset-name">Synaptic Cascade</div>
+                <div class="preset-desc">Neuro-Dendrite Burst</div>
+            </div>
+            <div class="preset-card" data-preset="trippy_hyperbolic_vortex_7">
+                <div class="preset-icon">🌪️</div>
+                <div class="preset-name">Poincaré Swirl</div>
+                <div class="preset-desc">7-Fold Hyperbolic Warp</div>
+            </div>
+            <div class="preset-card" data-preset="trippy_quantum_flux_tube">
+                <div class="preset-icon">🔬</div>
+                <div class="preset-name">Quantum Flux Tubes</div>
+                <div class="preset-desc">Abrikosov Flux Lattice</div>
+            </div>
             <div class="preset-card" data-preset="trippy_droste_spiral">
                 <div class="preset-icon">🌀</div>
                 <div class="preset-name">Droste Spiral</div>
@@ -208,131 +286,6 @@
                 <div class="preset-icon">🌈</div>
                 <div class="preset-name">Chromatic Vortex</div>
                 <div class="preset-desc">Prismatic RGB Split</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_4d_clifford_torus">
-                <div class="preset-icon">💠</div>
-                <div class="preset-name">4D Clifford Torus</div>
-                <div class="preset-desc">Hyper-Torus Twister</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_tesseract_4d">
-                <div class="preset-icon">🧊</div>
-                <div class="preset-name">4D Tesseract</div>
-                <div class="preset-desc">Hypercube Projection</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_moebius_strip_twist">
-                <div class="preset-icon">♾️</div>
-                <div class="preset-name">Möbius Twist</div>
-                <div class="preset-desc">3D Strip Inversion</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_hopf_fibration">
-                <div class="preset-icon">🌐</div>
-                <div class="preset-name">Hopf Fibration</div>
-                <div class="preset-desc">S³→S² Great Circles</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_hyperbolic_helicoid">
-                <div class="preset-icon">🌪️</div>
-                <div class="preset-name">Hyperbolic Helicoid</div>
-                <div class="preset-desc">Minimal Helicoid Mesh</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_fermat_spiral">
-                <div class="preset-icon">🌻</div>
-                <div class="preset-name">Fermat Golden Spiral</div>
-                <div class="preset-desc">Phyllotaxis Matrix</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_magnetic_dipole">
-                <div class="preset-icon">🧲</div>
-                <div class="preset-name">Magnetic Dipole</div>
-                <div class="preset-desc">3D Lorentz Field</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_superluminal_shock">
-                <div class="preset-icon">⚡</div>
-                <div class="preset-name">Cherenkov Shock</div>
-                <div class="preset-desc">Superluminal Cones</div>
-            </div>
-            <div class="preset-card" data-preset="trippy_neural_dla">
-                <div class="preset-icon">⚡</div>
-                <div class="preset-name">Synaptic Lightning</div>
-                <div class="preset-desc">Fractal Axon Web</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. STRANGE ATTRACTORS & QUANTUM SINGULARITIES -->
-    <div class="gallery-section">
-        <div class="gallery-header">
-            <span class="gallery-title">🌌 Quantum Singularities & Chaotic Attractors</span>
-            <span style="font-size:0.7rem; color:var(--text-muted);">Differential dynamical flows</span>
-        </div>
-        <div class="gallery-grid">
-            <div class="preset-card" data-preset="quantum_laguerre">
-                <div class="preset-icon">🌀</div>
-                <div class="preset-name">Optical Vortex</div>
-                <div class="preset-desc">Laguerre-Gaussian (OAM)</div>
-            </div>
-            <div class="preset-card" data-preset="attractor_aizawa">
-                <div class="preset-icon">🌌</div>
-                <div class="preset-name">Aizawa Chaos</div>
-                <div class="preset-desc">3D Spherical Attractor</div>
-            </div>
-            <div class="preset-card" data-preset="attractor_thomas">
-                <div class="preset-icon">🧬</div>
-                <div class="preset-name">Thomas Chaos</div>
-                <div class="preset-desc">Cyclic Helix Flow</div>
-            </div>
-            <div class="preset-card" data-preset="attractor_rossler">
-                <div class="preset-icon">🌀</div>
-                <div class="preset-name">Rössler Spiral</div>
-                <div class="preset-desc">Chaotic Spiral Band</div>
-            </div>
-            <div class="preset-card" data-preset="attractor_chua">
-                <div class="preset-icon">⚡</div>
-                <div class="preset-name">Chua Circuit</div>
-                <div class="preset-desc">Double-Scroll Chaos</div>
-            </div>
-            <div class="preset-card" data-preset="quantum_talbot">
-                <div class="preset-icon">✨</div>
-                <div class="preset-name">Talbot Carpet</div>
-                <div class="preset-desc">Diffraction Grating</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. CYMATICS & CONFORMAL GEOMETRY -->
-    <div class="gallery-section">
-        <div class="gallery-header">
-            <span class="gallery-title">🔊 Cymatics, Conformal Mappings & Fractals</span>
-            <span style="font-size:0.7rem; color:var(--text-muted);">Acoustic resonance & non-Euclidean disks</span>
-        </div>
-        <div class="gallery-grid">
-            <div class="preset-card" data-preset="cymatic_chladni">
-                <div class="preset-icon">🔊</div>
-                <div class="preset-name">Chladni Plate</div>
-                <div class="preset-desc">Acoustic Cymatics</div>
-            </div>
-            <div class="preset-card" data-preset="cymatic_plate_hex">
-                <div class="preset-icon">🛑</div>
-                <div class="preset-name">Hexagonal Plate</div>
-                <div class="preset-desc">6-Fold Resonance</div>
-            </div>
-            <div class="preset-card" data-preset="conformal_mobius">
-                <div class="preset-icon">🔮</div>
-                <div class="preset-name">Möbius Inversion</div>
-                <div class="preset-desc">Indra's Pearls</div>
-            </div>
-            <div class="preset-card" data-preset="conformal_poincare">
-                <div class="preset-icon">💠</div>
-                <div class="preset-name">Poincaré {7,3}</div>
-                <div class="preset-desc">Hyperbolic Coxeter</div>
-            </div>
-            <div class="preset-card" data-preset="conformal_riemann_zeta">
-                <div class="preset-icon">📐</div>
-                <div class="preset-name">Riemann Zeta</div>
-                <div class="preset-desc">Critical Line Horizon</div>
-            </div>
-            <div class="preset-card" data-preset="sacred_vector_equilibrium">
-                <div class="preset-icon">🌐</div>
-                <div class="preset-name">Vector Equilibrium</div>
-                <div class="preset-desc">Fuller Jitterbug</div>
             </div>
         </div>
     </div>
@@ -423,7 +376,7 @@
 
     <!-- PRO ALGORITHMIC STUDIO ACCORDION -->
     <details>
-        <summary>⚙️ Deep Algorithmic Studio (All 100+ Equations, Symmetries & Optical Shaders)</summary>
+        <summary>⚙️ Deep Algorithmic Studio (All 118+ Equations, Symmetries & Optical Shaders)</summary>
         <div class="details-body">
             <div class="ctrl-row" style="margin-top:10px;">
                 <span class="ctrl-label">Equation Model:</span>
@@ -496,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const updateBadge = (id, val) => { const e = el(id); if (e) e.innerText = val; };
 
     // --- STATE ---
-    let currentPattern = "neg_void_blackhole";
+    let currentPattern = "illusion_fraser_spiral";
     let currentHeight = 55;
     let currentWidth = 240;
     let symMirrorH = false;
@@ -509,18 +462,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const sequenceQueue = [];
 
-    // --- POPULATE PRO PATTERN SELECTOR ---
-    const proSelect = el('pro-pattern-select');
-    let selectHtml = "";
-    POI_PATTERN_DB.forEach(group => {
-        selectHtml += `<optgroup label="${group.cat}">`;
-        group.items.forEach(item => {
-            selectHtml += `<option value="${item.v}">${item.l}</option>`;
+    // --- POPULATE PRO & MORPH PATTERN SELECTORS ---
+    function buildSelectOptions() {
+        let selectHtml = "";
+        POI_PATTERN_DB.forEach(group => {
+            selectHtml += `<optgroup label="${group.cat}">`;
+            group.items.forEach(item => {
+                selectHtml += `<option value="${item.v}">${item.l}</option>`;
+            });
+            selectHtml += `</optgroup>`;
         });
-        selectHtml += `</optgroup>`;
-    });
-    proSelect.innerHTML = selectHtml;
+        return selectHtml;
+    }
+
+    const proSelect = el('pro-pattern-select');
+    const morphASelect = el('morph-model-a');
+    const morphBSelect = el('morph-model-b');
+
+    const opts = buildSelectOptions();
+    proSelect.innerHTML = opts;
+    morphASelect.innerHTML = opts;
+    morphBSelect.innerHTML = opts;
+
     proSelect.value = currentPattern;
+    morphASelect.value = "illusion_fraser_spiral";
+    morphBSelect.value = "attractor_aizawa";
 
     proSelect.onchange = (e) => {
         currentPattern = e.target.value;
@@ -535,6 +501,9 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             currentPattern = this.getAttribute('data-preset');
             proSelect.value = currentPattern;
+            if (el('morph-enable').checked) {
+                morphASelect.value = currentPattern;
+            }
             renderActivePattern();
         });
     });
@@ -544,6 +513,19 @@ document.addEventListener('DOMContentLoaded', function() {
             c.classList.toggle('active', c.getAttribute('data-preset') === currentPattern);
         });
     }
+
+    // --- MORPH CONTROLS TOGGLE ---
+    el('morph-enable').onchange = (e) => {
+        el('morph-controls-body').style.display = e.target.checked ? 'flex' : 'none';
+        renderActivePattern();
+    };
+    morphASelect.onchange = renderActivePattern;
+    morphBSelect.onchange = renderActivePattern;
+    el('morph-flow-style').onchange = renderActivePattern;
+    el('morph-ratio').oninput = (e) => {
+        updateBadge('morph-ratio-val', Math.round(e.target.value * 100) + '%');
+        renderActivePattern();
+    };
 
     // --- HARDWARE HEIGHT BUTTONS & CUSTOM INPUT ---
     document.querySelectorAll('.hw-btn[data-h]').forEach(btn => {
@@ -632,8 +614,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const colSampler = createColorSampler(paletteKey, colorDir, gradientMode);
         const params = { chaos, scale, thickness, spacing };
 
-        const genFn = POI_GENERATORS[currentPattern] || POI_GENERATORS.neg_void_blackhole;
-        genFn(ctx, w, h, params, colSampler);
+        const isMorph = el('morph-enable').checked;
+        if (isMorph) {
+            const modelA = morphASelect.value;
+            const modelB = morphBSelect.value;
+            const flowStyle = el('morph-flow-style').value;
+            const morphRatio = parseFloat(el('morph-ratio').value);
+            generateMorphedPattern(baseCanvas, modelA, modelB, flowStyle, morphRatio, params, colSampler);
+        } else {
+            const genFn = POI_GENERATORS[currentPattern] || POI_GENERATORS.illusion_fraser_spiral;
+            genFn(ctx, w, h, params, colSampler);
+        }
 
         // Symmetry
         applyMultiSymmetry(baseCanvas, {
@@ -819,7 +810,8 @@ document.addEventListener('DOMContentLoaded', function() {
         clone.width = baseCanvas.width;
         clone.height = baseCanvas.height;
         clone.getContext('2d').drawImage(baseCanvas, 0, 0);
-        sequenceQueue.push({ name: currentPattern, canvas: clone });
+        const name = el('morph-enable').checked ? `${morphASelect.value}+${morphBSelect.value}` : currentPattern;
+        sequenceQueue.push({ name, canvas: clone });
         updateTimelineUI();
     };
 
@@ -871,6 +863,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const allKeys = Object.keys(POI_GENERATORS);
         currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
         proSelect.value = currentPattern;
+        if (el('morph-enable').checked) {
+            morphASelect.value = currentPattern;
+            morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
+        }
         highlightActivePreset();
         el('btn-crazy-mutate').click();
     };

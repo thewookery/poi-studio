@@ -1,4 +1,4 @@
-// Test suite for POI Studio Engine v9.0 (100+ Pure Mathematical Generators)
+// Test suite for POI Studio Engine v10.0 (Optical Illusions & Geometry Morphing Engine)
 const fs = require('fs');
 const path = require('path');
 
@@ -6,7 +6,7 @@ global.window = global;
 const code = fs.readFileSync(path.join(__dirname, 'poi-engine.js'), 'utf8');
 eval(code);
 
-console.log("=== Testing POI Studio Engine v9.0 (100+ Mathematical Suite) ===");
+console.log("=== Testing POI Studio Engine v10.0 (Optical Illusions & Geometry Morphing Engine) ===");
 
 let totalPatterns = 0;
 let missing = [];
@@ -25,7 +25,7 @@ if (missing.length > 0) {
     console.error(`Missing generators for: ${missing.join(', ')}`);
     process.exit(1);
 } else {
-    console.log("✓ All 100+ pure mathematical generator functions exist!");
+    console.log("✓ All 118+ pure mathematical and optical illusion generator functions exist!");
 }
 
 function createMockContext(w, h) {
@@ -58,6 +58,6 @@ for (const [key, genFn] of Object.entries(window.POI_GENERATORS)) {
         process.exit(1);
     }
 }
-console.log(`✓ Tested all ${tested} pure mathematical generators successfully!`);
+console.log(`✓ Tested all ${tested} mathematical & optical illusion generators successfully!`);
 
 console.log("ALL TESTS PASSED! ✨");
