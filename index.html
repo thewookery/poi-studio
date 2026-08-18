@@ -71,20 +71,23 @@
         </div>
     </header>
 
-    <!-- PRIMARY DUAL-WORKSPACE MODE SWITCHER -->
+    <!-- PRIMARY 3-STUDIO WORKSPACE MODE SWITCHER -->
     <div class="workspace-mode-bar">
-        <button class="mode-switch-btn active" id="btn-mode-stitcher" data-mode="workspace-stitcher">
-            🔀 Master BMP Stitcher & Flow (559 Patterns)
+        <button class="mode-switch-btn active" id="btn-mode-storyboard" data-mode="workspace-storyboard">
+            🎬 Show Storyboard & Stitcher
+        </button>
+        <button class="mode-switch-btn" id="btn-mode-vault" data-mode="workspace-vault">
+            🗂️ Master BMP Vault (<span id="top-vault-count">395</span>)
         </button>
         <button class="mode-switch-btn" id="btn-mode-generator" data-mode="workspace-generator">
-            ⚡ Algorithmic Pattern Generator & Shaders (128+)
+            ⚡ Algorithmic Pattern Generator
         </button>
     </div>
 
     <!-- ==========================================================================
-         WORKSPACE 1: MASTER BMP PATTERN STITCHER & FLOW STUDIO
+         WORKSPACE 1: SHOW STORYBOARD & MASTER STITCHER STUDIO
          ========================================================================== -->
-    <div id="workspace-stitcher" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
+    <div id="workspace-storyboard" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
 
         <!-- STORYBOARD TIMELINE SHOW BUILDER -->
         <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
@@ -93,8 +96,8 @@
                     🎬 Show Storyboard Timeline (<span id="timeline-count-badge">0 clips</span>):
                 </span>
                 <div style="display:flex; gap:6px;">
-                    <button class="hw-btn" id="btn-stitch-cur-cat" style="font-size:0.68rem; color:var(--neon-green); font-weight:800;">⚡ Stitch Visible Category</button>
-                    <button class="hw-btn" id="btn-rand-10-show" style="font-size:0.68rem; color:var(--accent-color);">🎲 Random 10</button>
+                    <button class="hw-btn" id="btn-stitch-all-vault" style="font-size:0.68rem; color:var(--neon-green); font-weight:800;">⚡ Add All from Vault</button>
+                    <button class="hw-btn" id="btn-rand-10-show" style="font-size:0.68rem; color:var(--accent-color);">🎲 Add Random 10</button>
                     <button class="hw-btn" id="btn-clear-timeline" style="font-size:0.68rem; color:var(--danger-color);">Clear</button>
                 </div>
             </div>
@@ -102,7 +105,7 @@
             <!-- HORIZONTAL FILMSTRIP QUEUE -->
             <div class="storyboard-timeline" id="storyboard-timeline">
                 <div style="font-size:0.75rem; color:var(--text-muted); margin:auto; padding:12px;">
-                    Timeline is empty. Click <b>"➕ Add to Show"</b> on any pattern below to build your seamless master show!
+                    Timeline is empty. Go to <b>"🗂️ Master BMP Vault"</b> or click <b>"🎲 Add Random 10"</b> to build your seamless master show!
                 </div>
             </div>
 
@@ -217,36 +220,41 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 559 MASTER PATTERNS VAULT BROWSER -->
+    <!-- ==========================================================================
+         WORKSPACE 2: MASTER BMP PATTERN VAULT STUDIO
+         ========================================================================== -->
+    <div id="workspace-vault" style="display:none; flex-direction:column; gap:10px; padding:10px 12px;">
         <div class="card-box">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                <span style="font-size:0.84rem; font-weight:800; color:var(--text-color);">
-                    🗂️ Master Pattern Vault (<span id="vault-count-badge">559 patterns</span>)
-                </span>
-                <span style="font-size:0.66rem; color:var(--text-muted);">
-                    Tall patterns auto-rotated 90° for horizontal POV spinning
-                </span>
-            </div>
-
-            <!-- CATEGORY FILTER PILLS -->
-            <div class="cat-filter-pills" id="cat-filter-pills">
-                <!-- Dynamically generated category filter buttons -->
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                <div>
+                    <span style="font-size:0.86rem; font-weight:800; color:var(--text-color);">
+                        🗂️ Master BMP Pattern Vault (<span id="vault-count-badge">395 patterns</span>)
+                    </span>
+                    <div style="font-size:0.68rem; color:var(--text-muted);">
+                        All patterns unified in single 'patterns/' folder • Tall files auto-rotated 90° for horizontal POV spinning
+                    </div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="hw-btn" id="btn-vault-add-all" style="font-size:0.7rem; color:var(--neon-green); font-weight:800;">⚡ Add All to Storyboard</button>
+                    <button class="hw-btn" id="btn-vault-add-rand10" style="font-size:0.7rem; color:var(--accent-color);">🎲 Add Random 10</button>
+                </div>
             </div>
 
             <!-- SEARCH BAR -->
-            <div class="search-input-wrap" style="margin-top:8px;">
+            <div class="search-input-wrap">
                 <span>🔍</span>
-                <input type="text" id="vault-search-input" placeholder="Search all 559 patterns (e.g. skull, flame, pikachu, wave, galaxy, chaser, eye)...">
+                <input type="text" id="vault-search-input" placeholder="Search 395 patterns (e.g. skull, flame, pikachu, wave, galaxy, chaser, eye, mario, flower)...">
             </div>
 
             <!-- PATTERN CARDS GRID -->
-            <div class="gallery-grid" id="vault-cards-grid" style="margin-top:10px; max-height:480px; overflow-y:auto; padding-right:4px;">
+            <div class="gallery-grid" id="vault-cards-grid" style="margin-top:10px; max-height:580px; overflow-y:auto; padding-right:4px;">
                 <!-- Dynamically populated pattern cards -->
             </div>
         </div>
-
     </div>
+
 
     <!-- ==========================================================================
          WORKSPACE 2: ALGORITHMIC PATTERN GENERATOR & POV SHADERS
@@ -546,13 +554,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Timeline Storyboard Queue
     const storyboardQueue = [];
 
-    // --- WORKSPACE MODE SWITCHER ---
+    // --- 3-STUDIO WORKSPACE MODE SWITCHER ---
     document.querySelectorAll('.mode-switch-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.mode-switch-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             activeWorkspace = this.getAttribute('data-mode');
-            el('workspace-stitcher').style.display = (activeWorkspace === 'workspace-stitcher') ? 'flex' : 'none';
+            
+            el('workspace-storyboard').style.display = (activeWorkspace === 'workspace-storyboard') ? 'flex' : 'none';
+            el('workspace-vault').style.display = (activeWorkspace === 'workspace-vault') ? 'flex' : 'none';
             el('workspace-generator').style.display = (activeWorkspace === 'workspace-generator') ? 'flex' : 'none';
         });
     });
@@ -602,49 +612,20 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // =========================================================================
-    // MASTER BMP VAULT & STORYBOARD STITCHER LOGIC
+    // MASTER BMP VAULT (395 UNIFIED PATTERNS)
     // =========================================================================
-    let activeCategory = "All";
     const vaultItems = window.MASTER_BMP_VAULT || [];
-
-    // Extract categories
-    const categoriesSet = new Set(["All"]);
-    vaultItems.forEach(item => {
-        if (item.category) categoriesSet.add(item.category);
-    });
-    const allCategories = Array.from(categoriesSet);
-
-    function buildCategoryPills() {
-        const pillsWrap = el('cat-filter-pills');
-        pillsWrap.innerHTML = '';
-
-        allCategories.forEach(cat => {
-            const count = (cat === "All") ? vaultItems.length : vaultItems.filter(i => i.category === cat).length;
-            const btn = document.createElement('button');
-            btn.className = `cat-pill-btn ${cat === activeCategory ? 'active' : ''}`;
-            btn.innerText = `${cat} (${count})`;
-            btn.onclick = () => {
-                activeCategory = cat;
-                document.querySelectorAll('.cat-pill-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderVaultCards();
-            };
-            pillsWrap.appendChild(btn);
-        });
-    }
-
-    buildCategoryPills();
+    updateBadge('top-vault-count', `${vaultItems.length}`);
 
     function renderVaultCards() {
         const grid = el('vault-cards-grid');
+        if (!grid) return;
         grid.innerHTML = '';
 
         const searchVal = el('vault-search-input').value.toLowerCase().trim();
 
         const filtered = vaultItems.filter(item => {
-            const matchCat = (activeCategory === "All" || item.category === activeCategory);
-            const matchSearch = (!searchVal || item.name.toLowerCase().includes(searchVal) || item.category.toLowerCase().includes(searchVal));
-            return matchCat && matchSearch;
+            return (!searchVal || item.name.toLowerCase().includes(searchVal) || item.rawFile.toLowerCase().includes(searchVal));
         });
 
         updateBadge('vault-count-badge', `${filtered.length} pattern${filtered.length === 1 ? '' : 's'}`);
@@ -689,6 +670,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     renderVaultCards();
     el('vault-search-input').oninput = renderVaultCards;
+
+    el('btn-vault-add-all').onclick = () => {
+        const searchVal = el('vault-search-input').value.toLowerCase().trim();
+        const filtered = vaultItems.filter(item => {
+            return (!searchVal || item.name.toLowerCase().includes(searchVal) || item.rawFile.toLowerCase().includes(searchVal));
+        });
+        filtered.forEach(item => addToStoryboard(item));
+        el('btn-mode-storyboard').click();
+    };
+
+    el('btn-vault-add-rand10').onclick = () => {
+        const shuffled = [...vaultItems].sort(() => 0.5 - Math.random()).slice(0, 10);
+        shuffled.forEach(item => addToStoryboard(item));
+        el('btn-mode-storyboard').click();
+    };
+
+    el('btn-stitch-all-vault').onclick = () => {
+        vaultItems.forEach(item => addToStoryboard(item));
+    };
+
 
     function rotateVaultItem(item) {
         // Create canvas from image, rotate, update dataUri

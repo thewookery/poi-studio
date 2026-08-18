@@ -218,22 +218,27 @@ body {
 }
 
 /* ==========================================================================
-   PRIMARY WORKSPACE MODE SWITCHER (TWO DEDICATED SECTIONS)
+   PRIMARY WORKSPACE MODE SWITCHER (3 DEDICATED STUDIOS)
    ========================================================================== */
 .workspace-mode-bar {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1.1fr;
     gap: 6px;
     padding: 8px 10px;
     background: #070a10;
     border-bottom: 2px solid var(--border-color);
 }
+@media (max-width: 720px) {
+    .workspace-mode-bar {
+        grid-template-columns: 1fr;
+    }
+}
 .mode-switch-btn {
     background: #101624;
     border: 1px solid var(--border-color);
     color: var(--text-muted);
-    padding: 9px 12px;
-    font-size: 0.78rem;
+    padding: 8px 10px;
+    font-size: 0.76rem;
     font-weight: 800;
     border-radius: var(--radius-sm);
     cursor: pointer;
@@ -241,7 +246,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
+    text-align: center;
 }
 .mode-switch-btn:hover {
     color: var(--text-color);
@@ -253,6 +259,7 @@ body {
     border-color: var(--accent-color);
     box-shadow: 0 0 12px var(--accent-glow);
 }
+
 
 /* ==========================================================================
    APP NAVIGATION TABS (TOUCH SCROLLABLE + WRAP AWARE)

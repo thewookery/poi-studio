@@ -1,2 +1,0 @@
-ConstantSpeed= 50
-SpeedToggle=50,100,150,200
