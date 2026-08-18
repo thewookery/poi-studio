@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>POI Studio: Master BMP Pattern Stitcher & Generative POV Suite</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00ff88">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="POI Studio">
     <link rel="stylesheet" href="styles.css">
+
 </head>
 <body>
 
@@ -654,6 +662,24 @@
                     <button class="hw-btn" id="ble-btn-loop-all" style="font-size:0.68rem; color:var(--neon-yellow);">🌐 Loop All Banks</button>
                 </div>
             </div>
+
+            <!-- HARDWARE FLASH & SAFETY DIAGNOSTICS -->
+            <div style="background:rgba(20, 30, 45, 0.6); border:1px solid rgba(0, 255, 136, 0.2); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.68rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span style="font-weight:800; color:var(--neon-green);">💾 Poi Flash Memory & Safety:</span>
+                    <span class="val-mono" style="color:var(--neon-yellow);">Seeed XIAO ESP32-C3</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; color:var(--text-muted); font-size:0.65rem; line-height:1.4;">
+                    <div>• <b>Total SPI Flash:</b> 4,096 KB (4 MB)</div>
+                    <div>• <b>Pattern Partition:</b> 2,504 KB (LittleFS)</div>
+                    <div>• <b>Bank Capacity:</b> 3 Banks × 5 Slots (15 Total)</div>
+                    <div>• <b>Slot Size (55x40):</b> 6.6 KB (~4% of Flash)</div>
+                </div>
+                <div style="margin-top:4px; font-size:0.62rem; color:var(--neon-green);">
+                    🛡️ <b>Bootloader Protection:</b> Hardware bootloader is isolated in silicon ROM & flash <code>0x0000</code>. Bluetooth uploads write strictly to isolated pattern filesystem (<code>0x17E000</code>) with zero risk of bricking.
+                </div>
+            </div>
+
 
             <!-- SCAN OPTIONS & TROUBLESHOOTING GUIDE -->
             <div style="background:rgba(0, 173, 181, 0.05); border:1px solid rgba(0, 173, 181, 0.25); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.7rem;">
@@ -2159,8 +2185,18 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // Register 100% Offline Festival Service Worker (PWA)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('[PWA] Offline Service Worker active! Scope:', reg.scope))
+                .catch(err => console.warn('[PWA] Service Worker registration info:', err.message));
+        });
+    }
+
     // Initial render: 55px tall by 40px length
     setGeneratorHeight(55, 40);
+
 
 });
 </script>

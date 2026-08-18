@@ -1,0 +1,18 @@
+{
+  "name": "POI Studio: Generative POV Suite",
+  "short_name": "POI Studio",
+  "description": "100% Offline Algorithmic POV Suite & Bluetooth Uplink for Open Pixel Poi",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070a0f",
+  "theme_color": "#00ff88",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
