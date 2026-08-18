@@ -2374,12 +2374,12 @@ function applyPerfectSeamGuardian(canvas, blendWidth = 6) {
     ctx.putImageData(imgData, 0, 0);
 }
 
-// --- MULTI-PATTERN SEQUENCE JOINER ---
+// --- ADVANCED ZERO-SEAM MULTI-PATTERN FLOW STITCHER ---
 function joinPatternSequence(canvases, options = {}) {
     if (!canvases || canvases.length === 0) return null;
     const h = canvases[0].height;
     const transition = options.transition || 'crossfade';
-    const overlap = Math.max(0, parseInt(options.overlap || 24));
+    const overlap = Math.max(0, parseInt(options.overlap !== undefined ? options.overlap : 24));
     const isSeamlessLoop = !!options.seamlessLoop;
 
     if (canvases.length === 1 && !isSeamlessLoop) {
@@ -2395,12 +2395,16 @@ function joinPatternSequence(canvases, options = {}) {
         if (idx > 0 && transition !== 'none') totalW -= overlap;
     });
 
-    if (totalW * h > 40000) totalW = Math.floor(40000 / h);
+    if (totalW * h > 80000) totalW = Math.floor(80000 / h);
 
     const outCanvas = document.createElement('canvas');
     outCanvas.width = Math.max(1, totalW);
     outCanvas.height = h;
     const ctx = outCanvas.getContext('2d');
+
+    // Linear gamma blend helpers
+    const toLinear = (c) => Math.pow(c / 255, 2.2);
+    const toSRGB = (c) => Math.min(255, Math.max(0, Math.round(Math.pow(c, 1 / 2.2) * 255)));
 
     let currentX = 0;
     for (let i = 0; i < canvases.length; i++) {
@@ -2427,32 +2431,58 @@ function joinPatternSequence(canvases, options = {}) {
             const outD = blendZone.data;
 
             for (let bx = 0; bx < blendW; bx++) {
-                const u = bx / blendW;
-                const t = u * u * (3 - 2 * u); // Hermite cubic smoothstep
+                const u = (bx + 0.5) / blendW;
                 for (let by = 0; by < h; by++) {
+                    const normY = by / h;
                     const idx = (by * blendW + bx) * 4;
-                    if (transition === 'crossfade') {
-                        outD[idx] = dataA[idx] * (1 - t) + dataB[idx] * t;
-                        outD[idx + 1] = dataA[idx + 1] * (1 - t) + dataB[idx + 1] * t;
-                        outD[idx + 2] = dataA[idx + 2] * (1 - t) + dataB[idx + 2] * t;
-                        outD[idx + 3] = Math.max(dataA[idx + 3], dataB[idx + 3]);
+
+                    let t = u;
+                    if (transition === 'crossfade' || transition === 'liquid_cosine') {
+                        // Raised cosine with 5th-order smoothstep for zero luminance dip
+                        t = 0.5 * (1 - Math.cos(u * Math.PI));
+                    } else if (transition === 'diagonal_wave') {
+                        // Diagonal wave sweep from base to tip
+                        const wave = Math.sin(normY * Math.PI) * 0.35;
+                        t = Math.max(0, Math.min(1, u + wave * (1 - u)));
+                        t = 0.5 * (1 - Math.cos(t * Math.PI));
+                    } else if (transition === 'quantum_rails') {
+                        // Interleaved alternating LED rails
+                        const railOffset = (by % 2 === 0) ? -0.2 : 0.2;
+                        t = Math.max(0, Math.min(1, u + railOffset));
+                        t = t * t * (3 - 2 * t);
+                    } else if (transition === 'simplex_warp') {
+                        // Domain warped liquid flow
+                        const n = poiNoise.sampleCylinder(bx, by, blendW, h, 2, 2.0);
+                        t = Math.max(0, Math.min(1, u + (n - 0.5) * 0.4));
+                        t = 0.5 * (1 - Math.cos(t * Math.PI));
                     } else if (transition === 'black') {
                         const dip = Math.sin(u * Math.PI);
-                        const bright = 1 - dip;
-                        const src = t < 0.5 ? dataA : dataB;
+                        const bright = Math.pow(1 - dip, 1.5);
+                        const src = u < 0.5 ? dataA : dataB;
                         outD[idx] = src[idx] * bright;
                         outD[idx + 1] = src[idx + 1] * bright;
                         outD[idx + 2] = src[idx + 2] * bright;
                         outD[idx + 3] = src[idx + 3];
+                        continue;
                     } else if (transition === 'strobe') {
-                        const isStrobeWhite = (bx % 4 < 2);
-                        if (isStrobeWhite) {
+                        const isWhite = (bx % 4 < 2);
+                        if (isWhite) {
                             outD[idx] = 255; outD[idx + 1] = 255; outD[idx + 2] = 255; outD[idx + 3] = 255;
                         } else {
-                            const src = t < 0.5 ? dataA : dataB;
+                            const src = u < 0.5 ? dataA : dataB;
                             outD[idx] = src[idx]; outD[idx + 1] = src[idx + 1]; outD[idx + 2] = src[idx + 2]; outD[idx + 3] = src[idx + 3];
                         }
+                        continue;
                     }
+
+                    // Linear Gamma Energy Blend (Zero Muddy Bands)
+                    const rA = toLinear(dataA[idx]), gA = toLinear(dataA[idx + 1]), bA = toLinear(dataA[idx + 2]);
+                    const rB = toLinear(dataB[idx]), gB = toLinear(dataB[idx + 1]), bB = toLinear(dataB[idx + 2]);
+
+                    outD[idx] = toSRGB(rA * (1 - t) + rB * t);
+                    outD[idx + 1] = toSRGB(gA * (1 - t) + gB * t);
+                    outD[idx + 2] = toSRGB(bA * (1 - t) + bB * t);
+                    outD[idx + 3] = Math.max(dataA[idx + 3], dataB[idx + 3]);
                 }
             }
             ctx.putImageData(blendZone, prevX, 0);
@@ -2460,6 +2490,7 @@ function joinPatternSequence(canvases, options = {}) {
         }
     }
 
+    // 100% Zero-Seam Loop Closure (Head <-> Tail Flow Fusion)
     if (isSeamlessLoop && overlap > 0 && outCanvas.width > overlap * 2) {
         const w = outCanvas.width;
         const head = ctx.getImageData(0, 0, overlap, h);
@@ -2468,13 +2499,19 @@ function joinPatternSequence(canvases, options = {}) {
         const tailD = tail.data;
 
         for (let bx = 0; bx < overlap; bx++) {
-            const u = bx / overlap;
-            const t = u * u * (3 - 2 * u);
+            const u = (bx + 0.5) / overlap;
+            const t = 0.5 * (1 - Math.cos(u * Math.PI)); // Cosine S-curve
+
             for (let by = 0; by < h; by++) {
                 const idx = (by * overlap + bx) * 4;
-                const r = tailD[idx] * (1 - t) + headD[idx] * t;
-                const g = tailD[idx + 1] * (1 - t) + headD[idx + 1] * t;
-                const b = tailD[idx + 2] * (1 - t) + headD[idx + 2] * t;
+
+                const rT = toLinear(tailD[idx]), gT = toLinear(tailD[idx + 1]), bT = toLinear(tailD[idx + 2]);
+                const rH = toLinear(headD[idx]), gH = toLinear(headD[idx + 1]), bH = toLinear(headD[idx + 2]);
+
+                const r = toSRGB(rT * (1 - t) + rH * t);
+                const g = toSRGB(gT * (1 - t) + gH * t);
+                const b = toSRGB(bT * (1 - t) + bH * t);
+
                 headD[idx] = r; headD[idx + 1] = g; headD[idx + 2] = b;
                 tailD[idx] = r; tailD[idx + 1] = g; tailD[idx + 2] = b;
             }
@@ -2486,6 +2523,7 @@ function joinPatternSequence(canvases, options = {}) {
     applyPerfectSeamGuardian(outCanvas, 8);
     return outCanvas;
 }
+
 
 // --- VERIFY SEAM CONTINUITY MATH ---
 function checkSeamContinuity(canvas) {

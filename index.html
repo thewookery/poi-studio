@@ -107,27 +107,40 @@
             </div>
 
             <!-- TRANSITION & FLOW CONTROLS -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px; margin-top:10px;">
                 <div class="ctrl-row" style="margin-top:0;">
                     <span class="ctrl-label">🌊 Flow Transition:</span>
                     <select id="stitch-trans-select" style="width:100%;">
-                        <option value="crossfade">Hermite Smooth Sigmoid Crossfade (0-Glitch Liquid Melt)</option>
-                        <option value="black">Dip to Black Fade</option>
-                        <option value="strobe">Stroboscopic White POV Flash</option>
-                        <option value="none">Hard Cut (Zero Overlap)</option>
+                        <option value="crossfade">🌊 Liquid Cosine Flow (Zero-Glitch Melt)</option>
+                        <option value="diagonal_wave">🌀 Polar Diagonal Wave Sweep (Base ➔ Tip)</option>
+                        <option value="quantum_rails">✨ Quantum Rail Interlacer (Holographic Dissolve)</option>
+                        <option value="simplex_warp">🌪️ Simplex Domain Warp (Liquid Glass)</option>
+                        <option value="black">🕶️ Dip to Black Fade</option>
+                        <option value="strobe">⚡ Stroboscopic White POV Flash</option>
+                        <option value="none">✂️ Clean Hard Cut (No Overlap)</option>
+                    </select>
+                </div>
+
+                <div class="ctrl-row" style="margin-top:0;">
+                    <span class="ctrl-label">⏱️ Clip Spin Duration:</span>
+                    <select id="stitch-duration-select" style="width:100%;">
+                        <option value="uniform_240">Uniform Standard (240px / ~1.3s)</option>
+                        <option value="uniform_180">Uniform Compact (180px / ~1.0s)</option>
+                        <option value="uniform_120">Uniform Micro (120px / ~0.6s)</option>
+                        <option value="proportional">Proportional (Original BMP Width)</option>
                     </select>
                 </div>
 
                 <div class="ctrl-row" style="margin-top:0;">
                     <span class="ctrl-label">📐 Blend Overlap:</span>
-                    <input type="range" id="stitch-overlap-slider" min="0" max="64" value="24">
-                    <span class="val-mono" id="stitch-overlap-val">24px</span>
+                    <input type="range" id="stitch-overlap-slider" min="0" max="64" value="28">
+                    <span class="val-mono" id="stitch-overlap-val">28px</span>
                 </div>
             </div>
 
             <div style="margin-top:8px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
                 <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                    <input type="checkbox" id="stitch-seamless-loop" checked style="accent-color:var(--neon-green);"> <b>100% Zero-Seam Infinite Loop (Fuses show tail back to head)</b>
+                    <input type="checkbox" id="stitch-seamless-loop" checked style="accent-color:var(--neon-green);"> <b>100% Zero-Seam Infinite Loop (Tail ➔ Head Cosine Fusion)</b>
                 </label>
                 <div style="font-size:0.68rem; color:var(--text-muted);" id="timeline-stats-badge">Total Length: 0px (~0 KB)</div>
             </div>
@@ -730,6 +743,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const estKB = Math.round((54 + Math.floor((24 * totalW + 31) / 32) * 4 * currentHeight) / 1024);
         updateBadge('timeline-stats-badge', `Total Length: ~${totalW}px (~${estKB} KB)`);
+        autoUpdateShowPreview();
     }
 
     el('btn-clear-timeline').onclick = () => {
@@ -758,20 +772,43 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // --- COMPILE MASTER STITCH SHOW ---
-    function compileMasterShow() {
+    function compileMasterShow(silent = false) {
         if (storyboardQueue.length === 0) {
-            alert('Please add at least 1 pattern to the Show Storyboard Timeline first!');
+            if (!silent) alert('Please add at least 1 pattern to the Show Storyboard Timeline first!');
             return null;
         }
 
+        const durationMode = el('stitch-duration-select').value;
         const targetH = currentHeight;
+
         const normalizedCanvases = storyboardQueue.map(node => {
-            if (node.canvas.height === targetH) return node.canvas;
+            const srcC = node.canvas;
+            let targetW;
+
+            if (durationMode === 'uniform_240') targetW = 240;
+            else if (durationMode === 'uniform_180') targetW = 180;
+            else if (durationMode === 'uniform_120') targetW = 120;
+            else {
+                targetW = Math.max(1, Math.round(srcC.width * (targetH / srcC.height)));
+            }
+
             const c = document.createElement('canvas');
-            const scaledW = Math.max(1, Math.round(node.canvas.width * (targetH / node.canvas.height)));
-            c.width = scaledW;
+            c.width = targetW;
             c.height = targetH;
-            c.getContext('2d').drawImage(node.canvas, 0, 0, scaledW, targetH);
+            const ctx = c.getContext('2d');
+
+            if (durationMode.startsWith('uniform')) {
+                let curX = 0;
+                const tileAspectW = Math.max(1, Math.round(srcC.width * (targetH / srcC.height)));
+                while (curX < targetW) {
+                    ctx.drawImage(srcC, curX, 0, tileAspectW, targetH);
+                    curX += tileAspectW;
+                }
+                applyPerfectSeamGuardian(c, 6);
+            } else {
+                ctx.drawImage(srcC, 0, 0, targetW, targetH);
+            }
+
             return c;
         });
 
@@ -781,6 +818,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return joinPatternSequence(normalizedCanvases, { transition, overlap, seamlessLoop });
     }
+
+    function autoUpdateShowPreview() {
+        if (storyboardQueue.length === 0 || activeWorkspace !== 'workspace-stitcher') return;
+        const master = compileMasterShow(true);
+        if (master) {
+            currentWidth = master.width;
+            currentHeight = master.height;
+            baseCanvas.width = currentWidth;
+            baseCanvas.height = currentHeight;
+            baseCanvas.getContext('2d').drawImage(master, 0, 0);
+            triggerSmoothRender();
+            updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
+        }
+    }
+
+    el('stitch-trans-select').onchange = autoUpdateShowPreview;
+    el('stitch-duration-select').onchange = autoUpdateShowPreview;
+    el('stitch-seamless-loop').onchange = autoUpdateShowPreview;
+    el('stitch-overlap-slider').onchange = autoUpdateShowPreview;
 
     el('btn-play-stitched-show').onclick = () => {
         const master = compileMasterShow();
@@ -802,6 +858,7 @@ document.addEventListener('DOMContentLoaded', function() {
             triggerDownload(blob, `master_pov_show_${master.width}x${master.height}.bmp`);
         }
     };
+
 
     // --- CUSTOM COLOR PICKER SYSTEM ---
     let customColors = ['#ff007f', '#00ffff', '#ffd700', '#bc13fe'];
