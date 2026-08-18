@@ -200,6 +200,18 @@
             return this.disconnectAll();
         }
 
+        async _writeChunkToDevice(deviceEntry, bytes) {
+            if (!deviceEntry || !deviceEntry.rxCharacteristic) {
+                throw new Error('Device is not ready for transmission.');
+            }
+            const buffer = new Uint8Array(bytes);
+            if (deviceEntry.rxCharacteristic.writeValueWithoutResponse) {
+                await deviceEntry.rxCharacteristic.writeValueWithoutResponse(buffer);
+            } else {
+                await deviceEntry.rxCharacteristic.writeValue(buffer);
+            }
+        }
+
         async _writeChunkToAll(bytes) {
             if (this.devices.length === 0) {
                 throw new Error('No Open Pixel Poi connected via Bluetooth.');
@@ -293,7 +305,6 @@
                 throw new Error('Pattern height (' + height + 'px) exceeds Open Pixel Poi LED limit (255px max).');
             }
 
-
             const ctx = canvas.getContext('2d');
             const imgData = ctx.getImageData(0, 0, width, height).data;
             const rgbData = new Uint8Array(totalPixels * 3);
@@ -317,11 +328,64 @@
         }
 
         /**
-         * Upload a Pattern Canvas simultaneously to all connected Open Pixel Poi over BLE
+         * Build properly formatted BLE packets matching ESP32 open_pixel_poi_ble.cpp firmware:
+         * - Single packet if <= 509 bytes.
+         * - For multipart (> 509 bytes): every middle chunk is EXACTLY 509 bytes.
+         * - The final chunk is strictly < 509 bytes and ends with 0xD1.
+         */
+        buildPatternPackets(canvas) {
+            const data = this.canvasToPatternBytes(canvas);
+            const width = data.width;
+            const height = data.height;
+            const rgbData = data.rgbData;
+
+            const totalLength = 1 + 1 + 1 + 2 + rgbData.length + 1;
+            const fullPacket = new Uint8Array(totalLength);
+
+            fullPacket[0] = START_BYTE;
+            fullPacket[1] = COMM_CODES.CC_SET_PATTERN;
+            fullPacket[2] = height & 0xFF;
+            fullPacket[3] = (width >> 8) & 0xFF;
+            fullPacket[4] = width & 0xFF;
+            fullPacket.set(rgbData, 5);
+            fullPacket[totalLength - 1] = END_BYTE;
+
+            const CHUNK_SIZE = 509; // Required by ESP32 firmware
+            const packets = [];
+            let offset = 0;
+
+            while (offset < fullPacket.length) {
+                const remaining = fullPacket.length - offset;
+                if (remaining > CHUNK_SIZE) {
+                    packets.push(fullPacket.subarray(offset, offset + CHUNK_SIZE));
+                    offset += CHUNK_SIZE;
+                } else if (remaining === CHUNK_SIZE) {
+                    // Send 509 bytes, then a 1-byte EOF packet so the final packet is strictly < 509
+                    packets.push(fullPacket.subarray(offset, offset + CHUNK_SIZE));
+                    packets.push(new Uint8Array([END_BYTE]));
+                    offset += CHUNK_SIZE;
+                } else {
+                    // remaining < 509 (standard final packet)
+                    packets.push(fullPacket.subarray(offset, offset + remaining));
+                    offset += remaining;
+                }
+            }
+
+            return {
+                width: width,
+                height: height,
+                totalBytes: fullPacket.length,
+                packets: packets
+            };
+        }
+
+        /**
+         * Upload a Pattern Canvas sequentially to each connected Open Pixel Poi over BLE
          * @param {HTMLCanvasElement} canvas The canvas to upload
          * @param {Function} progressCallback Optional callback (progress: 0.0 - 1.0, details)
+         * @param {number} pacingDelayMs Optional delay between packets in ms (default 45ms)
          */
-        async uploadPattern(canvas, progressCallback) {
+        async uploadPattern(canvas, progressCallback, pacingDelayMs) {
             if (this.devices.length === 0) {
                 throw new Error('Please connect your Open Pixel Poi via Bluetooth first.');
             }
@@ -329,54 +393,54 @@
                 throw new Error('Another pattern upload is already in progress.');
             }
 
-            const data = this.canvasToPatternBytes(canvas);
-            const width = data.width;
-            const height = data.height;
-            const rgbData = data.rgbData;
+            const pacing = (typeof pacingDelayMs === 'number' && pacingDelayMs >= 10) ? pacingDelayMs : 45;
+            const built = this.buildPatternPackets(canvas);
+            const packets = built.packets;
+            const totalPackets = packets.length;
+            const totalDevices = this.devices.length;
+            const totalOverallSteps = totalPackets * totalDevices;
+
             this.isUploading = true;
 
             try {
-                // Construct complete packet
-                // [0xD0, 0x04, height, width_high, width_low, ...rgbData, 0xD1]
-                const totalLength = 1 + 1 + 1 + 2 + rgbData.length + 1;
-                const fullPacket = new Uint8Array(totalLength);
-                
-                fullPacket[0] = START_BYTE;
-                fullPacket[1] = COMM_CODES.CC_SET_PATTERN;
-                fullPacket[2] = height & 0xFF;
-                fullPacket[3] = (width >> 8) & 0xFF;
-                fullPacket[4] = width & 0xFF;
-                fullPacket.set(rgbData, 5);
-                fullPacket[totalLength - 1] = END_BYTE;
+                console.log('[BLE Upload] Starting sequential transfer to ' + totalDevices + ' Poi (' + built.width + 'x' + built.height + ', ' + built.totalBytes + ' bytes, ' + totalPackets + ' packets per poi, ' + pacing + 'ms pacing)...');
 
-                const chunkSize = this.maxPacketSize;
-                const totalChunks = Math.ceil(fullPacket.length / chunkSize);
+                for (let dIdx = 0; dIdx < totalDevices; dIdx++) {
+                    const currentDev = this.devices[dIdx];
+                    console.log('[BLE Upload] Transferring to Poi ' + (dIdx + 1) + '/' + totalDevices + ' (' + currentDev.name + ')...');
 
-                console.log('[BLE Upload] Starting simultaneous broadcast of ' + width + 'x' + height + ' pattern to ' + this.devices.length + ' poi (' + fullPacket.length + ' bytes in ' + totalChunks + ' packets)...');
+                    for (let pIdx = 0; pIdx < totalPackets; pIdx++) {
+                        const chunk = packets[pIdx];
+                        await this._writeChunkToDevice(currentDev, chunk);
 
-                for (let i = 0; i < totalChunks; i++) {
-                    const start = i * chunkSize;
-                    const end = Math.min(start + chunkSize, fullPacket.length);
-                    const chunk = fullPacket.subarray(start, end);
+                        const currentStep = (dIdx * totalPackets) + (pIdx + 1);
+                        const overallProgress = currentStep / totalOverallSteps;
+                        const deviceProgress = (pIdx + 1) / totalPackets;
 
-                    await this._writeChunkToAll(chunk);
+                        if (progressCallback) {
+                            progressCallback(overallProgress, {
+                                deviceIndex: dIdx + 1,
+                                totalDevices: totalDevices,
+                                deviceName: currentDev.name,
+                                deviceProgress: deviceProgress,
+                                chunk: pIdx + 1,
+                                totalChunks: totalPackets,
+                                sentBytes: Math.min((pIdx + 1) * 509, built.totalBytes),
+                                totalBytes: built.totalBytes
+                            });
+                        }
 
-                    const progress = (i + 1) / totalChunks;
-                    if (progressCallback) {
-                        progressCallback(progress, {
-                            chunk: i + 1,
-                            totalChunks: totalChunks,
-                            sentBytes: end,
-                            totalBytes: fullPacket.length,
-                            deviceCount: this.devices.length
-                        });
+                        // Smooth hardware pacing delay (45ms) to ensure ESP32 LittleFS flash writes cleanly
+                        await new Promise(function(r) { setTimeout(r, pacing); });
                     }
 
-                    // Pacing delay (15ms)
-                    await new Promise(function(r) { setTimeout(r, 15); });
+                    // Inter-device buffer settling pause (250ms)
+                    if (dIdx < totalDevices - 1) {
+                        await new Promise(function(r) { setTimeout(r, 250); });
+                    }
                 }
 
-                console.log('[BLE Upload] Pattern successfully broadcasted to all ' + this.devices.length + ' Open Pixel Poi!');
+                console.log('[BLE Upload] Pattern successfully delivered cleanly to all ' + totalDevices + ' Open Pixel Poi!');
                 return true;
             } finally {
                 this.isUploading = false;
@@ -388,3 +452,4 @@
     global.OpenPixelPoiBLE = new OpenPixelPoiBLEClient();
 
 })(typeof window !== 'undefined' ? window : this);
+

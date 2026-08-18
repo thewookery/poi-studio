@@ -629,6 +629,13 @@
                     <span class="val-mono" id="ble-ctrl-speed-val">180 Hz</span>
                 </div>
 
+                <div class="ctrl-row">
+                    <span class="ctrl-label">🛡️ Transfer Pacing (Pacing Delay):</span>
+                    <input type="range" id="ble-ctrl-pacing" min="20" max="150" value="50" style="accent-color:var(--neon-purple);">
+                    <span class="val-mono" id="ble-ctrl-pacing-val">50 ms (Safe)</span>
+                </div>
+
+
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
                     <div style="flex:1;">
                         <span style="font-size:0.7rem; color:var(--text-muted);">🎰 Slot (1-16):</span>
@@ -1987,7 +1994,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // Upload Active Pattern (Canvas) to Poi over BLE
+    // Hardware Pacing slider
+    if (el('ble-ctrl-pacing')) {
+        el('ble-ctrl-pacing').oninput = (e) => {
+            const val = parseInt(e.target.value);
+            const label = val <= 30 ? `${val} ms (Fast)` : (val <= 70 ? `${val} ms (Safe)` : `${val} ms (Smooth)`);
+            updateBadge('ble-ctrl-pacing-val', label);
+        };
+    }
+
+    // Upload Active Pattern (Canvas) to Poi over BLE (Sequential One-at-a-Time)
     async function uploadActivePatternToPoi() {
         if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
             alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
@@ -1997,7 +2013,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!OpenPixelPoiBLE.isConnected) {
             openBleModal();
             try {
-                await OpenPixelPoiBLE.connect();
+                await OpenPixelPoiBLE.connectDevice();
             } catch (e) {
                 return;
             }
@@ -2009,18 +2025,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const pct = el('ble-upload-pct');
         const details = el('ble-upload-details');
         const label = el('ble-upload-label');
+        const pacing = el('ble-ctrl-pacing') ? parseInt(el('ble-ctrl-pacing').value) : 50;
 
         if (uploadSec) uploadSec.style.display = 'flex';
-        if (label) label.innerText = `Uploading Pattern (${currentWidth}x${currentHeight} px)...`;
+        if (label) label.innerText = `Preparing Pattern (${currentWidth}x${currentHeight} px)...`;
 
         try {
             await OpenPixelPoiBLE.uploadPattern(baseCanvas, (progress, info) => {
                 const p = Math.round(progress * 100);
+                const devP = Math.round(info.deviceProgress * 100);
                 if (fill) fill.style.width = `${p}%`;
                 if (pct) pct.innerText = `${p}%`;
-                if (details) details.innerText = `Packet ${info.chunk} / ${info.totalChunks} (${Math.round(info.sentBytes / 1024)} / ${Math.round(info.totalBytes / 1024)} KB)`;
-            });
-            if (label) label.innerText = `✅ Pattern Successfully Flashed to Poi!`;
+                if (label) label.innerText = `Flashing Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName})...`;
+                if (details) details.innerText = `Poi ${info.deviceIndex}/${info.totalDevices}: Packet ${info.chunk}/${info.totalChunks} (${devP}%) • Overall: ${p}%`;
+            }, pacing);
+
+            if (label) label.innerText = `✅ Flashed cleanly to all connected Poi!`;
             setTimeout(() => {
                 if (uploadSec) uploadSec.style.display = 'none';
             }, 2500);
@@ -2033,7 +2053,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el('btn-ble-upload-active')) el('btn-ble-upload-active').onclick = uploadActivePatternToPoi;
     if (el('ble-modal-upload-active-btn')) el('ble-modal-upload-active-btn').onclick = uploadActivePatternToPoi;
 
-    // Upload Master Show to Poi over BLE
+    // Upload Master Show to Poi over BLE (Sequential One-at-a-Time)
     async function uploadMasterShowToPoi() {
         if (storyboardQueue.length === 0) {
             alert("Storyboard timeline is empty! Add patterns first.");
@@ -2056,7 +2076,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!OpenPixelPoiBLE.isConnected) {
             openBleModal();
             try {
-                await OpenPixelPoiBLE.connect();
+                await OpenPixelPoiBLE.connectDevice();
             } catch (e) {
                 return;
             }
@@ -2068,18 +2088,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const pct = el('ble-upload-pct');
         const details = el('ble-upload-details');
         const label = el('ble-upload-label');
+        const pacing = el('ble-ctrl-pacing') ? parseInt(el('ble-ctrl-pacing').value) : 50;
 
         if (uploadSec) uploadSec.style.display = 'flex';
-        if (label) label.innerText = `Uploading Master Show (${showMasterCanvas.width}x${showMasterCanvas.height} px)...`;
+        if (label) label.innerText = `Preparing Show (${showMasterCanvas.width}x${showMasterCanvas.height} px)...`;
 
         try {
             await OpenPixelPoiBLE.uploadPattern(showMasterCanvas, (progress, info) => {
                 const p = Math.round(progress * 100);
+                const devP = Math.round(info.deviceProgress * 100);
                 if (fill) fill.style.width = `${p}%`;
                 if (pct) pct.innerText = `${p}%`;
-                if (details) details.innerText = `Packet ${info.chunk} / ${info.totalChunks} (${Math.round(info.sentBytes / 1024)} / ${Math.round(info.totalBytes / 1024)} KB)`;
-            });
-            if (label) label.innerText = `✅ Master Show Successfully Flashed to Poi!`;
+                if (label) label.innerText = `Flashing Show to Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName})...`;
+                if (details) details.innerText = `Poi ${info.deviceIndex}/${info.totalDevices}: Packet ${info.chunk}/${info.totalChunks} (${devP}%) • Overall: ${p}%`;
+            }, pacing);
+
+            if (label) label.innerText = `✅ Master Show Flashed cleanly to all connected Poi!`;
             setTimeout(() => {
                 if (uploadSec) uploadSec.style.display = 'none';
             }, 3000);
@@ -2088,6 +2112,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (uploadSec) uploadSec.style.display = 'none';
         }
     }
+
 
     if (el('btn-export-cinema-ble')) el('btn-export-cinema-ble').onclick = uploadMasterShowToPoi;
 
