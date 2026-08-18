@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v45</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v46</span></div>
+
 
 
 
@@ -3201,32 +3202,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let selectedTargetPoiIndex = 'all'; // 'all', 0, 1
 
+    async function getCanvasFromDataUri(dataUri, width, height) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const w = width || img.naturalWidth || img.width || 40;
+                const h = height || img.naturalHeight || img.height || bankTargetHeight || 55;
+                const c = document.createElement('canvas');
+                c.width = w;
+                c.height = h;
+                const ctx = c.getContext('2d', { willReadFrequently: true });
+                ctx.drawImage(img, 0, 0, w, h);
+                resolve(c);
+            };
+            img.onerror = () => reject(new Error('Failed to load pattern image data'));
+            img.src = dataUri;
+        });
+    }
+
     async function flashSingleBankSlot(slot) {
-        if (!OpenPixelPoiBLE.isConnected) {
-            alert('Please connect your Open Pixel Poi via Bluetooth first!');
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
+            alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
             return;
         }
+
+        if (!OpenPixelPoiBLE.isConnected) {
+            try {
+                await OpenPixelPoiBLE.connectDevice();
+            } catch (e) {
+                return;
+            }
+        }
+
         if (!slot.isAssigned || !slot.dataUri) {
             alert('This slot is empty.');
             return;
         }
 
-        const img = await new Promise((resolve, reject) => {
-            const im = new Image();
-            im.onload = () => resolve(im);
-            im.onerror = () => reject(new Error('Failed to load pattern image'));
-            im.src = slot.dataUri;
-        });
-
-        const tempC = document.createElement('canvas');
-        tempC.width = slot.width;
-        tempC.height = slot.height;
-        tempC.getContext('2d').drawImage(img, 0, 0);
-
-        const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 50) || 50;
-        showInlineProgress(`🚀 Flashing Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1}...`, 0);
+        showInlineProgress(`🚀 Preparing Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1}...`, 0);
 
         try {
+            const tempC = await getCanvasFromDataUri(slot.dataUri, slot.width, slot.height);
+            const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 50) || 50;
+
             await OpenPixelPoiBLE.uploadPatternToSlot(
                 tempC,
                 slot.bankIndex,
@@ -3240,7 +3258,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 pacing
             );
-            showInlineProgress(`✅ Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1} Flashed!`, 100);
+            showInlineProgress(`✅ Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1} Flashed & Active!`, 100);
             setTimeout(hideInlineProgress, 2500);
         } catch(e) {
             alert(`Flash failed: ${e.message}`);
@@ -3249,9 +3267,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function flashEntireBank(bankIdx) {
-        if (!OpenPixelPoiBLE.isConnected) {
-            alert('Please connect your Open Pixel Poi via Bluetooth first!');
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
+            alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
             return;
+        }
+
+        if (!OpenPixelPoiBLE.isConnected) {
+            try {
+                await OpenPixelPoiBLE.connectDevice();
+            } catch (e) {
+                return;
+            }
         }
 
         const populated = bankSlots.filter(s => s.bankIndex === bankIdx && s.isAssigned);
@@ -3266,17 +3292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             for (let i = 0; i < populated.length; i++) {
                 const slot = populated[i];
-                const img = await new Promise((resolve, reject) => {
-                    const im = new Image();
-                    im.onload = () => resolve(im);
-                    im.onerror = () => reject(new Error(`Failed to load image for slot ${slot.slotIndex + 1}`));
-                    im.src = slot.dataUri;
-                });
-
-                const tempC = document.createElement('canvas');
-                tempC.width = slot.width;
-                tempC.height = slot.height;
-                tempC.getContext('2d').drawImage(img, 0, 0);
+                const tempC = await getCanvasFromDataUri(slot.dataUri, slot.width, slot.height);
 
                 showInlineProgress(`🚀 Bank ${bankIdx + 1}: Flashing ${i + 1}/${populated.length} (Slot ${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
 
@@ -3301,9 +3317,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function flashAllPopulatedBankSlots() {
-        if (!OpenPixelPoiBLE.isConnected) {
-            alert('Please connect your Open Pixel Poi via Bluetooth first!');
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
+            alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
             return;
+        }
+
+        if (!OpenPixelPoiBLE.isConnected) {
+            try {
+                await OpenPixelPoiBLE.connectDevice();
+            } catch (e) {
+                return;
+            }
         }
 
         const populated = bankSlots.filter(s => s.isAssigned);
@@ -3318,17 +3342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             for (let i = 0; i < populated.length; i++) {
                 const slot = populated[i];
-                const img = await new Promise((resolve, reject) => {
-                    const im = new Image();
-                    im.onload = () => resolve(im);
-                    im.onerror = () => reject(new Error(`Failed to load image for slot ${slot.slotIndex + 1}`));
-                    im.src = slot.dataUri;
-                });
-
-                const tempC = document.createElement('canvas');
-                tempC.width = slot.width;
-                tempC.height = slot.height;
-                tempC.getContext('2d').drawImage(img, 0, 0);
+                const tempC = await getCanvasFromDataUri(slot.dataUri, slot.width, slot.height);
 
                 showInlineProgress(`🚀 Syncing Slot ${i + 1}/${populated.length} (B${slot.bankIndex + 1}:S${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
 
@@ -3351,6 +3365,7 @@ document.addEventListener('DOMContentLoaded', function() {
             hideInlineProgress();
         }
     }
+
 
 
     // Hook up Generator Send-to-Bank button

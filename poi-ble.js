@@ -379,14 +379,24 @@
             const bank = Math.max(0, Math.min(2, parseInt(bankIndex) || 0));
             const slot = Math.max(0, Math.min(4, parseInt(slotIndex) || 0));
 
-            // Select target bank and slot on all connected poi
+            // 1. Select target bank and slot on all connected poi
             await this.setBank(bank);
             await new Promise(r => setTimeout(r, 150));
             await this.setPatternSlot(slot);
             await new Promise(r => setTimeout(r, 150));
 
-            return await this.uploadPattern(canvas, progressCallback, pacingDelayMs);
+            // 2. Upload pattern
+            const result = await this.uploadPattern(canvas, progressCallback, pacingDelayMs);
+
+            // 3. Re-trigger bank and slot playback so ESP32 reloads and displays the new slot!
+            await new Promise(r => setTimeout(r, 350));
+            await this.setBank(bank);
+            await new Promise(r => setTimeout(r, 150));
+            await this.setPatternSlot(slot);
+
+            return result;
         }
+
 
 
 
