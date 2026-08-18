@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v47</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v48</span></div>
+
 
 
 
@@ -349,11 +350,13 @@
 
             <!-- PRIMARY GENERATOR ACTION CONTROLS -->
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; margin-top:8px;">
-                <button class="hud-btn-mutate" id="btn-quick-mutate" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
-                <button class="hud-btn-rand" id="btn-quick-rand" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Random Generator">🎲 Rand</button>
-                <button class="hud-btn-dl" id="btn-quick-dl-bmp" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Download Open Pixel Poi BMP">💾 Save BMP</button>
-                <button class="hw-btn" id="btn-gen-send-bank" style="flex:1; padding:7px 12px; font-size:0.78rem; color:var(--neon-green); font-weight:800; display:flex; align-items:center; justify-content:center; gap:4px; border-color:var(--neon-green);" title="Assign active pattern to a Hardware Bank Slot">🗃️ Send to Bank...</button>
+                <button class="hud-btn-mutate" id="btn-quick-mutate" style="flex:1; padding:7px 10px; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Harmonic, musical variation of current pattern">✨ Mutate</button>
+                <button class="hud-btn-chaos" id="btn-quick-chaos" style="flex:1; padding:7px 10px; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Wild, bold, dynamic mutation with dramatic shifts">⚡ Chaos</button>
+                <button class="hud-btn-rand" id="btn-quick-rand" style="flex:1; padding:7px 10px; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Roll the dice: clean, aesthetic flow pattern from scratch">🎲 Rand</button>
+                <button class="hud-btn-dl" id="btn-quick-dl-bmp" style="flex:1; padding:7px 10px; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Download Open Pixel Poi BMP">💾 Save BMP</button>
+                <button class="hw-btn" id="btn-gen-send-bank" style="flex:1; padding:7px 10px; font-size:0.75rem; color:var(--neon-green); font-weight:800; display:flex; align-items:center; justify-content:center; gap:4px; border-color:var(--neon-green);" title="Assign & Flash active pattern to a Hardware Bank Slot">🗃️ Send to Bank...</button>
             </div>
+
 
 
             <!-- RANDOMIZER POOL INCLUSION TOGGLES -->
@@ -1079,8 +1082,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="vault-card-dims">${item.width}×${item.height} px ${item.wasRotated ? '🔄 90°' : ''}</div>
                 </div>
                 <div class="vault-card-btns">
+                    <button class="btn-flash-card" data-id="${item.id}" title="Flash directly to Open Pixel Poi over Bluetooth">🚀 Flash</button>
+                    <button class="btn-send-bank" data-id="${item.id}" title="Assign & Flash to Hardware Bank Slot">🗃️ Bank</button>
                     <button class="btn-add-timeline" data-id="${item.id}" title="Add to Show Timeline">➕ Add</button>
-                    <button class="btn-send-bank" data-id="${item.id}" title="Send to Hardware Bank Slot">🗃️ Bank</button>
                     <button class="btn-rotate-card" data-id="${item.id}" title="Rotate 90°">🔄</button>
                 </div>
             `;
@@ -1092,14 +1096,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.querySelectorAll('.vault-card').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
                     loadPatternToActive(item);
+                };
+            }
 
+            // 1-Click Flash directly to Poi
+            const flashCardBtn = card.querySelector('.btn-flash-card');
+            if (flashCardBtn) {
+                flashCardBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.vault-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    loadPatternToActive(item);
+                    await uploadActivePatternToPoi();
                 };
             }
 
             // Add to timeline
             const addBtn = card.querySelector('.btn-add-timeline');
             if (addBtn) {
-                addBtn.onclick = () => {
+                addBtn.onclick = (e) => {
+                    e.stopPropagation();
                     addToStoryboard(item);
                 };
             }
@@ -1107,7 +1123,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Send to Hardware Bank
             const sendBankBtn = card.querySelector('.btn-send-bank');
             if (sendBankBtn) {
-                sendBankBtn.onclick = () => {
+                sendBankBtn.onclick = (e) => {
+                    e.stopPropagation();
                     let srcUri = item.dataUri;
                     if (currentVaultPalette && currentVaultPalette !== 'original') {
                         const tempC = document.createElement('canvas');
@@ -1130,11 +1147,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Rotate card on the fly
             const rotBtn = card.querySelector('.btn-rotate-card');
             if (rotBtn) {
-                rotBtn.onclick = () => {
+                rotBtn.onclick = (e) => {
+                    e.stopPropagation();
                     rotateVaultItem(item);
                     renderVaultCards();
                 };
             }
+
 
 
             grid.appendChild(card);
@@ -2222,8 +2241,137 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- ENHANCED HYPER-MUTATOR & HARMONIC RANDOMIZERS ---
-    function performHyperMutate() {
+    // --- HUE SHIFT HELPER ---
+    function shiftHexHue(hex, degree) {
+        if (!hex || typeof hex !== 'string') return '#00ffff';
+        let rgb = hexToRgb(hex);
+        let r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+        let max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+
+        if (max === min) {
+            h = s = 0;
+        } else {
+            let d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+
+        h = (h + degree / 360) % 1;
+        if (h < 0) h += 1;
+
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+
+        let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        let p = 2 * l - q;
+        let finalR = hue2rgb(p, q, h + 1/3);
+        let finalG = hue2rgb(p, q, h);
+        let finalB = hue2rgb(p, q, h - 1/3);
+
+        return rgbToHex(finalR * 255, finalG * 255, finalB * 255);
+    }
+
+    // --- 1. HARMONIC MUTATOR (MUSICAL, TASTEFUL, REFINED VARIATION) ---
+    function performHarmonicMutate() {
+        const isLockPal = el('btn-lock-palette') && el('btn-lock-palette').classList.contains('active');
+        const isLockGeo = el('btn-lock-geometry') && el('btn-lock-geometry').classList.contains('active');
+        const isLockSym = el('btn-lock-symmetries') && el('btn-lock-symmetries').classList.contains('active');
+        const isLockFX = el('btn-lock-shaders') && el('btn-lock-shaders').classList.contains('active');
+
+        // 1. PALETTE VARIATION (Harmonic hue shift or sibling palette)
+        if (!isLockPal) {
+            const currentPal = el('ctrl-palette') ? el('ctrl-palette').value : 'cyberpunk_neon_2077';
+            
+            if (currentPal === 'custom' || Math.random() < 0.5) {
+                const shiftDeg = (Math.random() < 0.5 ? 20 : -20) * (Math.floor(Math.random() * 2) + 1); // ±20° or ±40°
+                customColors = (customColors && customColors.length >= 2) 
+                    ? customColors.map(hex => shiftHexHue(hex, shiftDeg)) 
+                    : generateHarmonicPalette('analogous', 4);
+                POI_PALETTES.custom = customColors;
+                if (el('ctrl-palette')) el('ctrl-palette').value = 'custom';
+                updateCustomSwatchesUI();
+            } else {
+                const families = [
+                    ['cyberpunk_neon_2077', 'laser_cyan_pink', 'vaporwave_sunset', 'blacklight_fluorescent'],
+                    ['northern_lights_aurora', 'biolum_jellyfish', 'acid_rave_green', 'alien_plasma'],
+                    ['volcanic_magma', 'dragon_fire', 'solar_fire_flare', 'desert_mirage'],
+                    ['aztec_gold_turquoise', 'golden_pharaoh', 'sacred_chakra_7', 'psychedelic_third_eye'],
+                    ['fire_and_ice', 'holographic_foil', 'bubblegum_cotton_candy', 'cosmic_nebula_dust']
+                ];
+                let matchedFamily = families.find(f => f.includes(currentPal));
+                if (!matchedFamily) matchedFamily = families[Math.floor(Math.random() * families.length)];
+                const otherPalettes = matchedFamily.filter(p => p !== currentPal);
+                const nextPal = otherPalettes[Math.floor(Math.random() * otherPalettes.length)];
+                if (el('ctrl-palette')) el('ctrl-palette').value = nextPal;
+            }
+
+            const currentFlow = el('pro-color-dir') ? el('pro-color-dir').value : 'h';
+            const flowSiblings = {
+                'h': ['h_rev', 'diag', 'wave_curvature'],
+                'h_rev': ['h', 'diag', 'wave_curvature'],
+                'v': ['v_rev', 'radial'],
+                'v_rev': ['v', 'radial'],
+                'diag': ['h', 'h_rev', 'spiral_vortex'],
+                'radial': ['v', 'spiral_vortex', 'wave_curvature'],
+                'wave_curvature': ['h', 'diag', 'spiral_vortex'],
+                'spiral_vortex': ['radial', 'wave_curvature', 'diag'],
+                'noise_warp': ['wave_curvature', 'diag']
+            };
+            const siblings = flowSiblings[currentFlow] || ['h', 'diag', 'wave_curvature'];
+            if (el('pro-color-dir')) el('pro-color-dir').value = siblings[Math.floor(Math.random() * siblings.length)];
+        }
+
+        // 2. GEOMETRY / SPOKES MUTATION (Gentle musical step)
+        if (!isLockGeo) {
+            const currentR = el('ctrl-repeats') ? parseInt(el('ctrl-repeats').value) || 4 : 4;
+            const possibleR = [2, 3, 4, 5, 6, 8];
+            const curIdx = possibleR.indexOf(currentR);
+            let nextIdx = curIdx >= 0 ? curIdx + (Math.random() < 0.5 ? 1 : -1) : 2;
+            nextIdx = Math.max(0, Math.min(possibleR.length - 1, nextIdx));
+            const newRepeats = possibleR[nextIdx];
+
+            if (el('ctrl-repeats')) {
+                el('ctrl-repeats').value = newRepeats;
+                updateBadge('ctrl-repeats-val', newRepeats + 'x');
+            }
+
+            if (el('ctrl-thickness')) {
+                const curThick = parseFloat(el('ctrl-thickness').value) || 2.0;
+                const newThick = Math.max(1.2, Math.min(4.0, curThick + (Math.random() * 0.6 - 0.3))).toFixed(1);
+                el('ctrl-thickness').value = newThick;
+                updateBadge('ctrl-thickness-val', newThick + 'px');
+            }
+        }
+
+        // 3. SHADER FX (Tasteful, soft glow / subtle wave)
+        if (!isLockFX) {
+            if (el('fx-wave')) el('fx-wave').value = Math.random() < 0.20 ? Math.floor(Math.random() * 4) + 1 : 0;
+            if (el('fx-rgb')) el('fx-rgb').value = Math.random() < 0.15 ? 2 : 0;
+            if (el('fx-glow')) el('fx-glow').value = Math.random() < 0.35 ? Math.floor(Math.random() * 3) + 2 : 0;
+            if (el('fx-strobe')) el('fx-strobe').value = 0;
+
+            ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
+                if (el(id)) updateBadge(id + '-val', el(id).value === "0" ? "Off" : el(id).value + "px");
+            });
+        }
+
+        triggerSmoothRender();
+    }
+
+    // --- 2. CHAOS MUTATOR (BOLD, WILD, DYNAMIC & ENERGETIC) ---
+    function performChaosMutate() {
         const isLockPal = el('btn-lock-palette') && el('btn-lock-palette').classList.contains('active');
         const isLockGeo = el('btn-lock-geometry') && el('btn-lock-geometry').classList.contains('active');
         const isLockSym = el('btn-lock-symmetries') && el('btn-lock-symmetries').classList.contains('active');
@@ -2231,54 +2379,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const isMasterBmp = (typeof currentPattern === 'string' && currentPattern.startsWith('bmp_'));
 
-        // 1. PALETTE MUTATION (Harmonic Theory)
+        // 1. PALETTE CHAOS (High-contrast saturated rave palettes)
         if (!isLockPal) {
-            const palKeys = Object.keys(POI_PALETTES);
-            const chosenKey = palKeys[Math.floor(Math.random() * palKeys.length)];
+            const chaosPalettes = [
+                'blacklight_fluorescent', 'acid_rave_green', 'kaleido_hyper_spectral',
+                'cyberpunk_neon_2077', 'volcanic_magma', 'alien_plasma', 'cosmic_nebula_dust',
+                'dragon_fire', 'psychedelic_third_eye', 'laser_cyan_pink'
+            ];
+            const chosenKey = chaosPalettes[Math.floor(Math.random() * chaosPalettes.length)];
             if (el('ctrl-palette')) el('ctrl-palette').value = chosenKey;
 
-            if (chosenKey === 'custom') {
-                customColors = generateHarmonicPalette('random', Math.floor(Math.random() * 3) + 3);
-                POI_PALETTES.custom = customColors;
-                updateCustomSwatchesUI();
-            }
-
-            const flowModes = ['h', 'h_rev', 'v', 'v_rev', 'diag', 'radial', 'wave_curvature', 'spiral_vortex', 'noise_warp'];
-            if (el('pro-color-dir')) el('pro-color-dir').value = flowModes[Math.floor(Math.random() * flowModes.length)];
+            const wildFlows = ['spiral_vortex', 'noise_warp', 'wave_curvature', 'radial', 'diag'];
+            if (el('pro-color-dir')) el('pro-color-dir').value = wildFlows[Math.floor(Math.random() * wildFlows.length)];
         }
 
-        // 2. GEOMETRY / SPOKES MUTATION
+        // 2. GEOMETRY CHAOS (Bold spoke jumps & dynamic thickness)
         if (!isLockGeo) {
-            const repeats = [2, 3, 4, 5, 6, 8][Math.floor(Math.random() * 6)];
+            const repeats = [2, 4, 6, 8, 12][Math.floor(Math.random() * 5)];
             if (el('ctrl-repeats')) {
                 el('ctrl-repeats').value = repeats;
                 updateBadge('ctrl-repeats-val', repeats + 'x');
             }
 
             if (el('ctrl-thickness')) {
-                const thickness = (repeats >= 6) ? (Math.random() * 1.5 + 1.2).toFixed(1) : (Math.random() * 2.5 + 2.0).toFixed(1);
+                const thickness = (Math.random() * 2.8 + 1.2).toFixed(1);
                 el('ctrl-thickness').value = thickness;
                 updateBadge('ctrl-thickness-val', thickness + 'px');
             }
         }
 
-        // 3. SYMMETRIES MUTATION (LOCKED FOR MASTER BMPs!)
-        if (!isLockSym) {
-            if (isMasterBmp) {
-                // LOCK KALEIDO FOR MASTER BMP VAULT IMAGES!
-                symKaleido = 0;
-                symMirrorH = false;
-                symMirrorV = false;
-                symMirrorDiag = false;
-                symInvert180 = false;
-            } else {
-                symMirrorH = Math.random() < 0.35;
-                symMirrorV = Math.random() < 0.35;
-                symMirrorDiag = Math.random() < 0.20;
-                symInvert180 = Math.random() < 0.20;
-                const kChoices = [0, 0, 0, 4, 6, 8];
-                symKaleido = kChoices[Math.floor(Math.random() * kChoices.length)];
-            }
+        // 3. SYMMETRIES CHAOS (Dynamic kaleidoscope & reflections)
+        if (!isLockSym && !isMasterBmp) {
+            symMirrorH = Math.random() < 0.50;
+            symMirrorV = Math.random() < 0.50;
+            symMirrorDiag = Math.random() < 0.35;
+            symInvert180 = Math.random() < 0.30;
+            const kChoices = [0, 4, 6, 8];
+            symKaleido = kChoices[Math.floor(Math.random() * kChoices.length)];
 
             if (el('btn-sym-mh')) el('btn-sym-mh').classList.toggle('active', symMirrorH);
             if (el('btn-sym-mv')) el('btn-sym-mv').classList.toggle('active', symMirrorV);
@@ -2293,12 +2430,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (symKaleido === 12 && el('btn-sym-k12')) el('btn-sym-k12').classList.add('active');
         }
 
-        // 4. SHADER FX MUTATION
+        // 4. SHADER FX CHAOS (Pronounced waves, RGB split, glow, strobe)
         if (!isLockFX) {
-            if (el('fx-wave')) el('fx-wave').value = Math.random() < 0.25 ? Math.floor(Math.random() * 10) + 3 : 0;
-            if (el('fx-rgb')) el('fx-rgb').value = Math.random() < 0.30 ? Math.floor(Math.random() * 6) + 2 : 0;
-            if (el('fx-glow')) el('fx-glow').value = Math.random() < 0.30 ? Math.floor(Math.random() * 6) + 2 : 0;
-            if (el('fx-strobe')) el('fx-strobe').value = Math.random() < 0.10 ? Math.floor(Math.random() * 4) + 2 : 0;
+            if (el('fx-wave')) el('fx-wave').value = Math.random() < 0.50 ? Math.floor(Math.random() * 8) + 3 : 0;
+            if (el('fx-rgb')) el('fx-rgb').value = Math.random() < 0.50 ? Math.floor(Math.random() * 5) + 2 : 0;
+            if (el('fx-glow')) el('fx-glow').value = Math.random() < 0.60 ? Math.floor(Math.random() * 6) + 3 : 0;
+            if (el('fx-strobe')) el('fx-strobe').value = Math.random() < 0.20 ? Math.floor(Math.random() * 3) + 2 : 0;
 
             ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
                 if (el(id)) updateBadge(id + '-val', el(id).value === "0" ? "Off" : el(id).value + "px");
@@ -2308,73 +2445,104 @@ document.addEventListener('DOMContentLoaded', function() {
         triggerSmoothRender();
     }
 
-    if (el('btn-quick-mutate')) el('btn-quick-mutate').onclick = performHyperMutate;
+    // --- 3. AESTHETIC RANDOM GENERATOR (CLEAN, BALANCED, FLOW-READY) ---
+    function performAestheticRandom() {
+        const isLockGeo = el('btn-lock-geometry') && el('btn-lock-geometry').classList.contains('active');
+        const isLockPal = el('btn-lock-palette') && el('btn-lock-palette').classList.contains('active');
+        const incStd = el('btn-rand-include-patterns') && el('btn-rand-include-patterns').classList.contains('active-green');
+        const incHr = el('btn-rand-include-highres') && el('btn-rand-include-highres').classList.contains('active-green');
 
-    // Toggle Randomizer Pool Buttons
-    if (el('btn-rand-include-patterns')) {
-        el('btn-rand-include-patterns').onclick = function() {
-            this.classList.toggle('active-green');
-            const isAct = this.classList.contains('active-green');
-            this.innerText = isAct ? '📁 Standard Patterns: ON' : '📁 Standard Patterns: OFF';
-        };
-    }
+        let pool = [];
 
-    if (el('btn-rand-include-highres')) {
-        el('btn-rand-include-highres').onclick = function() {
-            this.classList.toggle('active-green');
-            const isAct = this.classList.contains('active-green');
-            this.innerText = isAct ? '💎 High-Res: ON' : '💎 High-Res: OFF';
-        };
-    }
+        // 1. Curated algorithmic procedural patterns
+        const algoKeys = Object.keys(POI_GENERATORS);
+        algoKeys.forEach(k => pool.push({ type: 'algo', key: k }));
 
-    if (el('btn-quick-rand')) {
-        el('btn-quick-rand').onclick = () => {
-            const isLockGeo = el('btn-lock-geometry') && el('btn-lock-geometry').classList.contains('active');
-            const incStd = el('btn-rand-include-patterns') && el('btn-rand-include-patterns').classList.contains('active-green');
-            const incHr = el('btn-rand-include-highres') && el('btn-rand-include-highres').classList.contains('active-green');
+        // 2. Standard BMP patterns (ONLY if explicitly enabled)
+        if (incStd) {
+            const stdItems = vaultItems.filter(i => i.folder === 'patterns');
+            stdItems.forEach(i => pool.push({ type: 'bmp', item: i }));
+        }
 
-            // Build candidate pool strictly based on toggles
-            let pool = [];
+        // 3. High-Res BMP patterns (ONLY if explicitly enabled)
+        if (incHr) {
+            const hrItems = vaultItems.filter(i => i.folder === 'highres');
+            hrItems.forEach(i => pool.push({ type: 'bmp', item: i }));
+        }
 
-            // 1. Algorithmic procedural equations (always in pool)
-            const algoKeys = Object.keys(POI_GENERATORS);
-            algoKeys.forEach(k => pool.push({ type: 'algo', key: k }));
+        if (pool.length === 0) {
+            pool = algoKeys.map(k => ({ type: 'algo', key: k }));
+        }
 
-            // 2. Standard BMP patterns (ONLY if button is active/ticked)
-            if (incStd) {
-                const stdItems = vaultItems.filter(i => i.folder === 'patterns');
-                stdItems.forEach(i => pool.push({ type: 'bmp', item: i }));
-            }
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
 
-            // 3. High-Res BMP patterns (ONLY if button is active/ticked)
-            if (incHr) {
-                const hrItems = vaultItems.filter(i => i.folder === 'highres');
-                hrItems.forEach(i => pool.push({ type: 'bmp', item: i }));
-            }
+        if (chosen.type === 'algo') {
+            if (!isLockGeo) {
+                currentPattern = chosen.key;
+                if (proSelect) proSelect.value = currentPattern;
 
-            if (pool.length === 0) {
-                pool = algoKeys.map(k => ({ type: 'algo', key: k }));
-            }
-
-            const chosen = pool[Math.floor(Math.random() * pool.length)];
-
-            if (chosen.type === 'algo') {
-                if (!isLockGeo) {
-                    currentPattern = chosen.key;
-                    if (proSelect) proSelect.value = currentPattern;
-                    if (el('btn-morph-enable') && el('btn-morph-enable').classList.contains('active-green')) {
-                        if (morphASelect) morphASelect.value = currentPattern;
-                        if (morphBSelect) morphBSelect.value = algoKeys[Math.floor(Math.random() * algoKeys.length)];
-                    }
+                // Pick clean, aesthetic spoke count (3, 4, 5, or 6)
+                const cleanRepeats = [3, 4, 5, 6][Math.floor(Math.random() * 4)];
+                if (el('ctrl-repeats')) {
+                    el('ctrl-repeats').value = cleanRepeats;
+                    updateBadge('ctrl-repeats-val', cleanRepeats + 'x');
                 }
-                performHyperMutate();
-            } else if (chosen.type === 'bmp') {
-                loadPatternToActive(chosen.item);
-                performHyperMutate();
+
+                if (el('ctrl-thickness')) {
+                    const cleanThick = (Math.random() * 0.8 + 1.8).toFixed(1); // 1.8 - 2.6px
+                    el('ctrl-thickness').value = cleanThick;
+                    updateBadge('ctrl-thickness-val', cleanThick + 'px');
+                }
             }
 
-        };
+            if (!isLockPal) {
+                const topPalettes = [
+                    'cyberpunk_neon_2077', 'vaporwave_sunset', 'northern_lights_aurora',
+                    'fire_and_ice', 'blacklight_fluorescent', 'sacred_chakra_7',
+                    'golden_pharaoh', 'biolum_jellyfish', 'laser_cyan_pink',
+                    'kaleido_hyper_spectral', 'aztec_gold_turquoise'
+                ];
+                const pal = topPalettes[Math.floor(Math.random() * topPalettes.length)];
+                if (el('ctrl-palette')) el('ctrl-palette').value = pal;
+
+                const cleanFlows = ['h', 'h_rev', 'diag', 'wave_curvature', 'radial'];
+                if (el('pro-color-dir')) el('pro-color-dir').value = cleanFlows[Math.floor(Math.random() * cleanFlows.length)];
+            }
+
+            // Clean loop reflections (no disorienting kaleidoscope)
+            symKaleido = 0;
+            symMirrorH = Math.random() < 0.40;
+            symMirrorV = false;
+            symMirrorDiag = false;
+            symInvert180 = false;
+            if (el('btn-sym-mh')) el('btn-sym-mh').classList.toggle('active', symMirrorH);
+            if (el('btn-sym-mv')) el('btn-sym-mv').classList.remove('active');
+            if (el('btn-sym-diag')) el('btn-sym-diag').classList.remove('active');
+            if (el('btn-sym-inv180')) el('btn-sym-inv180').classList.remove('active');
+            ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => {
+                if (el(id)) el(id).classList.remove('active');
+            });
+
+            // Clean FX
+            if (el('fx-wave')) el('fx-wave').value = 0;
+            if (el('fx-rgb')) el('fx-rgb').value = 0;
+            if (el('fx-glow')) el('fx-glow').value = Math.random() < 0.30 ? 2 : 0;
+            if (el('fx-strobe')) el('fx-strobe').value = 0;
+            ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
+                if (el(id)) updateBadge(id + '-val', el(id).value === "0" ? "Off" : el(id).value + "px");
+            });
+
+            triggerSmoothRender();
+        } else if (chosen.type === 'bmp') {
+            loadPatternToActive(chosen.item);
+            triggerSmoothRender();
+        }
     }
+
+    if (el('btn-quick-mutate')) el('btn-quick-mutate').onclick = performHarmonicMutate;
+    if (el('btn-quick-chaos')) el('btn-quick-chaos').onclick = performChaosMutate;
+    if (el('btn-quick-rand')) el('btn-quick-rand').onclick = performAestheticRandom;
+
 
 
 
@@ -3454,14 +3622,45 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     });
 
+    let bankPickerMode = 'flash'; // 'flash' or 'save'
+
+    // Hook up Bank Picker Mode toggle buttons
+    if (el('btn-bank-picker-mode-flash')) {
+        el('btn-bank-picker-mode-flash').onclick = () => {
+            bankPickerMode = 'flash';
+            el('btn-bank-picker-mode-flash').classList.add('active-green');
+            if (el('btn-bank-picker-mode-save')) el('btn-bank-picker-mode-save').classList.remove('active-green');
+        };
+    }
+    if (el('btn-bank-picker-mode-save')) {
+        el('btn-bank-picker-mode-save').onclick = () => {
+            bankPickerMode = 'save';
+            el('btn-bank-picker-mode-save').classList.add('active-green');
+            if (el('btn-bank-picker-mode-flash')) el('btn-bank-picker-mode-flash').classList.remove('active-green');
+        };
+    }
+
     // Hook up Modal slot picker buttons
     document.querySelectorAll('.bank-slot-pick-btn').forEach(btn => {
         btn.onclick = async function() {
             if (!pendingBankAssignData) return;
             const b = parseInt(this.getAttribute('data-b'));
             const s = parseInt(this.getAttribute('data-s'));
+            const g = b * BANK_SLOT_COUNT + s;
+
+            // 1. Assign pattern & auto-rescale to target LED height
             await assignPatternToBankSlot(b, s, pendingBankAssignData);
-            closeBankPickerModal();
+
+            // 2. If Flash mode active, flash immediately to Poi!
+            if (bankPickerMode === 'flash') {
+                closeBankPickerModal();
+                const assignedSlot = bankSlots[g];
+                if (assignedSlot) {
+                    await flashSingleBankSlot(assignedSlot);
+                }
+            } else {
+                closeBankPickerModal();
+            }
         };
     });
 
@@ -3531,7 +3730,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <img id="bank-picker-preview-img" style="height:45px; width:45px; object-fit:contain; border-radius:3px; background:#000;" src="" alt="">
                 <div style="flex:1;">
                     <div id="bank-picker-preview-name" style="font-size:0.78rem; font-weight:800; color:var(--accent-color);">Pattern Name</div>
-                    <div style="font-size:0.68rem; color:var(--text-muted);">Choose a Bank & Slot below to assign:</div>
+                    <div style="font-size:0.68rem; color:var(--text-muted);">Pick any slot below. Resamples cleanly to active LED height!</div>
+                </div>
+            </div>
+
+            <!-- ACTION MODE TOGGLE (ASSIGN & FLASH vs SAVE ONLY) -->
+            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2); padding:6px 10px; border-radius:6px; flex-wrap:wrap; gap:6px;">
+                <span style="font-size:0.72rem; font-weight:800; color:var(--neon-green);">⚡ Action on Tap:</span>
+                <div style="display:flex; gap:6px;">
+                    <button class="toggle-btn active-green" id="btn-bank-picker-mode-flash" style="font-size:0.7rem; padding:4px 8px;" title="Save to slot and immediately flash to Poi over Bluetooth">🚀 Assign & Flash Now</button>
+                    <button class="toggle-btn" id="btn-bank-picker-mode-save" style="font-size:0.7rem; padding:4px 8px;" title="Save to slot in Bank Manager without flashing yet">💾 Save to Slot Only</button>
                 </div>
             </div>
 
@@ -3575,6 +3783,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
+
 
 </body>
 </html>
