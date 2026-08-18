@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v52</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v53</span></div>
+
 
 
 
@@ -704,7 +705,18 @@
                 </div>
             </div>
 
-
+            <!-- AUTO-LOOP HARDWARE CONTROLS & INTERVAL BAR -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px; padding:8px 10px; background:#0b0f17; border-radius:6px; border:1px solid rgba(188,19,254,0.3);">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-purple);">⏱️ Auto-Loop Switch Interval:</span>
+                    <input type="range" class="loop-interval-slider" id="bank-ctrl-loop-interval" min="1" max="60" value="10" step="1" style="width:110px; accent-color:var(--neon-purple);">
+                    <span class="val-mono loop-interval-badge" id="bank-loop-interval-val" style="color:var(--neon-green); font-size:0.75rem; font-weight:800;">10s</span>
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="hw-btn btn-loop-active-bank" id="btn-bank-loop-active" style="font-size:0.72rem; color:var(--neon-purple); font-weight:800; padding:5px 10px;" title="Auto-loop patterns in active bank on Poi">♾️ Auto-Loop Active Bank</button>
+                    <button class="hw-btn btn-loop-all-banks" id="btn-bank-loop-all" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:800; padding:5px 10px;" title="Auto-loop all 15 patterns across all 3 banks on Poi">🌐 Auto-Loop All Banks</button>
+                </div>
+            </div>
 
             <!-- BANK SELECTOR TABS -->
             <div style="display:flex; gap:6px; flex-wrap:wrap;" id="bank-filter-nav">
@@ -729,63 +741,52 @@
          ========================================================================== -->
     <div id="workspace-deck" style="display:none; flex-direction:column; gap:10px; padding:10px 12px;">
 
-
-        <!-- 1. CONNECTED POI DEVICES & PAIR MANAGER -->
-        <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:1.1rem;">🪄</span>
-                    <span style="font-size:0.86rem; font-weight:800; color:var(--neon-green);">
-                        Connected Poi Devices (<span id="ble-connected-count-badge">0</span>):
-                    </span>
-                </div>
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button class="hw-btn" id="btn-ble-reconnect-paired" style="font-size:0.72rem; color:var(--accent-color); font-weight:800; padding:6px 12px;" title="1-Click Reconnect to Previously Paired Poi">
-                        ⚡ Quick Reconnect
-                    </button>
-                    <button class="hw-btn" id="btn-ble-add-poi" style="font-size:0.72rem; color:var(--neon-green); font-weight:800; padding:6px 12px;" title="Scan & Pair New Open Pixel Poi">
-                        ➕ Pair New Poi
-                    </button>
-                </div>
+        <!-- 1. CONNECTED POI CARDS -->
+        <div class="card-box" style="border-color:var(--neon-green); background:rgba(0, 255, 136, 0.03);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:0.8rem; font-weight:800; color:var(--neon-green);">🪄 Connected Poi (<span id="ble-connected-count-badge">0</span>)</span>
+                <span style="font-size:0.68rem; color:var(--text-muted);">Synchronized Dual-Poi Control</span>
             </div>
-
             <div id="ble-devices-list" style="display:flex; flex-direction:column; gap:6px;">
-                <div style="font-size:0.7rem; color:var(--text-muted); padding:6px 8px; background:#0b0f17; border-radius:4px;">
-                    No Poi connected. Click "➕ Connect / Pair Another Poi" above to link your Left and Right Poi!
-                </div>
+                <!-- Rendered dynamically -->
+            </div>
+            <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                <button class="hw-btn" id="btn-ble-add-poi" style="font-size:0.75rem; color:var(--neon-green); font-weight:800; flex:1;">➕ Connect / Pair Another Poi</button>
+                <button class="hw-btn" id="btn-ble-reconnect-paired" style="font-size:0.75rem; color:var(--accent-color); font-weight:700;">⚡ Quick Reconnect</button>
+                <button class="hw-btn" id="btn-ble-scan-all" style="font-size:0.72rem; color:var(--text-muted);" title="Toggle to scan for non-standard device names">🔍 Filter: Open & Poi Only (Strict)</button>
             </div>
         </div>
 
-        <!-- 2. OFFICIAL OPEN PIXEL POI LEVEL PRESETS (QUICK SYNC) -->
-        <div class="card-box" style="border-color:rgba(0, 173, 181, 0.4); background:rgba(0, 173, 181, 0.04);">
-            <div style="font-size:0.82rem; font-weight:800; color:var(--accent-color); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
-                <span>🎛️ Open Pixel Poi Quick Presets (Simultaneous Sync)</span>
-                <span class="telemetry-pill" id="ble-sync-indicator" style="font-size:0.65rem; color:var(--neon-green);">🟢 Broadcast Active</span>
+        <!-- 2. PRIMARY LIVE PLAYBACK CONTROLS (BRIGHTNESS & FPS MODES) -->
+        <div class="card-box">
+            <div style="font-size:0.8rem; font-weight:800; color:var(--text-color); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span>🎮 Live Playback Modes (Mitch's Preset Levels)</span>
+                <span class="telemetry-pill" id="ble-preset-b-val" style="color:var(--neon-yellow);">Level 3 (10%)</span>
             </div>
 
-            <!-- 6 OFFICIAL BRIGHTNESS LEVEL MODES (MITCH'S OPEN PIXEL POI) -->
-            <div style="margin-bottom:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-yellow);">☀️ LED Brightness (Levels 1–6):</span>
-                    <span class="val-mono" id="ble-preset-b-val" style="color:var(--neon-yellow); font-size:0.75rem;">Level 3 (Normal)</span>
+            <!-- 6 BRIGHTNESS LEVEL PRESETS -->
+            <div style="margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-bottom:4px;">
+                    <span>☀️ Brightness Level:</span>
+                    <span>1 (1%) ➔ 6 (100%)</span>
                 </div>
-                <div class="hw-presets" id="ble-b-presets" style="display:flex; gap:6px;">
-                    <button class="hw-btn" data-b-opt="0" data-b-val="1" data-b-label="Level 1 (Ultra Eco • 1)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">1</button>
-                    <button class="hw-btn" data-b-opt="1" data-b-val="4" data-b-label="Level 2 (Dim • 4)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">2</button>
-                    <button class="hw-btn active" data-b-opt="2" data-b-val="10" data-b-label="Level 3 (Normal • 10)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">3</button>
-                    <button class="hw-btn" data-b-opt="3" data-b-val="25" data-b-label="Level 4 (Medium • 25)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">4</button>
-                    <button class="hw-btn" data-b-opt="4" data-b-val="50" data-b-label="Level 5 (Bright • 50)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">5</button>
-                    <button class="hw-btn" data-b-opt="5" data-b-val="100" data-b-label="Level 6 (Max • 100)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">6</button>
+                <div style="display:flex; gap:4px;" id="ble-b-presets">
+                    <button class="hw-btn" data-b-opt="0" data-b-val="1" data-b-label="Level 1 (1%)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">1</button>
+                    <button class="hw-btn" data-b-opt="1" data-b-val="4" data-b-label="Level 2 (4%)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">2</button>
+                    <button class="hw-btn active" data-b-opt="2" data-b-val="10" data-b-label="Level 3 (10%)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">3</button>
+                    <button class="hw-btn" data-b-opt="3" data-b-val="25" data-b-label="Level 4 (25%)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">4</button>
+                    <button class="hw-btn" data-b-opt="4" data-b-val="50" data-b-label="Level 5 (50%)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">5</button>
+                    <button class="hw-btn" data-b-opt="5" data-b-val="100" data-b-label="Level 6 (100%)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">6</button>
                 </div>
             </div>
 
-            <!-- 6 OFFICIAL SPEED (FPS) LEVEL MODES (MITCH'S OPEN PIXEL POI) -->
-            <div style="margin-bottom:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green);">⏩ Spin Speed / FPS (Levels 1–6):</span>
-                    <span class="val-mono" id="ble-preset-s-val" style="color:var(--neon-green); font-size:0.75rem;">Level 4 (100 FPS)</span>
+            <!-- 6 SPEED (FPS) LEVEL PRESETS -->
+            <div style="margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-bottom:4px;">
+                    <span>⏩ Speed (FPS) Level:</span>
+                    <span>1 (1 FPS) ➔ 6 (600 FPS)</span>
                 </div>
-                <div class="hw-presets" id="ble-s-presets" style="display:flex; gap:6px;">
+                <div style="display:flex; gap:4px;" id="ble-s-presets">
                     <button class="hw-btn" data-s-opt="0" data-s-val="1" data-s-label="Level 1 (1 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">1</button>
                     <button class="hw-btn" data-s-opt="1" data-s-val="3" data-s-label="Level 2 (3 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">2</button>
                     <button class="hw-btn" data-s-opt="2" data-s-val="30" data-s-label="Level 3 (30 FPS)" style="flex:1; font-size:0.9rem; font-weight:800; padding:8px 0;">3</button>
@@ -809,9 +810,29 @@
                 </div>
             </div>
 
-            <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-                <button class="hw-btn" id="ble-btn-loop-bank" style="font-size:0.72rem; color:var(--neon-purple); flex:1; font-weight:700;">♾️ Auto-Loop Bank</button>
-                <button class="hw-btn" id="ble-btn-loop-all" style="font-size:0.72rem; color:var(--neon-yellow); flex:1; font-weight:700;">🌐 Auto-Loop All Banks</button>
+            <!-- AUTO-LOOP INTERVAL & SEQUENCER BOX -->
+            <div style="margin-top:10px; background:#0b0f17; border:1px solid rgba(188, 19, 254, 0.3); border-radius:6px; padding:8px 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-purple);">⏱️ Auto-Loop Switch Interval:</span>
+                    <span class="val-mono loop-interval-badge" id="ble-loop-interval-val" style="color:var(--neon-green); font-weight:800;">10s</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <input type="range" class="loop-interval-slider" id="ble-ctrl-loop-interval" min="1" max="60" value="10" step="1" style="accent-color:var(--neon-purple); flex:1;">
+                </div>
+                <!-- Quick Interval Presets -->
+                <div style="display:flex; gap:4px; margin-top:6px;" id="loop-interval-presets">
+                    <button class="hw-btn" data-loop-sec="3" style="flex:1; font-size:0.68rem; padding:4px 0;">3s</button>
+                    <button class="hw-btn" data-loop-sec="5" style="flex:1; font-size:0.68rem; padding:4px 0;">5s</button>
+                    <button class="hw-btn active" data-loop-sec="10" style="flex:1; font-size:0.68rem; padding:4px 0;">10s</button>
+                    <button class="hw-btn" data-loop-sec="15" style="flex:1; font-size:0.68rem; padding:4px 0;">15s</button>
+                    <button class="hw-btn" data-loop-sec="30" style="flex:1; font-size:0.68rem; padding:4px 0;">30s</button>
+                    <button class="hw-btn" data-loop-sec="60" style="flex:1; font-size:0.68rem; padding:4px 0;">60s</button>
+                </div>
+                
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button class="hw-btn btn-loop-active-bank" id="ble-btn-loop-bank" style="font-size:0.75rem; color:var(--neon-purple); flex:1; font-weight:800; padding:8px 6px;">♾️ Auto-Loop Active Bank</button>
+                    <button class="hw-btn btn-loop-all-banks" id="ble-btn-loop-all" style="font-size:0.75rem; color:var(--neon-yellow); flex:1; font-weight:800; padding:8px 6px;">🌐 Auto-Loop All Banks</button>
+                </div>
             </div>
         </div>
 
@@ -2919,9 +2940,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     if (el('ble-ctrl-slot')) {
-
         el('ble-ctrl-slot').onchange = (e) => {
             const slot = parseInt(e.target.value);
+            // Reset loop active states when manually picking a slot
+            isLoopingBankActive = false;
+            isLoopingAllActive = false;
+            document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.remove('active'));
             if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setPatternSlot(slot);
         };
     }
@@ -2933,17 +2958,99 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    if (el('ble-btn-loop-bank')) {
-        el('ble-btn-loop-bank').onclick = () => {
-            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.loopAllPatterns();
-        };
+    // Auto-Loop Switch Interval State
+    let currentLoopIntervalSec = 10;
+    let isLoopingBankActive = false;
+    let isLoopingAllActive = false;
+
+    function setLoopInterval(sec, notifyBle = true) {
+        currentLoopIntervalSec = Math.max(1, Math.min(255, parseInt(sec) || 10));
+        
+        // Update both sliders and badge labels
+        document.querySelectorAll('.loop-interval-slider').forEach(input => {
+            input.value = currentLoopIntervalSec;
+        });
+        document.querySelectorAll('.loop-interval-badge').forEach(badge => {
+            badge.innerText = `${currentLoopIntervalSec}s`;
+        });
+
+        // Update presets
+        document.querySelectorAll('#loop-interval-presets button').forEach(btn => {
+            const btnSec = parseInt(btn.getAttribute('data-loop-sec'));
+            btn.classList.toggle('active', btnSec === currentLoopIntervalSec);
+        });
+
+        if (notifyBle && OpenPixelPoiBLE.isConnected) {
+            OpenPixelPoiBLE.setPatternShuffleDuration(currentLoopIntervalSec);
+        }
     }
 
-    if (el('ble-btn-loop-all')) {
-        el('ble-btn-loop-all').onclick = () => {
-            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.loopAllBanks();
+    // Bind slider inputs
+    document.querySelectorAll('.loop-interval-slider').forEach(input => {
+        input.oninput = (e) => {
+            setLoopInterval(e.target.value, true);
         };
+    });
+
+    // Bind preset buttons
+    document.querySelectorAll('#loop-interval-presets button').forEach(btn => {
+        btn.onclick = function() {
+            const sec = parseInt(this.getAttribute('data-loop-sec')) || 10;
+            setLoopInterval(sec, true);
+        };
+    });
+
+    // Toggle Auto-Loop Active Bank
+    async function toggleLoopActiveBank() {
+        if (!OpenPixelPoiBLE.isConnected) {
+            alert("Please connect your Open Pixel Poi via Bluetooth first.");
+            return;
+        }
+
+        if (isLoopingBankActive) {
+            // Stop looping -> return to active slot
+            isLoopingBankActive = false;
+            isLoopingAllActive = false;
+            document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.remove('active'));
+            const currentSlot = el('ble-ctrl-slot') ? parseInt(el('ble-ctrl-slot').value) || 0 : 0;
+            await OpenPixelPoiBLE.setPatternSlot(currentSlot);
+        } else {
+            isLoopingBankActive = true;
+            isLoopingAllActive = false;
+            document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.add('active'));
+            document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.remove('active'));
+            await OpenPixelPoiBLE.loopAllPatterns(currentLoopIntervalSec);
+        }
     }
+
+    // Toggle Auto-Loop All Banks
+    async function toggleLoopAllBanks() {
+        if (!OpenPixelPoiBLE.isConnected) {
+            alert("Please connect your Open Pixel Poi via Bluetooth first.");
+            return;
+        }
+
+        if (isLoopingAllActive) {
+            // Stop looping -> return to active slot
+            isLoopingBankActive = false;
+            isLoopingAllActive = false;
+            document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.remove('active'));
+            const currentSlot = el('ble-ctrl-slot') ? parseInt(el('ble-ctrl-slot').value) || 0 : 0;
+            await OpenPixelPoiBLE.setPatternSlot(currentSlot);
+        } else {
+            isLoopingAllActive = true;
+            isLoopingBankActive = false;
+            document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.classList.add('active'));
+            document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.classList.remove('active'));
+            await OpenPixelPoiBLE.loopAllBanks(currentLoopIntervalSec);
+        }
+    }
+
+    document.querySelectorAll('.btn-loop-active-bank').forEach(b => b.onclick = toggleLoopActiveBank);
+    document.querySelectorAll('.btn-loop-all-banks').forEach(b => b.onclick = toggleLoopAllBanks);
+
 
     // =========================================================================
     // HARDWARE BANK MANAGER (15 SLOTS ACROSS 3 ESP32 FLASH BANKS)

@@ -426,15 +426,24 @@
         }
 
         /**
-         * Auto-Loop All Patterns in current bank on all connected Poi
+         * Set Auto-Loop Pattern Shuffle Interval (in seconds, 1 - 255)
          */
-        async loopAllPatterns() {
-            await this._sendMessage([COMM_CODES.CC_SET_PATTERN_ALL]);
+        async setPatternShuffleDuration(seconds) {
+            const sec = Math.max(1, Math.min(255, parseInt(seconds) || 10));
+            await this._sendMessage([COMM_CODES.CC_SET_PATTERN_SHUFFLE_DURATION, sec]);
         }
 
         /**
-         * Change Active Bank (0-15) on all connected Poi
+         * Auto-Loop All Patterns in current bank on all connected Poi
          */
+        async loopAllPatterns(durationSeconds) {
+            if (durationSeconds) {
+                await this.setPatternShuffleDuration(durationSeconds);
+                await new Promise(r => setTimeout(r, 100));
+            }
+            await this._sendMessage([COMM_CODES.CC_SET_PATTERN_ALL]);
+        }
+
         /**
          * Change Active Bank (0-15) on all connected Poi
          */
@@ -446,9 +455,14 @@
         /**
          * Auto-Loop All Banks on all connected Poi
          */
-        async loopAllBanks() {
+        async loopAllBanks(durationSeconds) {
+            if (durationSeconds) {
+                await this.setPatternShuffleDuration(durationSeconds);
+                await new Promise(r => setTimeout(r, 100));
+            }
             await this._sendMessage([COMM_CODES.CC_SET_BANK_ALL]);
         }
+
 
         /**
          * Upload a Pattern Canvas directly into a specific Bank (0-2) and Slot (0-4)

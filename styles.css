@@ -1217,5 +1217,28 @@ select {
     }
 }
 
+/* LOOP BUTTONS ACTIVE ANIMATION */
+.btn-loop-active-bank.active {
+    background: rgba(188, 19, 254, 0.25) !important;
+    border-color: var(--neon-purple) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(188, 19, 254, 0.6) !important;
+    animation: pulseLoopGlow 2s infinite ease-in-out;
+}
+
+.btn-loop-all-banks.active {
+    background: rgba(255, 221, 0, 0.25) !important;
+    border-color: var(--neon-yellow) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(255, 221, 0, 0.6) !important;
+    animation: pulseLoopGlow 2s infinite ease-in-out;
+}
+
+@keyframes pulseLoopGlow {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.02); filter: brightness(1.2); }
+}
+
+
 
 
