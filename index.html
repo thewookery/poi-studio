@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v33</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v34</span></div>
+
 
             <div class="hud-quick-actions">
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -72,28 +73,49 @@
 
 
     <!-- ==========================================================================
-         WORKSPACE 1: MASTER BMP PATTERN STITCHER & VAULT (ON SAME PAGE)
+         WORKSPACE 2: PATTERN VAULT & SHOW STITCHER
          ========================================================================== -->
-    <div id="workspace-stitcher" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
+    <div id="workspace-stitcher" style="display:none; flex-direction:column; gap:10px; padding:10px 12px;">
 
-        <!-- 1. STORYBOARD TIMELINE SHOW BUILDER -->
+        <!-- 1. PATTERN VAULT & STITCHER TIMELINE -->
         <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                 <span style="font-size:0.82rem; font-weight:800; color:var(--neon-green);">
-                    🎬 Show Storyboard Timeline (<span id="timeline-count-badge">0 clips</span>):
+                    🎬 Pattern Vault & Stitcher Timeline (<span id="timeline-count-badge">0 clips</span>):
                 </span>
                 <div style="display:flex; gap:6px;">
-                    <button class="hw-btn" id="btn-stitch-all-vault" style="font-size:0.68rem; color:var(--neon-green); font-weight:800;">⚡ Add All from Vault</button>
-                    <button class="hw-btn" id="btn-rand-10-show" style="font-size:0.68rem; color:var(--accent-color);">🎲 Add Random 10</button>
-                    <button class="hw-btn" id="btn-clear-timeline" style="font-size:0.68rem; color:var(--danger-color);">Clear</button>
+                    <button class="hw-btn" id="btn-rand-10-show" style="font-size:0.72rem; color:var(--accent-color); font-weight:700;">🎲 Add Random 10</button>
+                    <button class="hw-btn" id="btn-clear-timeline" style="font-size:0.72rem; color:var(--danger-color); font-weight:700;">Clear</button>
                 </div>
             </div>
 
             <!-- HORIZONTAL FILMSTRIP QUEUE -->
             <div class="storyboard-timeline" id="storyboard-timeline">
                 <div style="font-size:0.75rem; color:var(--text-muted); margin:auto; padding:12px;">
-                    Timeline is empty. Click <b>"➕ Add"</b> on any pattern below to build your seamless master show!
+                    Timeline is empty. Click <b>"➕ Add"</b> on any pattern in the Vault below to build your seamless master show!
                 </div>
+            </div>
+
+            <!-- BMP COLOR REMIX & PALETTE OVERLAY CONTROL -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:8px; padding:6px 10px; background:rgba(188, 19, 254, 0.07); border:1px solid rgba(188, 19, 254, 0.3); border-radius:var(--radius-sm);">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-purple);">🎨 Color Re-Map / Tint on Add:</span>
+                    <select id="vault-tint-mode" style="padding:4px 8px; font-size:0.72rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                        <option value="original">Original Author Colors</option>
+                        <option value="random">🎲 Random Harmonic Palette</option>
+                        <option value="fire">🔥 Flame Spectrum (Red / Gold)</option>
+                        <option value="cyber">🌈 Cyberpunk Neon (Cyan / Pink)</option>
+                        <option value="psychedelic">🔮 Psychedelic Acid (Rainbow)</option>
+                        <option value="matrix">🟢 Matrix Emerald (Lime / Cyan)</option>
+                        <option value="ocean">🌊 Deep Ocean (Aquamarine / Blue)</option>
+                        <option value="sunset">⚡ Electric Sunset (Purple / Gold)</option>
+                        <option value="invert">🕶️ Invert Luminance</option>
+                    </select>
+                </div>
+                <label style="font-size:0.7rem; color:var(--text-muted); display:flex; align-items:center; gap:4px; cursor:pointer;">
+                    <input type="checkbox" id="vault-tint-random-chk" style="accent-color:var(--neon-purple);">
+                    <span>Randomize Color Palette on Every Add</span>
+                </label>
             </div>
 
             <!-- STORYBOARD TARGET LED HEIGHT RESIZER -->
@@ -114,6 +136,7 @@
                     <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
                 </div>
             </div>
+
 
             <!-- TRANSITION & FLOW DYNAMICS (RESPONSIVE CARD) -->
             <div class="card-box" style="margin-top:8px; background:rgba(0,0,0,0.3); border-color:var(--border-color); padding:10px 12px;">
@@ -872,16 +895,6 @@ document.addEventListener('DOMContentLoaded', function() {
     renderVaultCards();
     if (el('vault-search-input')) el('vault-search-input').oninput = renderVaultCards;
 
-    if (el('btn-stitch-all-vault')) {
-        el('btn-stitch-all-vault').onclick = () => {
-            const searchVal = el('vault-search-input') ? el('vault-search-input').value.toLowerCase().trim() : '';
-            const filtered = vaultItems.filter(item => {
-                return (!searchVal || item.name.toLowerCase().includes(searchVal) || item.rawFile.toLowerCase().includes(searchVal));
-            });
-            filtered.forEach(item => addToStoryboard(item));
-        };
-    }
-
     if (el('btn-rand-10-show')) {
         el('btn-rand-10-show').onclick = () => {
             const shuffled = [...vaultItems].sort(() => 0.5 - Math.random()).slice(0, 10);
@@ -928,23 +941,104 @@ document.addEventListener('DOMContentLoaded', function() {
         updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
     }
 
+    // --- BMP COLOR REMAPPING / PALETTE OVERLAY ENGINE ---
+    function remapBmpCanvas(srcCanvas, mode) {
+        if (!mode || mode === 'original') return srcCanvas;
+
+        const c = document.createElement('canvas');
+        c.width = srcCanvas.width;
+        c.height = srcCanvas.height;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(srcCanvas, 0, 0);
+
+        const imgData = ctx.getImageData(0, 0, c.width, c.height);
+        const data = imgData.data;
+
+        const palettes = {
+            fire: [[0,0,0], [255,0,0], [255,120,0], [255,230,0], [255,255,255]],
+            cyber: [[10,0,30], [0,240,255], [188,19,254], [255,46,99], [255,255,255]],
+            psychedelic: [[255,0,0], [255,200,0], [0,255,100], [0,200,255], [180,0,255], [255,0,100]],
+            matrix: [[0,10,0], [0,120,30], [57,255,20], [0,255,180], [200,255,230]],
+            ocean: [[0,10,30], [0,80,180], [0,212,255], [0,255,180], [220,255,255]],
+            sunset: [[20,0,30], [180,20,120], [255,70,90], [255,180,40], [255,240,180]]
+        };
+
+        let pal = palettes[mode];
+        if (mode === 'random' || !pal) {
+            const keys = Object.keys(palettes);
+            pal = palettes[keys[Math.floor(Math.random() * keys.length)]];
+        }
+
+        function samplePal(t) {
+            t = Math.max(0, Math.min(1, t));
+            const idx = t * (pal.length - 1);
+            const i0 = Math.floor(idx);
+            const i1 = Math.min(pal.length - 1, i0 + 1);
+            const frac = idx - i0;
+            const c0 = pal[i0];
+            const c1 = pal[i1];
+            return [
+                Math.round(c0[0] + (c1[0] - c0[0]) * frac),
+                Math.round(c0[1] + (c1[1] - c0[1]) * frac),
+                Math.round(c0[2] + (c1[2] - c0[2]) * frac)
+            ];
+        }
+
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+            if (a === 0) continue;
+
+            if (mode === 'invert') {
+                data[i] = 255 - r;
+                data[i+1] = 255 - g;
+                data[i+2] = 255 - b;
+                continue;
+            }
+
+            const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            if (lum < 0.03) continue;
+
+            const [nr, ng, nb] = samplePal(lum);
+            data[i] = nr;
+            data[i+1] = ng;
+            data[i+2] = nb;
+        }
+
+        ctx.putImageData(imgData, 0, 0);
+        return c;
+    }
+
     // --- STORYBOARD TIMELINE QUEUE ---
     function addToStoryboard(item) {
-        const c = document.createElement('canvas');
+        let c = document.createElement('canvas');
         c.width = item.width;
         c.height = item.height;
         c.getContext('2d').drawImage(item.cachedImg, 0, 0);
+
+        // Check if color re-map / tint is enabled
+        const tintSelect = el('vault-tint-mode');
+        const randomChk = el('vault-tint-random-chk');
+        let mode = tintSelect ? tintSelect.value : 'original';
+        if (randomChk && randomChk.checked) {
+            mode = 'random';
+        }
+
+        if (mode && mode !== 'original') {
+            c = remapBmpCanvas(c, mode);
+        }
 
         storyboardQueue.push({
             id: item.id,
             name: item.name,
             width: item.width,
             height: item.height,
-            canvas: c
+            canvas: c,
+            tint: mode
         });
 
         updateStoryboardUI();
     }
+
 
     function updateStoryboardUI() {
         const timeline = el('storyboard-timeline');
