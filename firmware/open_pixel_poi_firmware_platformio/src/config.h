@@ -26,28 +26,29 @@
 #define BRIGHTNESS_OPTIONS (uint16_t[]){ 1, 4, 10, 25, 50, 100}
 
 
-// Blank Canvas config (Defaults can be overriden with the bluetooth app)
-#define DEFAULT_HARDWARE_VERSION 0 // 0 = no output, 1 = v2.2.1, 2 = v3.0.0
-#define DEFAULT_LED_TYPE 0 // 0 = no output, 1 = Neo Pixel, 2 = Dot Star
-#define DEFAULT_LED_COUNT 0
-#define SPEED_OPTIONS (uint16_t[]){ 1, 3, 30, 100, 400, 600}
+// Hardware kit 3.0.0 55 DotStar config (ACTIVE CUSTOM STUDIO BUILD)
+#define DEFAULT_HARDWARE_VERSION 2 // 0 = no output, 1 = v2.2.1, 2 = v3.0.0
+#define DEFAULT_LED_TYPE 2 // 0 = no output, 1 = Neo Pixel, 2 = Dot Star
+#define DEFAULT_LED_COUNT 55
+#define SPEED_OPTIONS (uint16_t[]){ 1, 3, 30, 500, 1500, 2000}
+
+// Blank Canvas config
+// #define DEFAULT_HARDWARE_VERSION 0
+// #define DEFAULT_LED_TYPE 0
+// #define DEFAULT_LED_COUNT 0
+// #define SPEED_OPTIONS (uint16_t[]){ 1, 3, 30, 100, 400, 600}
 
 // Hardware kit 2.2.1 config
-// #define DEFAULT_HARDWARE_VERSION 1 // 0 = no output, 1 = v2.2.1, 2 = v3.0.0
-// #define DEFAULT_LED_TYPE 1 // 0 = no output, 1 = Neo Pixel, 2 = Dot Star
+// #define DEFAULT_HARDWARE_VERSION 1
+// #define DEFAULT_LED_TYPE 1
 // #define DEFAULT_LED_COUNT 20
 // #define SPEED_OPTIONS (uint16_t[]){ 1, 3, 30, 100, 400, 600}
 
 // Hardware kit 3.0.0 25 NeoPixel config
-// #define DEFAULT_HARDWARE_VERSION 2 // 0 = no output, 1 = v2.2.1, 2 = v3.0.0
-// #define DEFAULT_LED_TYPE 1 // 0 = no output, 1 = Neo Pixel, 2 = Dot Star
+// #define DEFAULT_HARDWARE_VERSION 2
+// #define DEFAULT_LED_TYPE 1
 // #define DEFAULT_LED_COUNT 25
 // #define SPEED_OPTIONS (uint16_t[]){ 1, 3, 30, 150, 600, 800}
 
-// Hardware kit 3.0.0 55 DotStar config
-// #define DEFAULT_HARDWARE_VERSION 2 // 0 = no output, 1 = v2.2.1, 2 = v3.0.0
-// #define DEFAULT_LED_TYPE 2 // 0 = no output, 1 = Neo Pixel, 2 = Dot Star
-// #define DEFAULT_LED_COUNT 55
-// #define SPEED_OPTIONS (uint16_t[]){ 1, 3, 30, 500, 1500, 2000}
-
 #endif // _CONFIG_H
+
