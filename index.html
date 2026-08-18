@@ -106,8 +106,27 @@
                 </div>
             </div>
 
+            <!-- STORYBOARD TARGET LED HEIGHT RESIZER -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:8px; padding:6px 10px; background:rgba(0, 173, 181, 0.07); border:1px solid rgba(0, 173, 181, 0.3); border-radius:var(--radius-sm);">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎯 Target Prop LED Height:</span>
+                    <div class="hw-presets" id="sb-h-presets">
+                        <button class="hw-btn active" data-sb-h="55">55px Standard (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-sb-h="22">22px Mini (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-sb-h="32">32px</button>
+                        <button class="hw-btn" data-sb-h="64">64px</button>
+                        <button class="hw-btn" data-sb-h="144">144px HD</button>
+                    </div>
+                </div>
+                <div class="custom-dim-wrap">
+                    <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
+                    <input type="number" id="sb-custom-h-input" value="55" min="8" max="256">
+                    <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+                </div>
+            </div>
+
             <!-- TRANSITION & FLOW CONTROLS -->
-            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px; margin-top:10px;">
+            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px; margin-top:8px;">
                 <div class="ctrl-row" style="margin-top:0;">
                     <span class="ctrl-label">🌊 Flow Transition:</span>
                     <select id="stitch-trans-select" style="width:100%;">
@@ -808,12 +827,33 @@ document.addEventListener('DOMContentLoaded', function() {
     let isShowPlaying = true;
     let showStreamOffset = 0;
     let lastShowTime = performance.now();
+    let storyboardTargetHeight = 55;
 
     const showStreamCanvas = el('show-stream-canvas');
     const showStreamCtx = showStreamCanvas ? showStreamCanvas.getContext('2d') : null;
 
     const showStripCanvas = el('show-strip-canvas');
     const showStripCtx = showStripCanvas ? showStripCanvas.getContext('2d') : null;
+
+    // --- STORYBOARD TARGET HEIGHT PRESET HANDLERS ---
+    document.querySelectorAll('#sb-h-presets .hw-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#sb-h-presets .hw-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            storyboardTargetHeight = parseInt(this.getAttribute('data-sb-h'));
+            el('sb-custom-h-input').value = storyboardTargetHeight;
+            recompileShowMaster(true);
+        });
+    });
+
+    el('sb-custom-h-input').addEventListener('input', function() {
+        const val = parseInt(this.value);
+        if (val && val >= 8 && val <= 256) {
+            document.querySelectorAll('#sb-h-presets .hw-btn').forEach(b => b.classList.remove('active'));
+            storyboardTargetHeight = val;
+            recompileShowMaster(true);
+        }
+    });
 
     function recompileShowMaster(silent = true) {
         if (storyboardQueue.length === 0) {
@@ -825,7 +865,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const durationMode = el('stitch-duration-select').value;
-        const targetH = currentHeight;
+        const targetH = storyboardTargetHeight;
 
         const normalizedCanvases = storyboardQueue.map(node => {
             const srcC = node.canvas;
@@ -939,6 +979,7 @@ document.addEventListener('DOMContentLoaded', function() {
             triggerDownload(blob, `master_pov_show_${master.width}x${master.height}.bmp`);
         }
     };
+
 
 
 
