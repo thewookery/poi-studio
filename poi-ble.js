@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * OPEN PIXEL POI - WEB BLUETOOTH (BLE) HARDWARE UPLINK ENGINE
  * ============================================================================
@@ -217,11 +217,12 @@
             const totalPixels = width * height;
 
             if (totalPixels > 40000) {
-                throw new Error(Pattern size (x =  pixels) exceeds Open Pixel Poi hardware buffer limit (40,000 pixels max).);
+                throw new Error('Pattern size (' + width + 'x' + height + ' = ' + totalPixels + ' pixels) exceeds Open Pixel Poi hardware buffer limit (40,000 pixels max).');
             }
             if (height > 255) {
-                throw new Error(Pattern height (px) exceeds Open Pixel Poi LED limit (255px max).);
+                throw new Error('Pattern height (' + height + 'px) exceeds Open Pixel Poi LED limit (255px max).');
             }
+
 
             const ctx = canvas.getContext('2d');
             const imgData = ctx.getImageData(0, 0, width, height).data;
@@ -278,7 +279,7 @@
                 const chunkSize = this.maxPacketSize;
                 const totalChunks = Math.ceil(fullPacket.length / chunkSize);
 
-                console.log([BLE Upload] Starting upload of x pattern ( bytes in  packets)...);
+                console.log('[BLE Upload] Starting upload of ' + width + 'x' + height + ' pattern (' + fullPacket.length + ' bytes in ' + totalChunks + ' packets)...');
 
                 for (let i = 0; i < totalChunks; i++) {
                     const start = i * chunkSize;
@@ -291,7 +292,7 @@
                     if (progressCallback) {
                         progressCallback(progress, {
                             chunk: i + 1,
-                            totalChunks,
+                            totalChunks: totalChunks,
                             sentBytes: end,
                             totalBytes: fullPacket.length
                         });
@@ -301,7 +302,8 @@
                     await new Promise(r => setTimeout(r, 15));
                 }
 
-                console.log([BLE Upload] Pattern successfully uploaded and saved to Open Pixel Poi!);
+                console.log('[BLE Upload] Pattern successfully uploaded and saved to Open Pixel Poi!');
+
                 return true;
             } finally {
                 this.isUploading = false;
