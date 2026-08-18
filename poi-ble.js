@@ -83,7 +83,8 @@
             });
         }
 
-        async connect() {
+        async connect(options) {
+            options = options || {};
             if (!this.isSupported()) {
                 throw new Error('Web Bluetooth is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Android Chromium.');
             }
@@ -91,16 +92,40 @@
             try {
                 this._notifyState('connecting');
 
-                // Request BLE Device
-                this.device = await navigator.bluetooth.requestDevice({
+                const scanConfig = (options.scanAll === true) ? {
+                    acceptAllDevices: true,
+                    optionalServices: [NORDIC_UART_SERVICE]
+                } : {
                     filters: [
-                        { namePrefix: 'Pixel Poi' },
+                        { namePrefix: 'Open' },
+                        { namePrefix: 'Pixel' },
+                        { namePrefix: 'Poi' },
+                        { namePrefix: 'open' },
+                        { namePrefix: 'pixel' },
+                        { namePrefix: 'poi' },
+                        { namePrefix: 'ESP32' },
+                        { name: 'Open Pixel Poi' },
                         { services: [NORDIC_UART_SERVICE] }
                     ],
                     optionalServices: [NORDIC_UART_SERVICE]
-                });
+                };
 
-                this.deviceName = this.device.name || 'Pixel Poi';
+                // Request BLE Device
+                try {
+                    this.device = await navigator.bluetooth.requestDevice(scanConfig);
+                } catch (e) {
+                    if (e.name !== 'NotFoundError' && !options.scanAll) {
+                        // Fallback to scan all devices
+                        this.device = await navigator.bluetooth.requestDevice({
+                            acceptAllDevices: true,
+                            optionalServices: [NORDIC_UART_SERVICE]
+                        });
+                    } else {
+                        throw e;
+                    }
+                }
+
+                this.deviceName = this.device.name || 'Open Pixel Poi';
 
                 this.device.addEventListener('gattserverdisconnected', () => {
                     this.isConnected = false;
@@ -129,6 +154,7 @@
                 throw err;
             }
         }
+
 
         async disconnect() {
             if (this.device && this.device.gatt && this.device.gatt.connected) {

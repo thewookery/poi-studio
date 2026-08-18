@@ -631,18 +631,28 @@
                     </div>
                 </div>
 
-                <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
-                    <button class="hw-btn" id="ble-btn-loop-bank" style="font-size:0.68rem; color:var(--neon-purple);">♾️ Loop Bank</button>
-                    <button class="hw-btn" id="ble-btn-loop-all" style="font-size:0.68rem; color:var(--neon-yellow);">🌐 Loop All Banks</button>
+            <!-- SCAN OPTIONS & TROUBLESHOOTING GUIDE -->
+            <div style="background:rgba(0, 173, 181, 0.05); border:1px solid rgba(0, 173, 181, 0.25); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.7rem;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; color:var(--accent-color);">
+                    <input type="checkbox" id="ble-scan-all-chk" checked style="accent-color:var(--accent-color);">
+                    <span>Show All Nearby Bluetooth Devices in Scanner</span>
+                </label>
+                <div style="margin-top:6px; font-size:0.65rem; color:var(--text-muted); line-height:1.4;">
+                    <b>💡 Pairing Checklist:</b><br>
+                    • <b>Power ON</b> your Open Pixel Poi (LEDs should light up).<br>
+                    • <b>Close/Disconnect Mobile App</b>: ESP32 only pairs with 1 device at a time.<br>
+                    • Ensure <b>PC Bluetooth is turned ON</b> in Windows Settings.<br>
+                    • Supported in <b>Google Chrome</b>, <b>Microsoft Edge</b>, and <b>Android Chromium</b>.
                 </div>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; border-top:1px solid var(--border-color); padding-top:8px;">
-                <button class="ble-connect-btn" id="ble-modal-connect-btn">📡 Connect Device</button>
+                <button class="ble-connect-btn" id="ble-modal-connect-btn">📡 Scan & Connect Poi</button>
                 <button class="btn-ble-upload" id="ble-modal-upload-active-btn">🚀 Upload Active Pattern</button>
             </div>
         </div>
     </div>
+
 
     <footer class="footer-note">
         100% Pure Algorithmic POV Suite. 395 Master Patterns in Single Folder. 40,000-Pixel Hardware Cap.
@@ -1862,8 +1872,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (OpenPixelPoiBLE.isConnected) {
             await OpenPixelPoiBLE.disconnect();
         } else {
+            const isScanAll = el('ble-scan-all-chk') ? el('ble-scan-all-chk').checked : true;
             try {
-                await OpenPixelPoiBLE.connect();
+                await OpenPixelPoiBLE.connect({ scanAll: isScanAll });
             } catch (err) {
                 if (err.name !== 'NotFoundError') {
                     console.warn('[BLE Connection Error]', err);
@@ -1871,6 +1882,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
 
     if (el('btn-ble-connect')) el('btn-ble-connect').onclick = toggleBleConnection;
     if (el('ble-modal-connect-btn')) el('ble-modal-connect-btn').onclick = toggleBleConnection;
