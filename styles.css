@@ -829,74 +829,56 @@ select {
     font-family: monospace;
 }
 .vault-card-btns {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 4px;
     width: 100%;
-    gap: 3px;
-    margin-top: 2px;
-}
-.btn-flash-card {
-    background: #0f241a;
-    border: 1px solid rgba(57, 255, 20, 0.4);
-    color: var(--neon-green);
-    font-size: 0.65rem;
-    font-weight: 900;
-    border-radius: 3px;
-    padding: 3px 5px;
-    cursor: pointer;
-    flex: 1;
-    transition: all 0.15s ease;
-}
-.btn-flash-card:hover {
-    background: rgba(57, 255, 20, 0.25);
-    border-color: var(--neon-green);
-    color: #ffffff;
-    box-shadow: 0 0 8px rgba(57, 255, 20, 0.5);
+    margin-top: 4px;
 }
 .btn-add-timeline {
     background: linear-gradient(135deg, #00adb5, #39ff14);
     color: #0c0f17;
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 900;
     border: none;
-    border-radius: 3px;
-    padding: 3px 5px;
+    border-radius: 4px;
+    padding: 5px 6px;
     cursor: pointer;
-    flex: 1;
-}
-
-.btn-send-bank {
-    background: #141f30;
-    border: 1px solid rgba(0, 173, 181, 0.4);
-    color: var(--accent-color);
-    font-size: 0.65rem;
-    font-weight: 800;
-    border-radius: 3px;
-    padding: 3px 6px;
-    cursor: pointer;
-    flex: 1;
+    text-align: center;
     transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    white-space: nowrap;
 }
-.btn-send-bank:hover {
-    background: rgba(0, 173, 181, 0.25);
-    border-color: var(--accent-color);
-    color: #ffffff;
+.btn-add-timeline:hover {
+    box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
+    filter: brightness(1.1);
 }
 .btn-rotate-card {
-
     background: #1c2436;
     border: 1px solid var(--border-color);
     color: var(--text-color);
-    font-size: 0.65rem;
-    padding: 3px 5px;
-    border-radius: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 5px 6px;
+    border-radius: 4px;
     cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    white-space: nowrap;
 }
 .btn-rotate-card:hover {
-    background: var(--neon-purple);
+    background: rgba(188, 19, 254, 0.25);
+    border-color: var(--neon-purple);
     color: #fff;
 }
+
 
 .search-input-wrap {
     display: flex;

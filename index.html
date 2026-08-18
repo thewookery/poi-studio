@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v50</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v51</span></div>
+
 
 
 
@@ -232,10 +233,12 @@
                         <span class="val-mono" id="cinema-speed-val">180</span>
                     </div>
 
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <button class="btn-ble-upload" id="btn-export-cinema-ble">🚀 Upload Show to Poi (BLE)</button>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <button class="btn-ble-upload" id="btn-export-cinema-ble" title="Flash compiled Master Show directly to Poi">🚀 Upload Show to Poi (BLE)</button>
+                        <button class="hw-btn" id="btn-export-cinema-bank" style="font-size:0.75rem; color:var(--neon-green); font-weight:800; border-color:var(--neon-green); padding:7px 12px;" title="Assign compiled Master Show to a Hardware Bank Slot">🗃️ Send Show to Bank...</button>
                         <button class="btn-join-export" id="btn-export-cinema-bmp">💾 Export Master 24-bit BMP</button>
                     </div>
+
 
                 </div>
             </div>
@@ -1084,10 +1087,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="vault-card-dims">${item.width}×${item.height} px ${item.wasRotated ? '🔄 90°' : ''}</div>
                 </div>
                 <div class="vault-card-btns">
-                    <button class="btn-flash-card" data-id="${item.id}" title="Flash directly to Open Pixel Poi over Bluetooth">🚀 Flash</button>
-                    <button class="btn-send-bank" data-id="${item.id}" title="Assign & Flash to Hardware Bank Slot">🗃️ Bank</button>
                     <button class="btn-add-timeline" data-id="${item.id}" title="Add to Show Timeline">➕ Add</button>
-                    <button class="btn-rotate-card" data-id="${item.id}" title="Rotate 90°">🔄</button>
+                    <button class="btn-rotate-card" data-id="${item.id}" title="Rotate 90°">🔄 Rotate</button>
                 </div>
             `;
 
@@ -1101,48 +1102,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             }
 
-            // 1-Click Flash directly to Poi
-            const flashCardBtn = card.querySelector('.btn-flash-card');
-            if (flashCardBtn) {
-                flashCardBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    document.querySelectorAll('.vault-card').forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
-                    loadPatternToActive(item);
-                    await uploadActivePatternToPoi();
-                };
-            }
-
             // Add to timeline
             const addBtn = card.querySelector('.btn-add-timeline');
             if (addBtn) {
                 addBtn.onclick = (e) => {
                     e.stopPropagation();
                     addToStoryboard(item);
-                };
-            }
-
-            // Send to Hardware Bank
-            const sendBankBtn = card.querySelector('.btn-send-bank');
-            if (sendBankBtn) {
-                sendBankBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    let srcUri = item.dataUri;
-                    if (currentVaultPalette && currentVaultPalette !== 'original') {
-                        const tempC = document.createElement('canvas');
-                        tempC.width = item.width;
-                        tempC.height = item.height;
-                        tempC.getContext('2d').drawImage(item.cachedImg, 0, 0);
-                        const remapped = remapBmpCanvas(tempC, currentVaultPalette);
-                        srcUri = remapped.toDataURL('image/png');
-                    }
-
-                    openBankPickerModal({
-                        name: item.name,
-                        dataUri: srcUri,
-                        width: item.width,
-                        height: item.height
-                    });
                 };
             }
 
@@ -1156,9 +1121,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             }
 
-
-
             grid.appendChild(card);
+
         });
     }
 
@@ -2872,6 +2836,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     if (el('btn-export-cinema-ble')) el('btn-export-cinema-ble').onclick = uploadMasterShowToPoi;
+    if (el('btn-export-cinema-bank')) {
+        el('btn-export-cinema-bank').onclick = () => {
+            if (!storyboardQueue || storyboardQueue.length === 0) {
+                alert("Your show timeline is empty!\n\nPlease add patterns from the Vault or Generator using '➕ Add' first.");
+                return;
+            }
+            const compiled = compileStoryboardFullStrip();
+            if (!compiled) return;
+            openBankPickerModal({
+                name: `Master Show (${storyboardQueue.length} clips)`,
+                dataUri: compiled.toDataURL('image/png'),
+                width: compiled.width,
+                height: compiled.height
+            });
+        };
+    }
+
 
     // 6 Official Brightness Level Modes (Open Pixel Poi / Mitch's App)
     document.querySelectorAll('#ble-b-presets button').forEach(btn => {

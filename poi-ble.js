@@ -177,29 +177,6 @@
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(NORDIC_UART_SERVICE);
                 const rxChar = await service.getCharacteristic(NORDIC_UART_RX_CHAR);
-                let txChar = null;
-                try {
-                    txChar = await service.getCharacteristic(NORDIC_UART_TX_CHAR);
-                } catch (e) {
-                    console.warn('[BLE] TX characteristic not available (write-only mode)');
-                }
-
-                // 1-Time Startup Battery Check (Non-polling)
-                let batteryLevel = null;
-                let batteryInfo = null;
-                try {
-                    const batService = await server.getPrimaryService('battery_service');
-                    if (batService) {
-                        const batChar = await batService.getCharacteristic('battery_level');
-                        const val = await batChar.readValue();
-                        batteryLevel = val.getUint8(0);
-                        batteryInfo = this.parseBatteryData(batteryLevel);
-                        console.log(`[BLE] 🔋 Startup Battery for ${device.name}:`, batteryInfo);
-                    }
-                } catch (e) {
-                    // Battery service not enabled in stock firmware
-                }
-
                 const deviceEntry = {
                     id: device.id,
                     device: device,
@@ -207,8 +184,8 @@
                     service: service,
                     rxCharacteristic: rxChar,
                     txCharacteristic: txChar,
-                    batteryLevel: batteryLevel,
-                    batteryInfo: batteryInfo,
+                    batteryLevel: null,
+                    batteryInfo: null,
                     name: device.name || ('Open Pixel Poi #' + (this.devices.length + 1))
                 };
 
@@ -219,11 +196,35 @@
 
                 this.devices.push(deviceEntry);
                 this._notifyState('connected', { addedDevice: deviceEntry });
+
+                // Deferred non-blocking battery check (waits 2.5s for BLE settle)
+                this._queryBatteryDeferred(deviceEntry);
+
                 return deviceEntry;
             } catch (err) {
                 this._notifyState('error', { error: err.message });
                 throw err;
             }
+        }
+
+        async _queryBatteryDeferred(deviceEntry) {
+            setTimeout(async () => {
+                try {
+                    if (!deviceEntry.server || !deviceEntry.server.connected) return;
+                    const batService = await deviceEntry.server.getPrimaryService('battery_service');
+                    if (batService) {
+                        const batChar = await batService.getCharacteristic('battery_level');
+                        const val = await batChar.readValue();
+                        const raw = val.getUint8(0);
+                        deviceEntry.batteryLevel = raw;
+                        deviceEntry.batteryInfo = this.parseBatteryData(raw);
+                        console.log(`[BLE] 🔋 Deferred Battery for ${deviceEntry.name}:`, deviceEntry.batteryInfo);
+                        this._notifyState('connected');
+                    }
+                } catch (e) {
+                    // Stock firmware does not implement 0x180F Battery Service
+                }
+            }, 2500);
         }
 
         async getPairedDevices() {
@@ -253,19 +254,6 @@
                             console.warn('[BLE] TX characteristic not available');
                         }
 
-                        // 1-Time Startup Battery Check (Non-polling)
-                        let batteryLevel = null;
-                        let batteryInfo = null;
-                        try {
-                            const batService = await server.getPrimaryService('battery_service');
-                            if (batService) {
-                                const batChar = await batService.getCharacteristic('battery_level');
-                                const val = await batChar.readValue();
-                                batteryLevel = val.getUint8(0);
-                                batteryInfo = this.parseBatteryData(batteryLevel);
-                            }
-                        } catch (e) {}
-
                         const deviceEntry = {
                             id: device.id,
                             device: device,
@@ -273,8 +261,8 @@
                             service: service,
                             rxCharacteristic: rxChar,
                             txCharacteristic: txChar,
-                            batteryLevel: batteryLevel,
-                            batteryInfo: batteryInfo,
+                            batteryLevel: null,
+                            batteryInfo: null,
                             name: device.name || ('Open Pixel Poi #' + (this.devices.length + 1))
                         };
 
@@ -284,6 +272,7 @@
                         }.bind(this));
 
                         this.devices.push(deviceEntry);
+                        this._queryBatteryDeferred(deviceEntry);
                         connectedCount++;
                     } catch (e) {
                         console.warn('[BLE] Failed auto-reconnect to:', device.name, e);
@@ -295,6 +284,7 @@
             }
             return connectedCount;
         }
+
 
 
 
