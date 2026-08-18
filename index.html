@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POI Studio: 100% Zero-Seam POV Suite & Liquid Flow Studio</title>
+    <title>POI Studio: 100% Zero-Seam POV Suite & PoiBoi Master Stitcher</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -73,7 +73,7 @@
 
     <!-- APP NAVIGATION TABS -->
     <nav class="app-tabs-nav" id="main-nav-bar">
-        <button class="tab-btn active" data-tab="tab-bmp-stitcher">📁 BMP Stitcher & Morph</button>
+        <button class="tab-btn active" data-tab="tab-poiboi">🔥 PoiBoi Vault (81)</button>
         <button class="tab-btn" data-tab="tab-colors">🎨 Custom Colors</button>
         <button class="tab-btn" data-tab="tab-symmetries">🎛️ Symmetries & FX</button>
         <button class="tab-btn" data-tab="tab-hardware">📐 Props & Length</button>
@@ -83,89 +83,64 @@
         <button class="tab-btn" data-tab="tab-voids">🕳️ Negative Voids</button>
         <button class="tab-btn" data-tab="tab-morph">🎭 Flow Morph</button>
         <button class="tab-btn" data-tab="tab-sequence">🔗 Sequencer</button>
+        <button class="tab-btn" data-tab="tab-upload">📁 Upload BMPs</button>
     </nav>
 
     <!-- TAB CONTENTS -->
     <main class="app-tab-content">
 
-        <!-- 0. NEW: CUSTOM BMP STITCHER & HYBRID SYNTHESIZER TAB -->
-        <div class="tab-pane active" id="tab-bmp-stitcher">
+        <!-- 1. POIBOI 81 EMBEDDED BMP VAULT & MASTER STITCHER TAB -->
+        <div class="tab-pane active" id="tab-poiboi">
             <div class="pane-header">
-                <span class="pane-title" style="color: var(--accent-color);">📁 Custom BMP Ingestion, Pattern Stitcher & Hybrid Synthesizer</span>
-                <span class="pane-sub">Import your favorite .BMP files, stitch them into infinite shows, or flow them into mathematical algorithms</span>
+                <span class="pane-title" style="color: var(--neon-pink);">🔥 PoiBoi Official BMP Vault (81 Original Patterns)</span>
+                <span class="pane-sub">All 81 of your favorite BMP patterns fully integrated with infinite loops, live morphing & master show stitching</span>
             </div>
 
-            <!-- DRAG & DROP UPLOAD ZONE -->
-            <input type="file" id="bmp-file-input" multiple accept=".bmp,.png,.jpg,.jpeg" style="display:none;">
-            <div class="bmp-dropzone" id="bmp-dropzone">
-                <div class="bmp-dropzone-icon">📥</div>
-                <div class="bmp-dropzone-title">Click to Browse or Drag & Drop .BMP Files Here</div>
-                <div class="bmp-dropzone-sub">Supports 24-bit/32-bit BMP, PNG, JPG (Multi-file batch upload enabled)</div>
-            </div>
-
-            <!-- IMPORTED BMP DECK -->
-            <div class="card-box" style="margin-top:10px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                    <span style="font-size:0.8rem; font-weight:800; color:var(--text-color);">🗂️ Imported BMP Deck (<span id="bmp-count-badge">0 patterns</span>):</span>
+            <!-- MASTER MULTI-BMP STITCHER BAR -->
+            <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.04);">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <span style="font-size:0.82rem; font-weight:800; color:var(--neon-green);">🔀 PoiBoi Master Show Stitcher:</span>
                     <div style="display:flex; gap:6px;">
-                        <button class="hw-btn" id="btn-load-demo-bmps" style="font-size:0.68rem; color:var(--accent-color);">✨ Load Sample Deck</button>
-                        <button class="hw-btn" id="btn-clear-bmp-deck" style="font-size:0.68rem; color:var(--danger-color);">Clear All</button>
+                        <button class="hw-btn" id="btn-stitch-all-poiboi" style="color:var(--neon-green); font-size:0.7rem; font-weight:800;">⚡ Stitch All 81</button>
+                        <button class="hw-btn" id="btn-stitch-rand-poiboi" style="color:var(--accent-color); font-size:0.7rem;">🎲 Random 10</button>
                     </div>
                 </div>
 
-                <div id="bmp-empty-prompt" style="font-size:0.72rem; color:var(--text-muted); text-align:center; padding:16px;">
-                    No custom BMPs loaded yet. Drop your favorite .bmp files above or click "✨ Load Sample Deck" to start stitching!
-                </div>
-
-                <div class="bmp-deck-grid" id="bmp-deck-grid"></div>
-            </div>
-
-            <!-- BATCH MASTER STITCH CONTROLS -->
-            <div class="card-box" style="margin-top:10px; border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
-                <div style="font-size:0.8rem; font-weight:800; color:var(--neon-green); margin-bottom:8px;">🔀 Master Multi-BMP Show Stitcher Settings:</div>
-
                 <div class="ctrl-row">
-                    <span class="ctrl-label">📏 Target LED Height:</span>
-                    <select id="bmp-stitch-height" style="width:100%;">
-                        <option value="55">55px Standard (Open Pixel Poi)</option>
-                        <option value="22">22px Mini (Open Pixel Poi)</option>
-                        <option value="32">32px</option>
-                        <option value="64">64px</option>
-                        <option value="144">144px HD</option>
-                        <option value="keep">Keep First Pattern Height</option>
-                    </select>
-                </div>
-
-                <div class="ctrl-row" style="margin-top:8px;">
                     <span class="ctrl-label">🌊 Stitch Transition:</span>
-                    <select id="bmp-stitch-trans" style="width:100%;">
+                    <select id="poiboi-stitch-trans" style="width:100%;">
                         <option value="crossfade">Hermite Seamless Smooth Crossfade</option>
                         <option value="black">Dip to Black Fade</option>
-                        <option value="strobe">Stroboscopic White POV Flash</option>
-                        <option value="none">Hard Cut (Zero Overlap)</option>
+                        <option value="strobe">Stroboscopic White Flash</option>
+                        <option value="none">Hard Cut (Zero Blend)</option>
                     </select>
                 </div>
 
-                <div class="ctrl-row" style="margin-top:8px;">
+                <div class="ctrl-row" style="margin-top:6px;">
                     <span class="ctrl-label">📐 Blend Overlap:</span>
-                    <input type="range" id="bmp-stitch-overlap" min="0" max="64" value="24">
-                    <span class="val-mono" id="bmp-stitch-overlap-val">24px</span>
+                    <input type="range" id="poiboi-stitch-overlap" min="0" max="48" value="20">
+                    <span class="val-mono" id="poiboi-stitch-overlap-val">20px</span>
                 </div>
 
-                <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
-                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                        <input type="checkbox" id="bmp-stitch-loop" checked style="accent-color:var(--neon-green);"> <b>100% Zero-Seam Infinite Loop (Stitches tail back to head)</b>
-                    </label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
+                    <button class="btn-join-add" id="btn-poiboi-preview-show">▶️ Play Show in Streamer</button>
+                    <button class="btn-join-export" id="btn-poiboi-export-bmp">💾 Export Stitched Master BMP</button>
                 </div>
+            </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-                    <button class="btn-join-add" id="btn-bmp-preview-show">▶️ Play Show in Infinite Streamer</button>
-                    <button class="btn-join-export" id="btn-bmp-export-master">💾 Export Stitched Master BMP</button>
-                </div>
+            <!-- SEARCH BAR -->
+            <div class="search-input-wrap" style="margin-top:10px;">
+                <span>🔍</span>
+                <input type="text" id="poiboi-search" placeholder="Search 81 PoiBoi patterns (e.g. skull, eye, triangle, wave, frog, flower, saw, scales)...">
+            </div>
+
+            <!-- 81 POIBOI PATTERN CARDS GRID -->
+            <div class="gallery-grid" id="poiboi-gallery-grid" style="margin-top:10px;">
+                <!-- Populated dynamically -->
             </div>
         </div>
         
-        <!-- 1. CUSTOM COLORS & PALETTES TAB -->
+        <!-- 2. CUSTOM COLORS & PALETTES TAB -->
         <div class="tab-pane" id="tab-colors">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--accent-color);">🎨 Custom Color Picker & 25+ Spectrum Studio</span>
@@ -266,7 +241,7 @@
             </div>
         </div>
 
-        <!-- 2. SYMMETRIES & PRO SHADERS TAB -->
+        <!-- 3. SYMMETRIES & PRO SHADERS TAB -->
         <div class="tab-pane" id="tab-symmetries">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-purple);">🎛️ Hyper-Symmetries, POV Shaders & Mutator Control</span>
@@ -327,7 +302,7 @@
             </div>
         </div>
 
-        <!-- 3. PROPS & HARDWARE TAB -->
+        <!-- 4. PROPS & HARDWARE TAB -->
         <div class="tab-pane" id="tab-hardware">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-green);">📐 Open Pixel Poi Hardware Dimensions & SD Storage</span>
@@ -370,14 +345,14 @@
             </div>
         </div>
 
-        <!-- 4. AZTEC & SACRED GEOMETRY TAB -->
+        <!-- 5. AZTEC & SACRED GEOMETRY TAB -->
         <div class="tab-pane" id="tab-aztec">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-yellow);">🏛️ Aztec, Mayan & Sacred Step-Fret Suite</span>
                 <span class="pane-sub">Mitla mosaics, Feathered Serpents & Third-Eye Mandalas</span>
             </div>
             <div class="gallery-grid">
-                <div class="preset-card active" data-preset="aztec_xicalcoliuhqui_fret">
+                <div class="preset-card" data-preset="aztec_xicalcoliuhqui_fret">
                     <div class="preset-icon">🏛️</div>
                     <div class="preset-name">Xicalcoliuhqui</div>
                     <div class="preset-desc">Aztec Stepped-Fret</div>
@@ -430,7 +405,7 @@
             </div>
         </div>
 
-        <!-- 5. OPTICAL ILLUSIONS TAB -->
+        <!-- 6. OPTICAL ILLUSIONS TAB -->
         <div class="tab-pane" id="tab-illusions">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-pink);">👁️ Optical Illusions & Cortical Motion</span>
@@ -480,7 +455,7 @@
             </div>
         </div>
 
-        <!-- 6. TRIPPY & MATH TAB -->
+        <!-- 7. TRIPPY & MATH TAB -->
         <div class="tab-pane" id="tab-trippy">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-purple);">🌀 Trippy Complex-Domain Shaders & Chaos</span>
@@ -530,7 +505,7 @@
             </div>
         </div>
 
-        <!-- 7. NEGATIVE SPACE VOIDS TAB -->
+        <!-- 8. NEGATIVE SPACE VOIDS TAB -->
         <div class="tab-pane" id="tab-voids">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-pink);">🕳️ Negative-Space & Void Cutouts</span>
@@ -570,7 +545,7 @@
             </div>
         </div>
 
-        <!-- 8. DUAL FLOW MORPH STUDIO TAB -->
+        <!-- 9. DUAL FLOW MORPH STUDIO TAB -->
         <div class="tab-pane" id="tab-morph">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--neon-purple);">🎭 Harmonic Geometry Flow Morph Studio</span>
@@ -608,7 +583,7 @@
             </div>
         </div>
 
-        <!-- 9. MULTI-PATTERN SEQUENCE JOINER TAB -->
+        <!-- 10. MULTI-PATTERN SEQUENCE JOINER TAB -->
         <div class="tab-pane" id="tab-sequence">
             <div class="pane-header">
                 <span class="pane-title" style="color: #ffffff;">🔗 Multi-Pattern Sequence Joiner & Show Builder</span>
@@ -637,21 +612,41 @@
             </div>
         </div>
 
+        <!-- 11. UPLOAD CUSTOM BMPS TAB -->
+        <div class="tab-pane" id="tab-upload">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--accent-color);">📁 Upload Custom BMPs from Computer</span>
+                <span class="pane-sub">Drag & drop external BMP files to append to your session</span>
+            </div>
+            <input type="file" id="bmp-file-input" multiple accept=".bmp,.png,.jpg,.jpeg" style="display:none;">
+            <div class="bmp-dropzone" id="bmp-dropzone">
+                <div class="bmp-dropzone-icon">📥</div>
+                <div class="bmp-dropzone-title">Click to Browse or Drag & Drop .BMP Files Here</div>
+                <div class="bmp-dropzone-sub">Supports 24-bit/32-bit BMP, PNG, JPG</div>
+            </div>
+        </div>
+
     </main>
 
     <footer class="footer-note">
-        100% Pure Algorithmic POV Suite. Pinned HUD Loop Verified. 24-bit uncompressed BMP binary ready.
+        100% Pure Algorithmic POV Suite. Pinned HUD Loop Verified. 81 PoiBoi Vault Integrated.
     </footer>
 </div>
 
+<script src="poiboi-manifest.js"></script>
 <script src="poi-engine.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const el = (id) => document.getElementById(id);
     const updateBadge = (id, val) => { const e = el(id); if (e) e.innerText = val; };
 
+    // Register 81 PoiBoi patterns into engine
+    if (typeof registerPoiBoiVault === 'function') {
+        registerPoiBoiVault();
+    }
+
     // --- STATE ---
-    let currentPattern = "aztec_xicalcoliuhqui_fret";
+    let currentPattern = "poiboi_8"; // Default to Big Skull from PoiBoi!
     let currentHeight = 55;
     let currentWidth = 240;
     let symMirrorH = false;
@@ -660,7 +655,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let symInvert180 = false;
     let symKaleido = 0;
 
-    // Double buffering for smooth liquid transitions between patterns/palettes
     let baseCanvas = document.createElement('canvas');
     baseCanvas.width = currentWidth;
     baseCanvas.height = currentHeight;
@@ -675,12 +669,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let transitionAlpha = 1.0;
     let transitionStartTime = 0;
-    const TRANSITION_DURATION = 200; // ms smooth cross-morph
+    const TRANSITION_DURATION = 200;
 
     const sequenceQueue = [];
-    const bmpDeck = [];
 
-    // --- TAB SWITCHING (ROBUST SCROLL + ACTIVATE) ---
+    // --- TAB SWITCHING ---
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -716,7 +709,7 @@ document.addEventListener('DOMContentLoaded', function() {
     morphBSelect.innerHTML = opts;
 
     proSelect.value = currentPattern;
-    morphASelect.value = "aztec_xicalcoliuhqui_fret";
+    morphASelect.value = "poiboi_8";
     morphBSelect.value = "sacred_third_eye_mandala";
 
     proSelect.onchange = (e) => {
@@ -725,7 +718,50 @@ document.addEventListener('DOMContentLoaded', function() {
         triggerSmoothRender();
     };
 
-    // --- PRESET CARDS CLICK ---
+    // --- POPULATE POIBOI 81 GALLERY GRID ---
+    function renderPoiBoiGrid(filterText = "") {
+        const grid = el('poiboi-gallery-grid');
+        if (!grid || !window.POIBOI_VAULT) return;
+        grid.innerHTML = '';
+
+        const ft = filterText.toLowerCase().trim();
+        const filtered = window.POIBOI_VAULT.filter(item => {
+            if (!ft) return true;
+            return item.name.toLowerCase().includes(ft) || item.rawFile.toLowerCase().includes(ft);
+        });
+
+        filtered.forEach(item => {
+            const card = document.createElement('div');
+            card.className = `preset-card ${currentPattern === item.id ? 'active' : ''}`;
+            card.setAttribute('data-preset', item.id);
+            card.innerHTML = `
+                <img class="poiboi-card-img" src="${item.dataUri}" alt="${item.name}">
+                <div class="preset-name">${item.name}</div>
+                <div class="preset-desc">${item.width}×${item.height} px</div>
+            `;
+
+            card.onclick = () => {
+                document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                currentPattern = item.id;
+                proSelect.value = currentPattern;
+                if (el('morph-enable').checked) {
+                    morphASelect.value = currentPattern;
+                }
+                triggerSmoothRender();
+            };
+
+            grid.appendChild(card);
+        });
+    }
+
+    renderPoiBoiGrid();
+
+    el('poiboi-search').oninput = (e) => {
+        renderPoiBoiGrid(e.target.value);
+    };
+
+    // --- PRESET CARDS CLICK (OTHER TABS) ---
     document.querySelectorAll('.preset-card').forEach(card => {
         card.addEventListener('click', function() {
             document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
@@ -745,7 +781,72 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- CUSTOM MULTI-STOP COLOR PICKER SYSTEM ---
+    // --- POIBOI MASTER SHOW STITCHER ---
+    function buildPoiBoiMasterShow(items) {
+        if (!items || items.length === 0) return null;
+
+        // Render each pattern to a normalized canvas
+        const targetH = currentHeight;
+        const canvases = items.map(item => {
+            const c = document.createElement('canvas');
+            const aspect = item.width / item.height;
+            const scaledW = Math.round(targetH * aspect);
+            c.width = scaledW;
+            c.height = targetH;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(item.cachedImg, 0, 0, scaledW, targetH);
+            applyPerfectSeamGuardian(c, 6);
+            return c;
+        });
+
+        const transition = el('poiboi-stitch-trans').value;
+        const overlap = parseInt(el('poiboi-stitch-overlap').value);
+
+        return joinPatternSequence(canvases, { transition, overlap, seamlessLoop: true });
+    }
+
+    el('poiboi-stitch-overlap').oninput = (e) => {
+        updateBadge('poiboi-stitch-overlap-val', e.target.value + 'px');
+    };
+
+    el('btn-stitch-all-poiboi').onclick = () => {
+        const master = buildPoiBoiMasterShow(window.POIBOI_VAULT);
+        if (master) {
+            currentWidth = master.width;
+            baseCanvas.width = currentWidth;
+            baseCanvas.height = currentHeight;
+            baseCanvas.getContext('2d').drawImage(master, 0, 0);
+            triggerSmoothRender();
+            updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
+        }
+    };
+
+    el('btn-stitch-rand-poiboi').onclick = () => {
+        const shuffled = [...window.POIBOI_VAULT].sort(() => 0.5 - Math.random()).slice(0, 10);
+        const master = buildPoiBoiMasterShow(shuffled);
+        if (master) {
+            currentWidth = master.width;
+            baseCanvas.width = currentWidth;
+            baseCanvas.height = currentHeight;
+            baseCanvas.getContext('2d').drawImage(master, 0, 0);
+            triggerSmoothRender();
+            updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
+        }
+    };
+
+    el('btn-poiboi-preview-show').onclick = () => {
+        el('btn-stitch-all-poiboi').click();
+    };
+
+    el('btn-poiboi-export-bmp').onclick = () => {
+        const master = buildPoiBoiMasterShow(window.POIBOI_VAULT);
+        if (master) {
+            const blob = canvasToBmpBlob(master, { topDown: false });
+            triggerDownload(blob, `poiboi_master_81_show_${master.width}x${master.height}.bmp`);
+        }
+    };
+
+    // --- CUSTOM COLOR PICKER SYSTEM ---
     let customColors = ['#ff007f', '#00ffff', '#ffd700', '#bc13fe'];
     POI_PALETTES.custom = customColors;
 
@@ -997,11 +1098,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const morphRatio = parseFloat(el('morph-ratio').value);
             generateMorphedPattern(baseCanvas, modelA, modelB, flowStyle, morphRatio, params, colSampler);
         } else {
-            const genFn = POI_GENERATORS[currentPattern] || POI_GENERATORS.aztec_xicalcoliuhqui_fret;
+            const genFn = POI_GENERATORS[currentPattern] || POI_GENERATORS.poiboi_8 || POI_GENERATORS.aztec_xicalcoliuhqui_fret;
             genFn(ctx, w, h, params, colSampler);
         }
 
-        // Symmetry
+        // Symmetries
         applyMultiSymmetry(baseCanvas, {
             mirrorH: symMirrorH,
             mirrorV: symMirrorV,
@@ -1058,7 +1159,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tCtx.setLineDash([]);
     }
 
-    // --- BUTTERY-SMOOTH ZERO-GLITCH INFINITE STREAMER ANIMATION ---
+    // --- INFINITE STREAMER ANIMATION ---
     const infCanvas = el('infinite-canvas');
     const infCtx = infCanvas.getContext('2d');
     let streamOffset = 0;
@@ -1072,7 +1173,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const w = currentWidth;
         const h = currentHeight;
 
-        // Smooth dissolve animation between patterns
         if (transitionAlpha < 1.0) {
             const elapsed = now - transitionStartTime;
             transitionAlpha = Math.min(1.0, elapsed / TRANSITION_DURATION);
@@ -1231,202 +1331,41 @@ document.addEventListener('DOMContentLoaded', function() {
         triggerDownload(blob, `${currentPattern}_${currentWidth}x${currentHeight}.bmp`);
     };
 
-    // --- BMP IMPORT & DECK STITCHER SYSTEM ---
+    // --- BMP DRAG & DROP FOR UPLOAD TAB ---
     const dropzone = el('bmp-dropzone');
     const fileInput = el('bmp-file-input');
 
     dropzone.onclick = () => fileInput.click();
-
-    dropzone.ondragover = (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-    };
+    dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add('dragover'); };
     dropzone.ondragleave = () => dropzone.classList.remove('dragover');
     dropzone.ondrop = async (e) => {
         e.preventDefault();
         dropzone.classList.remove('dragover');
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            await handleImportFiles(e.dataTransfer.files);
+            for (let i = 0; i < e.dataTransfer.files.length; i++) {
+                const item = await loadBmpOrImageFile(e.dataTransfer.files[i]);
+                const genKey = `custom_${Date.now()}_${i}`;
+                POI_GENERATORS[genKey] = (ctx, w, h) => ctx.drawImage(item.canvas, 0, 0, w, h);
+                currentPattern = genKey;
+                proSelect.innerHTML = buildSelectOptions();
+                proSelect.value = currentPattern;
+                triggerSmoothRender();
+            }
         }
     };
 
     fileInput.onchange = async (e) => {
         if (e.target.files && e.target.files.length > 0) {
-            await handleImportFiles(e.target.files);
-        }
-    };
-
-    async function handleImportFiles(fileList) {
-        for (let i = 0; i < fileList.length; i++) {
-            const f = fileList[i];
-            try {
-                const item = await loadBmpOrImageFile(f);
-                bmpDeck.push(item);
-            } catch (err) {
-                console.error("Failed to load file:", f.name, err);
+            for (let i = 0; i < e.target.files.length; i++) {
+                const item = await loadBmpOrImageFile(e.target.files[i]);
+                const genKey = `custom_${Date.now()}_${i}`;
+                POI_GENERATORS[genKey] = (ctx, w, h) => ctx.drawImage(item.canvas, 0, 0, w, h);
+                currentPattern = genKey;
+                proSelect.innerHTML = buildSelectOptions();
+                proSelect.value = currentPattern;
+                triggerSmoothRender();
             }
         }
-        updateBmpDeckUI();
-    }
-
-    function updateBmpDeckUI() {
-        const grid = el('bmp-deck-grid');
-        const emptyPrompt = el('bmp-empty-prompt');
-        updateBadge('bmp-count-badge', `${bmpDeck.length} pattern${bmpDeck.length === 1 ? '' : 's'}`);
-
-        if (bmpDeck.length === 0) {
-            grid.innerHTML = '';
-            emptyPrompt.style.display = 'block';
-            return;
-        }
-
-        emptyPrompt.style.display = 'none';
-        grid.innerHTML = '';
-
-        bmpDeck.forEach((item, idx) => {
-            const card = document.createElement('div');
-            card.className = 'bmp-deck-card';
-
-            const preview = document.createElement('div');
-            preview.className = 'bmp-deck-preview';
-            const miniCanvas = document.createElement('canvas');
-            miniCanvas.width = item.canvas.width;
-            miniCanvas.height = item.canvas.height;
-            miniCanvas.getContext('2d').drawImage(item.canvas, 0, 0);
-            preview.appendChild(miniCanvas);
-
-            const meta = document.createElement('div');
-            meta.className = 'bmp-deck-meta';
-            meta.innerHTML = `
-                <span class="bmp-deck-name" title="${item.name}">${idx + 1}. ${item.name}</span>
-                <span class="bmp-deck-dims">${item.width}×${item.height}</span>
-            `;
-
-            const btns = document.createElement('div');
-            btns.className = 'bmp-deck-btns';
-            btns.innerHTML = `
-                <button class="bmp-btn-mini" data-action="play" title="Send to Visualizer Stream">👁️ View</button>
-                <button class="bmp-btn-mini" data-action="left" title="Move Earlier in Show">◀</button>
-                <button class="bmp-btn-mini" data-action="right" title="Move Later in Show">▶</button>
-                <button class="bmp-btn-mini" data-action="del" title="Remove Pattern" style="color:var(--danger-color);">✕</button>
-            `;
-
-            btns.querySelector('[data-action="play"]').onclick = () => {
-                currentWidth = item.width;
-                currentHeight = item.height;
-                baseCanvas.width = currentWidth;
-                baseCanvas.height = currentHeight;
-                baseCanvas.getContext('2d').drawImage(item.canvas, 0, 0);
-                triggerSmoothRender();
-                updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
-            };
-
-            btns.querySelector('[data-action="left"]').onclick = () => {
-                if (idx > 0) {
-                    const temp = bmpDeck[idx];
-                    bmpDeck[idx] = bmpDeck[idx - 1];
-                    bmpDeck[idx - 1] = temp;
-                    updateBmpDeckUI();
-                }
-            };
-
-            btns.querySelector('[data-action="right"]').onclick = () => {
-                if (idx < bmpDeck.length - 1) {
-                    const temp = bmpDeck[idx];
-                    bmpDeck[idx] = bmpDeck[idx + 1];
-                    bmpDeck[idx + 1] = temp;
-                    updateBmpDeckUI();
-                }
-            };
-
-            btns.querySelector('[data-action="del"]').onclick = () => {
-                bmpDeck.splice(idx, 1);
-                updateBmpDeckUI();
-            };
-
-            card.appendChild(preview);
-            card.appendChild(meta);
-            card.appendChild(btns);
-            grid.appendChild(card);
-        });
-    }
-
-    el('btn-clear-bmp-deck').onclick = () => {
-        bmpDeck.length = 0;
-        updateBmpDeckUI();
-    };
-
-    // Load sample deck for instant testing
-    el('btn-load-demo-bmps').onclick = () => {
-        const samples = [
-            { name: "aztec_stepped_fret.bmp", key: "aztec_xicalcoliuhqui_fret" },
-            { name: "quetzalcoatl_wave.bmp", key: "aztec_quetzalcoatl_serpent" },
-            { name: "third_eye_mandala.bmp", key: "sacred_third_eye_mandala" },
-            { name: "ouchi_floating_disk.bmp", key: "illusion_ouchi_depth" },
-            { name: "droste_spiral_warp.bmp", key: "trippy_droste_spiral" }
-        ];
-
-        samples.forEach(s => {
-            const c = document.createElement('canvas');
-            c.width = 240; c.height = 55;
-            const sampler = createColorSampler('aztec_gold_turquoise', 'wave_curvature', 'cyclic');
-            POI_GENERATORS[s.key](c.getContext('2d'), 240, 55, { scale: 1, thickness: 2.5, spacing: 1.0 }, sampler);
-            applyPerfectSeamGuardian(c, 6);
-            bmpDeck.push({ name: s.name, canvas: c, width: 240, height: 55 });
-        });
-
-        updateBmpDeckUI();
-    };
-
-    el('bmp-stitch-overlap').oninput = (e) => {
-        updateBadge('bmp-stitch-overlap-val', e.target.value + 'px');
-    };
-
-    function buildStitchedBmpShow() {
-        if (bmpDeck.length === 0) {
-            alert('Please import or load at least 1 BMP pattern first!');
-            return null;
-        }
-
-        const targetHeightOption = el('bmp-stitch-height').value;
-        const targetH = targetHeightOption === 'keep' ? bmpDeck[0].height : parseInt(targetHeightOption);
-
-        // Normalize canvases to target LED height
-        const normalizedCanvases = bmpDeck.map(item => {
-            if (item.height === targetH) return item.canvas;
-            const c = document.createElement('canvas');
-            const scaledW = Math.round(item.width * (targetH / item.height));
-            c.width = scaledW;
-            c.height = targetH;
-            c.getContext('2d').drawImage(item.canvas, 0, 0, scaledW, targetH);
-            return c;
-        });
-
-        const transition = el('bmp-stitch-trans').value;
-        const overlap = parseInt(el('bmp-stitch-overlap').value);
-        const seamlessLoop = el('bmp-stitch-loop').checked;
-
-        return joinPatternSequence(normalizedCanvases, { transition, overlap, seamlessLoop });
-    }
-
-    el('btn-bmp-preview-show').onclick = () => {
-        const masterCanvas = buildStitchedBmpShow();
-        if (!masterCanvas) return;
-
-        currentWidth = masterCanvas.width;
-        currentHeight = masterCanvas.height;
-        baseCanvas.width = currentWidth;
-        baseCanvas.height = currentHeight;
-        baseCanvas.getContext('2d').drawImage(masterCanvas, 0, 0);
-        triggerSmoothRender();
-        updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
-    };
-
-    el('btn-bmp-export-master').onclick = () => {
-        const masterCanvas = buildStitchedBmpShow();
-        if (!masterCanvas) return;
-        const blob = canvasToBmpBlob(masterCanvas, { topDown: false });
-        triggerDownload(blob, `master_bmp_show_${masterCanvas.width}x${masterCanvas.height}.bmp`);
     };
 
     // --- SEQUENCE TIMELINE LOGIC ---

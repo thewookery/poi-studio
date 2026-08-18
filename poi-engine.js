@@ -2820,6 +2820,32 @@ async function loadBmpOrImageFile(file) {
     });
 }
 
+// --- POIBOI VAULT INTEGRATION (81 OFFICIAL BMPS) ---
+function registerPoiBoiVault() {
+    if (!window.POIBOI_VAULT || !Array.isArray(window.POIBOI_VAULT)) return;
+    
+    const vaultItems = [];
+    window.POIBOI_VAULT.forEach(item => {
+        const genKey = item.id;
+        vaultItems.push({ v: genKey, l: `🔥 ${item.name}` });
+
+        const img = new Image();
+        img.src = item.dataUri;
+        item.cachedImg = img;
+
+        POI_GENERATORS[genKey] = (ctx, w, h, params, colSampler) => {
+            if (img.complete && img.naturalWidth > 0) {
+                ctx.drawImage(img, 0, 0, w, h);
+            }
+        };
+    });
+
+    POI_PATTERN_DB.unshift({
+        cat: "🔥 PoiBoi Classic Patterns (81 Official BMPs)",
+        items: vaultItems
+    });
+}
+
 window.POI_PATTERN_DB = POI_PATTERN_DB;
 window.POI_PALETTES = POI_PALETTES;
 window.POI_GENERATORS = POI_GENERATORS;
@@ -2836,3 +2862,4 @@ window.shiftCanvasPhase = shiftCanvasPhase;
 window.canvasToBmpBlob = canvasToBmpBlob;
 window.parseBmpArrayBuffer = parseBmpArrayBuffer;
 window.loadBmpOrImageFile = loadBmpOrImageFile;
+window.registerPoiBoiVault = registerPoiBoiVault;

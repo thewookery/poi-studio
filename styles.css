@@ -606,6 +606,32 @@ select {
     color: #000;
 }
 
+.search-input-wrap {
+    display: flex;
+    align-items: center;
+    background: #0b0f17;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    gap: 6px;
+}
+.search-input-wrap input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 0.75rem;
+    outline: none;
+    width: 100%;
+}
+
+.poiboi-card-img {
+    height: 38px;
+    image-rendering: pixelated;
+    border-radius: 2px;
+    margin-bottom: 4px;
+    max-width: 100%;
+}
+
 .footer-note {
     text-align: center;
     font-size: 0.68rem;
@@ -613,4 +639,5 @@ select {
     margin-top: 12px;
     padding: 0 12px;
 }
+
 
