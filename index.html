@@ -25,11 +25,15 @@
         <div class="hud-brand-row">
             <div class="hud-title">⚡ POI STUDIO <span style="color:var(--neon-green); font-size:0.75rem;">♾️ ZERO-SEAM</span></div>
             <div class="hud-quick-actions">
-                <button class="hud-btn-mutate" id="btn-quick-mutate" title="Hyper-Mutate Palette & Geometry">⚡ Hyper-Mutate</button>
-                <button class="hud-btn-rand" id="btn-quick-rand" title="Random Generator">🎲 Random</button>
+                <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
+                <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi over BLE">🚀 Upload (BLE)</button>
+                <button class="hw-btn" id="btn-ble-deck-open" style="font-size:0.68rem; color:var(--neon-green);" title="Open Live Bluetooth Control Deck">🎛️ Deck</button>
+                <button class="hud-btn-mutate" id="btn-quick-mutate" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
+                <button class="hud-btn-rand" id="btn-quick-rand" title="Random Generator">🎲 Rand</button>
                 <button class="hud-btn-dl" id="btn-quick-dl-bmp" title="Download Open Pixel Poi BMP">💾 BMP</button>
             </div>
         </div>
+
 
         <!-- DUAL REAL-TIME VISUALIZERS -->
         <div class="hud-visualizers">
@@ -223,8 +227,10 @@
                     </div>
 
                     <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="btn-ble-upload" id="btn-export-cinema-ble">🚀 Upload Show to Poi (BLE)</button>
                         <button class="btn-join-export" id="btn-export-cinema-bmp">💾 Export Master 24-bit BMP</button>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -570,6 +576,74 @@
         </div>
     </div>
 
+    <!-- BLE MODAL & REAL-TIME HARDWARE CONTROL DECK -->
+    <div class="ble-modal-overlay" id="ble-modal">
+        <div class="ble-modal-content">
+            <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.2rem;">📡</span>
+                    <div>
+                        <div style="font-size:0.88rem; font-weight:800; color:var(--neon-green);" id="ble-modal-title">Open Pixel Poi BLE Uplink</div>
+                        <div style="font-size:0.68rem; color:var(--text-muted);" id="ble-modal-status">Status: Disconnected</div>
+                    </div>
+                </div>
+                <button class="storyboard-btn-mini" id="btn-ble-modal-close" style="font-size:0.9rem; padding:4px 8px;">✕</button>
+            </div>
+
+            <!-- LIVE UPLOAD PROGRESS (Only visible during transfer) -->
+            <div id="ble-upload-section" style="display:none; flex-direction:column; gap:6px; background:rgba(0,0,0,0.4); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--neon-purple);">
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; font-weight:700;">
+                    <span style="color:var(--neon-purple);" id="ble-upload-label">Uploading Pattern...</span>
+                    <span class="val-mono" id="ble-upload-pct" style="color:var(--neon-green);">0%</span>
+                </div>
+                <div class="ble-progress-bar-wrap">
+                    <div class="ble-progress-bar-fill" id="ble-progress-bar-fill"></div>
+                </div>
+                <div style="font-size:0.65rem; color:var(--text-muted);" id="ble-upload-details">Packet 0 / 0 (0 KB)</div>
+            </div>
+
+            <!-- HARDWARE CONTROL DECK (Active when connected) -->
+            <div id="ble-controls-section" style="display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎛️ Real-Time Poi Hardware Deck:</div>
+
+                <div class="ctrl-row">
+                    <span class="ctrl-label">☀️ LED Brightness:</span>
+                    <input type="range" id="ble-ctrl-brightness" min="1" max="255" value="128" style="accent-color:var(--neon-yellow);">
+                    <span class="val-mono" id="ble-ctrl-brightness-val">128</span>
+                </div>
+
+                <div class="ctrl-row">
+                    <span class="ctrl-label">⏩ Spin Speed:</span>
+                    <input type="range" id="ble-ctrl-speed" min="10" max="600" value="180" style="accent-color:var(--neon-green);">
+                    <span class="val-mono" id="ble-ctrl-speed-val">180 Hz</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
+                    <div style="flex:1;">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">🎰 Slot (1-16):</span>
+                        <select id="ble-ctrl-slot" style="width:100%; font-size:0.72rem; padding:4px; margin-top:2px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:3px;">
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">🔀 Bank (1-16):</span>
+                        <select id="ble-ctrl-bank" style="width:100%; font-size:0.72rem; padding:4px; margin-top:2px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:3px;">
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+                    <button class="hw-btn" id="ble-btn-loop-bank" style="font-size:0.68rem; color:var(--neon-purple);">♾️ Loop Bank</button>
+                    <button class="hw-btn" id="ble-btn-loop-all" style="font-size:0.68rem; color:var(--neon-yellow);">🌐 Loop All Banks</button>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; border-top:1px solid var(--border-color); padding-top:8px;">
+                <button class="ble-connect-btn" id="ble-modal-connect-btn">📡 Connect Device</button>
+                <button class="btn-ble-upload" id="ble-modal-upload-active-btn">🚀 Upload Active Pattern</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer-note">
         100% Pure Algorithmic POV Suite. 395 Master Patterns in Single Folder. 40,000-Pixel Hardware Cap.
     </footer>
@@ -577,6 +651,8 @@
 
 <script src="master-vault-manifest.js"></script>
 <script src="poi-engine.js"></script>
+<script src="poi-ble.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const el = (id) => document.getElementById(id);
@@ -1752,8 +1828,237 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // =========================================================================
+    // OPEN PIXEL POI WEB BLUETOOTH (BLE) HARDWARE CONTROLLER
+    // =========================================================================
+    const bleModal = el('ble-modal');
+    function openBleModal() { if (bleModal) bleModal.style.display = 'flex'; }
+    function closeBleModal() { if (bleModal) bleModal.style.display = 'none'; }
+
+    if (el('btn-ble-modal-close')) el('btn-ble-modal-close').onclick = closeBleModal;
+    if (el('btn-ble-deck-open')) el('btn-ble-deck-open').onclick = openBleModal;
+
+    // Populate Slot and Bank Dropdowns (1 - 16)
+    const bleSlotSel = el('ble-ctrl-slot');
+    const bleBankSel = el('ble-ctrl-bank');
+    if (bleSlotSel) {
+        let opts = '';
+        for (let i = 0; i < 16; i++) opts += `<option value="${i}">Slot ${i + 1}</option>`;
+        bleSlotSel.innerHTML = opts;
+    }
+    if (bleBankSel) {
+        let opts = '';
+        for (let i = 0; i < 16; i++) opts += `<option value="${i}">Bank ${i + 1}</option>`;
+        bleBankSel.innerHTML = opts;
+    }
+
+    // Toggle BLE Connection
+    async function toggleBleConnection() {
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
+            alert("Web Bluetooth is not supported in this browser.\n\nPlease open this app in Google Chrome, Microsoft Edge, Opera, or Android Chromium to connect directly to your Open Pixel Poi!");
+            return;
+        }
+
+        if (OpenPixelPoiBLE.isConnected) {
+            await OpenPixelPoiBLE.disconnect();
+        } else {
+            try {
+                await OpenPixelPoiBLE.connect();
+            } catch (err) {
+                if (err.name !== 'NotFoundError') {
+                    console.warn('[BLE Connection Error]', err);
+                }
+            }
+        }
+    }
+
+    if (el('btn-ble-connect')) el('btn-ble-connect').onclick = toggleBleConnection;
+    if (el('ble-modal-connect-btn')) el('ble-modal-connect-btn').onclick = toggleBleConnection;
+
+    // BLE State Listener
+    if (window.OpenPixelPoiBLE) {
+        OpenPixelPoiBLE.onStateChange((state, data) => {
+            const connectBtns = [el('btn-ble-connect'), el('ble-modal-connect-btn')];
+            const statusBadge = el('ble-modal-status');
+            const titleBadge = el('ble-modal-title');
+
+            if (state === 'connected') {
+                connectBtns.forEach(b => {
+                    if (b) {
+                        b.classList.add('connected');
+                        b.innerText = `🟢 ${data.deviceName || 'Pixel Poi'}`;
+                        b.title = 'Click to disconnect Open Pixel Poi';
+                    }
+                });
+                if (statusBadge) statusBadge.innerText = `Status: Connected to ${data.deviceName} (Ready)`;
+                if (titleBadge) titleBadge.innerText = `🟢 ${data.deviceName}`;
+            } else if (state === 'connecting') {
+                connectBtns.forEach(b => { if (b) b.innerText = '⏳ Connecting...'; });
+                if (statusBadge) statusBadge.innerText = 'Status: Scanning & Connecting...';
+            } else {
+                connectBtns.forEach(b => {
+                    if (b) {
+                        b.classList.remove('connected');
+                        b.innerText = '📡 Connect Poi (BLE)';
+                        b.title = 'Connect Open Pixel Poi via Web Bluetooth';
+                    }
+                });
+                if (statusBadge) statusBadge.innerText = 'Status: Disconnected';
+                if (titleBadge) titleBadge.innerText = 'Open Pixel Poi BLE Uplink';
+            }
+        });
+    }
+
+    // Upload Active Pattern (Canvas) to Poi over BLE
+    async function uploadActivePatternToPoi() {
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
+            alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+            return;
+        }
+
+        if (!OpenPixelPoiBLE.isConnected) {
+            openBleModal();
+            try {
+                await OpenPixelPoiBLE.connect();
+            } catch (e) {
+                return;
+            }
+        }
+
+        openBleModal();
+        const uploadSec = el('ble-upload-section');
+        const fill = el('ble-progress-bar-fill');
+        const pct = el('ble-upload-pct');
+        const details = el('ble-upload-details');
+        const label = el('ble-upload-label');
+
+        if (uploadSec) uploadSec.style.display = 'flex';
+        if (label) label.innerText = `Uploading Pattern (${currentWidth}x${currentHeight} px)...`;
+
+        try {
+            await OpenPixelPoiBLE.uploadPattern(baseCanvas, (progress, info) => {
+                const p = Math.round(progress * 100);
+                if (fill) fill.style.width = `${p}%`;
+                if (pct) pct.innerText = `${p}%`;
+                if (details) details.innerText = `Packet ${info.chunk} / ${info.totalChunks} (${Math.round(info.sentBytes / 1024)} / ${Math.round(info.totalBytes / 1024)} KB)`;
+            });
+            if (label) label.innerText = `✅ Pattern Successfully Flashed to Poi!`;
+            setTimeout(() => {
+                if (uploadSec) uploadSec.style.display = 'none';
+            }, 2500);
+        } catch (err) {
+            alert("BLE Upload Failed: " + err.message);
+            if (uploadSec) uploadSec.style.display = 'none';
+        }
+    }
+
+    if (el('btn-ble-upload-active')) el('btn-ble-upload-active').onclick = uploadActivePatternToPoi;
+    if (el('ble-modal-upload-active-btn')) el('ble-modal-upload-active-btn').onclick = uploadActivePatternToPoi;
+
+    // Upload Master Show to Poi over BLE
+    async function uploadMasterShowToPoi() {
+        if (storyboardQueue.length === 0) {
+            alert("Storyboard timeline is empty! Add patterns first.");
+            return;
+        }
+
+        if (!showMasterCanvas) {
+            recompileShowMaster(false);
+        }
+        if (!showMasterCanvas) {
+            alert("Unable to compile master show.");
+            return;
+        }
+
+        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
+            alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+            return;
+        }
+
+        if (!OpenPixelPoiBLE.isConnected) {
+            openBleModal();
+            try {
+                await OpenPixelPoiBLE.connect();
+            } catch (e) {
+                return;
+            }
+        }
+
+        openBleModal();
+        const uploadSec = el('ble-upload-section');
+        const fill = el('ble-progress-bar-fill');
+        const pct = el('ble-upload-pct');
+        const details = el('ble-upload-details');
+        const label = el('ble-upload-label');
+
+        if (uploadSec) uploadSec.style.display = 'flex';
+        if (label) label.innerText = `Uploading Master Show (${showMasterCanvas.width}x${showMasterCanvas.height} px)...`;
+
+        try {
+            await OpenPixelPoiBLE.uploadPattern(showMasterCanvas, (progress, info) => {
+                const p = Math.round(progress * 100);
+                if (fill) fill.style.width = `${p}%`;
+                if (pct) pct.innerText = `${p}%`;
+                if (details) details.innerText = `Packet ${info.chunk} / ${info.totalChunks} (${Math.round(info.sentBytes / 1024)} / ${Math.round(info.totalBytes / 1024)} KB)`;
+            });
+            if (label) label.innerText = `✅ Master Show Successfully Flashed to Poi!`;
+            setTimeout(() => {
+                if (uploadSec) uploadSec.style.display = 'none';
+            }, 3000);
+        } catch (err) {
+            alert("Show BLE Upload Failed: " + err.message);
+            if (uploadSec) uploadSec.style.display = 'none';
+        }
+    }
+
+    if (el('btn-export-cinema-ble')) el('btn-export-cinema-ble').onclick = uploadMasterShowToPoi;
+
+    // Real-Time Hardware Deck Controls
+    if (el('ble-ctrl-brightness')) {
+        el('ble-ctrl-brightness').oninput = (e) => {
+            const val = parseInt(e.target.value);
+            updateBadge('ble-ctrl-brightness-val', `${val}`);
+            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setBrightness(val);
+        };
+    }
+
+    if (el('ble-ctrl-speed')) {
+        el('ble-ctrl-speed').oninput = (e) => {
+            const val = parseInt(e.target.value);
+            updateBadge('ble-ctrl-speed-val', `${val} Hz`);
+            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setSpeed(val);
+        };
+    }
+
+    if (el('ble-ctrl-slot')) {
+        el('ble-ctrl-slot').onchange = (e) => {
+            const slot = parseInt(e.target.value);
+            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setPatternSlot(slot);
+        };
+    }
+
+    if (el('ble-ctrl-bank')) {
+        el('ble-ctrl-bank').onchange = (e) => {
+            const bank = parseInt(e.target.value);
+            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.setBank(bank);
+        };
+    }
+
+    if (el('ble-btn-loop-bank')) {
+        el('ble-btn-loop-bank').onclick = () => {
+            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.loopAllPatterns();
+        };
+    }
+
+    if (el('ble-btn-loop-all')) {
+        el('ble-btn-loop-all').onclick = () => {
+            if (OpenPixelPoiBLE.isConnected) OpenPixelPoiBLE.loopAllBanks();
+        };
+    }
+
     // Initial render: 55px tall by 40px length
     setGeneratorHeight(55, 40);
+
 });
 </script>
 
