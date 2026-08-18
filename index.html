@@ -28,19 +28,15 @@
         };
     </script>
 
-    <!-- COMPACT TOP HEADER & QUICK ACTION BAR -->
+    <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
             <div class="hud-title">⚡ POI STUDIO <span style="color:var(--neon-green); font-size:0.75rem;">♾️ ZERO-SEAM</span></div>
             <div class="hud-quick-actions">
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
                 <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi over BLE">🚀 Upload (BLE)</button>
-                <button class="hud-btn-mutate" id="btn-quick-mutate" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
-                <button class="hud-btn-rand" id="btn-quick-rand" title="Random Generator">🎲 Rand</button>
-                <button class="hud-btn-dl" id="btn-quick-dl-bmp" title="Download Open Pixel Poi BMP">💾 BMP</button>
-                <button class="hw-btn" id="btn-force-sync" style="font-size:0.72rem; color:var(--neon-green);" title="Force Cache Purge & Load Latest Version">🔄 Sync</button>
+                <button class="hw-btn" id="btn-force-sync" style="font-size:0.72rem; color:var(--neon-green); padding:5px 8px;" title="Force Cache Purge & Load Latest Version">🔄 Sync</button>
             </div>
-
         </div>
 
         <!-- INLINE NON-INTRUSIVE BLE UPLOAD PROGRESS PILL -->
@@ -59,15 +55,16 @@
     <!-- 3-WORKSPACE PRIMARY NAVIGATION BAR -->
     <div class="workspace-mode-bar">
         <button class="mode-switch-btn active" id="btn-mode-generator" data-mode="workspace-generator">
-            🎨 Algorithmic Generator
+            🎨 Generator
         </button>
         <button class="mode-switch-btn" id="btn-mode-stitcher" data-mode="workspace-stitcher">
-            🎬 Storyboard & Vault (395)
+            🎬 Storyboard & Vault
         </button>
         <button class="mode-switch-btn" id="btn-mode-deck" data-mode="workspace-deck">
-            🎛️ Poi Deck (<span id="btn-nav-poi-count">0</span>)
+            ⚙️ Poi Settings
         </button>
     </div>
+
 
 
     <!-- ==========================================================================
@@ -247,10 +244,61 @@
     <!-- ==========================================================================
          WORKSPACE 1: ALGORITHMIC PATTERN GENERATOR & POV SHADERS (DEFAULT)
          ========================================================================== -->
-    <div id="workspace-generator" style="display:flex; flex-direction:column; gap:8px; padding:10px 12px;">
+    <div id="workspace-generator" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
         
-        <!-- INTEGRATED DUAL REAL-TIME VISUALIZERS (LOCKED TO GENERATOR) -->
-        <div class="card-box" style="padding:8px 10px; background:rgba(0,0,0,0.5); border-color:rgba(0, 173, 181, 0.4);">
+        <!-- 1. STICKIED PROPS, DIMENSIONS & PRIMARY GENERATOR ACTION BAR -->
+        <div class="card-box" style="background:rgba(0, 173, 181, 0.08); border:1px solid rgba(0, 173, 181, 0.35); padding:10px 12px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:0.78rem; font-weight:800; color:var(--accent-color);">🎯 Prop LED Height:</span>
+                    <div class="hw-presets" id="gen-h-presets">
+                        <button class="hw-btn active" data-h="55" data-w="40">55px Standard (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-h="22" data-w="40">22px Mini (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-h="32" data-w="40">32px</button>
+                        <button class="hw-btn" data-h="64" data-w="64">64px</button>
+                        <button class="hw-btn" data-h="144" data-w="144">144px HD</button>
+                    </div>
+                </div>
+                <div class="custom-dim-wrap">
+                    <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
+                    <input type="number" id="gen-custom-h-input" value="55" min="8" max="256">
+                    <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+                </div>
+            </div>
+
+            <!-- PATTERN TIMELINE LENGTH (WIDTH) SLIDER -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:240px;">
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green); min-width:95px;">📏 Timeline Length:</span>
+                    <input type="range" id="gen-length-slider" min="20" max="720" step="2" value="40" style="flex:1; accent-color:var(--neon-green);">
+                    <span class="val-mono" id="gen-length-val" style="min-width:55px; color:var(--neon-green);">40px</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px;" id="gen-len-presets">
+                    <button class="hw-btn active" data-len="40" style="font-size:0.68rem;">40px (~0.2s)</button>
+                    <button class="hw-btn" data-len="120" style="font-size:0.68rem;">120px (~0.6s)</button>
+                    <button class="hw-btn" data-len="240" style="font-size:0.68rem;">240px (~1.3s)</button>
+                    <button class="hw-btn" data-len="360" style="font-size:0.68rem;">360px (~2.0s)</button>
+                    <button class="hw-btn" data-len="480" style="font-size:0.68rem;">480px (~2.6s)</button>
+                </div>
+            </div>
+
+            <!-- ACTIVE ALGORITHM QUICK SELECTOR -->
+            <div class="ctrl-row" style="margin-top:8px;">
+                <span class="ctrl-label" style="font-weight:800; color:var(--accent-color); font-size:0.75rem;">✨ Pattern:</span>
+                <select id="pro-pattern-select" style="flex:1; padding:6px 8px; font-size:0.75rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;"></select>
+            </div>
+
+            <!-- PRIMARY GENERATOR ACTION CONTROLS -->
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; margin-top:8px;">
+                <button class="hud-btn-mutate" id="btn-quick-mutate" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
+                <button class="hud-btn-rand" id="btn-quick-rand" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Random Generator">🎲 Rand</button>
+                <button class="hud-btn-dl" id="btn-quick-dl-bmp" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Download Open Pixel Poi BMP">💾 Save BMP</button>
+            </div>
+
+        </div>
+
+        <!-- 2. INTEGRATED DUAL REAL-TIME VISUALIZERS -->
+        <div class="card-box" style="padding:10px 12px; background:rgba(0,0,0,0.5); border-color:rgba(0, 173, 181, 0.4);">
             <div class="hud-visualizers">
                 <!-- 1. INFINITE STREAMER (LIQUID ZERO-GLITCH FLOW) -->
                 <div class="hud-viz-box">
@@ -276,7 +324,7 @@
             </div>
 
             <!-- QUICK SLIDER BAR & MUTATE LOCKS -->
-            <div class="hud-slider-row" style="margin-top:6px;">
+            <div class="hud-slider-row" style="margin-top:8px;">
                 <div class="hud-slider-item">
                     <span>Speed:</span>
                     <input type="range" id="stream-speed" min="0" max="600" value="180">
@@ -290,7 +338,7 @@
             </div>
 
             <!-- SMART MUTATE FEATURE LOCKS -->
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:6px; font-size:0.64rem; color:var(--text-muted); padding:4px 8px; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.08);">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:0.68rem; color:var(--text-muted); padding:6px 10px; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.08);">
                 <span style="font-weight:700; color:var(--accent-color);">⚡ Mutate Locks:</span>
                 <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-palette" style="accent-color:var(--accent-color);"> 🔒 Palette</label>
                 <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-geometry" style="accent-color:var(--neon-green);"> 🔒 Geometry</label>
@@ -299,56 +347,17 @@
             </div>
         </div>
 
-        
-        <!-- PERSISTENT PRO LED HEIGHT & TIMELINE LENGTH BAR FOR GENERATOR -->
-        <div class="card-box" style="margin-bottom:6px; background:rgba(0, 173, 181, 0.06); border:1px solid rgba(0, 173, 181, 0.3); padding:8px 12px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎯 Prop LED Height:</span>
-                    <div class="hw-presets" id="gen-h-presets">
-                        <button class="hw-btn active" data-h="55" data-w="40">55px Standard (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-h="22" data-w="40">22px Mini (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-h="32" data-w="40">32px</button>
-                        <button class="hw-btn" data-h="64" data-w="64">64px</button>
-                        <button class="hw-btn" data-h="144" data-w="144">144px HD</button>
-                    </div>
-                </div>
-                <div class="custom-dim-wrap">
-                    <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
-                    <input type="number" id="gen-custom-h-input" value="55" min="8" max="256">
-                    <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
-                </div>
-            </div>
-
-            <!-- PATTERN TIMELINE LENGTH (WIDTH) SLIDER -->
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-                <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:240px;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green); min-width:95px;">📏 Timeline Length:</span>
-                    <input type="range" id="gen-length-slider" min="20" max="720" step="2" value="40" style="flex:1; accent-color:var(--neon-green);">
-                    <span class="val-mono" id="gen-length-val" style="min-width:55px; color:var(--neon-green);">40px</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:4px;" id="gen-len-presets">
-                    <button class="hw-btn active" data-len="40" style="font-size:0.68rem;">40px (~0.2s)</button>
-                    <button class="hw-btn" data-len="120" style="font-size:0.68rem;">120px (~0.6s)</button>
-                    <button class="hw-btn" data-len="240" style="font-size:0.68rem;">240px (~1.3s)</button>
-                    <button class="hw-btn" data-len="360" style="font-size:0.68rem;">360px (~2.0s)</button>
-                    <button class="hw-btn" data-len="480" style="font-size:0.68rem;">480px (~2.6s)</button>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- SUB-NAV TABS FOR GENERATOR -->
+        <!-- 3. SUB-NAV TABS FOR GENERATOR -->
         <nav class="app-tabs-nav" id="gen-tabs-nav">
             <button class="tab-btn active" data-tab="tab-colors">🎨 Custom Colors</button>
             <button class="tab-btn" data-tab="tab-symmetries">🎛️ Symmetries & FX</button>
-            <button class="tab-btn" data-tab="tab-hardware">📐 Props & Length</button>
             <button class="tab-btn" data-tab="tab-aztec">🏛️ Aztec & Sacred</button>
             <button class="tab-btn" data-tab="tab-illusions">👁️ Optical Illusions</button>
             <button class="tab-btn" data-tab="tab-trippy">🌀 Trippy & Math</button>
             <button class="tab-btn" data-tab="tab-voids">🕳️ Negative Voids</button>
             <button class="tab-btn" data-tab="tab-morph">🎭 Flow Morph</button>
         </nav>
+
 
 
         <div class="app-tab-content" style="padding:4px 0;">
@@ -484,57 +493,9 @@
                 </div>
             </div>
 
-            <!-- 3. PROPS & LENGTH TAB -->
-            <div class="tab-pane" id="tab-hardware">
-                <div class="pane-header">
-                    <span class="pane-title" style="color: var(--neon-green);">📐 Prop LED Height, Timeline Length & Hardware Specs</span>
-                    <span class="pane-sub">Configure LED resolution, spin duration timeline length, and memory buffer</span>
-                </div>
-
-                <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.04);">
-                    <div style="font-size:0.82rem; font-weight:800; color:var(--text-color); margin-bottom:8px;">
-                        🎯 Prop LED Pixel Height:
-                    </div>
-                    <div class="hw-presets" id="tab-h-presets">
-                        <button class="hw-btn active" data-h="55" data-w="40">55px Standard (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-h="22" data-w="40">22px Mini (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-h="32" data-w="40">32px</button>
-                        <button class="hw-btn" data-h="64" data-w="64">64px</button>
-                        <button class="hw-btn" data-h="144" data-w="144">144px HD</button>
-                        <div class="custom-dim-wrap">
-                            <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
-                            <input type="number" id="tab-custom-h-input" value="55" min="8" max="256">
-                            <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:14px; font-size:0.82rem; font-weight:800; color:var(--neon-green); margin-bottom:8px;">
-                        📏 Pattern Timeline Length (Pixels / Spin Duration):
-                    </div>
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                        <input type="range" id="tab-length-slider" min="20" max="720" step="2" value="40" style="flex:1; accent-color:var(--neon-green);">
-                        <span class="val-mono" id="tab-length-val" style="min-width:60px; font-size:0.8rem; color:var(--neon-green);">40px</span>
-                    </div>
-
-                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <button class="hw-btn active" data-len="40">40px Micro (~0.2s)</button>
-                        <button class="hw-btn" data-len="120">120px (~0.6s)</button>
-                        <button class="hw-btn" data-len="240">240px (~1.3s)</button>
-                        <button class="hw-btn" data-len="360">360px (~2.0s)</button>
-                        <button class="hw-btn" data-len="480">480px (~2.6s)</button>
-                    </div>
-
-
-                    <div class="ctrl-row" style="margin-top:14px;">
-                        <span class="ctrl-label">Active Equation:</span>
-                        <select id="pro-pattern-select" style="width:100%;"></select>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- 4. AZTEC TAB -->
+            <!-- 3. AZTEC TAB -->
             <div class="tab-pane" id="tab-aztec">
+
                 <div class="gallery-grid">
                     <div class="preset-card active" data-preset="aztec_xicalcoliuhqui_fret"><div class="preset-icon">🏛️</div><div class="preset-name">Xicalcoliuhqui</div><div class="preset-desc">Aztec Stepped-Fret</div></div>
                     <div class="preset-card" data-preset="aztec_quetzalcoatl_serpent"><div class="preset-icon">🐉</div><div class="preset-name">Quetzalcoatl</div><div class="preset-desc">Feathered Serpent Wave</div></div>
