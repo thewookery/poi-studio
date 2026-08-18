@@ -93,41 +93,28 @@
         async connectDevice(options) {
             options = options || {};
             if (!this.isSupported()) {
-                throw new Error('Web Bluetooth is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Android Chromium.');
+                throw new Error('Web Bluetooth is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Android Chromium (or Bluefy on iOS).');
             }
 
             try {
+                // Strict filters: only show devices matching Open or Poi
                 const scanConfig = (options.scanAll === true) ? {
                     acceptAllDevices: true,
                     optionalServices: [NORDIC_UART_SERVICE]
                 } : {
                     filters: [
                         { namePrefix: 'Open' },
-                        { namePrefix: 'Pixel' },
-                        { namePrefix: 'Poi' },
                         { namePrefix: 'open' },
-                        { namePrefix: 'pixel' },
+                        { namePrefix: 'Poi' },
                         { namePrefix: 'poi' },
-                        { namePrefix: 'ESP32' },
-                        { name: 'Open Pixel Poi' },
-                        { services: [NORDIC_UART_SERVICE] }
+                        { namePrefix: 'POI' },
+                        { namePrefix: 'Pixel' },
+                        { namePrefix: 'pixel' }
                     ],
                     optionalServices: [NORDIC_UART_SERVICE]
                 };
 
-                let device;
-                try {
-                    device = await navigator.bluetooth.requestDevice(scanConfig);
-                } catch (e) {
-                    if (e.name !== 'NotFoundError' && !options.scanAll) {
-                        device = await navigator.bluetooth.requestDevice({
-                            acceptAllDevices: true,
-                            optionalServices: [NORDIC_UART_SERVICE]
-                        });
-                    } else {
-                        throw e;
-                    }
-                }
+                const device = await navigator.bluetooth.requestDevice(scanConfig);
 
                 // Check if already in list
                 const existing = this.devices.find(function(d) { return d.device.id === device.id; });
@@ -169,6 +156,58 @@
                 throw err;
             }
         }
+
+        async getPairedDevices() {
+            if (!this.isSupported() || !navigator.bluetooth.getDevices) return [];
+            try {
+                return await navigator.bluetooth.getDevices();
+            } catch (e) {
+                console.warn('[BLE] getDevices error:', e);
+                return [];
+            }
+        }
+
+        async reconnectPaired() {
+            const paired = await this.getPairedDevices();
+            if (!paired || paired.length === 0) return 0;
+            let connectedCount = 0;
+            for (let device of paired) {
+                if (!this.devices.some(function(d) { return d.id === device.id; })) {
+                    try {
+                        const server = await device.gatt.connect();
+                        const service = await server.getPrimaryService(NORDIC_UART_SERVICE);
+                        const rxChar = await service.getCharacteristic(NORDIC_UART_RX_CHAR);
+                        let txChar = null;
+                        try {
+                            txChar = await service.getCharacteristic(NORDIC_UART_TX_CHAR);
+                        } catch (e) {}
+
+                        const deviceEntry = {
+                            id: device.id,
+                            device: device,
+                            server: server,
+                            service: service,
+                            rxCharacteristic: rxChar,
+                            txCharacteristic: txChar,
+                            name: device.name || ('Open Pixel Poi #' + (this.devices.length + 1))
+                        };
+
+                        device.addEventListener('gattserverdisconnected', function() {
+                            this.devices = this.devices.filter(function(d) { return d.id !== device.id; });
+                            this._notifyState('disconnected', { disconnectedId: device.id });
+                        }.bind(this));
+
+                        this.devices.push(deviceEntry);
+                        this._notifyState('connected', { addedDevice: deviceEntry });
+                        connectedCount++;
+                    } catch (err) {
+                        console.warn('[BLE] Could not auto-reconnect to:', device.name, err.message);
+                    }
+                }
+            }
+            return connectedCount;
+        }
+
 
         async disconnectDevice(id) {
             const entry = this.devices.find(function(d) { return d.id === id; });
