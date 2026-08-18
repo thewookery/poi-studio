@@ -260,6 +260,42 @@
          ========================================================================== -->
     <div id="workspace-generator" style="display:none; flex-direction:column; gap:6px;">
         
+        <!-- PERSISTENT PRO LED HEIGHT & TIMELINE LENGTH BAR FOR GENERATOR -->
+        <div class="card-box" style="margin-bottom:6px; background:rgba(0, 173, 181, 0.06); border:1px solid rgba(0, 173, 181, 0.3); padding:8px 12px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎯 Prop LED Height:</span>
+                    <div class="hw-presets" id="gen-h-presets">
+                        <button class="hw-btn active" data-gen-h="55" data-gen-w="240">55px Standard (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-gen-h="22" data-gen-w="96">22px Mini (Open Pixel Poi)</button>
+                        <button class="hw-btn" data-gen-h="32" data-gen-w="128">32px</button>
+                        <button class="hw-btn" data-gen-h="64" data-gen-w="256">64px</button>
+                        <button class="hw-btn" data-gen-h="144" data-gen-w="480">144px HD</button>
+                    </div>
+                </div>
+                <div class="custom-dim-wrap">
+                    <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
+                    <input type="number" id="gen-custom-h-input" value="55" min="8" max="256">
+                    <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+                </div>
+            </div>
+
+            <!-- PATTERN TIMELINE LENGTH (WIDTH) SLIDER -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:240px;">
+                    <span style="font-size:0.75rem; font-weight:800; color:var(--neon-green); min-width:95px;">📏 Timeline Length:</span>
+                    <input type="range" id="gen-length-slider" min="40" max="720" step="4" value="240" style="flex:1; accent-color:var(--neon-green);">
+                    <span class="val-mono" id="gen-length-val" style="min-width:55px; color:var(--neon-green);">240px</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px;" id="gen-len-presets">
+                    <button class="hw-btn" data-len="120" style="font-size:0.68rem;">120px (~0.6s)</button>
+                    <button class="hw-btn active" data-len="240" style="font-size:0.68rem;">240px (~1.3s)</button>
+                    <button class="hw-btn" data-len="360" style="font-size:0.68rem;">360px (~2.0s)</button>
+                    <button class="hw-btn" data-len="480" style="font-size:0.68rem;">480px (~2.6s)</button>
+                </div>
+            </div>
+        </div>
+
         <!-- SUB-NAV TABS FOR GENERATOR -->
         <nav class="app-tabs-nav" id="gen-tabs-nav">
             <button class="tab-btn active" data-tab="tab-colors">🎨 Custom Colors</button>
@@ -271,6 +307,7 @@
             <button class="tab-btn" data-tab="tab-voids">🕳️ Negative Voids</button>
             <button class="tab-btn" data-tab="tab-morph">🎭 Flow Morph</button>
         </nav>
+
 
         <div class="app-tab-content" style="padding:4px 0;">
             <!-- 1. CUSTOM COLORS TAB -->
@@ -1191,27 +1228,47 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // --- HARDWARE HEIGHT & WIDTH CONTROLS (GENERATOR TAB) ---
-    document.querySelectorAll('.hw-btn[data-h]').forEach(btn => {
+    // --- HARDWARE HEIGHT & TIMELINE LENGTH CONTROLS (GENERATOR TAB) ---
+    document.querySelectorAll('#gen-h-presets .hw-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            document.querySelectorAll('.hw-btn[data-h]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#gen-h-presets .hw-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            currentHeight = parseInt(this.getAttribute('data-h'));
-            if (el('custom-h-input')) el('custom-h-input').value = currentHeight;
-            applyDimensions(currentHeight, currentWidth);
+            currentHeight = parseInt(this.getAttribute('data-gen-h'));
+            const defaultW = parseInt(this.getAttribute('data-gen-w')) || currentWidth;
+            if (el('gen-custom-h-input')) el('gen-custom-h-input').value = currentHeight;
+            applyDimensions(currentHeight, defaultW);
         });
     });
 
-    if (el('custom-h-input')) {
-        el('custom-h-input').addEventListener('input', function() {
+    if (el('gen-custom-h-input')) {
+        el('gen-custom-h-input').addEventListener('input', function() {
             const val = parseInt(this.value);
-            if (val && val >= 8 && val <= 255) {
-                document.querySelectorAll('.hw-btn[data-h]').forEach(b => b.classList.remove('active'));
+            if (val && val >= 8 && val <= 256) {
+                document.querySelectorAll('#gen-h-presets .hw-btn').forEach(b => b.classList.remove('active'));
                 currentHeight = val;
                 applyDimensions(currentHeight, currentWidth);
             }
         });
     }
+
+    if (el('gen-length-slider')) {
+        el('gen-length-slider').addEventListener('input', function(e) {
+            const val = parseInt(e.target.value);
+            document.querySelectorAll('#gen-len-presets .hw-btn').forEach(b => {
+                b.classList.toggle('active', parseInt(b.getAttribute('data-len')) === val);
+            });
+            applyDimensions(currentHeight, val);
+        });
+    }
+
+    document.querySelectorAll('#gen-len-presets .hw-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#gen-len-presets .hw-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const val = parseInt(this.getAttribute('data-len'));
+            applyDimensions(currentHeight, val);
+        });
+    });
 
     function applyDimensions(h, w) {
         currentHeight = h;
@@ -1222,11 +1279,16 @@ document.addEventListener('DOMContentLoaded', function() {
         prevCanvas.height = currentHeight;
         displayCanvas.width = currentWidth;
         displayCanvas.height = currentHeight;
+        
+        if (el('gen-length-slider')) el('gen-length-slider').value = currentWidth;
+        updateBadge('gen-length-val', `${currentWidth}px`);
         if (el('phase-slider')) el('phase-slider').max = currentWidth;
+        
         const kbSize = Math.round((54 + Math.floor((24 * w + 31) / 32) * 4 * h) / 1024);
         updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px (~${kbSize} KB)`);
         renderActivePattern(false);
     }
+
 
     // --- SYMMETRY TOGGLES ---
     function setupSymBtn(btnId, toggleFn) {
