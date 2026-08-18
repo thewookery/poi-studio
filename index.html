@@ -2192,14 +2192,26 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Register 100% Offline Festival Service Worker (PWA)
+    // Register 100% Offline Festival Service Worker (PWA) with Auto-Update
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('[PWA] Offline Service Worker active! Scope:', reg.scope))
+                .then(reg => {
+                    console.log('[PWA] Offline Service Worker active! Scope:', reg.scope);
+                    reg.update();
+                })
                 .catch(err => console.warn('[PWA] Service Worker registration info:', err.message));
         });
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
+        });
     }
+
 
     // Initial render: 55px tall by 40px length
     setGeneratorHeight(55, 40);
