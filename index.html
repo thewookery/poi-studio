@@ -69,7 +69,17 @@
                 <span id="phase-val" class="val-mono">0px</span>
             </div>
         </div>
+
+        <!-- SMART MUTATE FEATURE LOCKS -->
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:4px; font-size:0.64rem; color:var(--text-muted); padding:3px 6px; background:rgba(0,0,0,0.35); border-radius:3px; border:1px solid rgba(255,255,255,0.06);">
+            <span style="font-weight:700; color:var(--accent-color);">⚡ Mutate Locks:</span>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-palette" style="accent-color:var(--accent-color);"> 🔒 Palette</label>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-geometry" style="accent-color:var(--neon-green);"> 🔒 Geometry</label>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-symmetries" style="accent-color:var(--neon-purple);"> 🔒 Symmetries</label>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-shaders" style="accent-color:var(--neon-pink);"> 🔒 Shaders</label>
+        </div>
     </header>
+
 
     <!-- PRIMARY DUAL-WORKSPACE MODE SWITCHER -->
     <div class="workspace-mode-bar">
@@ -713,6 +723,17 @@ document.addEventListener('DOMContentLoaded', function() {
         baseCanvas.width = currentWidth;
         baseCanvas.height = currentHeight;
         baseCanvas.getContext('2d').drawImage(item.cachedImg, 0, 0);
+
+        // LOCK KALEIDO FOR MASTER BMPs
+        symKaleido = 0;
+        symMirrorH = false;
+        symMirrorV = false;
+        symMirrorDiag = false;
+        symInvert180 = false;
+        ['btn-sym-mh', 'btn-sym-mv', 'btn-sym-diag', 'btn-sym-inv180', 'btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => {
+            if (el(id)) el(id).classList.remove('active');
+        });
+
         triggerSmoothRender();
         updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
     }
@@ -883,19 +904,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const ctx = c.getContext('2d');
 
             if (durationMode.startsWith('uniform')) {
-                let curX = 0;
-                const tileAspectW = Math.max(1, Math.round(srcC.width * (targetH / srcC.height)));
-                while (curX < targetW) {
-                    ctx.drawImage(srcC, curX, 0, tileAspectW, targetH);
-                    curX += tileAspectW;
+                // Exact integer cycle fitting (Zero chopped edge leftovers or stutter!)
+                const aspectW = Math.max(1, srcC.width * (targetH / srcC.height));
+                const k = Math.max(1, Math.round(targetW / aspectW));
+                const tileW = targetW / k;
+                for (let i = 0; i < k; i++) {
+                    ctx.drawImage(srcC, i * tileW, 0, tileW + 0.5, targetH);
                 }
-                applyPerfectSeamGuardian(c, 6);
             } else {
                 ctx.drawImage(srcC, 0, 0, targetW, targetH);
             }
 
             return c;
         });
+
 
         const transition = el('stitch-trans-select') ? el('stitch-trans-select').value : 'crossfade';
         const overlap = parseInt(el('stitch-overlap-slider') ? el('stitch-overlap-slider').value : 28);
@@ -1458,51 +1480,88 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- ENHANCED HYPER-MUTATOR & RANDOMIZERS ---
+    // --- ENHANCED HYPER-MUTATOR & HARMONIC RANDOMIZERS ---
     function performHyperMutate() {
-        const palKeys = Object.keys(POI_PALETTES);
-        if (el('ctrl-palette')) el('ctrl-palette').value = palKeys[Math.floor(Math.random() * palKeys.length)];
+        const isLockPal = el('lock-palette') && el('lock-palette').checked;
+        const isLockGeo = el('lock-geometry') && el('lock-geometry').checked;
+        const isLockSym = el('lock-symmetries') && el('lock-symmetries').checked;
+        const isLockFX = el('lock-shaders') && el('lock-shaders').checked;
 
-        const flowModes = ['h', 'h_rev', 'v', 'v_rev', 'diag', 'radial', 'wave_curvature', 'spiral_vortex', 'noise_warp'];
-        if (el('pro-color-dir')) el('pro-color-dir').value = flowModes[Math.floor(Math.random() * flowModes.length)];
+        const isMasterBmp = (typeof currentPattern === 'string' && currentPattern.startsWith('bmp_'));
 
-        if (el('ctrl-repeats')) {
-            el('ctrl-repeats').value = [2, 3, 4, 5, 6, 8, 10, 12][Math.floor(Math.random() * 8)];
-            updateBadge('ctrl-repeats-val', el('ctrl-repeats').value + 'x');
+        // 1. PALETTE MUTATION (Harmonic Theory)
+        if (!isLockPal) {
+            const palKeys = Object.keys(POI_PALETTES);
+            const chosenKey = palKeys[Math.floor(Math.random() * palKeys.length)];
+            if (el('ctrl-palette')) el('ctrl-palette').value = chosenKey;
+
+            if (chosenKey === 'custom') {
+                customColors = generateHarmonicPalette('random', Math.floor(Math.random() * 3) + 3);
+                POI_PALETTES.custom = customColors;
+                updateCustomSwatchesUI();
+            }
+
+            const flowModes = ['h', 'h_rev', 'v', 'v_rev', 'diag', 'radial', 'wave_curvature', 'spiral_vortex', 'noise_warp'];
+            if (el('pro-color-dir')) el('pro-color-dir').value = flowModes[Math.floor(Math.random() * flowModes.length)];
         }
 
-        if (el('ctrl-thickness')) {
-            el('ctrl-thickness').value = (Math.random() * 3.5 + 1.2).toFixed(1);
-            updateBadge('ctrl-thickness-val', el('ctrl-thickness').value + 'px');
+        // 2. GEOMETRY / SPOKES MUTATION
+        if (!isLockGeo) {
+            const repeats = [2, 3, 4, 5, 6, 8][Math.floor(Math.random() * 6)];
+            if (el('ctrl-repeats')) {
+                el('ctrl-repeats').value = repeats;
+                updateBadge('ctrl-repeats-val', repeats + 'x');
+            }
+
+            if (el('ctrl-thickness')) {
+                const thickness = (repeats >= 6) ? (Math.random() * 1.5 + 1.2).toFixed(1) : (Math.random() * 2.5 + 2.0).toFixed(1);
+                el('ctrl-thickness').value = thickness;
+                updateBadge('ctrl-thickness-val', thickness + 'px');
+            }
         }
 
-        symMirrorH = Math.random() < 0.35;
-        symMirrorV = Math.random() < 0.35;
-        symMirrorDiag = Math.random() < 0.25;
-        symInvert180 = Math.random() < 0.25;
-        const kChoices = [0, 0, 0, 4, 6, 8, 12];
-        symKaleido = kChoices[Math.floor(Math.random() * kChoices.length)];
+        // 3. SYMMETRIES MUTATION (LOCKED FOR MASTER BMPs!)
+        if (!isLockSym) {
+            if (isMasterBmp) {
+                // LOCK KALEIDO FOR MASTER BMP VAULT IMAGES!
+                symKaleido = 0;
+                symMirrorH = false;
+                symMirrorV = false;
+                symMirrorDiag = false;
+                symInvert180 = false;
+            } else {
+                symMirrorH = Math.random() < 0.35;
+                symMirrorV = Math.random() < 0.35;
+                symMirrorDiag = Math.random() < 0.20;
+                symInvert180 = Math.random() < 0.20;
+                const kChoices = [0, 0, 0, 4, 6, 8];
+                symKaleido = kChoices[Math.floor(Math.random() * kChoices.length)];
+            }
 
-        if (el('btn-sym-mh')) el('btn-sym-mh').classList.toggle('active', symMirrorH);
-        if (el('btn-sym-mv')) el('btn-sym-mv').classList.toggle('active', symMirrorV);
-        if (el('btn-sym-diag')) el('btn-sym-diag').classList.toggle('active', symMirrorDiag);
-        if (el('btn-sym-inv180')) el('btn-sym-inv180').classList.toggle('active', symInvert180);
-        ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => {
-            if (el(id)) el(id).classList.remove('active');
-        });
-        if (symKaleido === 4 && el('btn-sym-k4')) el('btn-sym-k4').classList.add('active');
-        if (symKaleido === 6 && el('btn-sym-k6')) el('btn-sym-k6').classList.add('active');
-        if (symKaleido === 8 && el('btn-sym-k8')) el('btn-sym-k8').classList.add('active');
-        if (symKaleido === 12 && el('btn-sym-k12')) el('btn-sym-k12').classList.add('active');
+            if (el('btn-sym-mh')) el('btn-sym-mh').classList.toggle('active', symMirrorH);
+            if (el('btn-sym-mv')) el('btn-sym-mv').classList.toggle('active', symMirrorV);
+            if (el('btn-sym-diag')) el('btn-sym-diag').classList.toggle('active', symMirrorDiag);
+            if (el('btn-sym-inv180')) el('btn-sym-inv180').classList.toggle('active', symInvert180);
+            ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => {
+                if (el(id)) el(id).classList.remove('active');
+            });
+            if (symKaleido === 4 && el('btn-sym-k4')) el('btn-sym-k4').classList.add('active');
+            if (symKaleido === 6 && el('btn-sym-k6')) el('btn-sym-k6').classList.add('active');
+            if (symKaleido === 8 && el('btn-sym-k8')) el('btn-sym-k8').classList.add('active');
+            if (symKaleido === 12 && el('btn-sym-k12')) el('btn-sym-k12').classList.add('active');
+        }
 
-        if (el('fx-wave')) el('fx-wave').value = Math.random() < 0.3 ? Math.floor(Math.random() * 12) + 3 : 0;
-        if (el('fx-rgb')) el('fx-rgb').value = Math.random() < 0.4 ? Math.floor(Math.random() * 8) + 2 : 0;
-        if (el('fx-glow')) el('fx-glow').value = Math.random() < 0.35 ? Math.floor(Math.random() * 8) + 2 : 0;
-        if (el('fx-strobe')) el('fx-strobe').value = Math.random() < 0.15 ? Math.floor(Math.random() * 6) + 2 : 0;
+        // 4. SHADER FX MUTATION
+        if (!isLockFX) {
+            if (el('fx-wave')) el('fx-wave').value = Math.random() < 0.25 ? Math.floor(Math.random() * 10) + 3 : 0;
+            if (el('fx-rgb')) el('fx-rgb').value = Math.random() < 0.30 ? Math.floor(Math.random() * 6) + 2 : 0;
+            if (el('fx-glow')) el('fx-glow').value = Math.random() < 0.30 ? Math.floor(Math.random() * 6) + 2 : 0;
+            if (el('fx-strobe')) el('fx-strobe').value = Math.random() < 0.10 ? Math.floor(Math.random() * 4) + 2 : 0;
 
-        ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
-            if (el(id)) updateBadge(id + '-val', el(id).value === "0" ? "Off" : el(id).value + "px");
-        });
+            ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
+                if (el(id)) updateBadge(id + '-val', el(id).value === "0" ? "Off" : el(id).value + "px");
+            });
+        }
 
         triggerSmoothRender();
     }
@@ -1511,16 +1570,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (el('btn-quick-rand')) {
         el('btn-quick-rand').onclick = () => {
-            const allKeys = Object.keys(POI_GENERATORS);
-            currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
-            if (proSelect) proSelect.value = currentPattern;
-            if (el('morph-enable') && el('morph-enable').checked) {
-                if (morphASelect) morphASelect.value = currentPattern;
-                if (morphBSelect) morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
+            const isLockGeo = el('lock-geometry') && el('lock-geometry').checked;
+            if (!isLockGeo) {
+                const allKeys = Object.keys(POI_GENERATORS);
+                currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
+                if (proSelect) proSelect.value = currentPattern;
+                if (el('morph-enable') && el('morph-enable').checked) {
+                    if (morphASelect) morphASelect.value = currentPattern;
+                    if (morphBSelect) morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
+                }
             }
             performHyperMutate();
         };
     }
+
 
     // --- DOWNLOAD HANDLERS ---
     function triggerDownload(blob, filename) {

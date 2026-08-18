@@ -258,8 +258,57 @@ function rgbToHex(r, g, b) {
     }).join('');
 }
 
+// Pro POV Harmonic Color Engine (HSV with Guaranteed Luminance & Golden Ratio Steps)
+function hsvToHex(h, s, v) {
+    h = ((h % 360) + 360) % 360;
+    s = Math.max(0, Math.min(1, s));
+    v = Math.max(0, Math.min(1, v));
+    const c = v * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = v - c;
+    let r = 0, g = 0, b = 0;
+    if (h < 60) { r = c; g = x; b = 0; }
+    else if (h < 120) { r = x; g = c; b = 0; }
+    else if (h < 180) { r = 0; g = c; b = x; }
+    else if (h < 240) { r = 0; g = x; b = c; }
+    else if (h < 300) { r = x; g = 0; b = c; }
+    else { r = c; g = 0; b = x; }
+    return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
+}
+
 function getRandomColorHex() {
-    return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    const hue = Math.random() * 360;
+    const sat = 0.85 + Math.random() * 0.15; // 85% - 100% rich saturation
+    const val = 0.90 + Math.random() * 0.10; // 90% - 100% max brightness for POV LEDs
+    return hsvToHex(hue, sat, val);
+}
+
+function generateHarmonicPalette(mode = 'random', count = 4) {
+    const baseHue = Math.random() * 360;
+    const colors = [];
+    const harmonyModes = ['complementary', 'triadic', 'analogous', 'split_comp', 'golden_ratio'];
+    const chosenMode = (mode === 'random') ? harmonyModes[Math.floor(Math.random() * harmonyModes.length)] : mode;
+
+    for (let i = 0; i < count; i++) {
+        let h = baseHue;
+        if (chosenMode === 'complementary') {
+            h = (i % 2 === 0) ? baseHue : (baseHue + 180);
+        } else if (chosenMode === 'triadic') {
+            h = baseHue + (i * 120);
+        } else if (chosenMode === 'analogous') {
+            h = baseHue + ((i - (count - 1) / 2) * 35);
+        } else if (chosenMode === 'split_comp') {
+            const offsets = [0, 150, 210, 30];
+            h = baseHue + offsets[i % offsets.length];
+        } else {
+            // Golden Ratio (137.5 deg) Chromatic Dispersion
+            h = baseHue + (i * 137.50776405);
+        }
+        const sat = 0.90 + Math.random() * 0.10;
+        const val = 0.92 + Math.random() * 0.08;
+        colors.push(hsvToHex(h, sat, val));
+    }
+    return colors;
 }
 
 function getPaletteColors(paletteKey) {
@@ -267,13 +316,12 @@ function getPaletteColors(paletteKey) {
         return POI_PALETTES.custom && POI_PALETTES.custom.length > 0 ? POI_PALETTES.custom : ['#ff007f', '#00ffff', '#ffd700'];
     }
     if (paletteKey === 'random') {
-        const count = Math.floor(Math.random() * 4) + 3;
-        const cols = [];
-        for (let i = 0; i < count; i++) cols.push(getRandomColorHex());
-        return cols;
+        const count = Math.floor(Math.random() * 3) + 3;
+        return generateHarmonicPalette('random', count);
     }
     return POI_PALETTES[paletteKey] || POI_PALETTES.aztec_gold_turquoise;
 }
+
 
 function samplePalette(colors, t, mode = 'cyclic') {
     t = ((t % 1) + 1) % 1;
@@ -2526,9 +2574,9 @@ function joinPatternSequence(canvases, options = {}) {
         ctx.putImageData(tail, w - actualOverlap, 0);
     }
 
-    applyPerfectSeamGuardian(outCanvas, 8);
     return outCanvas;
 }
+
 
 
 
