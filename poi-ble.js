@@ -348,17 +348,12 @@
         /**
          * Change Active Bank (0-15) on all connected Poi
          */
+        /**
+         * Change Active Bank (0-15) on all connected Poi
+         */
         async setBank(bankIndex) {
             const bank = Math.max(0, Math.min(15, parseInt(bankIndex) || 0));
             await this._sendMessage([COMM_CODES.CC_SET_BANK, bank]);
-        }
-
-        /**
-         * Change Active Bank on a specific Poi
-         */
-        async setBankOnDevice(deviceEntry, bankIndex) {
-            const bank = Math.max(0, Math.min(15, parseInt(bankIndex) || 0));
-            await this._sendMessageToDevice(deviceEntry, [COMM_CODES.CC_SET_BANK, bank]);
         }
 
         /**
@@ -369,208 +364,30 @@
         }
 
         /**
-         * Upload a Pattern Canvas into a specific Bank (0-2) and Slot (0-4) on ONE SPECIFIC POI
-         * @param {Object} deviceEntry The specific connected device
-         * @param {HTMLCanvasElement} canvas The pattern canvas
-         * @param {number} bankIndex 0 to 2
-         * @param {number} slotIndex 0 to 4
+         * Upload a Pattern Canvas directly into a specific Bank (0-2) and Slot (0-4)
+         * @param {HTMLCanvasElement} canvas The pattern canvas to upload
+         * @param {number} bankIndex 0 to 2 (Bank 1 to 3)
+         * @param {number} slotIndex 0 to 4 (Slot 1 to 5)
          * @param {Function} progressCallback Optional callback (progress: 0.0 - 1.0, info)
-         * @param {number} pacingDelayMs Delay between packets in ms (default 50ms)
+         * @param {number} pacingDelayMs Optional delay between packets
          */
-        async uploadPatternToDeviceSlot(deviceEntry, canvas, bankIndex, slotIndex, progressCallback, pacingDelayMs) {
-            if (!deviceEntry) {
-                throw new Error('Device is not connected.');
+        async uploadPatternToSlot(canvas, bankIndex, slotIndex, progressCallback, pacingDelayMs) {
+            if (this.devices.length === 0) {
+                throw new Error('Please connect your Open Pixel Poi via Bluetooth first.');
             }
 
             const bank = Math.max(0, Math.min(2, parseInt(bankIndex) || 0));
             const slot = Math.max(0, Math.min(4, parseInt(slotIndex) || 0));
-            const pacing = (typeof pacingDelayMs === 'number' && pacingDelayMs >= 10) ? pacingDelayMs : 50;
 
-            // 1. Select Bank on this specific poi
-            await this.setBankOnDevice(deviceEntry, bank);
-            await new Promise(r => setTimeout(r, 120));
+            // Select target bank and slot on all connected poi
+            await this.setBank(bank);
+            await new Promise(r => setTimeout(r, 150));
+            await this.setPatternSlot(slot);
+            await new Promise(r => setTimeout(r, 150));
 
-            // 2. Select Slot on this specific poi
-            await this.setPatternSlotOnDevice(deviceEntry, slot);
-            await new Promise(r => setTimeout(r, 120));
-
-            // 3. Build Packets
-            const built = this.buildPatternPackets(canvas);
-            const packets = built.packets;
-            const totalPackets = packets.length;
-
-            for (let pIdx = 0; pIdx < totalPackets; pIdx++) {
-                const chunk = packets[pIdx];
-                await this._writeChunkToDevice(deviceEntry, chunk);
-
-                const deviceProgress = (pIdx + 1) / totalPackets;
-                if (progressCallback) {
-                    progressCallback(deviceProgress, {
-                        deviceName: deviceEntry.name,
-                        packetIndex: pIdx + 1,
-                        totalPackets: totalPackets,
-                        bank: bank + 1,
-                        slot: slot + 1
-                    });
-                }
-
-                if (pacing > 0 && pIdx < totalPackets - 1) {
-                    await new Promise(r => setTimeout(r, pacing));
-                }
-            }
-
-            // 4. Flash memory settle delay: Allow ESP32 LittleFS to write and close /patternX.oppp
-            await new Promise(r => setTimeout(r, 450));
+            return await this.uploadPattern(canvas, progressCallback, pacingDelayMs);
         }
 
-        /**
-         * Upload a Pattern Canvas sequentially into a specific Bank (0-2) and Slot (0-4) across all or targeted poi
-         * @param {HTMLCanvasElement} canvas The pattern canvas to upload
-         * @param {number} bankIndex 0 to 2 (Bank 1 to 3)
-         * @param {number} slotIndex 0 to 4 (Slot 1 to 5)
-         * @param {string|number|null} targetDeviceIndex 'all' or device index
-         * @param {Function} progressCallback Optional callback
-         * @param {number} pacingDelayMs Optional delay between packets
-         */
-        async uploadPatternToSlot(canvas, bankIndex, slotIndex, targetDeviceIndex, progressCallback, pacingDelayMs) {
-            if (this.devices.length === 0) {
-                throw new Error('Please connect your Open Pixel Poi via Bluetooth first.');
-            }
-
-            let targetDevices = this.devices;
-            if (typeof targetDeviceIndex === 'number' && this.devices[targetDeviceIndex]) {
-                targetDevices = [this.devices[targetDeviceIndex]];
-            }
-
-            const totalDevs = targetDevices.length;
-            for (let d = 0; d < totalDevs; d++) {
-                const dev = targetDevices[d];
-                await this.uploadPatternToDeviceSlot(
-                    dev,
-                    canvas,
-                    bankIndex,
-                    slotIndex,
-                    (p, info) => {
-                        const overall = (d + p) / totalDevs;
-                        if (progressCallback) progressCallback(overall, Object.assign({ deviceIndex: d + 1, totalDevices: totalDevs }, info));
-                    },
-                    pacingDelayMs
-                );
-                if (d < totalDevs - 1) {
-                    await new Promise(r => setTimeout(r, 600));
-                }
-            }
-        }
-
-        /**
-         * Upload a batch of slots sequentially: completes ALL slots on Poi 1, then ALL slots on Poi 2!
-         * @param {Array<{canvas: HTMLCanvasElement, bankIndex: number, slotIndex: number, name: string}>} slotItems 
-         * @param {string|number|null} targetDeviceIndex 'all' or device index (0, 1, etc.)
-         * @param {Function} progressCallback (overallProgress: 0.0 - 1.0, info)
-         * @param {number} pacingDelayMs Delay between packets (default 50ms)
-         */
-        async uploadBankSlotsBatch(slotItems, targetDeviceIndex, progressCallback, pacingDelayMs) {
-            if (this.devices.length === 0) {
-                throw new Error('Please connect your Open Pixel Poi via Bluetooth first.');
-            }
-            if (this.isUploading) {
-                throw new Error('Another BLE upload is already in progress.');
-            }
-            if (!slotItems || slotItems.length === 0) {
-                throw new Error('No pattern slots to upload.');
-            }
-
-            // Determine target devices
-            let targetDevices = this.devices;
-            if (typeof targetDeviceIndex === 'number' && this.devices[targetDeviceIndex]) {
-                targetDevices = [this.devices[targetDeviceIndex]];
-            }
-
-            this.isUploading = true;
-            const pacing = (typeof pacingDelayMs === 'number' && pacingDelayMs >= 10) ? pacingDelayMs : 50;
-            const totalDevices = targetDevices.length;
-            const totalSlots = slotItems.length;
-            const totalOperations = totalDevices * totalSlots;
-
-            try {
-                for (let dIdx = 0; dIdx < totalDevices; dIdx++) {
-                    const currentDev = targetDevices[dIdx];
-                    console.log(`[BLE Batch] Processing Poi ${dIdx + 1}/${totalDevices} (${currentDev.name}) - ${totalSlots} slots...`);
-
-                    for (let sIdx = 0; sIdx < totalSlots; sIdx++) {
-                        const item = slotItems[sIdx];
-                        const currentOp = (dIdx * totalSlots) + sIdx;
-
-                        if (progressCallback) {
-                            progressCallback(currentOp / totalOperations, {
-                                deviceIndex: dIdx + 1,
-                                totalDevices: totalDevices,
-                                deviceName: currentDev.name,
-                                slotIndex: sIdx + 1,
-                                totalSlots: totalSlots,
-                                bank: item.bankIndex + 1,
-                                slot: item.slotIndex + 1,
-                                patternName: item.name,
-                                status: 'transmitting'
-                            });
-                        }
-
-                        // Upload this slot to this specific device
-                        await this.uploadPatternToDeviceSlot(
-                            currentDev,
-                            item.canvas,
-                            item.bankIndex,
-                            item.slotIndex,
-                            (slotPct, slotInfo) => {
-                                const overallPct = (currentOp + slotPct) / totalOperations;
-                                if (progressCallback) {
-                                    progressCallback(overallPct, {
-                                        deviceIndex: dIdx + 1,
-                                        totalDevices: totalDevices,
-                                        deviceName: currentDev.name,
-                                        slotIndex: sIdx + 1,
-                                        totalSlots: totalSlots,
-                                        bank: item.bankIndex + 1,
-                                        slot: item.slotIndex + 1,
-                                        patternName: item.name,
-                                        slotProgress: slotPct,
-                                        status: 'transmitting'
-                                    });
-                                }
-                            },
-                            pacing
-                        );
-
-                        // Inter-slot safety pause (give ESP32 flash memory and BLE buffers a breather)
-                        if (sIdx < totalSlots - 1) {
-                            if (progressCallback) {
-                                progressCallback((currentOp + 1) / totalOperations, {
-                                    deviceIndex: dIdx + 1,
-                                    totalDevices: totalDevices,
-                                    deviceName: currentDev.name,
-                                    slotIndex: sIdx + 1,
-                                    totalSlots: totalSlots,
-                                    status: 'settling'
-                                });
-                            }
-                            await new Promise(r => setTimeout(r, 450));
-                        }
-                    }
-
-                    // Inter-device safety pause
-                    if (dIdx < totalDevices - 1) {
-                        console.log(`[BLE Batch] Finished Poi ${dIdx + 1}. Pausing before Poi ${dIdx + 2}...`);
-                        await new Promise(r => setTimeout(r, 800));
-                    }
-                }
-
-                if (progressCallback) {
-                    progressCallback(1.0, { status: 'complete' });
-                }
-            } finally {
-                this.isUploading = false;
-            }
-        }
 
 
 
@@ -714,13 +531,16 @@
                             });
                         }
 
-                        // Smooth hardware pacing delay (45ms) to ensure ESP32 LittleFS flash writes cleanly
+                        // Smooth hardware pacing delay to ensure ESP32 LittleFS flash writes cleanly
                         await new Promise(function(r) { setTimeout(r, pacing); });
                     }
 
-                    // Inter-device buffer settling pause (250ms)
+                    // Post-upload flash commit settling delay (400ms)
+                    await new Promise(function(r) { setTimeout(r, 400); });
+
+                    // Inter-device buffer settling pause (600ms)
                     if (dIdx < totalDevices - 1) {
-                        await new Promise(function(r) { setTimeout(r, 250); });
+                        await new Promise(function(r) { setTimeout(r, 600); });
                     }
                 }
 
@@ -730,6 +550,7 @@
                 this.isUploading = false;
             }
         }
+
     }
 
     // Export singleton instance

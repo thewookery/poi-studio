@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v44</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v45</span></div>
+
 
 
 
@@ -692,20 +693,7 @@
                 </div>
             </div>
 
-            <!-- TARGET POI SELECTOR (1 POI AT A TIME SEQUENTIAL) -->
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding:6px 8px; background:rgba(0,0,0,0.3); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
-                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                    <span style="font-size:0.72rem; font-weight:800; color:var(--neon-green);">🪄 Target Poi:</span>
-                    <div style="display:flex; gap:4px;" id="bank-target-poi-presets">
-                        <button class="hw-btn active" data-target-poi="all" style="font-size:0.68rem; padding:4px 8px;" title="Flash sequentially: Poi 1 completely, then Poi 2 completely">✨ Both Poi (Sequential)</button>
-                        <button class="hw-btn" data-target-poi="0" style="font-size:0.68rem; padding:4px 8px;" title="Flash to Poi 1 (Left Poi) only">🔵 Poi 1 (Left)</button>
-                        <button class="hw-btn" data-target-poi="1" style="font-size:0.68rem; padding:4px 8px;" title="Flash to Poi 2 (Right Poi) only">🟣 Poi 2 (Right)</button>
-                    </div>
-                </div>
-                <div style="font-size:0.68rem; color:var(--neon-green); font-weight:700;" id="bank-target-poi-status">
-                    ⚡ 1 Poi at a Time Pipeline
-                </div>
-            </div>
+
 
             <!-- BANK SELECTOR TABS -->
             <div style="display:flex; gap:6px; flex-wrap:wrap;" id="bank-filter-nav">
@@ -3239,27 +3227,20 @@ document.addEventListener('DOMContentLoaded', function() {
         showInlineProgress(`🚀 Flashing Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1}...`, 0);
 
         try {
-            await OpenPixelPoiBLE.uploadBankSlotsBatch(
-                [{ canvas: tempC, bankIndex: slot.bankIndex, slotIndex: slot.slotIndex, name: slot.name }],
-                selectedTargetPoiIndex,
+            await OpenPixelPoiBLE.uploadPatternToSlot(
+                tempC,
+                slot.bankIndex,
+                slot.slotIndex,
                 (overallPct, info) => {
                     const pctInt = Math.round(overallPct * 100);
-                    if (info.status === 'transmitting') {
-                        showInlineProgress(
-                            `📡 Poi ${info.deviceIndex || 1}/${info.totalDevices || 1} (${info.deviceName || ''}): Flashing B${slot.bankIndex + 1}:S${slot.slotIndex + 1}`,
-                            pctInt
-                        );
-                    } else if (info.status === 'settling') {
-                        showInlineProgress(
-                            `⏳ Poi ${info.deviceIndex || 1}/${info.totalDevices || 1}: Saving to LittleFS...`,
-                            pctInt
-                        );
-                    } else if (info.status === 'complete') {
-                        showInlineProgress(`✅ Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1} Flashed!`, 100);
-                    }
+                    showInlineProgress(
+                        `📡 Flashing Bank ${slot.bankIndex + 1}: Slot ${slot.slotIndex + 1} (${info.deviceName || ''})...`,
+                        pctInt
+                    );
                 },
                 pacing
             );
+            showInlineProgress(`✅ Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1} Flashed!`, 100);
             setTimeout(hideInlineProgress, 2500);
         } catch(e) {
             alert(`Flash failed: ${e.message}`);
@@ -3279,53 +3260,39 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const slotItems = [];
-        for (let i = 0; i < populated.length; i++) {
-            const slot = populated[i];
-            const img = await new Promise((resolve, reject) => {
-                const im = new Image();
-                im.onload = () => resolve(im);
-                im.onerror = reject;
-                im.src = slot.dataUri;
-            });
-            const c = document.createElement('canvas');
-            c.width = slot.width;
-            c.height = slot.height;
-            c.getContext('2d').drawImage(img, 0, 0);
-
-            slotItems.push({
-                canvas: c,
-                bankIndex: slot.bankIndex,
-                slotIndex: slot.slotIndex,
-                name: slot.name
-            });
-        }
-
         const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 50) || 50;
-        showInlineProgress(`🚀 Flashing Bank ${bankIdx + 1} (${slotItems.length} slots)...`, 0);
+        showInlineProgress(`🚀 Starting Bank ${bankIdx + 1} Flash (${populated.length} slots)...`, 0);
 
         try {
-            await OpenPixelPoiBLE.uploadBankSlotsBatch(
-                slotItems,
-                selectedTargetPoiIndex,
-                (overallPct, info) => {
-                    const pctInt = Math.round(overallPct * 100);
-                    if (info.status === 'transmitting') {
-                        showInlineProgress(
-                            `📡 Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName}): Bank ${bankIdx + 1} Slot ${info.slotIndex}/${info.totalSlots}`,
-                            pctInt
-                        );
-                    } else if (info.status === 'settling') {
-                        showInlineProgress(
-                            `⏳ Poi ${info.deviceIndex}/${info.totalDevices}: Saving to LittleFS...`,
-                            pctInt
-                        );
-                    } else if (info.status === 'complete') {
-                        showInlineProgress(`✅ Bank ${bankIdx + 1} Flashed Complete!`, 100);
-                    }
-                },
-                pacing
-            );
+            for (let i = 0; i < populated.length; i++) {
+                const slot = populated[i];
+                const img = await new Promise((resolve, reject) => {
+                    const im = new Image();
+                    im.onload = () => resolve(im);
+                    im.onerror = () => reject(new Error(`Failed to load image for slot ${slot.slotIndex + 1}`));
+                    im.src = slot.dataUri;
+                });
+
+                const tempC = document.createElement('canvas');
+                tempC.width = slot.width;
+                tempC.height = slot.height;
+                tempC.getContext('2d').drawImage(img, 0, 0);
+
+                showInlineProgress(`🚀 Bank ${bankIdx + 1}: Flashing ${i + 1}/${populated.length} (Slot ${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
+
+                await OpenPixelPoiBLE.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex, (pct, info) => {
+                    const subPct = Math.round(((i + pct) / populated.length) * 100);
+                    showInlineProgress(`🚀 Bank ${bankIdx + 1}: Slot ${slot.slotIndex + 1} (${info.deviceName || ''})...`, subPct);
+                }, pacing);
+
+                // Safety pause between slots so ESP32 LittleFS commits to flash
+                if (i < populated.length - 1) {
+                    showInlineProgress(`⏳ Bank ${bankIdx + 1}: Saved Slot ${slot.slotIndex + 1}. Preparing next slot...`, Math.round(((i + 1) / populated.length) * 100));
+                    await new Promise(r => setTimeout(r, 600));
+                }
+            }
+
+            showInlineProgress(`✅ Bank ${bankIdx + 1} Flashed Complete!`, 100);
             setTimeout(hideInlineProgress, 3000);
         } catch(e) {
             alert(`Bank Flash Error: ${e.message}`);
@@ -3345,59 +3312,46 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const slotItems = [];
-        for (let i = 0; i < populated.length; i++) {
-            const slot = populated[i];
-            const img = await new Promise((resolve, reject) => {
-                const im = new Image();
-                im.onload = () => resolve(im);
-                im.onerror = reject;
-                im.src = slot.dataUri;
-            });
-            const c = document.createElement('canvas');
-            c.width = slot.width;
-            c.height = slot.height;
-            c.getContext('2d').drawImage(img, 0, 0);
-
-            slotItems.push({
-                canvas: c,
-                bankIndex: slot.bankIndex,
-                slotIndex: slot.slotIndex,
-                name: slot.name
-            });
-        }
-
         const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 50) || 50;
-        showInlineProgress(`🚀 Syncing ${slotItems.length} slots...`, 0);
+        showInlineProgress(`🚀 Starting Batch Sync of ${populated.length} slots...`, 0);
 
         try {
-            await OpenPixelPoiBLE.uploadBankSlotsBatch(
-                slotItems,
-                selectedTargetPoiIndex,
-                (overallPct, info) => {
-                    const pctInt = Math.round(overallPct * 100);
-                    if (info.status === 'transmitting') {
-                        showInlineProgress(
-                            `📡 Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName}): Slot ${info.slotIndex}/${info.totalSlots} (B${info.bank}:S${info.slot})`,
-                            pctInt
-                        );
-                    } else if (info.status === 'settling') {
-                        showInlineProgress(
-                            `⏳ Poi ${info.deviceIndex}/${info.totalDevices}: Saving to LittleFS...`,
-                            pctInt
-                        );
-                    } else if (info.status === 'complete') {
-                        showInlineProgress(`✅ All ${slotItems.length} Slots Flashed Successfully!`, 100);
-                    }
-                },
-                pacing
-            );
-            setTimeout(hideInlineProgress, 3500);
+            for (let i = 0; i < populated.length; i++) {
+                const slot = populated[i];
+                const img = await new Promise((resolve, reject) => {
+                    const im = new Image();
+                    im.onload = () => resolve(im);
+                    im.onerror = () => reject(new Error(`Failed to load image for slot ${slot.slotIndex + 1}`));
+                    im.src = slot.dataUri;
+                });
+
+                const tempC = document.createElement('canvas');
+                tempC.width = slot.width;
+                tempC.height = slot.height;
+                tempC.getContext('2d').drawImage(img, 0, 0);
+
+                showInlineProgress(`🚀 Syncing Slot ${i + 1}/${populated.length} (B${slot.bankIndex + 1}:S${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
+
+                await OpenPixelPoiBLE.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex, (pct, info) => {
+                    const subPct = Math.round(((i + pct) / populated.length) * 100);
+                    showInlineProgress(`🚀 Syncing Slot ${i + 1}/${populated.length} (B${slot.bankIndex + 1}:S${slot.slotIndex + 1} - ${info.deviceName || ''})...`, subPct);
+                }, pacing);
+
+                // Safety pause between slots so ESP32 LittleFS commits to flash
+                if (i < populated.length - 1) {
+                    showInlineProgress(`⏳ Saved Slot ${i + 1}/${populated.length}. Preparing next slot...`, Math.round(((i + 1) / populated.length) * 100));
+                    await new Promise(r => setTimeout(r, 600));
+                }
+            }
+
+            showInlineProgress(`✅ All ${populated.length} Slots Synced to Poi!`, 100);
+            setTimeout(hideInlineProgress, 3000);
         } catch(e) {
             alert(`Batch Sync Error: ${e.message}`);
             hideInlineProgress();
         }
     }
+
 
     // Hook up Generator Send-to-Bank button
     if (el('btn-gen-send-bank')) {
@@ -3450,17 +3404,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     });
 
-    // Hook up Target Poi presets
-    document.querySelectorAll('#bank-target-poi-presets button').forEach(btn => {
-        btn.onclick = function() {
-            document.querySelectorAll('#bank-target-poi-presets button').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            const target = this.getAttribute('data-target-poi');
-            selectedTargetPoiIndex = (target === 'all') ? 'all' : parseInt(target);
-            const statusLabel = (target === 'all') ? '⚡ Sequential (Poi 1 completely, then Poi 2)' : (target === '0' ? '🔵 Target: Poi 1 (Left)' : '🟣 Target: Poi 2 (Right)');
-            updateBadge('bank-target-poi-status', statusLabel);
-        };
-    });
 
 
     // Hook up Bank Filter buttons
