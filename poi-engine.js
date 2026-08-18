@@ -2721,6 +2721,105 @@ function canvasToBmpBlob(canvas, options = {}) {
     return new Blob([buffer], { type: 'image/bmp' });
 }
 
+// --- BMP DECODER & FILE INGESTION ENGINE ---
+function parseBmpArrayBuffer(arrayBuffer) {
+    const view = new DataView(arrayBuffer);
+    if (view.byteLength < 54) throw new Error('File too small to be a valid BMP header');
+    const magic = String.fromCharCode(view.getUint8(0), view.getUint8(1));
+    if (magic !== 'BM') throw new Error('Not a valid BMP file (missing BM header)');
+
+    const dataOffset = view.getUint32(10, true);
+    const width = view.getInt32(18, true);
+    let height = view.getInt32(22, true);
+    const isTopDown = height < 0;
+    height = Math.abs(height);
+    const bpp = view.getUint16(28, true);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.createImageData(width, height);
+    const data = imgData.data;
+
+    const rowSize = Math.floor((bpp * width + 31) / 32) * 4;
+    const bytes = new Uint8Array(arrayBuffer);
+
+    if (bpp === 24) {
+        for (let y = 0; y < height; y++) {
+            const srcY = isTopDown ? y : (height - 1 - y);
+            const rowStart = dataOffset + srcY * rowSize;
+            for (let x = 0; x < width; x++) {
+                const srcIdx = rowStart + x * 3;
+                const destIdx = (y * width + x) * 4;
+                data[destIdx] = bytes[srcIdx + 2];     // R
+                data[destIdx + 1] = bytes[srcIdx + 1]; // G
+                data[destIdx + 2] = bytes[srcIdx];     // B
+                data[destIdx + 3] = 255;
+            }
+        }
+    } else if (bpp === 32) {
+        for (let y = 0; y < height; y++) {
+            const srcY = isTopDown ? y : (height - 1 - y);
+            const rowStart = dataOffset + srcY * rowSize;
+            for (let x = 0; x < width; x++) {
+                const srcIdx = rowStart + x * 4;
+                const destIdx = (y * width + x) * 4;
+                data[destIdx] = bytes[srcIdx + 2];     // R
+                data[destIdx + 1] = bytes[srcIdx + 1]; // G
+                data[destIdx + 2] = bytes[srcIdx];     // B
+                data[destIdx + 3] = bytes[srcIdx + 3] || 255;
+            }
+        }
+    } else {
+        // Fallback for 8-bit/16-bit
+        for (let i = 0; i < data.length; i += 4) {
+            data[i] = 255; data[i+1] = 255; data[i+2] = 255; data[i+3] = 255;
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    return canvas;
+}
+
+async function loadBmpOrImageFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const buffer = e.target.result;
+                const view = new DataView(buffer);
+                if (view.byteLength >= 2 && String.fromCharCode(view.getUint8(0), view.getUint8(1)) === 'BM') {
+                    const canvas = parseBmpArrayBuffer(buffer);
+                    resolve({ name: file.name, canvas, width: canvas.width, height: canvas.height });
+                } else {
+                    // Fallback to standard Image loader
+                    const blob = new Blob([buffer]);
+                    const url = URL.createObjectURL(blob);
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        canvas.getContext('2d').drawImage(img, 0, 0);
+                        URL.revokeObjectURL(url);
+                        resolve({ name: file.name, canvas, width: img.width, height: img.height });
+                    };
+                    img.onerror = () => {
+                        URL.revokeObjectURL(url);
+                        reject(new Error('Failed to parse image file: ' + file.name));
+                    };
+                    img.src = url;
+                }
+            } catch (err) {
+                reject(err);
+            }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
 window.POI_PATTERN_DB = POI_PATTERN_DB;
 window.POI_PALETTES = POI_PALETTES;
 window.POI_GENERATORS = POI_GENERATORS;
@@ -2735,3 +2834,5 @@ window.applyMultiSymmetry = applyMultiSymmetry;
 window.applyPostFX = applyPostFX;
 window.shiftCanvasPhase = shiftCanvasPhase;
 window.canvasToBmpBlob = canvasToBmpBlob;
+window.parseBmpArrayBuffer = parseBmpArrayBuffer;
+window.loadBmpOrImageFile = loadBmpOrImageFile;

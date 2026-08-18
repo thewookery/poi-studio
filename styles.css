@@ -502,6 +502,110 @@ select {
     cursor: pointer;
 }
 
+/* BMP IMPORT & MASTER STITCHER STUDIO */
+.bmp-dropzone {
+    background: rgba(0, 173, 181, 0.04);
+    border: 2px dashed var(--accent-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.bmp-dropzone:hover, .bmp-dropzone.dragover {
+    background: rgba(0, 173, 181, 0.12);
+    border-color: var(--neon-green);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+.bmp-dropzone-icon {
+    font-size: 1.8rem;
+}
+.bmp-dropzone-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+.bmp-dropzone-sub {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.bmp-deck-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+.bmp-deck-card {
+    background: #141926;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.15s ease;
+}
+.bmp-deck-card:hover {
+    border-color: var(--accent-color);
+}
+.bmp-deck-preview {
+    height: 48px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.bmp-deck-preview canvas {
+    max-width: 100%;
+    max-height: 100%;
+    image-rendering: pixelated;
+}
+.bmp-deck-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.64rem;
+}
+.bmp-deck-name {
+    font-weight: 800;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
+}
+.bmp-deck-dims {
+    color: var(--neon-green);
+    font-family: monospace;
+}
+.bmp-deck-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: space-between;
+}
+.bmp-btn-mini {
+    background: #1c2436;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-size: 0.64rem;
+    padding: 3px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 700;
+}
+.bmp-btn-mini:hover {
+    background: var(--accent-color);
+    color: #000;
+}
+
 .footer-note {
     text-align: center;
     font-size: 0.68rem;
@@ -509,3 +613,4 @@ select {
     margin-top: 12px;
     padding: 0 12px;
 }
+

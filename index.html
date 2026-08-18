@@ -73,7 +73,8 @@
 
     <!-- APP NAVIGATION TABS -->
     <nav class="app-tabs-nav" id="main-nav-bar">
-        <button class="tab-btn active" data-tab="tab-colors">🎨 Custom Colors</button>
+        <button class="tab-btn active" data-tab="tab-bmp-stitcher">📁 BMP Stitcher & Morph</button>
+        <button class="tab-btn" data-tab="tab-colors">🎨 Custom Colors</button>
         <button class="tab-btn" data-tab="tab-symmetries">🎛️ Symmetries & FX</button>
         <button class="tab-btn" data-tab="tab-hardware">📐 Props & Length</button>
         <button class="tab-btn" data-tab="tab-aztec">🏛️ Aztec & Sacred</button>
@@ -86,9 +87,86 @@
 
     <!-- TAB CONTENTS -->
     <main class="app-tab-content">
+
+        <!-- 0. NEW: CUSTOM BMP STITCHER & HYBRID SYNTHESIZER TAB -->
+        <div class="tab-pane active" id="tab-bmp-stitcher">
+            <div class="pane-header">
+                <span class="pane-title" style="color: var(--accent-color);">📁 Custom BMP Ingestion, Pattern Stitcher & Hybrid Synthesizer</span>
+                <span class="pane-sub">Import your favorite .BMP files, stitch them into infinite shows, or flow them into mathematical algorithms</span>
+            </div>
+
+            <!-- DRAG & DROP UPLOAD ZONE -->
+            <input type="file" id="bmp-file-input" multiple accept=".bmp,.png,.jpg,.jpeg" style="display:none;">
+            <div class="bmp-dropzone" id="bmp-dropzone">
+                <div class="bmp-dropzone-icon">📥</div>
+                <div class="bmp-dropzone-title">Click to Browse or Drag & Drop .BMP Files Here</div>
+                <div class="bmp-dropzone-sub">Supports 24-bit/32-bit BMP, PNG, JPG (Multi-file batch upload enabled)</div>
+            </div>
+
+            <!-- IMPORTED BMP DECK -->
+            <div class="card-box" style="margin-top:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-size:0.8rem; font-weight:800; color:var(--text-color);">🗂️ Imported BMP Deck (<span id="bmp-count-badge">0 patterns</span>):</span>
+                    <div style="display:flex; gap:6px;">
+                        <button class="hw-btn" id="btn-load-demo-bmps" style="font-size:0.68rem; color:var(--accent-color);">✨ Load Sample Deck</button>
+                        <button class="hw-btn" id="btn-clear-bmp-deck" style="font-size:0.68rem; color:var(--danger-color);">Clear All</button>
+                    </div>
+                </div>
+
+                <div id="bmp-empty-prompt" style="font-size:0.72rem; color:var(--text-muted); text-align:center; padding:16px;">
+                    No custom BMPs loaded yet. Drop your favorite .bmp files above or click "✨ Load Sample Deck" to start stitching!
+                </div>
+
+                <div class="bmp-deck-grid" id="bmp-deck-grid"></div>
+            </div>
+
+            <!-- BATCH MASTER STITCH CONTROLS -->
+            <div class="card-box" style="margin-top:10px; border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
+                <div style="font-size:0.8rem; font-weight:800; color:var(--neon-green); margin-bottom:8px;">🔀 Master Multi-BMP Show Stitcher Settings:</div>
+
+                <div class="ctrl-row">
+                    <span class="ctrl-label">📏 Target LED Height:</span>
+                    <select id="bmp-stitch-height" style="width:100%;">
+                        <option value="55">55px Standard (Open Pixel Poi)</option>
+                        <option value="22">22px Mini (Open Pixel Poi)</option>
+                        <option value="32">32px</option>
+                        <option value="64">64px</option>
+                        <option value="144">144px HD</option>
+                        <option value="keep">Keep First Pattern Height</option>
+                    </select>
+                </div>
+
+                <div class="ctrl-row" style="margin-top:8px;">
+                    <span class="ctrl-label">🌊 Stitch Transition:</span>
+                    <select id="bmp-stitch-trans" style="width:100%;">
+                        <option value="crossfade">Hermite Seamless Smooth Crossfade</option>
+                        <option value="black">Dip to Black Fade</option>
+                        <option value="strobe">Stroboscopic White POV Flash</option>
+                        <option value="none">Hard Cut (Zero Overlap)</option>
+                    </select>
+                </div>
+
+                <div class="ctrl-row" style="margin-top:8px;">
+                    <span class="ctrl-label">📐 Blend Overlap:</span>
+                    <input type="range" id="bmp-stitch-overlap" min="0" max="64" value="24">
+                    <span class="val-mono" id="bmp-stitch-overlap-val">24px</span>
+                </div>
+
+                <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
+                    <label style="font-size:0.74rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="bmp-stitch-loop" checked style="accent-color:var(--neon-green);"> <b>100% Zero-Seam Infinite Loop (Stitches tail back to head)</b>
+                    </label>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+                    <button class="btn-join-add" id="btn-bmp-preview-show">▶️ Play Show in Infinite Streamer</button>
+                    <button class="btn-join-export" id="btn-bmp-export-master">💾 Export Stitched Master BMP</button>
+                </div>
+            </div>
+        </div>
         
         <!-- 1. CUSTOM COLORS & PALETTES TAB -->
-        <div class="tab-pane active" id="tab-colors">
+        <div class="tab-pane" id="tab-colors">
             <div class="pane-header">
                 <span class="pane-title" style="color: var(--accent-color);">🎨 Custom Color Picker & 25+ Spectrum Studio</span>
                 <span class="pane-sub">Build your own custom color gradients or pick from curated palettes</span>
@@ -600,6 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const TRANSITION_DURATION = 200; // ms smooth cross-morph
 
     const sequenceQueue = [];
+    const bmpDeck = [];
 
     // --- TAB SWITCHING (ROBUST SCROLL + ACTIVATE) ---
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -882,7 +961,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- TRIGGER SMOOTH RENDER WITH DISSOLVE BUFFER ---
     function triggerSmoothRender() {
-        // Save current display to prevCanvas for smooth morphing
         prevCanvas.getContext('2d').drawImage(displayCanvas, 0, 0);
         transitionAlpha = 0.0;
         transitionStartTime = performance.now();
@@ -970,7 +1048,6 @@ document.addEventListener('DOMContentLoaded', function() {
         tCtx.drawImage(shifted, 0, 0);
         tCtx.drawImage(shifted, w, 0);
 
-        // Subtle guide line on repeat strip (clean & thin)
         tCtx.strokeStyle = 'rgba(0, 173, 181, 0.35)';
         tCtx.lineWidth = 1;
         tCtx.setLineDash([2, 2]);
@@ -1015,12 +1092,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const ch = infCanvas.height;
         infCtx.clearRect(0, 0, cw, ch);
 
-        // Exact pixel geometry
         const tileDisplayW = (w / h) * ch;
 
         let startX = -((streamOffset / w) * tileDisplayW);
         while (startX < cw) {
-            // Render seamless tiles with exact width - ZERO cut lines, ZERO markers
             infCtx.drawImage(displayCanvas, 0, 0, w, h, startX, 0, tileDisplayW + 0.5, ch);
             startX += tileDisplayW;
         }
@@ -1076,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateBadge('stream-speed-val', e.target.value);
     });
 
-    // --- ENHANCED HYPER-MUTATOR & RANDOMIZERS (WILDCARD VARIABILITY) ---
+    // --- ENHANCED HYPER-MUTATOR & RANDOMIZERS ---
     function performHyperMutate() {
         const palKeys = Object.keys(POI_PALETTES);
         el('ctrl-palette').value = palKeys[Math.floor(Math.random() * palKeys.length)];
@@ -1154,6 +1229,204 @@ document.addEventListener('DOMContentLoaded', function() {
     el('btn-quick-dl-bmp').onclick = () => {
         const blob = canvasToBmpBlob(baseCanvas, { topDown: false });
         triggerDownload(blob, `${currentPattern}_${currentWidth}x${currentHeight}.bmp`);
+    };
+
+    // --- BMP IMPORT & DECK STITCHER SYSTEM ---
+    const dropzone = el('bmp-dropzone');
+    const fileInput = el('bmp-file-input');
+
+    dropzone.onclick = () => fileInput.click();
+
+    dropzone.ondragover = (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+    };
+    dropzone.ondragleave = () => dropzone.classList.remove('dragover');
+    dropzone.ondrop = async (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            await handleImportFiles(e.dataTransfer.files);
+        }
+    };
+
+    fileInput.onchange = async (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            await handleImportFiles(e.target.files);
+        }
+    };
+
+    async function handleImportFiles(fileList) {
+        for (let i = 0; i < fileList.length; i++) {
+            const f = fileList[i];
+            try {
+                const item = await loadBmpOrImageFile(f);
+                bmpDeck.push(item);
+            } catch (err) {
+                console.error("Failed to load file:", f.name, err);
+            }
+        }
+        updateBmpDeckUI();
+    }
+
+    function updateBmpDeckUI() {
+        const grid = el('bmp-deck-grid');
+        const emptyPrompt = el('bmp-empty-prompt');
+        updateBadge('bmp-count-badge', `${bmpDeck.length} pattern${bmpDeck.length === 1 ? '' : 's'}`);
+
+        if (bmpDeck.length === 0) {
+            grid.innerHTML = '';
+            emptyPrompt.style.display = 'block';
+            return;
+        }
+
+        emptyPrompt.style.display = 'none';
+        grid.innerHTML = '';
+
+        bmpDeck.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'bmp-deck-card';
+
+            const preview = document.createElement('div');
+            preview.className = 'bmp-deck-preview';
+            const miniCanvas = document.createElement('canvas');
+            miniCanvas.width = item.canvas.width;
+            miniCanvas.height = item.canvas.height;
+            miniCanvas.getContext('2d').drawImage(item.canvas, 0, 0);
+            preview.appendChild(miniCanvas);
+
+            const meta = document.createElement('div');
+            meta.className = 'bmp-deck-meta';
+            meta.innerHTML = `
+                <span class="bmp-deck-name" title="${item.name}">${idx + 1}. ${item.name}</span>
+                <span class="bmp-deck-dims">${item.width}×${item.height}</span>
+            `;
+
+            const btns = document.createElement('div');
+            btns.className = 'bmp-deck-btns';
+            btns.innerHTML = `
+                <button class="bmp-btn-mini" data-action="play" title="Send to Visualizer Stream">👁️ View</button>
+                <button class="bmp-btn-mini" data-action="left" title="Move Earlier in Show">◀</button>
+                <button class="bmp-btn-mini" data-action="right" title="Move Later in Show">▶</button>
+                <button class="bmp-btn-mini" data-action="del" title="Remove Pattern" style="color:var(--danger-color);">✕</button>
+            `;
+
+            btns.querySelector('[data-action="play"]').onclick = () => {
+                currentWidth = item.width;
+                currentHeight = item.height;
+                baseCanvas.width = currentWidth;
+                baseCanvas.height = currentHeight;
+                baseCanvas.getContext('2d').drawImage(item.canvas, 0, 0);
+                triggerSmoothRender();
+                updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
+            };
+
+            btns.querySelector('[data-action="left"]').onclick = () => {
+                if (idx > 0) {
+                    const temp = bmpDeck[idx];
+                    bmpDeck[idx] = bmpDeck[idx - 1];
+                    bmpDeck[idx - 1] = temp;
+                    updateBmpDeckUI();
+                }
+            };
+
+            btns.querySelector('[data-action="right"]').onclick = () => {
+                if (idx < bmpDeck.length - 1) {
+                    const temp = bmpDeck[idx];
+                    bmpDeck[idx] = bmpDeck[idx + 1];
+                    bmpDeck[idx + 1] = temp;
+                    updateBmpDeckUI();
+                }
+            };
+
+            btns.querySelector('[data-action="del"]').onclick = () => {
+                bmpDeck.splice(idx, 1);
+                updateBmpDeckUI();
+            };
+
+            card.appendChild(preview);
+            card.appendChild(meta);
+            card.appendChild(btns);
+            grid.appendChild(card);
+        });
+    }
+
+    el('btn-clear-bmp-deck').onclick = () => {
+        bmpDeck.length = 0;
+        updateBmpDeckUI();
+    };
+
+    // Load sample deck for instant testing
+    el('btn-load-demo-bmps').onclick = () => {
+        const samples = [
+            { name: "aztec_stepped_fret.bmp", key: "aztec_xicalcoliuhqui_fret" },
+            { name: "quetzalcoatl_wave.bmp", key: "aztec_quetzalcoatl_serpent" },
+            { name: "third_eye_mandala.bmp", key: "sacred_third_eye_mandala" },
+            { name: "ouchi_floating_disk.bmp", key: "illusion_ouchi_depth" },
+            { name: "droste_spiral_warp.bmp", key: "trippy_droste_spiral" }
+        ];
+
+        samples.forEach(s => {
+            const c = document.createElement('canvas');
+            c.width = 240; c.height = 55;
+            const sampler = createColorSampler('aztec_gold_turquoise', 'wave_curvature', 'cyclic');
+            POI_GENERATORS[s.key](c.getContext('2d'), 240, 55, { scale: 1, thickness: 2.5, spacing: 1.0 }, sampler);
+            applyPerfectSeamGuardian(c, 6);
+            bmpDeck.push({ name: s.name, canvas: c, width: 240, height: 55 });
+        });
+
+        updateBmpDeckUI();
+    };
+
+    el('bmp-stitch-overlap').oninput = (e) => {
+        updateBadge('bmp-stitch-overlap-val', e.target.value + 'px');
+    };
+
+    function buildStitchedBmpShow() {
+        if (bmpDeck.length === 0) {
+            alert('Please import or load at least 1 BMP pattern first!');
+            return null;
+        }
+
+        const targetHeightOption = el('bmp-stitch-height').value;
+        const targetH = targetHeightOption === 'keep' ? bmpDeck[0].height : parseInt(targetHeightOption);
+
+        // Normalize canvases to target LED height
+        const normalizedCanvases = bmpDeck.map(item => {
+            if (item.height === targetH) return item.canvas;
+            const c = document.createElement('canvas');
+            const scaledW = Math.round(item.width * (targetH / item.height));
+            c.width = scaledW;
+            c.height = targetH;
+            c.getContext('2d').drawImage(item.canvas, 0, 0, scaledW, targetH);
+            return c;
+        });
+
+        const transition = el('bmp-stitch-trans').value;
+        const overlap = parseInt(el('bmp-stitch-overlap').value);
+        const seamlessLoop = el('bmp-stitch-loop').checked;
+
+        return joinPatternSequence(normalizedCanvases, { transition, overlap, seamlessLoop });
+    }
+
+    el('btn-bmp-preview-show').onclick = () => {
+        const masterCanvas = buildStitchedBmpShow();
+        if (!masterCanvas) return;
+
+        currentWidth = masterCanvas.width;
+        currentHeight = masterCanvas.height;
+        baseCanvas.width = currentWidth;
+        baseCanvas.height = currentHeight;
+        baseCanvas.getContext('2d').drawImage(masterCanvas, 0, 0);
+        triggerSmoothRender();
+        updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px`);
+    };
+
+    el('btn-bmp-export-master').onclick = () => {
+        const masterCanvas = buildStitchedBmpShow();
+        if (!masterCanvas) return;
+        const blob = canvasToBmpBlob(masterCanvas, { topDown: false });
+        triggerDownload(blob, `master_bmp_show_${masterCanvas.width}x${masterCanvas.height}.bmp`);
     };
 
     // --- SEQUENCE TIMELINE LOGIC ---
