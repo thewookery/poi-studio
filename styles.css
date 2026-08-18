@@ -818,7 +818,25 @@ select {
     cursor: pointer;
     flex: 1;
 }
+.btn-send-bank {
+    background: #141f30;
+    border: 1px solid rgba(0, 173, 181, 0.4);
+    color: var(--accent-color);
+    font-size: 0.65rem;
+    font-weight: 800;
+    border-radius: 3px;
+    padding: 3px 6px;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.15s ease;
+}
+.btn-send-bank:hover {
+    background: rgba(0, 173, 181, 0.25);
+    border-color: var(--accent-color);
+    color: #ffffff;
+}
 .btn-rotate-card {
+
     background: #1c2436;
     border: 1px solid var(--border-color);
     color: var(--text-color);
@@ -972,10 +990,10 @@ select {
     transition: width 0.1s ease;
 }
 
-/* 3-WORKSPACE PRIMARY NAVIGATION BAR */
+/* 4-WORKSPACE PRIMARY NAVIGATION BAR */
 .workspace-mode-bar {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 6px;
     padding: 8px 10px 0 10px;
 }
@@ -1005,10 +1023,147 @@ select {
     box-shadow: 0 0 12px rgba(57, 255, 20, 0.2);
 }
 
-@media (max-width: 650px) {
+/* HARDWARE BANK MANAGER STYLING */
+.bank-section-box {
+    background: rgba(14, 20, 32, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.bank-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.bank-slot-card {
+    background: #101622;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.bank-slot-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 12px rgba(0, 173, 181, 0.2);
+}
+
+.bank-slot-card.populated {
+    border-color: rgba(57, 255, 20, 0.35);
+}
+
+.bank-slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.bank-slot-preview-wrap {
+    height: 70px;
+    background: #080c14;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.bank-slot-canvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.bank-slot-empty-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-style: italic;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.bank-slot-meta {
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-color);
+}
+
+.bank-slot-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.bank-slot-btn {
+    background: #161e2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    padding: 5px 6px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+}
+
+.bank-slot-btn:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--accent-color);
+    color: #ffffff;
+}
+
+/* BANK SELECTION MODAL / QUICK DIALOG */
+.bank-picker-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+}
+
+.bank-picker-modal {
+    background: #0f1726;
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 0 24px rgba(0, 173, 181, 0.35);
+    border-radius: var(--radius-md);
+    width: 100%;
+    max-width: 480px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
     .workspace-mode-bar {
-        grid-template-columns: 1fr;
-        gap: 4px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
     }
     .hud-brand-row {
         flex-wrap: wrap;
@@ -1025,5 +1180,6 @@ select {
         justify-content: center;
     }
 }
+
 
 

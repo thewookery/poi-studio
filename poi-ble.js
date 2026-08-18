@@ -349,6 +349,28 @@
         }
 
         /**
+         * Upload a Pattern Canvas directly into a specific Bank (0-2) and Slot (0-4)
+         * @param {HTMLCanvasElement} canvas The pattern canvas to upload
+         * @param {number} bankIndex 0 to 2 (Bank 1 to 3)
+         * @param {number} slotIndex 0 to 4 (Slot 1 to 5)
+         * @param {Function} progressCallback Optional callback
+         * @param {number} pacingDelayMs Optional delay between packets
+         */
+        async uploadPatternToSlot(canvas, bankIndex, slotIndex, progressCallback, pacingDelayMs) {
+            const bank = Math.max(0, Math.min(2, parseInt(bankIndex) || 0));
+            const slot = Math.max(0, Math.min(4, parseInt(slotIndex) || 0));
+
+            // Select target bank and slot on all connected poi
+            await this.setBank(bank);
+            await new Promise(r => setTimeout(r, 60));
+            await this.setPatternSlot(slot);
+            await new Promise(r => setTimeout(r, 60));
+
+            return await this.uploadPattern(canvas, progressCallback, pacingDelayMs);
+        }
+
+
+        /**
          * Convert a Canvas into Open Pixel Poi Column-Major RGB Byte Array
          */
         canvasToPatternBytes(canvas) {

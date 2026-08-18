@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v41</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v42</span></div>
+
 
 
 
@@ -63,7 +64,7 @@
         </div>
     </header>
 
-    <!-- 3-WORKSPACE PRIMARY NAVIGATION BAR -->
+    <!-- 4-WORKSPACE PRIMARY NAVIGATION BAR -->
     <div class="workspace-mode-bar">
         <button class="mode-switch-btn active" id="btn-mode-generator" data-mode="workspace-generator">
             🎨 Generator
@@ -71,10 +72,14 @@
         <button class="mode-switch-btn" id="btn-mode-stitcher" data-mode="workspace-stitcher">
             🗂️ Pattern Vault & Stitcher
         </button>
+        <button class="mode-switch-btn" id="btn-mode-banks" data-mode="workspace-banks">
+            🗃️ Bank Manager (15 Slots)
+        </button>
         <button class="mode-switch-btn" id="btn-mode-deck" data-mode="workspace-deck">
             ⚙️ Poi Settings
         </button>
     </div>
+
 
 
 
@@ -342,7 +347,9 @@
                 <button class="hud-btn-mutate" id="btn-quick-mutate" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
                 <button class="hud-btn-rand" id="btn-quick-rand" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Random Generator">🎲 Rand</button>
                 <button class="hud-btn-dl" id="btn-quick-dl-bmp" style="flex:1; padding:7px 12px; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Download Open Pixel Poi BMP">💾 Save BMP</button>
+                <button class="hw-btn" id="btn-gen-send-bank" style="flex:1; padding:7px 12px; font-size:0.78rem; color:var(--neon-green); font-weight:800; display:flex; align-items:center; justify-content:center; gap:4px; border-color:var(--neon-green);" title="Assign active pattern to a Hardware Bank Slot">🗃️ Send to Bank...</button>
             </div>
+
 
             <!-- RANDOMIZER POOL INCLUSION TOGGLES -->
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:8px; padding:6px 10px; background:rgba(0,0,0,0.4); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
@@ -637,9 +644,56 @@
     </div>
 
     <!-- ==========================================================================
-         WORKSPACE 3: POI BLUETOOTH HARDWARE DECK & PAIR MANAGER
+         WORKSPACE 3: HARDWARE BANK MANAGER (15 SLOTS ACROSS 3 BANKS)
+         ========================================================================== -->
+    <div id="workspace-banks" style="display:none; flex-direction:column; gap:12px; padding:10px 12px;">
+
+        <!-- 1. BANK HEADER & BATCH CONTROLS -->
+        <div class="card-box" style="border-color:var(--accent-color); background:rgba(0, 173, 181, 0.04);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <div>
+                    <div style="font-size:0.88rem; font-weight:800; color:var(--text-color); display:flex; align-items:center; gap:6px;">
+                        <span>🗃️ Hardware Bank Manager</span>
+                        <span class="telemetry-pill" id="bank-assigned-count-badge" style="color:var(--neon-green);">0 / 15 Assigned</span>
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted);">
+                        Populate and flash all 15 pattern slots across 3 hardware banks directly to your Open Pixel Poi.
+                    </div>
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="btn-ble-upload" id="btn-bank-flash-all" style="font-size:0.75rem; padding:7px 12px;" title="Sequentially flash all populated slots to connected Poi">
+                        ⚡ Flash All Populated to Poi
+                    </button>
+                    <button class="hw-btn" id="btn-bank-random-fill" style="font-size:0.72rem; color:var(--accent-color); font-weight:800;" title="Randomly fill all empty slots from Vault">
+                        🎲 Random 15 Auto-Fill
+                    </button>
+                    <button class="hw-btn" id="btn-bank-clear-all" style="font-size:0.72rem; color:#ff4d4d;" title="Clear all 15 slots">
+                        🗑️ Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- BANK SELECTOR TABS -->
+            <div style="display:flex; gap:6px; flex-wrap:wrap;" id="bank-filter-nav">
+                <button class="hw-btn active" data-bank-filter="all">✨ All 15 Slots (3 Banks)</button>
+                <button class="hw-btn" data-bank-filter="0">📁 Bank 1 (Slots 1–5)</button>
+                <button class="hw-btn" data-bank-filter="1">📁 Bank 2 (Slots 1–5)</button>
+                <button class="hw-btn" data-bank-filter="2">📁 Bank 3 (Slots 1–5)</button>
+            </div>
+        </div>
+
+        <!-- 2. INTERACTIVE 3-BANK CONTAINER (BANKS 1, 2, 3) -->
+        <div id="banks-container" style="display:flex; flex-direction:column; gap:14px;">
+            <!-- Rendered dynamically -->
+        </div>
+
+    </div>
+
+    <!-- ==========================================================================
+         WORKSPACE 4: POI BLUETOOTH HARDWARE DECK & PAIR MANAGER
          ========================================================================== -->
     <div id="workspace-deck" style="display:none; flex-direction:column; gap:10px; padding:10px 12px;">
+
 
         <!-- 1. CONNECTED POI DEVICES & PAIR MANAGER -->
         <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
@@ -842,7 +896,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Timeline Storyboard Queue
     const storyboardQueue = [];
 
-    // --- 3-WORKSPACE PRIMARY MODE SWITCHER ---
+    // --- 4-WORKSPACE PRIMARY MODE SWITCHER ---
     function switchWorkspace(mode) {
         activeWorkspace = mode;
         document.querySelectorAll('.mode-switch-btn').forEach(b => {
@@ -851,16 +905,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const wStitcher = el('workspace-stitcher');
         const wGen = el('workspace-generator');
+        const wBanks = el('workspace-banks');
         const wDeck = el('workspace-deck');
 
         if (wGen) wGen.style.display = (mode === 'workspace-generator') ? 'flex' : 'none';
         if (wStitcher) wStitcher.style.display = (mode === 'workspace-stitcher') ? 'flex' : 'none';
+        if (wBanks) wBanks.style.display = (mode === 'workspace-banks') ? 'flex' : 'none';
         if (wDeck) wDeck.style.display = (mode === 'workspace-deck') ? 'flex' : 'none';
 
         if (mode === 'workspace-generator') {
             triggerSmoothRender();
+        } else if (mode === 'workspace-banks') {
+            renderBankSlotsGrid();
         }
     }
+
 
     document.querySelectorAll('.mode-switch-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -995,6 +1054,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="vault-card-btns">
                     <button class="btn-add-timeline" data-id="${item.id}" title="Add to Show Timeline">➕ Add</button>
+                    <button class="btn-send-bank" data-id="${item.id}" title="Send to Hardware Bank Slot">🗃️ Bank</button>
                     <button class="btn-rotate-card" data-id="${item.id}" title="Rotate 90°">🔄</button>
                 </div>
             `;
@@ -1018,6 +1078,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             }
 
+            // Send to Hardware Bank
+            const sendBankBtn = card.querySelector('.btn-send-bank');
+            if (sendBankBtn) {
+                sendBankBtn.onclick = () => {
+                    let srcUri = item.dataUri;
+                    if (currentVaultPalette && currentVaultPalette !== 'original') {
+                        const tempC = document.createElement('canvas');
+                        tempC.width = item.width;
+                        tempC.height = item.height;
+                        tempC.getContext('2d').drawImage(item.cachedImg, 0, 0);
+                        const remapped = remapBmpCanvas(tempC, currentVaultPalette);
+                        srcUri = remapped.toDataURL('image/png');
+                    }
+
+                    openBankPickerModal({
+                        name: item.name,
+                        dataUri: srcUri,
+                        width: item.width,
+                        height: item.height
+                    });
+                };
+            }
+
             // Rotate card on the fly
             const rotBtn = card.querySelector('.btn-rotate-card');
             if (rotBtn) {
@@ -1026,6 +1109,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     renderVaultCards();
                 };
             }
+
 
             grid.appendChild(card);
         });
@@ -2670,6 +2754,526 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // =========================================================================
+    // HARDWARE BANK MANAGER (15 SLOTS ACROSS 3 ESP32 FLASH BANKS)
+    // =========================================================================
+    const BANK_COUNT = 3;
+    const BANK_SLOT_COUNT = 5;
+    const TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT; // 15
+    const STORAGE_KEY_BANKS = 'open_poi_bank_slots_v2';
+
+    let bankSlots = [];
+    let currentBankFilter = 'all';
+    let pendingBankAssignData = null;
+
+    function loadSavedBankSlots() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY_BANKS);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length === TOTAL_BANK_SLOTS) {
+                    bankSlots = parsed;
+                    return;
+                }
+            }
+        } catch(e) {}
+
+        bankSlots = [];
+        for (let i = 0; i < TOTAL_BANK_SLOTS; i++) {
+            const b = Math.floor(i / BANK_SLOT_COUNT);
+            const s = i % BANK_SLOT_COUNT;
+            bankSlots.push({
+                globalIndex: i,
+                bankIndex: b,
+                slotIndex: s,
+                name: `Empty Slot ${s + 1}`,
+                dataUri: null,
+                width: 40,
+                height: 55,
+                isAssigned: false
+            });
+        }
+    }
+    loadSavedBankSlots();
+
+    function saveBankSlots() {
+        try {
+            localStorage.setItem(STORAGE_KEY_BANKS, JSON.stringify(bankSlots));
+        } catch(e) {}
+        renderBankSlotsGrid();
+    }
+
+    function assignPatternToBankSlot(bankIdx, slotIdx, patternData) {
+        const globalIdx = bankIdx * BANK_SLOT_COUNT + slotIdx;
+        if (globalIdx < 0 || globalIdx >= TOTAL_BANK_SLOTS) return;
+
+        bankSlots[globalIdx] = {
+            globalIndex: globalIdx,
+            bankIndex: bankIdx,
+            slotIndex: slotIdx,
+            name: patternData.name || `Pattern ${globalIdx + 1}`,
+            dataUri: patternData.dataUri,
+            width: patternData.width || 40,
+            height: patternData.height || 55,
+            isAssigned: true
+        };
+
+        saveBankSlots();
+    }
+
+    function clearBankSlot(globalIdx) {
+        if (globalIdx < 0 || globalIdx >= TOTAL_BANK_SLOTS) return;
+        const b = Math.floor(globalIdx / BANK_SLOT_COUNT);
+        const s = globalIdx % BANK_SLOT_COUNT;
+        bankSlots[globalIdx] = {
+            globalIndex: globalIdx,
+            bankIndex: b,
+            slotIndex: s,
+            name: `Empty Slot ${s + 1}`,
+            dataUri: null,
+            width: 40,
+            height: 55,
+            isAssigned: false
+        };
+        saveBankSlots();
+    }
+
+    function renderBankSlotsGrid() {
+        const container = el('banks-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const assignedCount = bankSlots.filter(s => s.isAssigned).length;
+        updateBadge('bank-assigned-count-badge', `${assignedCount} / 15 Assigned`);
+
+        for (let b = 0; b < BANK_COUNT; b++) {
+            if (currentBankFilter !== 'all' && currentBankFilter !== `${b}`) continue;
+
+            const bankSection = document.createElement('div');
+            bankSection.className = 'bank-section-box';
+            
+            const bankSlotsInThisBank = bankSlots.filter(s => s.bankIndex === b);
+            const bankPopulated = bankSlotsInThisBank.filter(s => s.isAssigned).length;
+
+            bankSection.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:6px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.84rem; font-weight:800; color:var(--text-color);">📁 Bank ${b + 1}</span>
+                        <span class="telemetry-pill" style="color:${bankPopulated > 0 ? 'var(--neon-green)' : 'var(--text-muted)'}; font-size:0.65rem;">
+                            ${bankPopulated} / 5 Assigned
+                        </span>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="hw-btn" data-bank-action="play-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--accent-color);" title="Switch connected poi to Bank ${b + 1}">
+                            ▶️ Select Bank ${b + 1}
+                        </button>
+                        <button class="hw-btn" data-bank-action="flash-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-green);" title="Flash this 5-slot bank over BLE">
+                            🚀 Flash Bank ${b + 1}
+                        </button>
+                        <button class="hw-btn" data-bank-action="clear-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:#ff4d4d;" title="Clear this bank">
+                            🗑️ Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="bank-slots-grid" id="bank-slots-grid-${b}"></div>
+            `;
+
+            const slotsGrid = bankSection.querySelector(`#bank-slots-grid-${b}`);
+
+            bankSlotsInThisBank.forEach(slot => {
+                const card = document.createElement('div');
+                card.className = `bank-slot-card ${slot.isAssigned ? 'populated' : ''}`;
+
+                let previewHtml = '';
+                if (slot.isAssigned && slot.dataUri) {
+                    previewHtml = `<img src="${slot.dataUri}" class="bank-slot-canvas" alt="${slot.name}">`;
+                } else {
+                    previewHtml = `
+                        <div class="bank-slot-empty-label">
+                            <span style="font-size:1.2rem; opacity:0.35;">➕</span>
+                            <span>Empty Slot</span>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="bank-slot-header">
+                        <span style="color:var(--neon-green);">Bank ${slot.bankIndex + 1} • Slot ${slot.slotIndex + 1}</span>
+                        <span class="telemetry-pill" style="font-size:0.6rem; ${slot.isAssigned ? 'color:var(--neon-green);' : 'color:var(--text-muted);'}">
+                            ${slot.isAssigned ? `${slot.width}×${slot.height}px` : 'Unassigned'}
+                        </span>
+                    </div>
+                    <div class="bank-slot-preview-wrap" style="cursor:pointer;" title="Click to load or assign">
+                        ${previewHtml}
+                    </div>
+                    <div class="bank-slot-meta" title="${slot.name}">
+                        ${slot.isAssigned ? slot.name : '<span style="color:var(--text-muted); font-style:italic;">No Pattern</span>'}
+                    </div>
+                    <div class="bank-slot-actions">
+                        <button class="bank-slot-btn" data-slot-action="flash" data-idx="${slot.globalIndex}" ${!slot.isAssigned ? 'disabled style="opacity:0.3;"' : ''} style="color:var(--neon-green);" title="Flash this slot to Poi over BLE">
+                            🚀 Flash
+                        </button>
+                        <button class="bank-slot-btn" data-slot-action="play" data-idx="${slot.globalIndex}" style="color:var(--accent-color);" title="Command Poi to play this slot">
+                            ▶️ Play
+                        </button>
+                        <button class="bank-slot-btn" data-slot-action="load-gen" data-idx="${slot.globalIndex}" ${!slot.isAssigned ? 'disabled style="opacity:0.3;"' : ''} title="Open in Generator to edit">
+                            🎨 Edit
+                        </button>
+                        <button class="bank-slot-btn" data-slot-action="clear" data-idx="${slot.globalIndex}" ${!slot.isAssigned ? 'disabled style="opacity:0.3;"' : ''} style="color:#ff4d4d;" title="Clear this slot">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+
+                // Wire up card buttons
+                const flashBtn = card.querySelector('[data-slot-action="flash"]');
+                if (flashBtn && slot.isAssigned) {
+                    flashBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        flashSingleBankSlot(slot);
+                    };
+                }
+
+                const playBtn = card.querySelector('[data-slot-action="play"]');
+                if (playBtn) {
+                    playBtn.onclick = async (e) => {
+                        e.stopPropagation();
+                        if (OpenPixelPoiBLE.isConnected) {
+                            await OpenPixelPoiBLE.setBank(slot.bankIndex);
+                            await new Promise(r => setTimeout(r, 60));
+                            await OpenPixelPoiBLE.setPatternSlot(slot.slotIndex);
+                        } else {
+                            alert('Connect your Open Pixel Poi via Bluetooth first to switch slots!');
+                        }
+                    };
+                }
+
+                const editBtn = card.querySelector('[data-slot-action="load-gen"]');
+                if (editBtn && slot.isAssigned) {
+                    editBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        loadBankSlotToGenerator(slot);
+                    };
+                }
+
+                const clearBtn = card.querySelector('[data-slot-action="clear"]');
+                if (clearBtn && slot.isAssigned) {
+                    clearBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        clearBankSlot(slot.globalIndex);
+                    };
+                }
+
+                const previewWrap = card.querySelector('.bank-slot-preview-wrap');
+                if (previewWrap) {
+                    previewWrap.onclick = () => {
+                        if (slot.isAssigned) {
+                            loadBankSlotToGenerator(slot);
+                        } else {
+                            const curUri = displayCanvas.toDataURL('image/png');
+                            let name = currentPattern;
+                            if (typeof name === 'string' && name.startsWith('bmp_')) {
+                                const vaultItem = vaultItems.find(v => v.id === name);
+                                if (vaultItem) name = vaultItem.name;
+                            }
+                            name = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+                            assignPatternToBankSlot(slot.bankIndex, slot.slotIndex, {
+                                name: name,
+                                dataUri: curUri,
+                                width: currentWidth,
+                                height: currentHeight
+                            });
+                        }
+                    };
+                }
+
+                slotsGrid.appendChild(card);
+            });
+
+            // Wire up bank section buttons
+            const playBankBtn = bankSection.querySelector('[data-bank-action="play-bank"]');
+            if (playBankBtn) {
+                playBankBtn.onclick = async () => {
+                    if (OpenPixelPoiBLE.isConnected) {
+                        await OpenPixelPoiBLE.setBank(b);
+                        await new Promise(r => setTimeout(r, 60));
+                        await OpenPixelPoiBLE.setPatternSlot(0);
+                    } else {
+                        alert('Connect your Open Pixel Poi via Bluetooth first!');
+                    }
+                };
+            }
+
+            const flashBankBtn = bankSection.querySelector('[data-bank-action="flash-bank"]');
+            if (flashBankBtn) {
+                flashBankBtn.onclick = () => flashEntireBank(b);
+            }
+
+            const clearBankBtn = bankSection.querySelector('[data-bank-action="clear-bank"]');
+            if (clearBankBtn) {
+                clearBankBtn.onclick = () => {
+                    if (confirm(`Clear all 5 slots in Bank ${b + 1}?`)) {
+                        for (let s = 0; s < BANK_SLOT_COUNT; s++) {
+                            clearBankSlot(b * BANK_SLOT_COUNT + s);
+                        }
+                    }
+                };
+            }
+
+            container.appendChild(bankSection);
+        }
+    }
+
+    function openBankPickerModal(patternData) {
+        pendingBankAssignData = patternData;
+        const modal = el('bank-picker-modal-overlay');
+        if (!modal) return;
+        
+        const previewName = el('bank-picker-preview-name');
+        if (previewName) previewName.innerText = patternData.name || 'Selected Pattern';
+
+        const previewImg = el('bank-picker-preview-img');
+        if (previewImg && patternData.dataUri) previewImg.src = patternData.dataUri;
+
+        // Highlight existing assigned slots in modal
+        document.querySelectorAll('.bank-slot-pick-btn').forEach(btn => {
+            const b = parseInt(btn.getAttribute('data-b'));
+            const s = parseInt(btn.getAttribute('data-s'));
+            const g = b * BANK_SLOT_COUNT + s;
+            const isAssigned = bankSlots[g] && bankSlots[g].isAssigned;
+            btn.style.borderColor = isAssigned ? 'var(--neon-green)' : 'rgba(255,255,255,0.12)';
+            btn.innerHTML = `Slot ${s + 1} ${isAssigned ? '🟢' : '⚪'}`;
+        });
+
+        modal.style.display = 'flex';
+    }
+
+    function closeBankPickerModal() {
+        const modal = el('bank-picker-modal-overlay');
+        if (modal) modal.style.display = 'none';
+        pendingBankAssignData = null;
+    }
+
+    function loadBankSlotToGenerator(slot) {
+        if (!slot || !slot.isAssigned || !slot.dataUri) return;
+        const img = new Image();
+        img.onload = () => {
+            currentWidth = slot.width || img.width;
+            currentHeight = slot.height || img.height;
+            currentPattern = `bank_slot_${slot.globalIndex}`;
+            baseCanvas.width = currentWidth;
+            baseCanvas.height = currentHeight;
+            const ctx = baseCanvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, currentWidth, currentHeight);
+            
+            ['gen-length-slider', 'tab-length-slider'].forEach(id => {
+                if (el(id)) el(id).value = currentWidth;
+            });
+            ['gen-length-val', 'tab-length-val'].forEach(id => {
+                updateBadge(id, `${currentWidth}px`);
+            });
+
+            switchWorkspace('workspace-generator');
+            triggerSmoothRender();
+        };
+        img.src = slot.dataUri;
+    }
+
+    async function flashSingleBankSlot(slot) {
+        if (!OpenPixelPoiBLE.isConnected) {
+            alert('Please connect your Open Pixel Poi via Bluetooth first!');
+            return;
+        }
+        if (!slot.isAssigned || !slot.dataUri) {
+            alert('This slot is empty.');
+            return;
+        }
+
+        const img = new Image();
+        img.onload = async () => {
+            const tempC = document.createElement('canvas');
+            tempC.width = slot.width;
+            tempC.height = slot.height;
+            tempC.getContext('2d').drawImage(img, 0, 0);
+
+            showInlineProgress(`🚀 Flashing Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1}...`, 0);
+            try {
+                const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 45) || 45;
+                await OpenPixelPoiBLE.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex, (pct, info) => {
+                    const pctInt = Math.round(pct * 100);
+                    showInlineProgress(`🚀 Flashing B${slot.bankIndex + 1}:S${slot.slotIndex + 1} (${info.deviceName || ''})...`, pctInt);
+                }, pacing);
+                showInlineProgress(`✅ Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1} Flashed!`, 100);
+                setTimeout(hideInlineProgress, 2500);
+            } catch(e) {
+                alert(`Upload failed: ${e.message}`);
+                hideInlineProgress();
+            }
+        };
+        img.src = slot.dataUri;
+    }
+
+    async function flashEntireBank(bankIdx) {
+        if (!OpenPixelPoiBLE.isConnected) {
+            alert('Please connect your Open Pixel Poi via Bluetooth first!');
+            return;
+        }
+
+        const populated = bankSlots.filter(s => s.bankIndex === bankIdx && s.isAssigned);
+        if (populated.length === 0) {
+            alert(`Bank ${bankIdx + 1} has no assigned patterns.`);
+            return;
+        }
+
+        const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 45) || 45;
+        for (let i = 0; i < populated.length; i++) {
+            const slot = populated[i];
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = async () => {
+                    const tempC = document.createElement('canvas');
+                    tempC.width = slot.width;
+                    tempC.height = slot.height;
+                    tempC.getContext('2d').drawImage(img, 0, 0);
+
+                    showInlineProgress(`🚀 Bank ${bankIdx + 1}: Flashing ${i + 1}/${populated.length} (Slot ${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
+                    try {
+                        await OpenPixelPoiBLE.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex, (pct, info) => {
+                            const subPct = Math.round(((i + pct) / populated.length) * 100);
+                            showInlineProgress(`🚀 Bank ${bankIdx + 1}: ${i + 1}/${populated.length} (Slot ${slot.slotIndex + 1})...`, subPct);
+                        }, pacing);
+                        resolve();
+                    } catch(e) {
+                        reject(e);
+                    }
+                };
+                img.src = slot.dataUri;
+            });
+        }
+        showInlineProgress(`✅ Bank ${bankIdx + 1} Flashed Complete!`, 100);
+        setTimeout(hideInlineProgress, 3000);
+    }
+
+    async function flashAllPopulatedBankSlots() {
+        if (!OpenPixelPoiBLE.isConnected) {
+            alert('Please connect your Open Pixel Poi via Bluetooth first!');
+            return;
+        }
+
+        const populated = bankSlots.filter(s => s.isAssigned);
+        if (populated.length === 0) {
+            alert('No patterns are assigned to any bank slots yet.');
+            return;
+        }
+
+        const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 45) || 45;
+        for (let i = 0; i < populated.length; i++) {
+            const slot = populated[i];
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = async () => {
+                    const tempC = document.createElement('canvas');
+                    tempC.width = slot.width;
+                    tempC.height = slot.height;
+                    tempC.getContext('2d').drawImage(img, 0, 0);
+
+                    showInlineProgress(`🚀 Syncing Slot ${i + 1}/${populated.length} (B${slot.bankIndex + 1}:S${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
+                    try {
+                        await OpenPixelPoiBLE.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex, (pct, info) => {
+                            const subPct = Math.round(((i + pct) / populated.length) * 100);
+                            showInlineProgress(`🚀 Syncing Slot ${i + 1}/${populated.length} (B${slot.bankIndex + 1}:S${slot.slotIndex + 1})...`, subPct);
+                        }, pacing);
+                        resolve();
+                    } catch(e) {
+                        reject(e);
+                    }
+                };
+                img.src = slot.dataUri;
+            });
+        }
+        showInlineProgress(`✅ All ${populated.length} Slots Synced to Poi!`, 100);
+        setTimeout(hideInlineProgress, 3000);
+    }
+
+    function randomFillEmptyBankSlots() {
+        if (!vaultItems || vaultItems.length === 0) return;
+        bankSlots.forEach(slot => {
+            if (!slot.isAssigned) {
+                const randItem = vaultItems[Math.floor(Math.random() * vaultItems.length)];
+                if (randItem) {
+                    slot.name = randItem.name;
+                    slot.dataUri = randItem.dataUri;
+                    slot.width = randItem.width;
+                    slot.height = randItem.height;
+                    slot.isAssigned = true;
+                }
+            }
+        });
+        saveBankSlots();
+    }
+
+    // Hook up Generator Send-to-Bank button
+    if (el('btn-gen-send-bank')) {
+        el('btn-gen-send-bank').onclick = () => {
+            const dataUri = displayCanvas.toDataURL('image/png');
+            let name = currentPattern;
+            if (typeof name === 'string' && name.startsWith('bmp_')) {
+                const vaultItem = vaultItems.find(v => v.id === name);
+                if (vaultItem) name = vaultItem.name;
+            }
+            name = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+            openBankPickerModal({
+                name: name,
+                dataUri: dataUri,
+                width: currentWidth,
+                height: currentHeight
+            });
+        };
+    }
+
+    // Hook up Bank Manager top actions
+    if (el('btn-bank-flash-all')) el('btn-bank-flash-all').onclick = flashAllPopulatedBankSlots;
+    if (el('btn-bank-random-fill')) el('btn-bank-random-fill').onclick = randomFillEmptyBankSlots;
+    if (el('btn-bank-clear-all')) {
+        el('btn-bank-clear-all').onclick = () => {
+            if (confirm('Clear all 15 pattern slots across all 3 banks?')) {
+                for (let i = 0; i < TOTAL_BANK_SLOTS; i++) {
+                    clearBankSlot(i);
+                }
+            }
+        };
+    }
+
+    // Hook up Bank Filter buttons
+    document.querySelectorAll('#bank-filter-nav button').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('#bank-filter-nav button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentBankFilter = this.getAttribute('data-bank-filter');
+            renderBankSlotsGrid();
+        };
+    });
+
+    // Hook up Modal slot picker buttons
+    document.querySelectorAll('.bank-slot-pick-btn').forEach(btn => {
+        btn.onclick = function() {
+            if (!pendingBankAssignData) return;
+            const b = parseInt(this.getAttribute('data-b'));
+            const s = parseInt(this.getAttribute('data-s'));
+            assignPatternToBankSlot(b, s, pendingBankAssignData);
+            closeBankPickerModal();
+        };
+    });
+
+    if (el('btn-close-bank-picker')) el('btn-close-bank-picker').onclick = closeBankPickerModal;
+    if (el('bank-picker-modal-overlay')) {
+        el('bank-picker-modal-overlay').onclick = (e) => {
+            if (e.target.id === 'bank-picker-modal-overlay') closeBankPickerModal();
+        };
+    }
+
     // Register 100% Offline Festival Service Worker (PWA) with Auto-Update
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -2689,7 +3293,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
 
     // Force Cache Purge & Live Sync
     if (el('btn-force-sync')) {
@@ -2711,11 +3314,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial render: 55px tall by 40px length
     setGeneratorHeight(55, 40);
-
-
+    renderBankSlotsGrid();
 
 });
 </script>
 
+    <!-- BANK PICKER MODAL -->
+    <div class="bank-picker-modal-overlay" id="bank-picker-modal-overlay" style="display:none;">
+        <div class="bank-picker-modal">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.88rem; font-weight:800; color:var(--text-color);">🗃️ Send Pattern to Hardware Bank Slot</span>
+                <button class="hw-btn" id="btn-close-bank-picker" style="font-size:0.75rem; padding:3px 8px;">✕</button>
+            </div>
+
+            <!-- PREVIEW OF PATTERN BEING ASSIGNED -->
+            <div style="display:flex; align-items:center; gap:10px; background:#0b0f17; padding:8px; border-radius:4px; border:1px solid rgba(255,255,255,0.08);">
+                <img id="bank-picker-preview-img" style="height:45px; width:45px; object-fit:contain; border-radius:3px; background:#000;" src="" alt="">
+                <div style="flex:1;">
+                    <div id="bank-picker-preview-name" style="font-size:0.78rem; font-weight:800; color:var(--accent-color);">Pattern Name</div>
+                    <div style="font-size:0.68rem; color:var(--text-muted);">Choose a Bank & Slot below to assign:</div>
+                </div>
+            </div>
+
+            <!-- 3-BANK SLOT SELECTOR BUTTONS -->
+            <div style="display:flex; flex-direction:column; gap:8px;" id="bank-picker-slots-container">
+                <!-- Bank 1 -->
+                <div>
+                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-green); margin-bottom:4px;">📁 Bank 1 (Slots 1–5):</div>
+                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
+                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="0">Slot 1</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="1">Slot 2</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="2">Slot 3</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="3">Slot 4</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="4">Slot 5</button>
+                    </div>
+                </div>
+
+                <!-- Bank 2 -->
+                <div>
+                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-yellow); margin-bottom:4px;">📁 Bank 2 (Slots 1–5):</div>
+                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
+                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="0">Slot 1</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="1">Slot 2</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="2">Slot 3</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="3">Slot 4</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="4">Slot 5</button>
+                    </div>
+                </div>
+
+                <!-- Bank 3 -->
+                <div>
+                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-purple); margin-bottom:4px;">📁 Bank 3 (Slots 1–5):</div>
+                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
+                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="0">Slot 1</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="1">Slot 2</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="2">Slot 3</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="3">Slot 4</button>
+                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="4">Slot 5</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
+
