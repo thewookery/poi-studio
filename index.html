@@ -32,7 +32,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v37</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v38</span></div>
+
 
 
 
@@ -159,12 +160,12 @@
                 </div>
 
                 <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
-                    <label style="font-size:0.75rem; color:var(--text-color); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                        <input type="checkbox" id="stitch-seamless-loop" checked style="accent-color:var(--neon-green);"> 
-                        <b>100% Zero-Seam Infinite Loop (Tail ➔ Head Fusion)</b>
-                    </label>
+                    <button class="toggle-btn active-green" id="btn-stitch-seamless-loop" data-active="true" style="font-size:0.75rem; padding:6px 12px; font-weight:800;" title="Fuse tail to head for seamless loop">
+                        ♾️ 100% Zero-Seam Loop: ON
+                    </button>
                     <div style="font-size:0.7rem; color:var(--text-muted);" id="timeline-stats-badge">Total Length: 0px (~0 KB)</div>
                 </div>
+
             </div>
 
 
@@ -243,11 +244,11 @@
                     <div style="font-size:0.78rem; font-weight:800; color:var(--neon-purple); display:flex; align-items:center; gap:6px;">
                         <span>🎨 Live BMP Color Remixer & Palette Tint:</span>
                     </div>
-                    <label style="font-size:0.72rem; color:var(--neon-green); display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:700;">
-                        <input type="checkbox" id="vault-tint-random-chk" style="accent-color:var(--neon-green); width:15px; height:15px;">
-                        <span>🎲 Randomize Colors on Every "➕ Add"</span>
-                    </label>
+                    <button class="toggle-btn" id="btn-vault-random-add" data-active="false" style="font-size:0.72rem; padding:5px 10px; font-weight:700;" title="Randomize colors each time a pattern is added">
+                        🎲 Random on Add: OFF
+                    </button>
                 </div>
+
 
                 <!-- QUICK PALETTE PRESET BUTTONS (REAL-TIME LIVE TINTING) -->
                 <div style="display:flex; gap:5px; flex-wrap:wrap;" id="vault-palette-btns">
@@ -374,14 +375,17 @@
                 </div>
             </div>
 
-            <!-- SMART MUTATE FEATURE LOCKS -->
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:0.68rem; color:var(--text-muted); padding:6px 10px; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.08);">
-                <span style="font-weight:700; color:var(--accent-color);">⚡ Mutate Locks:</span>
-                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-palette" style="accent-color:var(--accent-color);"> 🔒 Palette</label>
-                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-geometry" style="accent-color:var(--neon-green);"> 🔒 Geometry</label>
-                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-symmetries" style="accent-color:var(--neon-purple);"> 🔒 Symmetries</label>
-                <label style="cursor:pointer; display:flex; align-items:center; gap:3px;"><input type="checkbox" id="lock-shaders" style="accent-color:var(--neon-pink);"> 🔒 Shaders</label>
+            <!-- SMART MUTATE FEATURE LOCK TOGGLE BUTTONS -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:10px; padding:8px 12px; background:rgba(0,0,0,0.5); border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
+                <span style="font-weight:800; color:var(--accent-color); font-size:0.75rem;">⚡ Mutate Locks:</span>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="lock-toggle-btn" id="btn-lock-palette" data-lock="palette" title="Lock active colors during mutate">🔒 Palette</button>
+                    <button class="lock-toggle-btn" id="btn-lock-geometry" data-lock="geometry" title="Lock pattern geometry during mutate">🔒 Geometry</button>
+                    <button class="lock-toggle-btn" id="btn-lock-symmetries" data-lock="symmetries" title="Lock symmetry settings during mutate">🔒 Symmetries</button>
+                    <button class="lock-toggle-btn" id="btn-lock-shaders" data-lock="shaders" title="Lock shader FX during mutate">🔒 Shaders</button>
+                </div>
             </div>
+
         </div>
 
         <!-- 3. SUB-NAV TABS FOR GENERATOR -->
@@ -574,9 +578,13 @@
             <!-- 8. MORPH TAB -->
             <div class="tab-pane" id="tab-morph">
                 <div class="card-box" style="display:flex; flex-direction:column; gap:10px;">
-                    <label style="font-size:0.82rem; color:var(--neon-green); cursor:pointer; display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" id="morph-enable" style="width:16px; height:16px; accent-color:var(--neon-green);"> <b>Activate Dual Geometry Flow Morph</b>
-                    </label>
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                        <button class="toggle-btn" id="btn-morph-enable" data-active="false" style="font-size:0.78rem; padding:8px 14px; font-weight:800;" title="Blend two algorithmic equations simultaneously">
+                            🎭 Dual Geometry Flow Morph: OFF
+                        </button>
+                        <span style="font-size:0.7rem; color:var(--text-muted);">Real-Time Algorithmic Cross-Synthesis</span>
+                    </div>
+
                     <div id="morph-panel-body" style="display:none; flex-direction:column; gap:10px;">
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                             <div>
@@ -748,10 +756,12 @@
 
         <!-- 4. SCAN OPTIONS & TROUBLESHOOTING GUIDE -->
         <div class="card-box" style="background:rgba(0, 173, 181, 0.05); border-color:rgba(0, 173, 181, 0.25);">
-            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; color:var(--accent-color); font-size:0.75rem;">
-                <input type="checkbox" id="ble-scan-all-chk" checked style="accent-color:var(--accent-color);">
-                <span>Show All Nearby Bluetooth Devices in Scanner</span>
-            </label>
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <button class="toggle-btn" id="btn-ble-scan-all" data-active="false" style="font-size:0.75rem; padding:6px 12px; font-weight:700;" title="Toggle between strict Open/Poi filter or all Bluetooth devices">
+                    🔍 Filter: Open & Poi Only (Strict)
+                </button>
+            </div>
+
             <div style="margin-top:6px; font-size:0.68rem; color:var(--text-muted); line-height:1.4;">
                 <b>💡 Pairing Checklist:</b><br>
                 • <b>Pair Left Poi, then click "➕ Connect / Pair Another Poi" to pair Right Poi!</b><br>
@@ -1101,15 +1111,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- STORYBOARD TIMELINE QUEUE ---
+    if (el('btn-vault-random-add')) {
+        el('btn-vault-random-add').onclick = function() {
+            this.classList.toggle('active-green');
+            const isAct = this.classList.contains('active-green');
+            this.innerText = isAct ? '🎲 Random on Add: ON' : '🎲 Random on Add: OFF';
+        };
+    }
+
     function addToStoryboard(item) {
         let c = document.createElement('canvas');
         c.width = item.width;
         c.height = item.height;
         c.getContext('2d').drawImage(item.cachedImg, 0, 0);
 
-        const randomChk = el('vault-tint-random-chk');
+        const randomBtn = el('btn-vault-random-add');
         let mode = currentVaultPalette;
-        if (randomChk && randomChk.checked) {
+        if (randomBtn && randomBtn.classList.contains('active-green')) {
             mode = 'random';
         }
 
@@ -1128,6 +1146,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         updateStoryboardUI();
     }
+
 
 
 
@@ -1296,7 +1315,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const transition = el('stitch-trans-select') ? el('stitch-trans-select').value : 'crossfade';
         const overlap = parseInt(el('stitch-overlap-slider') ? el('stitch-overlap-slider').value : 0);
-        const seamlessLoop = el('stitch-seamless-loop') ? el('stitch-seamless-loop').checked : true;
+        const seamlessLoop = el('btn-stitch-seamless-loop') ? el('btn-stitch-seamless-loop').classList.contains('active-green') : true;
+
 
 
         const compiled = joinPatternSequence(normalizedCanvases, { 
@@ -1384,7 +1404,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (el('stitch-trans-select')) el('stitch-trans-select').onchange = () => recompileShowMaster(true);
     if (el('stitch-duration-select')) el('stitch-duration-select').onchange = () => recompileShowMaster(true);
-    if (el('stitch-seamless-loop')) el('stitch-seamless-loop').onchange = () => recompileShowMaster(true);
+    if (el('btn-stitch-seamless-loop')) {
+        el('btn-stitch-seamless-loop').onclick = function() {
+            this.classList.toggle('active-green');
+            const isAct = this.classList.contains('active-green');
+            this.innerText = isAct ? '♾️ 100% Zero-Seam Loop: ON' : '♾️ 100% Zero-Seam Loop: OFF';
+            recompileShowMaster(true);
+        };
+    }
+
     if (el('stitch-overlap-slider')) {
         el('stitch-overlap-slider').oninput = (e) => {
             updateBadge('stitch-overlap-val', e.target.value + 'px');
@@ -1551,12 +1579,16 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCustomSwatchesUI();
 
     // --- MORPH TOGGLES ---
-    if (el('morph-enable')) {
-        el('morph-enable').onchange = (e) => {
-            if (el('morph-panel-body')) el('morph-panel-body').style.display = e.target.checked ? 'flex' : 'none';
+    if (el('btn-morph-enable')) {
+        el('btn-morph-enable').onclick = function() {
+            this.classList.toggle('active-green');
+            const isAct = this.classList.contains('active-green');
+            this.innerText = isAct ? '🎭 Dual Geometry Flow Morph: ON' : '🎭 Dual Geometry Flow Morph: OFF';
+            if (el('morph-panel-body')) el('morph-panel-body').style.display = isAct ? 'flex' : 'none';
             triggerSmoothRender();
         };
     }
+
     if (morphASelect) morphASelect.onchange = triggerSmoothRender;
     if (morphBSelect) morphBSelect.onchange = triggerSmoothRender;
     if (el('morph-flow-style')) el('morph-flow-style').onchange = triggerSmoothRender;
@@ -1738,7 +1770,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const colSampler = createColorSampler(paletteKey, colorDir, gradientMode);
         const params = { chaos, scale, thickness, spacing };
 
-        const isMorph = el('morph-enable') ? el('morph-enable').checked : false;
+        const isMorph = el('btn-morph-enable') ? el('btn-morph-enable').classList.contains('active-green') : false;
+
         if (isMorph) {
             const modelA = morphASelect ? morphASelect.value : 'aztec_xicalcoliuhqui_fret';
             const modelB = morphBSelect ? morphBSelect.value : 'sacred_third_eye_mandala';
@@ -1910,6 +1943,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Mutate Lock Buttons with active glowing halo
+    ['btn-lock-palette', 'btn-lock-geometry', 'btn-lock-symmetries', 'btn-lock-shaders'].forEach(id => {
+        const btn = el(id);
+        if (btn) {
+            btn.onclick = function() {
+                this.classList.toggle('active');
+                const isLocked = this.classList.contains('active');
+                const lockName = this.getAttribute('data-lock');
+                const titleCase = lockName.charAt(0).toUpperCase() + lockName.slice(1);
+                this.innerText = isLocked ? `🔒 ${titleCase}: LOCKED` : `🔒 ${titleCase}`;
+            };
+        }
+    });
+
     // --- PRESET CARDS CLICK (GENERATOR TAB) ---
     document.querySelectorAll('.preset-card').forEach(card => {
         card.addEventListener('click', function() {
@@ -1917,7 +1964,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             currentPattern = this.getAttribute('data-preset');
             if (proSelect) proSelect.value = currentPattern;
-            if (el('morph-enable') && el('morph-enable').checked && morphASelect) {
+            if (el('btn-morph-enable') && el('btn-morph-enable').classList.contains('active-green') && morphASelect) {
                 morphASelect.value = currentPattern;
             }
             triggerSmoothRender();
@@ -1926,10 +1973,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- ENHANCED HYPER-MUTATOR & HARMONIC RANDOMIZERS ---
     function performHyperMutate() {
-        const isLockPal = el('lock-palette') && el('lock-palette').checked;
-        const isLockGeo = el('lock-geometry') && el('lock-geometry').checked;
-        const isLockSym = el('lock-symmetries') && el('lock-symmetries').checked;
-        const isLockFX = el('lock-shaders') && el('lock-shaders').checked;
+        const isLockPal = el('btn-lock-palette') && el('btn-lock-palette').classList.contains('active');
+        const isLockGeo = el('btn-lock-geometry') && el('btn-lock-geometry').classList.contains('active');
+        const isLockSym = el('btn-lock-symmetries') && el('btn-lock-symmetries').classList.contains('active');
+        const isLockFX = el('btn-lock-shaders') && el('btn-lock-shaders').classList.contains('active');
 
         const isMasterBmp = (typeof currentPattern === 'string' && currentPattern.startsWith('bmp_'));
 
@@ -2014,12 +2061,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (el('btn-quick-rand')) {
         el('btn-quick-rand').onclick = () => {
-            const isLockGeo = el('lock-geometry') && el('lock-geometry').checked;
+            const isLockGeo = el('btn-lock-geometry') && el('btn-lock-geometry').classList.contains('active');
             if (!isLockGeo) {
                 const allKeys = Object.keys(POI_GENERATORS);
                 currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
                 if (proSelect) proSelect.value = currentPattern;
-                if (el('morph-enable') && el('morph-enable').checked) {
+                if (el('btn-morph-enable') && el('btn-morph-enable').classList.contains('active-green')) {
                     if (morphASelect) morphASelect.value = currentPattern;
                     if (morphBSelect) morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
                 }
@@ -2027,6 +2074,7 @@ document.addEventListener('DOMContentLoaded', function() {
             performHyperMutate();
         };
     }
+
 
 
     // --- DOWNLOAD HANDLERS ---
@@ -2122,14 +2170,25 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        const isScanAll = el('btn-ble-scan-all') ? el('btn-ble-scan-all').classList.contains('active') : false;
         try {
-            await OpenPixelPoiBLE.connectDevice();
+            await OpenPixelPoiBLE.connectDevice({ scanAll: isScanAll });
         } catch (err) {
             if (err.name !== 'NotFoundError') {
                 console.warn('[BLE Connection Error]', err);
             }
         }
     }
+
+    // Toggle Scan Filter Button (Strict Open/Poi vs All Devices)
+    if (el('btn-ble-scan-all')) {
+        el('btn-ble-scan-all').onclick = function() {
+            this.classList.toggle('active');
+            const isAll = this.classList.contains('active');
+            this.innerText = isAll ? '🔍 Filter: All Nearby Bluetooth Devices' : '🔍 Filter: Open & Poi Only (Strict)';
+        };
+    }
+
 
     // Quick Reconnect to previously paired devices without opening picker
     async function quickReconnectPairedPoi() {
