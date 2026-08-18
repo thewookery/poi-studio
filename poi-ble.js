@@ -100,7 +100,7 @@
                 // Strict filters: only show devices matching Open or Poi
                 const scanConfig = (options.scanAll === true) ? {
                     acceptAllDevices: true,
-                    optionalServices: [NORDIC_UART_SERVICE]
+                    optionalServices: [NORDIC_UART_SERVICE, 'battery_service', 0x180F]
                 } : {
                     filters: [
                         { namePrefix: 'Open' },
@@ -111,7 +111,7 @@
                         { namePrefix: 'Pixel' },
                         { namePrefix: 'pixel' }
                     ],
-                    optionalServices: [NORDIC_UART_SERVICE]
+                    optionalServices: [NORDIC_UART_SERVICE, 'battery_service', 0x180F]
                 };
 
                 const device = await navigator.bluetooth.requestDevice(scanConfig);
@@ -133,6 +133,20 @@
                     console.warn('[BLE] TX characteristic not available (write-only mode)');
                 }
 
+                // 1-Time Startup Battery Check (Non-polling)
+                let batteryLevel = null;
+                try {
+                    const batService = await server.getPrimaryService('battery_service');
+                    if (batService) {
+                        const batChar = await batService.getCharacteristic('battery_level');
+                        const val = await batChar.readValue();
+                        batteryLevel = val.getUint8(0);
+                        console.log(`[BLE] 🔋 Startup Battery for ${device.name}: ${batteryLevel}%`);
+                    }
+                } catch (e) {
+                    // Battery service not enabled in stock firmware
+                }
+
                 const deviceEntry = {
                     id: device.id,
                     device: device,
@@ -140,6 +154,7 @@
                     service: service,
                     rxCharacteristic: rxChar,
                     txCharacteristic: txChar,
+                    batteryLevel: batteryLevel,
                     name: device.name || ('Open Pixel Poi #' + (this.devices.length + 1))
                 };
 
@@ -180,6 +195,19 @@
                         let txChar = null;
                         try {
                             txChar = await service.getCharacteristic(NORDIC_UART_TX_CHAR);
+                        } catch (e) {
+                            console.warn('[BLE] TX characteristic not available');
+                        }
+
+                        // 1-Time Startup Battery Check (Non-polling)
+                        let batteryLevel = null;
+                        try {
+                            const batService = await server.getPrimaryService('battery_service');
+                            if (batService) {
+                                const batChar = await batService.getCharacteristic('battery_level');
+                                const val = await batChar.readValue();
+                                batteryLevel = val.getUint8(0);
+                            }
                         } catch (e) {}
 
                         const deviceEntry = {
@@ -189,6 +217,7 @@
                             service: service,
                             rxCharacteristic: rxChar,
                             txCharacteristic: txChar,
+                            batteryLevel: batteryLevel,
                             name: device.name || ('Open Pixel Poi #' + (this.devices.length + 1))
                         };
 
@@ -198,12 +227,14 @@
                         }.bind(this));
 
                         this.devices.push(deviceEntry);
-                        this._notifyState('connected', { addedDevice: deviceEntry });
                         connectedCount++;
-                    } catch (err) {
-                        console.warn('[BLE] Could not auto-reconnect to:', device.name, err.message);
+                    } catch (e) {
+                        console.warn('[BLE] Failed auto-reconnect to:', device.name, e);
                     }
                 }
+            }
+            if (connectedCount > 0) {
+                this._notifyState('connected', { count: this.devices.length });
             }
             return connectedCount;
         }
