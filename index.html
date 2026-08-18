@@ -36,7 +36,7 @@
             <!-- 1. INFINITE STREAMER (LIQUID ZERO-GLITCH FLOW) -->
             <div class="hud-viz-box">
                 <div class="hud-viz-label">
-                    <span>♾️ Infinite Stream (Plays to ∞)</span>
+                    <span>♾️ Single Pattern Stream (Plays to ∞)</span>
                     <span class="telemetry-pill" id="hud-seam-badge">100.00% Zero-Seam</span>
                 </div>
                 <div class="infinite-canvas-wrap">
@@ -71,25 +71,22 @@
         </div>
     </header>
 
-    <!-- PRIMARY 3-STUDIO WORKSPACE MODE SWITCHER -->
+    <!-- PRIMARY DUAL-WORKSPACE MODE SWITCHER -->
     <div class="workspace-mode-bar">
-        <button class="mode-switch-btn active" id="btn-mode-storyboard" data-mode="workspace-storyboard">
-            🎬 Show Storyboard & Stitcher
-        </button>
-        <button class="mode-switch-btn" id="btn-mode-vault" data-mode="workspace-vault">
-            🗂️ Master BMP Vault (<span id="top-vault-count">395</span>)
+        <button class="mode-switch-btn active" id="btn-mode-stitcher" data-mode="workspace-stitcher">
+            🔀 Master BMP Pattern Stitcher & Vault (395 BMPs)
         </button>
         <button class="mode-switch-btn" id="btn-mode-generator" data-mode="workspace-generator">
-            ⚡ Algorithmic Pattern Generator
+            ⚡ Algorithmic Pattern Generator & Shaders (128+)
         </button>
     </div>
 
     <!-- ==========================================================================
-         WORKSPACE 1: SHOW STORYBOARD & MASTER STITCHER STUDIO
+         WORKSPACE 1: MASTER BMP PATTERN STITCHER & VAULT (ON SAME PAGE)
          ========================================================================== -->
-    <div id="workspace-storyboard" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
+    <div id="workspace-stitcher" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
 
-        <!-- STORYBOARD TIMELINE SHOW BUILDER -->
+        <!-- 1. STORYBOARD TIMELINE SHOW BUILDER -->
         <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                 <span style="font-size:0.82rem; font-weight:800; color:var(--neon-green);">
@@ -105,7 +102,7 @@
             <!-- HORIZONTAL FILMSTRIP QUEUE -->
             <div class="storyboard-timeline" id="storyboard-timeline">
                 <div style="font-size:0.75rem; color:var(--text-muted); margin:auto; padding:12px;">
-                    Timeline is empty. Go to <b>"🗂️ Master BMP Vault"</b> or click <b>"🎲 Add Random 10"</b> to build your seamless master show!
+                    Timeline is empty. Click <b>"➕ Add"</b> on any pattern below to build your seamless master show!
                 </div>
             </div>
 
@@ -220,12 +217,8 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- ==========================================================================
-         WORKSPACE 2: MASTER BMP PATTERN VAULT STUDIO
-         ========================================================================== -->
-    <div id="workspace-vault" style="display:none; flex-direction:column; gap:10px; padding:10px 12px;">
+        <!-- 2. MASTER BMP PATTERN VAULT (ON SAME PAGE) -->
         <div class="card-box">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
                 <div>
@@ -233,12 +226,8 @@
                         🗂️ Master BMP Pattern Vault (<span id="vault-count-badge">395 patterns</span>)
                     </span>
                     <div style="font-size:0.68rem; color:var(--text-muted);">
-                        All patterns unified in single 'patterns/' folder • Tall files auto-rotated 90° for horizontal POV spinning
+                        Click <b>➕ Add</b> to append pattern to Storyboard above • Tall files pre-rotated 90°
                     </div>
-                </div>
-                <div style="display:flex; gap:6px;">
-                    <button class="hw-btn" id="btn-vault-add-all" style="font-size:0.7rem; color:var(--neon-green); font-weight:800;">⚡ Add All to Storyboard</button>
-                    <button class="hw-btn" id="btn-vault-add-rand10" style="font-size:0.7rem; color:var(--accent-color);">🎲 Add Random 10</button>
                 </div>
             </div>
 
@@ -249,12 +238,12 @@
             </div>
 
             <!-- PATTERN CARDS GRID -->
-            <div class="gallery-grid" id="vault-cards-grid" style="margin-top:10px; max-height:580px; overflow-y:auto; padding-right:4px;">
+            <div class="gallery-grid" id="vault-cards-grid" style="margin-top:10px; max-height:550px; overflow-y:auto; padding-right:4px;">
                 <!-- Dynamically populated pattern cards -->
             </div>
         </div>
-    </div>
 
+    </div>
 
     <!-- ==========================================================================
          WORKSPACE 2: ALGORITHMIC PATTERN GENERATOR & POV SHADERS
@@ -508,7 +497,7 @@
     </div>
 
     <footer class="footer-note">
-        100% Pure Algorithmic POV Suite. 559 Master Pattern Vault. Zero-Glitch Flow Engine.
+        100% Pure Algorithmic POV Suite. 395 Master Patterns in Single Folder. 40,000-Pixel Hardware Cap.
     </footer>
 </div>
 
@@ -519,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const el = (id) => document.getElementById(id);
     const updateBadge = (id, val) => { const e = el(id); if (e) e.innerText = val; };
 
-    // Register 559 master BMP patterns into engine
+    // Register master BMP patterns into engine
     if (typeof registerMasterBmpVault === 'function') {
         registerMasterBmpVault();
     }
@@ -529,6 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPattern = (window.MASTER_BMP_VAULT && window.MASTER_BMP_VAULT[0]) ? window.MASTER_BMP_VAULT[0].id : "aztec_xicalcoliuhqui_fret";
     let currentHeight = 55;
     let currentWidth = 240;
+    let storyboardTargetHeight = 55;
     let symMirrorH = false;
     let symMirrorV = false;
     let symMirrorDiag = false;
@@ -554,16 +544,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Timeline Storyboard Queue
     const storyboardQueue = [];
 
-    // --- 3-STUDIO WORKSPACE MODE SWITCHER ---
+    // --- WORKSPACE MODE SWITCHER ---
     document.querySelectorAll('.mode-switch-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.mode-switch-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             activeWorkspace = this.getAttribute('data-mode');
             
-            el('workspace-storyboard').style.display = (activeWorkspace === 'workspace-storyboard') ? 'flex' : 'none';
-            el('workspace-vault').style.display = (activeWorkspace === 'workspace-vault') ? 'flex' : 'none';
-            el('workspace-generator').style.display = (activeWorkspace === 'workspace-generator') ? 'flex' : 'none';
+            const wStitcher = el('workspace-stitcher');
+            const wGen = el('workspace-generator');
+            if (wStitcher) wStitcher.style.display = (activeWorkspace === 'workspace-stitcher') ? 'flex' : 'none';
+            if (wGen) wGen.style.display = (activeWorkspace === 'workspace-generator') ? 'flex' : 'none';
         });
     });
 
@@ -598,31 +589,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const morphBSelect = el('morph-model-b');
 
     const opts = buildSelectOptions();
-    proSelect.innerHTML = opts;
-    morphASelect.innerHTML = opts;
-    morphBSelect.innerHTML = opts;
+    if (proSelect) proSelect.innerHTML = opts;
+    if (morphASelect) morphASelect.innerHTML = opts;
+    if (morphBSelect) morphBSelect.innerHTML = opts;
 
-    proSelect.value = currentPattern;
-    morphASelect.value = currentPattern;
-    morphBSelect.value = "aztec_xicalcoliuhqui_fret";
+    if (proSelect) proSelect.value = currentPattern;
+    if (morphASelect) morphASelect.value = currentPattern;
+    if (morphBSelect) morphBSelect.value = "aztec_xicalcoliuhqui_fret";
 
-    proSelect.onchange = (e) => {
-        currentPattern = e.target.value;
-        triggerSmoothRender();
-    };
+    if (proSelect) {
+        proSelect.onchange = (e) => {
+            currentPattern = e.target.value;
+            triggerSmoothRender();
+        };
+    }
 
     // =========================================================================
     // MASTER BMP VAULT (395 UNIFIED PATTERNS)
     // =========================================================================
     const vaultItems = window.MASTER_BMP_VAULT || [];
-    updateBadge('top-vault-count', `${vaultItems.length}`);
 
     function renderVaultCards() {
         const grid = el('vault-cards-grid');
         if (!grid) return;
         grid.innerHTML = '';
 
-        const searchVal = el('vault-search-input').value.toLowerCase().trim();
+        const searchVal = el('vault-search-input') ? el('vault-search-input').value.toLowerCase().trim() : '';
 
         const filtered = vaultItems.filter(item => {
             return (!searchVal || item.name.toLowerCase().includes(searchVal) || item.rawFile.toLowerCase().includes(searchVal));
@@ -646,53 +638,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
 
-            // Click image to preview immediately in streamer
-            card.querySelector('.vault-card-img').onclick = () => {
-                document.querySelectorAll('.vault-card').forEach(c => c.classList.remove('active'));
-                card.classList.add('active');
-                loadPatternToActive(item);
-            };
+            // Click image to preview immediately in pinned streamer
+            const imgEl = card.querySelector('.vault-card-img');
+            if (imgEl) {
+                imgEl.onclick = () => {
+                    document.querySelectorAll('.vault-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    loadPatternToActive(item);
+                };
+            }
 
             // Add to timeline
-            card.querySelector('.btn-add-timeline').onclick = () => {
-                addToStoryboard(item);
-            };
+            const addBtn = card.querySelector('.btn-add-timeline');
+            if (addBtn) {
+                addBtn.onclick = () => {
+                    addToStoryboard(item);
+                };
+            }
 
             // Rotate card on the fly
-            card.querySelector('.btn-rotate-card').onclick = () => {
-                rotateVaultItem(item);
-                renderVaultCards();
-            };
+            const rotBtn = card.querySelector('.btn-rotate-card');
+            if (rotBtn) {
+                rotBtn.onclick = () => {
+                    rotateVaultItem(item);
+                    renderVaultCards();
+                };
+            }
 
             grid.appendChild(card);
         });
     }
 
     renderVaultCards();
-    el('vault-search-input').oninput = renderVaultCards;
+    if (el('vault-search-input')) el('vault-search-input').oninput = renderVaultCards;
 
-    el('btn-vault-add-all').onclick = () => {
-        const searchVal = el('vault-search-input').value.toLowerCase().trim();
-        const filtered = vaultItems.filter(item => {
-            return (!searchVal || item.name.toLowerCase().includes(searchVal) || item.rawFile.toLowerCase().includes(searchVal));
-        });
-        filtered.forEach(item => addToStoryboard(item));
-        el('btn-mode-storyboard').click();
-    };
+    if (el('btn-stitch-all-vault')) {
+        el('btn-stitch-all-vault').onclick = () => {
+            const searchVal = el('vault-search-input') ? el('vault-search-input').value.toLowerCase().trim() : '';
+            const filtered = vaultItems.filter(item => {
+                return (!searchVal || item.name.toLowerCase().includes(searchVal) || item.rawFile.toLowerCase().includes(searchVal));
+            });
+            filtered.forEach(item => addToStoryboard(item));
+        };
+    }
 
-    el('btn-vault-add-rand10').onclick = () => {
-        const shuffled = [...vaultItems].sort(() => 0.5 - Math.random()).slice(0, 10);
-        shuffled.forEach(item => addToStoryboard(item));
-        el('btn-mode-storyboard').click();
-    };
-
-    el('btn-stitch-all-vault').onclick = () => {
-        vaultItems.forEach(item => addToStoryboard(item));
-    };
-
+    if (el('btn-rand-10-show')) {
+        el('btn-rand-10-show').onclick = () => {
+            const shuffled = [...vaultItems].sort(() => 0.5 - Math.random()).slice(0, 10);
+            shuffled.forEach(item => addToStoryboard(item));
+        };
+    }
 
     function rotateVaultItem(item) {
-        // Create canvas from image, rotate, update dataUri
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = item.cachedImg.naturalWidth || item.width;
         tempCanvas.height = item.cachedImg.naturalHeight || item.height;
@@ -722,7 +719,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- STORYBOARD TIMELINE QUEUE ---
     function addToStoryboard(item) {
-        // Clone canvas
         const c = document.createElement('canvas');
         c.width = item.width;
         c.height = item.height;
@@ -741,11 +737,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateStoryboardUI() {
         const timeline = el('storyboard-timeline');
+        if (!timeline) return;
         updateBadge('timeline-count-badge', `${storyboardQueue.length} clip${storyboardQueue.length === 1 ? '' : 's'}`);
 
         if (storyboardQueue.length === 0) {
-            timeline.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); margin:auto; padding:12px;">Timeline is empty. Click <b>"➕ Add to Show"</b> on any pattern below to build your seamless master show!</div>';
+            timeline.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); margin:auto; padding:12px;">Timeline is empty. Click <b>"➕ Add"</b> on any pattern below to build your seamless master show!</div>';
             updateBadge('timeline-stats-badge', 'Total Length: 0px (~0 KB)');
+            recompileShowMaster(true);
             return;
         }
 
@@ -808,35 +806,39 @@ document.addEventListener('DOMContentLoaded', function() {
             timeline.appendChild(div);
         });
 
-        const estKB = Math.round((54 + Math.floor((24 * totalW + 31) / 32) * 4 * currentHeight) / 1024);
+        const estKB = Math.round((54 + Math.floor((24 * totalW + 31) / 32) * 4 * storyboardTargetHeight) / 1024);
         updateBadge('timeline-stats-badge', `Total Length: ~${totalW}px (~${estKB} KB)`);
         recompileShowMaster(true);
     }
 
-    el('btn-clear-timeline').onclick = () => {
-        storyboardQueue.length = 0;
-        updateStoryboardUI();
-    };
+    if (el('btn-clear-timeline')) {
+        el('btn-clear-timeline').onclick = () => {
+            storyboardQueue.length = 0;
+            updateStoryboardUI();
+        };
+    }
 
-    el('btn-stitch-cur-cat').onclick = () => {
-        const searchVal = el('vault-search-input').value.toLowerCase().trim();
-        const filtered = vaultItems.filter(item => {
-            const matchCat = (activeCategory === "All" || item.category === activeCategory);
-            const matchSearch = (!searchVal || item.name.toLowerCase().includes(searchVal));
-            return matchCat && matchSearch;
+    // --- STORYBOARD TARGET HEIGHT PRESET HANDLERS ---
+    document.querySelectorAll('#sb-h-presets .hw-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#sb-h-presets .hw-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            storyboardTargetHeight = parseInt(this.getAttribute('data-sb-h'));
+            if (el('sb-custom-h-input')) el('sb-custom-h-input').value = storyboardTargetHeight;
+            recompileShowMaster(true);
         });
+    });
 
-        filtered.forEach(item => addToStoryboard(item));
-    };
-
-    el('btn-rand-10-show').onclick = () => {
-        const shuffled = [...vaultItems].sort(() => 0.5 - Math.random()).slice(0, 10);
-        shuffled.forEach(item => addToStoryboard(item));
-    };
-
-    el('stitch-overlap-slider').oninput = (e) => {
-        updateBadge('stitch-overlap-val', e.target.value + 'px');
-    };
+    if (el('sb-custom-h-input')) {
+        el('sb-custom-h-input').addEventListener('input', function() {
+            const val = parseInt(this.value);
+            if (val && val >= 8 && val <= 256) {
+                document.querySelectorAll('#sb-h-presets .hw-btn').forEach(b => b.classList.remove('active'));
+                storyboardTargetHeight = val;
+                recompileShowMaster(true);
+            }
+        });
+    }
 
     // =========================================================================
     // DEDICATED STORYBOARD SHOW CINEMA PLAYER (ISOLATED EXECUTION)
@@ -845,33 +847,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let isShowPlaying = true;
     let showStreamOffset = 0;
     let lastShowTime = performance.now();
-    let storyboardTargetHeight = 55;
 
     const showStreamCanvas = el('show-stream-canvas');
     const showStreamCtx = showStreamCanvas ? showStreamCanvas.getContext('2d') : null;
 
     const showStripCanvas = el('show-strip-canvas');
     const showStripCtx = showStripCanvas ? showStripCanvas.getContext('2d') : null;
-
-    // --- STORYBOARD TARGET HEIGHT PRESET HANDLERS ---
-    document.querySelectorAll('#sb-h-presets .hw-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#sb-h-presets .hw-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            storyboardTargetHeight = parseInt(this.getAttribute('data-sb-h'));
-            el('sb-custom-h-input').value = storyboardTargetHeight;
-            recompileShowMaster(true);
-        });
-    });
-
-    el('sb-custom-h-input').addEventListener('input', function() {
-        const val = parseInt(this.value);
-        if (val && val >= 8 && val <= 256) {
-            document.querySelectorAll('#sb-h-presets .hw-btn').forEach(b => b.classList.remove('active'));
-            storyboardTargetHeight = val;
-            recompileShowMaster(true);
-        }
-    });
 
     function recompileShowMaster(silent = true) {
         if (storyboardQueue.length === 0) {
@@ -882,7 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return null;
         }
 
-        const durationMode = el('stitch-duration-select').value;
+        const durationMode = el('stitch-duration-select') ? el('stitch-duration-select').value : 'uniform_240';
         const targetH = storyboardTargetHeight;
 
         const normalizedCanvases = storyboardQueue.map(node => {
@@ -916,9 +897,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return c;
         });
 
-        const transition = el('stitch-trans-select').value;
-        const overlap = parseInt(el('stitch-overlap-slider').value);
-        const seamlessLoop = el('stitch-seamless-loop').checked;
+        const transition = el('stitch-trans-select') ? el('stitch-trans-select').value : 'crossfade';
+        const overlap = parseInt(el('stitch-overlap-slider') ? el('stitch-overlap-slider').value : 28);
+        const seamlessLoop = el('stitch-seamless-loop') ? el('stitch-seamless-loop').checked : true;
 
         const compiled = joinPatternSequence(normalizedCanvases, { 
             transition, 
@@ -965,7 +946,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return compiled;
     }
 
-
     function updateShowStripView() {
         if (!showStripCanvas || !showMasterCanvas) return;
         showStripCanvas.width = Math.min(1200, showMasterCanvas.width);
@@ -979,7 +959,7 @@ document.addEventListener('DOMContentLoaded', function() {
         lastShowTime = now;
 
         if (showStreamCanvas && showStreamCtx && showMasterCanvas && showMasterCanvas.width > 0) {
-            const speed = parseFloat(el('cinema-speed-slider').value);
+            const speed = parseFloat(el('cinema-speed-slider') ? el('cinema-speed-slider').value : 180);
             const w = showMasterCanvas.width;
             const h = showMasterCanvas.height;
 
@@ -1004,37 +984,44 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     requestAnimationFrame(showCinemaStreamLoop);
 
-    el('stitch-trans-select').onchange = () => recompileShowMaster(true);
-    el('stitch-duration-select').onchange = () => recompileShowMaster(true);
-    el('stitch-seamless-loop').onchange = () => recompileShowMaster(true);
-    el('stitch-overlap-slider').oninput = (e) => {
-        updateBadge('stitch-overlap-val', e.target.value + 'px');
-        recompileShowMaster(true);
-    };
+    if (el('stitch-trans-select')) el('stitch-trans-select').onchange = () => recompileShowMaster(true);
+    if (el('stitch-duration-select')) el('stitch-duration-select').onchange = () => recompileShowMaster(true);
+    if (el('stitch-seamless-loop')) el('stitch-seamless-loop').onchange = () => recompileShowMaster(true);
+    if (el('stitch-overlap-slider')) {
+        el('stitch-overlap-slider').oninput = (e) => {
+            updateBadge('stitch-overlap-val', e.target.value + 'px');
+            recompileShowMaster(true);
+        };
+    }
 
-    el('cinema-speed-slider').oninput = (e) => {
-        updateBadge('cinema-speed-val', e.target.value);
-    };
+    if (el('cinema-speed-slider')) {
+        el('cinema-speed-slider').oninput = (e) => {
+            updateBadge('cinema-speed-val', e.target.value);
+        };
+    }
 
-    el('btn-cinema-toggle').onclick = () => {
-        isShowPlaying = !isShowPlaying;
-        el('btn-cinema-toggle').innerText = isShowPlaying ? '⏸️ Pause Show' : '▶️ Play Show';
-    };
+    if (el('btn-cinema-toggle')) {
+        el('btn-cinema-toggle').onclick = () => {
+            isShowPlaying = !isShowPlaying;
+            el('btn-cinema-toggle').innerText = isShowPlaying ? '⏸️ Pause Show' : '▶️ Play Show';
+        };
+    }
 
-    el('btn-cinema-rewind').onclick = () => {
-        showStreamOffset = 0;
-    };
+    if (el('btn-cinema-rewind')) {
+        el('btn-cinema-rewind').onclick = () => {
+            showStreamOffset = 0;
+        };
+    }
 
-    el('btn-export-cinema-bmp').onclick = () => {
-        const master = recompileShowMaster(false);
-        if (master) {
-            const blob = canvasToBmpBlob(master, { topDown: false });
-            triggerDownload(blob, `master_pov_show_${master.width}x${master.height}.bmp`);
-        }
-    };
-
-
-
+    if (el('btn-export-cinema-bmp')) {
+        el('btn-export-cinema-bmp').onclick = () => {
+            const master = recompileShowMaster(false);
+            if (master) {
+                const blob = canvasToBmpBlob(master, { topDown: false });
+                triggerDownload(blob, `master_pov_show_${master.width}x${master.height}.bmp`);
+            }
+        };
+    }
 
     // --- CUSTOM COLOR PICKER SYSTEM ---
     let customColors = ['#ff007f', '#00ffff', '#ffd700', '#bc13fe'];
@@ -1068,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 customColors[idx] = e.target.value;
                 POI_PALETTES.custom = customColors;
                 updateGradientPreview();
-                if (el('ctrl-palette').value === 'custom') {
+                if (el('ctrl-palette') && el('ctrl-palette').value === 'custom') {
                     triggerSmoothRender();
                 }
             };
@@ -1097,94 +1084,112 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    el('btn-add-swatch').onclick = () => {
-        if (customColors.length < 8) {
-            customColors.push(getRandomColorHex());
+    if (el('btn-add-swatch')) {
+        el('btn-add-swatch').onclick = () => {
+            if (customColors.length < 8) {
+                customColors.push(getRandomColorHex());
+                POI_PALETTES.custom = customColors;
+                if (el('ctrl-palette')) el('ctrl-palette').value = 'custom';
+                updateCustomSwatchesUI();
+                triggerSmoothRender();
+            }
+        };
+    }
+
+    if (el('btn-del-swatch')) {
+        el('btn-del-swatch').onclick = () => {
+            if (customColors.length > 2) {
+                customColors.pop();
+                POI_PALETTES.custom = customColors;
+                if (el('ctrl-palette')) el('ctrl-palette').value = 'custom';
+                updateCustomSwatchesUI();
+                triggerSmoothRender();
+            }
+        };
+    }
+
+    if (el('btn-custom-rand')) {
+        el('btn-custom-rand').onclick = () => {
+            const count = Math.floor(Math.random() * 3) + 3;
+            customColors = [];
+            for (let i = 0; i < count; i++) customColors.push(getRandomColorHex());
             POI_PALETTES.custom = customColors;
-            el('ctrl-palette').value = 'custom';
+            if (el('ctrl-palette')) el('ctrl-palette').value = 'custom';
             updateCustomSwatchesUI();
             triggerSmoothRender();
-        }
-    };
+        };
+    }
 
-    el('btn-del-swatch').onclick = () => {
-        if (customColors.length > 2) {
-            customColors.pop();
+    if (el('btn-preset-fire')) {
+        el('btn-preset-fire').onclick = () => {
+            customColors = ['#ff0000', '#ff5500', '#ffaa00', '#ffff55', '#ffffff'];
             POI_PALETTES.custom = customColors;
-            el('ctrl-palette').value = 'custom';
+            if (el('ctrl-palette')) el('ctrl-palette').value = 'custom';
             updateCustomSwatchesUI();
             triggerSmoothRender();
-        }
-    };
+        };
+    }
 
-    el('btn-custom-rand').onclick = () => {
-        const count = Math.floor(Math.random() * 3) + 3;
-        customColors = [];
-        for (let i = 0; i < count; i++) customColors.push(getRandomColorHex());
-        POI_PALETTES.custom = customColors;
-        el('ctrl-palette').value = 'custom';
-        updateCustomSwatchesUI();
-        triggerSmoothRender();
-    };
+    if (el('btn-preset-neon')) {
+        el('btn-preset-neon').onclick = () => {
+            customColors = ['#00ffff', '#ff007f', '#39ff14', '#bc13fe'];
+            POI_PALETTES.custom = customColors;
+            if (el('ctrl-palette')) el('ctrl-palette').value = 'custom';
+            updateCustomSwatchesUI();
+            triggerSmoothRender();
+        };
+    }
 
-    el('btn-preset-fire').onclick = () => {
-        customColors = ['#ff0000', '#ff5500', '#ffaa00', '#ffff55', '#ffffff'];
-        POI_PALETTES.custom = customColors;
-        el('ctrl-palette').value = 'custom';
-        updateCustomSwatchesUI();
-        triggerSmoothRender();
-    };
-
-    el('btn-preset-neon').onclick = () => {
-        customColors = ['#00ffff', '#ff007f', '#39ff14', '#bc13fe'];
-        POI_PALETTES.custom = customColors;
-        el('ctrl-palette').value = 'custom';
-        updateCustomSwatchesUI();
-        triggerSmoothRender();
-    };
-
-    el('btn-preset-rainbow').onclick = () => {
-        customColors = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff'];
-        POI_PALETTES.custom = customColors;
-        el('ctrl-palette').value = 'custom';
-        updateCustomSwatchesUI();
-        triggerSmoothRender();
-    };
+    if (el('btn-preset-rainbow')) {
+        el('btn-preset-rainbow').onclick = () => {
+            customColors = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff'];
+            POI_PALETTES.custom = customColors;
+            if (el('ctrl-palette')) el('ctrl-palette').value = 'custom';
+            updateCustomSwatchesUI();
+            triggerSmoothRender();
+        };
+    }
 
     updateCustomSwatchesUI();
 
     // --- MORPH TOGGLES ---
-    el('morph-enable').onchange = (e) => {
-        el('morph-panel-body').style.display = e.target.checked ? 'flex' : 'none';
-        triggerSmoothRender();
-    };
-    morphASelect.onchange = triggerSmoothRender;
-    morphBSelect.onchange = triggerSmoothRender;
-    el('morph-flow-style').onchange = triggerSmoothRender;
-    el('morph-ratio').oninput = (e) => {
-        updateBadge('morph-ratio-val', Math.round(e.target.value * 100) + '%');
-        triggerSmoothRender();
-    };
+    if (el('morph-enable')) {
+        el('morph-enable').onchange = (e) => {
+            if (el('morph-panel-body')) el('morph-panel-body').style.display = e.target.checked ? 'flex' : 'none';
+            triggerSmoothRender();
+        };
+    }
+    if (morphASelect) morphASelect.onchange = triggerSmoothRender;
+    if (morphBSelect) morphBSelect.onchange = triggerSmoothRender;
+    if (el('morph-flow-style')) el('morph-flow-style').onchange = triggerSmoothRender;
+    if (el('morph-ratio')) {
+        el('morph-ratio').oninput = (e) => {
+            updateBadge('morph-ratio-val', Math.round(e.target.value * 100) + '%');
+            triggerSmoothRender();
+        };
+    }
 
-    // --- HARDWARE HEIGHT & WIDTH CONTROLS ---
+    // --- HARDWARE HEIGHT & WIDTH CONTROLS (GENERATOR TAB) ---
     document.querySelectorAll('.hw-btn[data-h]').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.hw-btn[data-h]').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentHeight = parseInt(this.getAttribute('data-h'));
-            el('custom-h-input').value = currentHeight;
+            if (el('custom-h-input')) el('custom-h-input').value = currentHeight;
             applyDimensions(currentHeight, currentWidth);
         });
     });
 
-    el('custom-h-input').addEventListener('input', function() {
-        const val = parseInt(this.value);
-        if (val && val >= 8 && val <= 255) {
-            document.querySelectorAll('.hw-btn[data-h]').forEach(b => b.classList.remove('active'));
-            currentHeight = val;
-            applyDimensions(currentHeight, currentWidth);
-        }
-    });
+    if (el('custom-h-input')) {
+        el('custom-h-input').addEventListener('input', function() {
+            const val = parseInt(this.value);
+            if (val && val >= 8 && val <= 255) {
+                document.querySelectorAll('.hw-btn[data-h]').forEach(b => b.classList.remove('active'));
+                currentHeight = val;
+                applyDimensions(currentHeight, currentWidth);
+            }
+        });
+    }
 
     function applyDimensions(h, w) {
         currentHeight = h;
@@ -1195,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', function() {
         prevCanvas.height = currentHeight;
         displayCanvas.width = currentWidth;
         displayCanvas.height = currentHeight;
-        el('phase-slider').max = currentWidth;
+        if (el('phase-slider')) el('phase-slider').max = currentWidth;
         const kbSize = Math.round((54 + Math.floor((24 * w + 31) / 32) * 4 * h) / 1024);
         updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px (~${kbSize} KB)`);
         renderActivePattern(false);
@@ -1204,6 +1209,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- SYMMETRY TOGGLES ---
     function setupSymBtn(btnId, toggleFn) {
         const btn = el(btnId);
+        if (!btn) return;
         btn.onclick = () => {
             toggleFn();
             btn.classList.toggle('active');
@@ -1217,8 +1223,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setKaleido(kVal, btnId) {
         const btn = el(btnId);
+        if (!btn) return;
         btn.onclick = () => {
-            ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => el(id).classList.remove('active'));
+            ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => {
+                if (el(id)) el(id).classList.remove('active');
+            });
             if (symKaleido === kVal) {
                 symKaleido = 0;
             } else {
@@ -1241,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderActivePattern(true);
     }
 
-    // --- CORE RENDERING ---
+    // --- CORE RENDERING (SINGLE PATTERN GENERATOR) ---
     function renderActivePattern(isTransition = false) {
         const w = currentWidth;
         const h = currentHeight;
@@ -1250,29 +1259,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const ctx = baseCanvas.getContext('2d');
         ctx.clearRect(0, 0, w, h);
 
-        const repeats = parseInt(el('ctrl-repeats').value) || 4;
+        const repeats = parseInt(el('ctrl-repeats') ? el('ctrl-repeats').value : 4) || 4;
         const spacing = (w / (repeats * h));
-        const thickness = parseFloat(el('ctrl-thickness').value) || 2.5;
+        const thickness = parseFloat(el('ctrl-thickness') ? el('ctrl-thickness').value : 2.5) || 2.5;
         const scale = 1.0;
         const chaos = 0.5;
 
-        const paletteKey = el('ctrl-palette').value;
-        const colorDir = el('pro-color-dir').value;
+        const paletteKey = el('ctrl-palette') ? el('ctrl-palette').value : 'custom';
+        const colorDir = el('pro-color-dir') ? el('pro-color-dir').value : 'h';
         const gradientMode = 'cyclic';
 
         const colSampler = createColorSampler(paletteKey, colorDir, gradientMode);
         const params = { chaos, scale, thickness, spacing };
 
-        const isMorph = el('morph-enable').checked;
+        const isMorph = el('morph-enable') ? el('morph-enable').checked : false;
         if (isMorph) {
-            const modelA = morphASelect.value;
-            const modelB = morphBSelect.value;
-            const flowStyle = el('morph-flow-style').value;
-            const morphRatio = parseFloat(el('morph-ratio').value);
+            const modelA = morphASelect ? morphASelect.value : 'aztec_xicalcoliuhqui_fret';
+            const modelB = morphBSelect ? morphBSelect.value : 'sacred_third_eye_mandala';
+            const flowStyle = el('morph-flow-style') ? el('morph-flow-style').value : 'azimuthal_flow';
+            const morphRatio = parseFloat(el('morph-ratio') ? el('morph-ratio').value : 0.5);
             generateMorphedPattern(baseCanvas, modelA, modelB, flowStyle, morphRatio, params, colSampler);
         } else {
             const genFn = POI_GENERATORS[currentPattern] || POI_GENERATORS.aztec_xicalcoliuhqui_fret;
-            genFn(ctx, w, h, params, colSampler);
+            if (typeof genFn === 'function') {
+                genFn(ctx, w, h, params, colSampler);
+            }
         }
 
         // Symmetries
@@ -1286,10 +1297,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Post FX
         const fx = {
-            strobe: parseInt(el('fx-strobe').value),
-            rgb: parseInt(el('fx-rgb').value),
-            wave: parseInt(el('fx-wave').value),
-            glow: parseInt(el('fx-glow').value)
+            strobe: parseInt(el('fx-strobe') ? el('fx-strobe').value : 0),
+            rgb: parseInt(el('fx-rgb') ? el('fx-rgb').value : 0),
+            wave: parseInt(el('fx-wave') ? el('fx-wave').value : 0),
+            glow: parseInt(el('fx-glow') ? el('fx-glow').value : 0)
         };
         applyPostFX(baseCanvas, fx);
 
@@ -1309,9 +1320,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- REPEAT STRIP VIEW ---
     function updateStripView() {
         const tileCanvas = el('tile-canvas');
+        if (!tileCanvas) return;
         const w = currentWidth;
         const h = currentHeight;
-        const phase = parseInt(el('phase-slider').value) || 0;
+        const phase = parseInt(el('phase-slider') ? el('phase-slider').value : 0) || 0;
 
         tileCanvas.width = w * 2;
         tileCanvas.height = h;
@@ -1332,9 +1344,9 @@ document.addEventListener('DOMContentLoaded', function() {
         tCtx.setLineDash([]);
     }
 
-    // --- INFINITE STREAMER ANIMATION ---
+    // --- INFINITE STREAMER ANIMATION (SINGLE PATTERN) ---
     const infCanvas = el('infinite-canvas');
-    const infCtx = infCanvas.getContext('2d');
+    const infCtx = infCanvas ? infCanvas.getContext('2d') : null;
     let streamOffset = 0;
     let lastStreamTime = performance.now();
 
@@ -1342,7 +1354,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const dt = (now - lastStreamTime) / 1000;
         lastStreamTime = now;
 
-        const speed = parseFloat(el('stream-speed').value);
+        const speed = parseFloat(el('stream-speed') ? el('stream-speed').value : 180);
         const w = currentWidth;
         const h = currentHeight;
 
@@ -1359,18 +1371,20 @@ document.addEventListener('DOMContentLoaded', function() {
             updateStripView();
         }
 
-        streamOffset = (streamOffset + speed * dt) % w;
+        if (infCanvas && infCtx) {
+            streamOffset = (streamOffset + speed * dt) % w;
 
-        const cw = infCanvas.width;
-        const ch = infCanvas.height;
-        infCtx.clearRect(0, 0, cw, ch);
+            const cw = infCanvas.width;
+            const ch = infCanvas.height;
+            infCtx.clearRect(0, 0, cw, ch);
 
-        const tileDisplayW = (w / h) * ch;
+            const tileDisplayW = (w / h) * ch;
 
-        let startX = -((streamOffset / w) * tileDisplayW);
-        while (startX < cw) {
-            infCtx.drawImage(displayCanvas, 0, 0, w, h, startX, 0, tileDisplayW + 0.5, ch);
-            startX += tileDisplayW;
+            let startX = -((streamOffset / w) * tileDisplayW);
+            while (startX < cw) {
+                infCtx.drawImage(displayCanvas, 0, 0, w, h, startX, 0, tileDisplayW + 0.5, ch);
+                startX += tileDisplayW;
+            }
         }
 
         requestAnimationFrame(infiniteStreamLoop);
@@ -1381,62 +1395,86 @@ document.addEventListener('DOMContentLoaded', function() {
     const dragArea = el('strip-drag-area');
     let isDragging = false, startX = 0, startPhase = 0;
 
-    dragArea.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        startX = e.clientX;
-        startPhase = parseInt(el('phase-slider').value) || 0;
-    });
+    if (dragArea) {
+        dragArea.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startPhase = parseInt(el('phase-slider') ? el('phase-slider').value : 0) || 0;
+        });
 
-    window.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        const dx = e.clientX - startX;
-        let newPhase = ((startPhase - dx) % currentWidth + currentWidth) % currentWidth;
-        el('phase-slider').value = Math.round(newPhase);
-        updateBadge('phase-val', Math.round(newPhase) + 'px');
-        updateStripView();
-    });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            let newPhase = ((startPhase - dx) % currentWidth + currentWidth) % currentWidth;
+            if (el('phase-slider')) el('phase-slider').value = Math.round(newPhase);
+            updateBadge('phase-val', Math.round(newPhase) + 'px');
+            updateStripView();
+        });
 
-    window.addEventListener('mouseup', () => { isDragging = false; });
+        window.addEventListener('mouseup', () => { isDragging = false; });
 
-    dragArea.addEventListener('touchstart', (e) => {
-        isDragging = true;
-        startX = e.touches[0].clientX;
-        startPhase = parseInt(el('phase-slider').value) || 0;
-    });
+        dragArea.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startPhase = parseInt(el('phase-slider') ? el('phase-slider').value : 0) || 0;
+        });
 
-    window.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        const dx = e.touches[0].clientX - startX;
-        let newPhase = ((startPhase - dx) % currentWidth + currentWidth) % currentWidth;
-        el('phase-slider').value = Math.round(newPhase);
-        updateBadge('phase-val', Math.round(newPhase) + 'px');
-        updateStripView();
-    });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const dx = e.touches[0].clientX - startX;
+            let newPhase = ((startPhase - dx) % currentWidth + currentWidth) % currentWidth;
+            if (el('phase-slider')) el('phase-slider').value = Math.round(newPhase);
+            updateBadge('phase-val', Math.round(newPhase) + 'px');
+            updateStripView();
+        });
 
-    window.addEventListener('touchend', () => { isDragging = false; });
+        window.addEventListener('touchend', () => { isDragging = false; });
+    }
 
-    el('phase-slider').addEventListener('input', (e) => {
-        updateBadge('phase-val', e.target.value + 'px');
-        updateStripView();
-    });
+    if (el('phase-slider')) {
+        el('phase-slider').addEventListener('input', (e) => {
+            updateBadge('phase-val', e.target.value + 'px');
+            updateStripView();
+        });
+    }
 
-    el('stream-speed').addEventListener('input', (e) => {
-        updateBadge('stream-speed-val', e.target.value);
+    if (el('stream-speed')) {
+        el('stream-speed').addEventListener('input', (e) => {
+            updateBadge('stream-speed-val', e.target.value);
+        });
+    }
+
+    // --- PRESET CARDS CLICK (GENERATOR TAB) ---
+    document.querySelectorAll('.preset-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            currentPattern = this.getAttribute('data-preset');
+            if (proSelect) proSelect.value = currentPattern;
+            if (el('morph-enable') && el('morph-enable').checked && morphASelect) {
+                morphASelect.value = currentPattern;
+            }
+            triggerSmoothRender();
+        });
     });
 
     // --- ENHANCED HYPER-MUTATOR & RANDOMIZERS ---
     function performHyperMutate() {
         const palKeys = Object.keys(POI_PALETTES);
-        el('ctrl-palette').value = palKeys[Math.floor(Math.random() * palKeys.length)];
+        if (el('ctrl-palette')) el('ctrl-palette').value = palKeys[Math.floor(Math.random() * palKeys.length)];
 
         const flowModes = ['h', 'h_rev', 'v', 'v_rev', 'diag', 'radial', 'wave_curvature', 'spiral_vortex', 'noise_warp'];
-        el('pro-color-dir').value = flowModes[Math.floor(Math.random() * flowModes.length)];
+        if (el('pro-color-dir')) el('pro-color-dir').value = flowModes[Math.floor(Math.random() * flowModes.length)];
 
-        el('ctrl-repeats').value = [2, 3, 4, 5, 6, 8, 10, 12][Math.floor(Math.random() * 8)];
-        updateBadge('ctrl-repeats-val', el('ctrl-repeats').value + 'x');
+        if (el('ctrl-repeats')) {
+            el('ctrl-repeats').value = [2, 3, 4, 5, 6, 8, 10, 12][Math.floor(Math.random() * 8)];
+            updateBadge('ctrl-repeats-val', el('ctrl-repeats').value + 'x');
+        }
 
-        el('ctrl-thickness').value = (Math.random() * 3.5 + 1.2).toFixed(1);
-        updateBadge('ctrl-thickness-val', el('ctrl-thickness').value + 'px');
+        if (el('ctrl-thickness')) {
+            el('ctrl-thickness').value = (Math.random() * 3.5 + 1.2).toFixed(1);
+            updateBadge('ctrl-thickness-val', el('ctrl-thickness').value + 'px');
+        }
 
         symMirrorH = Math.random() < 0.35;
         symMirrorV = Math.random() < 0.35;
@@ -1445,40 +1483,44 @@ document.addEventListener('DOMContentLoaded', function() {
         const kChoices = [0, 0, 0, 4, 6, 8, 12];
         symKaleido = kChoices[Math.floor(Math.random() * kChoices.length)];
 
-        el('btn-sym-mh').classList.toggle('active', symMirrorH);
-        el('btn-sym-mv').classList.toggle('active', symMirrorV);
-        el('btn-sym-diag').classList.toggle('active', symMirrorDiag);
-        el('btn-sym-inv180').classList.toggle('active', symInvert180);
-        ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => el(id).classList.remove('active'));
-        if (symKaleido === 4) el('btn-sym-k4').classList.add('active');
-        if (symKaleido === 6) el('btn-sym-k6').classList.add('active');
-        if (symKaleido === 8) el('btn-sym-k8').classList.add('active');
-        if (symKaleido === 12) el('btn-sym-k12').classList.add('active');
+        if (el('btn-sym-mh')) el('btn-sym-mh').classList.toggle('active', symMirrorH);
+        if (el('btn-sym-mv')) el('btn-sym-mv').classList.toggle('active', symMirrorV);
+        if (el('btn-sym-diag')) el('btn-sym-diag').classList.toggle('active', symMirrorDiag);
+        if (el('btn-sym-inv180')) el('btn-sym-inv180').classList.toggle('active', symInvert180);
+        ['btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => {
+            if (el(id)) el(id).classList.remove('active');
+        });
+        if (symKaleido === 4 && el('btn-sym-k4')) el('btn-sym-k4').classList.add('active');
+        if (symKaleido === 6 && el('btn-sym-k6')) el('btn-sym-k6').classList.add('active');
+        if (symKaleido === 8 && el('btn-sym-k8')) el('btn-sym-k8').classList.add('active');
+        if (symKaleido === 12 && el('btn-sym-k12')) el('btn-sym-k12').classList.add('active');
 
-        el('fx-wave').value = Math.random() < 0.3 ? Math.floor(Math.random() * 12) + 3 : 0;
-        el('fx-rgb').value = Math.random() < 0.4 ? Math.floor(Math.random() * 8) + 2 : 0;
-        el('fx-glow').value = Math.random() < 0.35 ? Math.floor(Math.random() * 8) + 2 : 0;
-        el('fx-strobe').value = Math.random() < 0.15 ? Math.floor(Math.random() * 6) + 2 : 0;
+        if (el('fx-wave')) el('fx-wave').value = Math.random() < 0.3 ? Math.floor(Math.random() * 12) + 3 : 0;
+        if (el('fx-rgb')) el('fx-rgb').value = Math.random() < 0.4 ? Math.floor(Math.random() * 8) + 2 : 0;
+        if (el('fx-glow')) el('fx-glow').value = Math.random() < 0.35 ? Math.floor(Math.random() * 8) + 2 : 0;
+        if (el('fx-strobe')) el('fx-strobe').value = Math.random() < 0.15 ? Math.floor(Math.random() * 6) + 2 : 0;
 
         ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
-            updateBadge(id + '-val', el(id).value === "0" ? "Off" : el(id).value + "px");
+            if (el(id)) updateBadge(id + '-val', el(id).value === "0" ? "Off" : el(id).value + "px");
         });
 
         triggerSmoothRender();
     }
 
-    el('btn-quick-mutate').onclick = performHyperMutate;
+    if (el('btn-quick-mutate')) el('btn-quick-mutate').onclick = performHyperMutate;
 
-    el('btn-quick-rand').onclick = () => {
-        const allKeys = Object.keys(POI_GENERATORS);
-        currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
-        proSelect.value = currentPattern;
-        if (el('morph-enable').checked) {
-            morphASelect.value = currentPattern;
-            morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
-        }
-        performHyperMutate();
-    };
+    if (el('btn-quick-rand')) {
+        el('btn-quick-rand').onclick = () => {
+            const allKeys = Object.keys(POI_GENERATORS);
+            currentPattern = allKeys[Math.floor(Math.random() * allKeys.length)];
+            if (proSelect) proSelect.value = currentPattern;
+            if (el('morph-enable') && el('morph-enable').checked) {
+                if (morphASelect) morphASelect.value = currentPattern;
+                if (morphBSelect) morphBSelect.value = allKeys[Math.floor(Math.random() * allKeys.length)];
+            }
+            performHyperMutate();
+        };
+    }
 
     // --- DOWNLOAD HANDLERS ---
     function triggerDownload(blob, filename) {
@@ -1492,22 +1534,26 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
-    el('btn-quick-dl-bmp').onclick = () => {
-        const blob = canvasToBmpBlob(baseCanvas, { topDown: false });
-        triggerDownload(blob, `${currentPattern}_${currentWidth}x${currentHeight}.bmp`);
-    };
+    if (el('btn-quick-dl-bmp')) {
+        el('btn-quick-dl-bmp').onclick = () => {
+            const blob = canvasToBmpBlob(baseCanvas, { topDown: false });
+            triggerDownload(blob, `${currentPattern}_${currentWidth}x${currentHeight}.bmp`);
+        };
+    }
 
     // --- CONTROLS LISTENERS ---
-    el('ctrl-palette').onchange = triggerSmoothRender;
-    el('pro-color-dir').onchange = triggerSmoothRender;
-    el('ctrl-repeats').oninput = (e) => { updateBadge('ctrl-repeats-val', e.target.value + 'x'); triggerSmoothRender(); };
-    el('ctrl-thickness').oninput = (e) => { updateBadge('ctrl-thickness-val', e.target.value + 'px'); triggerSmoothRender(); };
+    if (el('ctrl-palette')) el('ctrl-palette').onchange = triggerSmoothRender;
+    if (el('pro-color-dir')) el('pro-color-dir').onchange = triggerSmoothRender;
+    if (el('ctrl-repeats')) el('ctrl-repeats').oninput = (e) => { updateBadge('ctrl-repeats-val', e.target.value + 'x'); triggerSmoothRender(); };
+    if (el('ctrl-thickness')) el('ctrl-thickness').oninput = (e) => { updateBadge('ctrl-thickness-val', e.target.value + 'px'); triggerSmoothRender(); };
 
     ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
-        el(id).oninput = (e) => {
-            updateBadge(id + '-val', e.target.value === "0" ? "Off" : e.target.value + "px");
-            triggerSmoothRender();
-        };
+        if (el(id)) {
+            el(id).oninput = (e) => {
+                updateBadge(id + '-val', e.target.value === "0" ? "Off" : e.target.value + "px");
+                triggerSmoothRender();
+            };
+        }
     });
 
     // Initial render

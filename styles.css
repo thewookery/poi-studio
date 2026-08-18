@@ -218,17 +218,17 @@ body {
 }
 
 /* ==========================================================================
-   PRIMARY WORKSPACE MODE SWITCHER (3 DEDICATED STUDIOS)
+   PRIMARY WORKSPACE MODE SWITCHER (TWO DEDICATED SECTIONS)
    ========================================================================== */
 .workspace-mode-bar {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 6px;
     padding: 8px 10px;
     background: #070a10;
     border-bottom: 2px solid var(--border-color);
 }
-@media (max-width: 720px) {
+@media (max-width: 600px) {
     .workspace-mode-bar {
         grid-template-columns: 1fr;
     }
@@ -237,8 +237,8 @@ body {
     background: #101624;
     border: 1px solid var(--border-color);
     color: var(--text-muted);
-    padding: 8px 10px;
-    font-size: 0.76rem;
+    padding: 9px 12px;
+    font-size: 0.78rem;
     font-weight: 800;
     border-radius: var(--radius-sm);
     cursor: pointer;
@@ -246,7 +246,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 6px;
     text-align: center;
 }
 .mode-switch-btn:hover {
@@ -259,6 +259,7 @@ body {
     border-color: var(--accent-color);
     box-shadow: 0 0 12px var(--accent-glow);
 }
+
 
 
 /* ==========================================================================
