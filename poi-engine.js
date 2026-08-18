@@ -1,5 +1,5 @@
 /**
- * POI Studio: Algorithmic POV Generative Engine (v13.0 - Custom Palette Studio & Pro Suite)
+ * POI Studio: Algorithmic POV Generative Engine (v14.0 - Buttery-Smooth Zero-Glitch Flow)
  * 128+ Pure Mathematical, Aztec Step-Fret, Sacred Geometry, Optical Illusion & Quantum POV Algorithms
  * Interactive Custom Color Picker, 25+ Curated Palettes, 10+ Color Flow Modes, 8+ Hyper-Symmetries
  */
@@ -215,7 +215,7 @@ const poiNoise = new SeamlessNoise(4242);
 
 // --- 25+ RICH CURATED PALETTES & CUSTOM COLOR SLOTS ---
 const POI_PALETTES = {
-    custom: ['#ff007f', '#00ffff', '#ffd700', '#bc13fe'], // User-editable
+    custom: ['#ff007f', '#00ffff', '#ffd700', '#bc13fe'],
     aztec_gold_turquoise: ['#ffd700', '#00e5ff', '#ff3d00', '#00bfa5', '#ffffff'],
     psychedelic_third_eye: ['#bc13fe', '#ff007f', '#00ffff', '#ffe600', '#050014'],
     kaleido_hyper_spectral: ['#ff0000', '#ff8000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#8000ff', '#ff00ff'],
@@ -1223,7 +1223,7 @@ POI_GENERATORS.trippy_tesseract_4d = (ctx, w, h, p, getCol) => {
             ctx.moveTo(x - h * 0.35, cy - h * 0.35); ctx.lineTo(x - h * 0.18, cy - h * 0.18);
             ctx.moveTo(x + h * 0.35, cy - h * 0.35); ctx.lineTo(x + h * 0.18, cy - h * 0.18);
             ctx.moveTo(x + h * 0.35, cy + h * 0.35); ctx.lineTo(x + h * 0.18, cy + h * 0.18);
-            ctx.moveTo(x - h * 0.35, cy + h * 0.35); ctx.lineTo(x - h * 0.18, cy + h * 0.18);
+            ctx.moveTo(x - h * 0.35, cy - h * 0.35); ctx.lineTo(x - h * 0.18, cy - h * 0.18);
             ctx.stroke();
         });
     }
@@ -2290,7 +2290,7 @@ POI_GENERATORS.strobe_diamond_lattice = (ctx, w, h, p, getCol) => {
     }
 };
 
-// --- HARMONIC GEOMETRY FLOW MORPH ENGINE ---
+// --- HARMONIC GEOMETRY FLOW MORPH ENGINE (ZERO-GLITCH DUAL MODEL INTERPOLATION) ---
 function generateMorphedPattern(destCanvas, modelA, modelB, flowStyle, morphRatio, params, colSampler) {
     const w = destCanvas.width;
     const h = destCanvas.height;
@@ -2337,7 +2337,7 @@ function generateMorphedPattern(destCanvas, modelA, modelB, flowStyle, morphRati
     ctx.putImageData(outImg, 0, 0);
 }
 
-// --- UNIVERSAL ZERO-SEAM CONTINUITY GUARDIAN ---
+// --- UNIVERSAL ZERO-SEAM CONTINUITY GUARDIAN (5TH-ORDER HERMITE SEAMLESS FUSION) ---
 function applyPerfectSeamGuardian(canvas, blendWidth = 6) {
     const w = canvas.width;
     const h = canvas.height;
@@ -2357,7 +2357,10 @@ function applyPerfectSeamGuardian(canvas, blendWidth = 6) {
                 const leftIdx = (y * w + leftX) * 4;
                 const rightIdx = (y * w + rightX) * 4;
 
-                const t = (1 - Math.cos(((bx + 0.5) / blendWidth) * Math.PI)) * 0.5;
+                const u = (bx + 0.5) / blendWidth;
+                // 5th-order smoothstep for zero slope and curvature at boundary
+                const t = u * u * u * (u * (u * 6 - 15) + 10);
+
                 const avgR = data[leftIdx] * (1 - t) + data[rightIdx] * t;
                 const avgG = data[leftIdx + 1] * (1 - t) + data[rightIdx + 1] * t;
                 const avgB = data[leftIdx + 2] * (1 - t) + data[rightIdx + 2] * t;
@@ -2424,7 +2427,8 @@ function joinPatternSequence(canvases, options = {}) {
             const outD = blendZone.data;
 
             for (let bx = 0; bx < blendW; bx++) {
-                const t = (1 - Math.cos((bx / blendW) * Math.PI)) * 0.5;
+                const u = bx / blendW;
+                const t = u * u * (3 - 2 * u); // Hermite cubic smoothstep
                 for (let by = 0; by < h; by++) {
                     const idx = (by * blendW + bx) * 4;
                     if (transition === 'crossfade') {
@@ -2433,7 +2437,7 @@ function joinPatternSequence(canvases, options = {}) {
                         outD[idx + 2] = dataA[idx + 2] * (1 - t) + dataB[idx + 2] * t;
                         outD[idx + 3] = Math.max(dataA[idx + 3], dataB[idx + 3]);
                     } else if (transition === 'black') {
-                        const dip = Math.sin((bx / blendW) * Math.PI);
+                        const dip = Math.sin(u * Math.PI);
                         const bright = 1 - dip;
                         const src = t < 0.5 ? dataA : dataB;
                         outD[idx] = src[idx] * bright;
@@ -2446,8 +2450,7 @@ function joinPatternSequence(canvases, options = {}) {
                             outD[idx] = 255; outD[idx + 1] = 255; outD[idx + 2] = 255; outD[idx + 3] = 255;
                         } else {
                             const src = t < 0.5 ? dataA : dataB;
-                            outD[idx] = src[idx]; outD[idx + 1] = src[idx + 1] * bright;
-                            outD[idx + 2] = src[idx + 2]; outD[idx + 3] = src[idx + 3];
+                            outD[idx] = src[idx]; outD[idx + 1] = src[idx + 1]; outD[idx + 2] = src[idx + 2]; outD[idx + 3] = src[idx + 3];
                         }
                     }
                 }
@@ -2465,7 +2468,8 @@ function joinPatternSequence(canvases, options = {}) {
         const tailD = tail.data;
 
         for (let bx = 0; bx < overlap; bx++) {
-            const t = (1 - Math.cos((bx / overlap) * Math.PI)) * 0.5;
+            const u = bx / overlap;
+            const t = u * u * (3 - 2 * u);
             for (let by = 0; by < h; by++) {
                 const idx = (by * overlap + bx) * 4;
                 const r = tailD[idx] * (1 - t) + headD[idx] * t;

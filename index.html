@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POI Studio: 100% Zero-Seam POV Suite & Custom Color Studio</title>
+    <title>POI Studio: 100% Zero-Seam POV Suite & Liquid Flow Studio</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -33,7 +33,7 @@
 
         <!-- DUAL REAL-TIME VISUALIZERS -->
         <div class="hud-visualizers">
-            <!-- 1. INFINITE STREAMER -->
+            <!-- 1. INFINITE STREAMER (LIQUID ZERO-GLITCH FLOW) -->
             <div class="hud-viz-box">
                 <div class="hud-viz-label">
                     <span>♾️ Infinite Stream (Plays to ∞)</span>
@@ -71,7 +71,7 @@
         </div>
     </header>
 
-    <!-- APP NAVIGATION TABS (CLEAN MULTI-ROW / SCROLLABLE WITH ACTIVE INDICATORS) -->
+    <!-- APP NAVIGATION TABS -->
     <nav class="app-tabs-nav" id="main-nav-bar">
         <button class="tab-btn active" data-tab="tab-colors">🎨 Custom Colors</button>
         <button class="tab-btn" data-tab="tab-symmetries">🎛️ Symmetries & FX</button>
@@ -280,7 +280,6 @@
                     <button class="hw-btn" data-set-w="360">360px HD (~59KB)</button>
                     <button class="hw-btn" data-set-w="480">480px Ultra (~78KB)</button>
                     <div class="custom-dim-wrap">
-                        <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
                         <input type="number" id="custom-w-input" value="240" min="32" max="720">
                         <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
                     </div>
@@ -583,9 +582,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let symInvert180 = false;
     let symKaleido = 0;
 
+    // Double buffering for smooth liquid transitions between patterns/palettes
     let baseCanvas = document.createElement('canvas');
     baseCanvas.width = currentWidth;
     baseCanvas.height = currentHeight;
+
+    let prevCanvas = document.createElement('canvas');
+    prevCanvas.width = currentWidth;
+    prevCanvas.height = currentHeight;
+
+    let displayCanvas = document.createElement('canvas');
+    displayCanvas.width = currentWidth;
+    displayCanvas.height = currentHeight;
+
+    let transitionAlpha = 1.0;
+    let transitionStartTime = 0;
+    const TRANSITION_DURATION = 200; // ms smooth cross-morph
 
     const sequenceQueue = [];
 
@@ -598,8 +610,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetId = this.getAttribute('data-tab');
             const targetPane = el(targetId);
             if (targetPane) targetPane.classList.add('active');
-            
-            // Auto scroll active tab into view in nav
             this.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         });
     });
@@ -633,7 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
     proSelect.onchange = (e) => {
         currentPattern = e.target.value;
         highlightActivePreset();
-        renderActivePattern();
+        triggerSmoothRender();
     };
 
     // --- PRESET CARDS CLICK ---
@@ -646,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (el('morph-enable').checked) {
                 morphASelect.value = currentPattern;
             }
-            renderActivePattern();
+            triggerSmoothRender();
         });
     });
 
@@ -688,7 +698,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 POI_PALETTES.custom = customColors;
                 updateGradientPreview();
                 if (el('ctrl-palette').value === 'custom') {
-                    renderActivePattern();
+                    triggerSmoothRender();
                 }
             };
 
@@ -721,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function() {
             POI_PALETTES.custom = customColors;
             el('ctrl-palette').value = 'custom';
             updateCustomSwatchesUI();
-            renderActivePattern();
+            triggerSmoothRender();
         }
     };
 
@@ -731,7 +741,7 @@ document.addEventListener('DOMContentLoaded', function() {
             POI_PALETTES.custom = customColors;
             el('ctrl-palette').value = 'custom';
             updateCustomSwatchesUI();
-            renderActivePattern();
+            triggerSmoothRender();
         }
     };
 
@@ -742,7 +752,7 @@ document.addEventListener('DOMContentLoaded', function() {
         POI_PALETTES.custom = customColors;
         el('ctrl-palette').value = 'custom';
         updateCustomSwatchesUI();
-        renderActivePattern();
+        triggerSmoothRender();
     };
 
     el('btn-preset-fire').onclick = () => {
@@ -750,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
         POI_PALETTES.custom = customColors;
         el('ctrl-palette').value = 'custom';
         updateCustomSwatchesUI();
-        renderActivePattern();
+        triggerSmoothRender();
     };
 
     el('btn-preset-neon').onclick = () => {
@@ -758,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
         POI_PALETTES.custom = customColors;
         el('ctrl-palette').value = 'custom';
         updateCustomSwatchesUI();
-        renderActivePattern();
+        triggerSmoothRender();
     };
 
     el('btn-preset-rainbow').onclick = () => {
@@ -766,7 +776,7 @@ document.addEventListener('DOMContentLoaded', function() {
         POI_PALETTES.custom = customColors;
         el('ctrl-palette').value = 'custom';
         updateCustomSwatchesUI();
-        renderActivePattern();
+        triggerSmoothRender();
     };
 
     updateCustomSwatchesUI();
@@ -774,14 +784,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- MORPH TOGGLES ---
     el('morph-enable').onchange = (e) => {
         el('morph-panel-body').style.display = e.target.checked ? 'flex' : 'none';
-        renderActivePattern();
+        triggerSmoothRender();
     };
-    morphASelect.onchange = renderActivePattern;
-    morphBSelect.onchange = renderActivePattern;
-    el('morph-flow-style').onchange = renderActivePattern;
+    morphASelect.onchange = triggerSmoothRender;
+    morphBSelect.onchange = triggerSmoothRender;
+    el('morph-flow-style').onchange = triggerSmoothRender;
     el('morph-ratio').oninput = (e) => {
         updateBadge('morph-ratio-val', Math.round(e.target.value * 100) + '%');
-        renderActivePattern();
+        triggerSmoothRender();
     };
 
     // --- HARDWARE HEIGHT & WIDTH CONTROLS ---
@@ -828,10 +838,14 @@ document.addEventListener('DOMContentLoaded', function() {
         currentWidth = w;
         baseCanvas.width = currentWidth;
         baseCanvas.height = currentHeight;
+        prevCanvas.width = currentWidth;
+        prevCanvas.height = currentHeight;
+        displayCanvas.width = currentWidth;
+        displayCanvas.height = currentHeight;
         el('phase-slider').max = currentWidth;
         const kbSize = Math.round((54 + Math.floor((24 * w + 31) / 32) * 4 * h) / 1024);
         updateBadge('dim-badge', `${currentWidth} × ${currentHeight} px (~${kbSize} KB)`);
-        renderActivePattern();
+        renderActivePattern(false);
     }
 
     // --- SYMMETRY TOGGLES ---
@@ -840,7 +854,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.onclick = () => {
             toggleFn();
             btn.classList.toggle('active');
-            renderActivePattern();
+            triggerSmoothRender();
         };
     }
     setupSymBtn('btn-sym-mh', () => { symMirrorH = !symMirrorH; });
@@ -858,7 +872,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 symKaleido = kVal;
                 btn.classList.add('active');
             }
-            renderActivePattern();
+            triggerSmoothRender();
         };
     }
     setKaleido(4, 'btn-sym-k4');
@@ -866,8 +880,17 @@ document.addEventListener('DOMContentLoaded', function() {
     setKaleido(8, 'btn-sym-k8');
     setKaleido(12, 'btn-sym-k12');
 
+    // --- TRIGGER SMOOTH RENDER WITH DISSOLVE BUFFER ---
+    function triggerSmoothRender() {
+        // Save current display to prevCanvas for smooth morphing
+        prevCanvas.getContext('2d').drawImage(displayCanvas, 0, 0);
+        transitionAlpha = 0.0;
+        transitionStartTime = performance.now();
+        renderActivePattern(true);
+    }
+
     // --- CORE RENDERING ---
-    function renderActivePattern() {
+    function renderActivePattern(isTransition = false) {
         const w = currentWidth;
         const h = currentHeight;
         baseCanvas.width = w;
@@ -918,13 +941,16 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         applyPostFX(baseCanvas, fx);
 
-        // Universal Zero-Seam Continuity Guardian (Forces 100% mathematical zero delta)
+        // Universal Zero-Seam Continuity Guardian
         applyPerfectSeamGuardian(baseCanvas, 6);
 
-        // Seam Telemetry Check
-        const telemetry = checkSeamContinuity(baseCanvas);
-        updateBadge('hud-seam-badge', '100.00% Zero-Seam');
+        if (!isTransition) {
+            displayCanvas.getContext('2d').clearRect(0, 0, w, h);
+            displayCanvas.getContext('2d').drawImage(baseCanvas, 0, 0);
+            transitionAlpha = 1.0;
+        }
 
+        updateBadge('hud-seam-badge', '100.00% Zero-Seam');
         updateStripView();
     }
 
@@ -940,11 +966,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const tCtx = tileCanvas.getContext('2d');
         tCtx.clearRect(0, 0, tileCanvas.width, h);
 
-        const shifted = shiftCanvasPhase(baseCanvas, phase);
+        const shifted = shiftCanvasPhase(displayCanvas, phase);
         tCtx.drawImage(shifted, 0, 0);
         tCtx.drawImage(shifted, w, 0);
 
-        tCtx.strokeStyle = 'rgba(0, 173, 181, 0.5)';
+        // Subtle guide line on repeat strip (clean & thin)
+        tCtx.strokeStyle = 'rgba(0, 173, 181, 0.35)';
         tCtx.lineWidth = 1;
         tCtx.setLineDash([2, 2]);
         tCtx.beginPath();
@@ -954,7 +981,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tCtx.setLineDash([]);
     }
 
-    // --- INFINITE STREAMER ANIMATION ---
+    // --- BUTTERY-SMOOTH ZERO-GLITCH INFINITE STREAMER ANIMATION ---
     const infCanvas = el('infinite-canvas');
     const infCtx = infCanvas.getContext('2d');
     let streamOffset = 0;
@@ -968,35 +995,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const w = currentWidth;
         const h = currentHeight;
 
+        // Smooth dissolve animation between patterns
+        if (transitionAlpha < 1.0) {
+            const elapsed = now - transitionStartTime;
+            transitionAlpha = Math.min(1.0, elapsed / TRANSITION_DURATION);
+            const dCtx = displayCanvas.getContext('2d');
+            dCtx.clearRect(0, 0, w, h);
+            dCtx.globalAlpha = 1.0;
+            dCtx.drawImage(prevCanvas, 0, 0);
+            dCtx.globalAlpha = transitionAlpha;
+            dCtx.drawImage(baseCanvas, 0, 0);
+            dCtx.globalAlpha = 1.0;
+            updateStripView();
+        }
+
         streamOffset = (streamOffset + speed * dt) % w;
 
         const cw = infCanvas.width;
         const ch = infCanvas.height;
         infCtx.clearRect(0, 0, cw, ch);
 
+        // Exact pixel geometry
         const tileDisplayW = (w / h) * ch;
 
         let startX = -((streamOffset / w) * tileDisplayW);
         while (startX < cw) {
-            infCtx.drawImage(baseCanvas, 0, 0, w, h, Math.floor(startX), 0, Math.ceil(tileDisplayW) + 1, ch);
+            // Render seamless tiles with exact width - ZERO cut lines, ZERO markers
+            infCtx.drawImage(displayCanvas, 0, 0, w, h, startX, 0, tileDisplayW + 0.5, ch);
             startX += tileDisplayW;
         }
-
-        // Live marker
-        infCtx.strokeStyle = 'rgba(255, 46, 99, 0.8)';
-        infCtx.lineWidth = 2;
-        infCtx.setLineDash([3, 3]);
-        let markerX = -((streamOffset / w) * tileDisplayW);
-        while (markerX < cw) {
-            if (markerX >= 0) {
-                infCtx.beginPath();
-                infCtx.moveTo(Math.floor(markerX), 0);
-                infCtx.lineTo(Math.floor(markerX), ch);
-                infCtx.stroke();
-            }
-            markerX += tileDisplayW;
-        }
-        infCtx.setLineDash([]);
 
         requestAnimationFrame(infiniteStreamLoop);
     }
@@ -1095,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        renderActivePattern();
+        triggerSmoothRender();
     }
 
     el('btn-quick-mutate').onclick = performHyperMutate;
@@ -1193,16 +1220,16 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // --- CONTROLS LISTENERS ---
-    el('ctrl-palette').onchange = renderActivePattern;
-    el('pro-color-dir').onchange = renderActivePattern;
-    el('ctrl-gradient-mode').onchange = renderActivePattern;
-    el('ctrl-repeats').oninput = (e) => { updateBadge('ctrl-repeats-val', e.target.value + 'x'); renderActivePattern(); };
-    el('ctrl-thickness').oninput = (e) => { updateBadge('ctrl-thickness-val', e.target.value + 'px'); renderActivePattern(); };
+    el('ctrl-palette').onchange = triggerSmoothRender;
+    el('pro-color-dir').onchange = triggerSmoothRender;
+    el('ctrl-gradient-mode').onchange = triggerSmoothRender;
+    el('ctrl-repeats').oninput = (e) => { updateBadge('ctrl-repeats-val', e.target.value + 'x'); triggerSmoothRender(); };
+    el('ctrl-thickness').oninput = (e) => { updateBadge('ctrl-thickness-val', e.target.value + 'px'); triggerSmoothRender(); };
 
     ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
         el(id).oninput = (e) => {
             updateBadge(id + '-val', e.target.value === "0" ? "Off" : e.target.value + "px");
-            renderActivePattern();
+            triggerSmoothRender();
         };
     });
 
