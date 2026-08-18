@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=55">
+    <link rel="stylesheet" href="styles.css?v=56">
 
 
 </head>
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v55</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v56</span></div>
+
 
 
 
@@ -913,9 +914,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=55"></script>
-<script src="poi-engine.js?v=55"></script>
-<script src="poi-ble.js?v=55"></script>
+<script src="master-vault-manifest.js?v=56"></script>
+<script src="poi-engine.js?v=56"></script>
+<script src="poi-ble.js?v=56"></script>
+
 
 
 
@@ -2648,7 +2650,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Toggle BLE Connection / Smart Reconnect / Switch to Hardware Deck
+    // Direct 1-Click BLE Connection / Switch to Hardware Deck
     async function toggleBleConnection() {
         if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
             alert("Web Bluetooth is not supported in this browser.\n\nPlease open this app in Google Chrome, Microsoft Edge, Opera, or Android Chromium (or Bluefy on iOS) to connect directly to your Open Pixel Poi!");
@@ -2658,14 +2660,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (OpenPixelPoiBLE.isConnected) {
             switchWorkspace('workspace-deck');
         } else {
-            // Attempt fast 1-click reconnect first
-            if (el('btn-ble-connect')) el('btn-ble-connect').innerText = '⏳ Connecting...';
-            try {
-                const count = await OpenPixelPoiBLE.reconnectPaired();
-                if (count > 0) return;
-            } catch (e) {}
-            
-            // Otherwise open strictly filtered scanner
+            // Direct 1-Click Scanner: opens browser Bluetooth picker immediately on 1st tap!
             await connectAnotherPoi();
         }
     }
@@ -2673,6 +2668,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el('btn-ble-connect')) el('btn-ble-connect').onclick = toggleBleConnection;
     if (el('btn-ble-add-poi')) el('btn-ble-add-poi').onclick = connectAnotherPoi;
     if (el('btn-ble-reconnect-paired')) el('btn-ble-reconnect-paired').onclick = quickReconnectPairedPoi;
+
+    // Background Auto-Reconnect on app launch / refresh if previously paired Poi are nearby
+    if (window.OpenPixelPoiBLE && OpenPixelPoiBLE.isSupported()) {
+        setTimeout(function() {
+            if (!OpenPixelPoiBLE.isConnected) {
+                OpenPixelPoiBLE.reconnectPaired().catch(function() {});
+            }
+        }, 600);
+    }
+
 
 
     // BLE State Listener
@@ -3319,11 +3324,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${slot.isAssigned ? slot.name : '<span style="color:var(--text-muted); font-style:italic;">No Pattern</span>'}
                     </div>
                     <div class="bank-slot-actions">
-                        <button class="bank-slot-btn" data-slot-action="flash" data-idx="${slot.globalIndex}" ${!slot.isAssigned ? 'disabled style="opacity:0.3;"' : ''} style="color:var(--neon-green);" title="Flash this slot to Poi over BLE">
-                            🚀 Flash
-                        </button>
                         <button class="bank-slot-btn" data-slot-action="play" data-idx="${slot.globalIndex}" style="color:var(--accent-color);" title="Command Poi to play this slot">
                             ▶️ Play
+                        </button>
+                        <button class="bank-slot-btn" data-slot-action="flash" data-idx="${slot.globalIndex}" ${!slot.isAssigned ? 'disabled style="opacity:0.3;"' : ''} style="color:var(--neon-green);" title="Flash this slot to Poi over BLE">
+                            🚀 Flash
                         </button>
                         <button class="bank-slot-btn" data-slot-action="load-gen" data-idx="${slot.globalIndex}" ${!slot.isAssigned ? 'disabled style="opacity:0.3;"' : ''} title="Open in Generator to edit">
                             🎨 Edit
@@ -3332,6 +3337,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             🗑️
                         </button>
                     </div>
+
                 `;
 
                 // Wire up card buttons

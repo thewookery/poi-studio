@@ -202,6 +202,7 @@
                 }.bind(this));
 
                 this.devices.push(deviceEntry);
+                this._saveDeviceCache();
                 this._notifyState('connected', { addedDevice: deviceEntry });
 
                 // Deferred non-blocking battery check (waits 2.5s for BLE settle)
@@ -212,6 +213,28 @@
                 this._notifyState('error', { error: err.message });
                 throw err;
             }
+        }
+
+        _saveDeviceCache() {
+            try {
+                let existing = [];
+                try {
+                    const raw = localStorage.getItem('open_poi_cached_devices');
+                    if (raw) existing = JSON.parse(raw);
+                } catch(e) {}
+                if (!Array.isArray(existing)) existing = [];
+
+                this.devices.forEach(function(d) {
+                    const found = existing.find(function(item) { return item.id === d.id; });
+                    if (found) {
+                        found.name = d.name;
+                        found.lastSeen = Date.now();
+                    } else {
+                        existing.push({ id: d.id, name: d.name, lastSeen: Date.now() });
+                    }
+                });
+                localStorage.setItem('open_poi_cached_devices', JSON.stringify(existing));
+            } catch (e) {}
         }
 
         async _queryBatteryDeferred(deviceEntry) {
@@ -280,6 +303,7 @@
                         }.bind(this));
 
                         this.devices.push(deviceEntry);
+                        this._saveDeviceCache();
                         this._queryBatteryDeferred(deviceEntry);
                         connectedCount++;
                     } catch (e) {
@@ -292,6 +316,7 @@
             }
             return connectedCount;
         }
+
 
 
 
