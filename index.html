@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=59">
+    <link rel="stylesheet" href="styles.css?v=60">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v59</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v60</span></div>
+
 
 
 
@@ -699,6 +700,24 @@
                 </div>
             </div>
 
+            <!-- FIRMWARE BANK CAPACITY TOGGLE (STOCK 3-BANK vs CUSTOM 4-BANK) -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px; padding:6px 10px; background:rgba(0,0,0,0.35); border-radius:6px; border:1px solid rgba(0, 255, 136, 0.2);">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:0.72rem; font-weight:800; color:var(--text-color);">🎛️ Firmware Profile:</span>
+                    <div style="display:flex; gap:4px;" id="bank-fw-mode-presets">
+                        <button class="hw-btn" id="btn-fw-mode-3" data-fw-banks="3" style="font-size:0.68rem; padding:4px 8px;" title="Standard Stock Mitch Firmware (3 Banks / 15 Slots)">
+                            Standard (3 Banks • 15 Slots)
+                        </button>
+                        <button class="hw-btn active" id="btn-fw-mode-4" data-fw-banks="4" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-green);" title="Open POI Studio Custom Firmware (4 Banks / 20 Slots)">
+                            ✨ Custom (4 Banks • 20 Slots)
+                        </button>
+                    </div>
+                </div>
+                <div style="font-size:0.65rem; color:var(--text-muted);" id="bank-fw-mode-desc">
+                    Custom 4-Bank mode active (matches Studio Custom Firmware).
+                </div>
+            </div>
+
             <!-- TARGET LED RESOLUTION & RESCALE BAR -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px; padding:6px 8px; background:rgba(0,0,0,0.3); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -710,8 +729,8 @@
                     </div>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button class="hw-btn" id="btn-bank-rescale-all" style="font-size:0.7rem; color:var(--neon-purple); font-weight:800; padding:4px 10px;" title="Resample and fit all 20 slots to target LED height">
-                        🔄 Rescale All 20 to <span id="bank-rescale-target-label">55px</span>
+                    <button class="hw-btn" id="btn-bank-rescale-all" style="font-size:0.7rem; color:var(--neon-purple); font-weight:800; padding:4px 10px;" title="Resample and fit all slots to target LED height">
+                        🔄 Rescale All to <span id="bank-rescale-target-label">55px</span>
                     </button>
                 </div>
             </div>
@@ -725,19 +744,20 @@
                 </div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                     <button class="hw-btn btn-loop-active-bank" id="btn-bank-loop-active" style="font-size:0.72rem; color:var(--neon-purple); font-weight:800; padding:5px 10px;" title="Auto-loop patterns in active bank on Poi">♾️ Auto-Loop Active Bank</button>
-                    <button class="hw-btn btn-loop-all-banks" id="btn-bank-loop-all" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:800; padding:5px 10px;" title="Auto-loop all 20 patterns across all 4 banks on Poi">🌐 Auto-Loop All Banks</button>
+                    <button class="hw-btn btn-loop-all-banks" id="btn-bank-loop-all" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:800; padding:5px 10px;" title="Auto-loop all patterns across all banks on Poi">🌐 Auto-Loop All Banks</button>
                 </div>
             </div>
 
             <!-- BANK SELECTOR TABS -->
             <div style="display:flex; gap:6px; flex-wrap:wrap;" id="bank-filter-nav">
-                <button class="hw-btn active" data-bank-filter="all">✨ All 20 Slots (4 Banks)</button>
+                <button class="hw-btn active" data-bank-filter="all">✨ All Slots</button>
                 <button class="hw-btn" data-bank-filter="0">📁 Bank 1 (Slots 1–5)</button>
                 <button class="hw-btn" data-bank-filter="1">📁 Bank 2 (Slots 1–5)</button>
                 <button class="hw-btn" data-bank-filter="2">📁 Bank 3 (Slots 1–5)</button>
-                <button class="hw-btn" data-bank-filter="3">📁 Bank 4 (Slots 1–5)</button>
+                <button class="hw-btn" data-bank-filter="3" id="bank-filter-tab-4">📁 Bank 4 (Slots 1–5)</button>
             </div>
         </div>
+
 
 
 
@@ -1218,9 +1238,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=59"></script>
-<script src="poi-engine.js?v=59"></script>
-<script src="poi-ble.js?v=59"></script>
+<script src="master-vault-manifest.js?v=60"></script>
+<script src="poi-engine.js?v=60"></script>
+<script src="poi-ble.js?v=60"></script>
+
 
 
 
@@ -3444,17 +3465,84 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // =========================================================================
-    // HARDWARE BANK MANAGER (20 SLOTS ACROSS 4 ESP32 FLASH BANKS)
+    // HARDWARE BANK MANAGER (3 STOCK BANKS OR 4 CUSTOM BANKS)
     // =========================================================================
-    const BANK_COUNT = 4;
     const BANK_SLOT_COUNT = 5;
-    const TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT; // 20
+    let BANK_COUNT = parseInt(localStorage.getItem('open_poi_firmware_bank_mode')) || 4;
+    let TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT;
     const STORAGE_KEY_BANKS = 'open_poi_bank_slots_v4';
 
     let bankSlots = [];
     let currentBankFilter = 'all';
     let bankTargetHeight = 55;
     let pendingBankAssignData = null;
+
+    function setFirmwareBankMode(count, saveStorage = true) {
+        BANK_COUNT = parseInt(count) === 3 ? 3 : 4;
+        TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT;
+
+        // 1. Update UI Toggle Buttons
+        const btn3 = el('btn-fw-mode-3');
+        const btn4 = el('btn-fw-mode-4');
+        if (btn3) btn3.classList.toggle('active', BANK_COUNT === 3);
+        if (btn4) {
+            btn4.classList.toggle('active', BANK_COUNT === 4);
+            btn4.style.color = BANK_COUNT === 4 ? 'var(--neon-green)' : 'var(--text-muted)';
+        }
+
+        // 2. Update Description Banner
+        const descEl = el('bank-fw-mode-desc');
+        if (descEl) {
+            descEl.innerText = BANK_COUNT === 4 
+                ? "Custom 4-Bank mode active (matches Studio Custom Firmware • 20 Slots)."
+                : "Standard 3-Bank mode active (matches Official Stock Mitch Firmware • 15 Slots).";
+        }
+
+        // 3. Update Bank 4 Filter Tab Visibility
+        const tab4 = el('bank-filter-tab-4');
+        if (tab4) tab4.style.display = (BANK_COUNT === 4) ? 'inline-block' : 'none';
+        if (currentBankFilter === '3' && BANK_COUNT === 3) {
+            currentBankFilter = 'all';
+            document.querySelectorAll('#bank-filter-nav button').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('data-bank-filter') === 'all');
+            });
+        }
+
+        // 4. Update Send-to-Bank Modal Bank 4 Block
+        const modalBank4 = el('bank-picker-bank-4-block');
+        if (modalBank4) modalBank4.style.display = (BANK_COUNT === 4) ? 'block' : 'none';
+
+        // 5. Update Batch Buttons text
+        const randFillBtn = el('btn-bank-random-fill');
+        if (randFillBtn) randFillBtn.innerText = `🎲 Random ${TOTAL_BANK_SLOTS} Auto-Fill`;
+        
+        const rescaleBtn = el('btn-bank-rescale-all');
+        if (rescaleBtn) rescaleBtn.innerHTML = `🔄 Rescale All ${TOTAL_BANK_SLOTS} to <span id="bank-rescale-target-label">${bankTargetHeight}px</span>`;
+
+        // 6. Update BLE Bank Quick-Select options in Poi Settings
+        const bleBankSel = el('ble-ctrl-bank');
+        if (bleBankSel) {
+            let opts = '';
+            for (let i = 0; i < BANK_COUNT; i++) opts += `<option value="${i}">Bank ${i + 1} (Slots ${i*5+1}–${i*5+5})</option>`;
+            bleBankSel.innerHTML = opts;
+        }
+
+        // 7. Save to persistent localStorage cache
+        if (saveStorage) {
+            try {
+                localStorage.setItem('open_poi_firmware_bank_mode', `${BANK_COUNT}`);
+            } catch(e) {}
+        }
+
+        renderBankSlotsGrid();
+    }
+
+    if (el('btn-fw-mode-3')) {
+        el('btn-fw-mode-3').onclick = () => setFirmwareBankMode(3, true);
+    }
+    if (el('btn-fw-mode-4')) {
+        el('btn-fw-mode-4').onclick = () => setFirmwareBankMode(4, true);
+    }
 
     /**
      * Resamples any image or canvas to exact target hardware LED height and optimal length
@@ -3508,7 +3596,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed)) {
                     bankSlots = [];
-                    for (let i = 0; i < TOTAL_BANK_SLOTS; i++) {
+                    // Always allocate 20 slots internally so Bank 4 patterns are never discarded if switching modes
+                    for (let i = 0; i < 20; i++) {
                         const b = Math.floor(i / BANK_SLOT_COUNT);
                         const s = i % BANK_SLOT_COUNT;
                         if (i < parsed.length && parsed[i] && parsed[i].dataUri) {
@@ -3537,7 +3626,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch(e) {}
 
         bankSlots = [];
-        for (let i = 0; i < TOTAL_BANK_SLOTS; i++) {
+        for (let i = 0; i < 20; i++) {
             const b = Math.floor(i / BANK_SLOT_COUNT);
             const s = i % BANK_SLOT_COUNT;
             bankSlots.push({
@@ -3560,6 +3649,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch(e) {}
         renderBankSlotsGrid();
     }
+
 
 
     async function assignPatternToBankSlot(bankIdx, slotIdx, patternData) {
@@ -3653,10 +3743,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!container) return;
         container.innerHTML = '';
 
-        const assignedCount = bankSlots.filter(s => s.isAssigned).length;
+        const assignedCount = bankSlots.slice(0, TOTAL_BANK_SLOTS).filter(s => s.isAssigned).length;
         updateBadge('bank-assigned-count-badge', `${assignedCount} / ${TOTAL_BANK_SLOTS} Assigned`);
         updateBadge('bank-active-height-indicator', `${bankTargetHeight}px`);
         updateBadge('bank-rescale-target-label', `${bankTargetHeight}px`);
+
 
 
         for (let b = 0; b < BANK_COUNT; b++) {
@@ -4222,9 +4313,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial render: 55px tall by 40px length
     setGeneratorHeight(55, 40);
+    setFirmwareBankMode(BANK_COUNT, false);
     renderBankSlotsGrid();
 
 });
+
 </script>
 
     <!-- BANK PICKER MODAL -->
@@ -4291,9 +4384,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Bank 4 -->
-                <div>
-                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-pink); margin-bottom:4px;">📁 Bank 4 (Slots 1–5):</div>
+                <!-- Bank 4 (Custom Firmware Only) -->
+                <div id="bank-picker-bank-4-block">
+                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-pink); margin-bottom:4px;">📁 Bank 4 (Slots 1–5 • Custom Firmware):</div>
                     <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
                         <button class="hw-btn bank-slot-pick-btn" data-b="3" data-s="0">Slot 1</button>
                         <button class="hw-btn bank-slot-pick-btn" data-b="3" data-s="1">Slot 2</button>
@@ -4305,6 +4398,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
+
 
 
 
