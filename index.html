@@ -38,7 +38,9 @@
                 <button class="hud-btn-mutate" id="btn-quick-mutate" title="Hyper-Mutate Palette & Geometry">⚡ Mutate</button>
                 <button class="hud-btn-rand" id="btn-quick-rand" title="Random Generator">🎲 Rand</button>
                 <button class="hud-btn-dl" id="btn-quick-dl-bmp" title="Download Open Pixel Poi BMP">💾 BMP</button>
+                <button class="hw-btn" id="btn-force-sync" style="font-size:0.72rem; color:var(--neon-green);" title="Force Cache Purge & Load Latest Version">🔄 Sync</button>
             </div>
+
         </div>
 
         <!-- INLINE NON-INTRUSIVE BLE UPLOAD PROGRESS PILL -->
@@ -2213,8 +2215,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
+    // Force Cache Purge & Live Sync
+    if (el('btn-force-sync')) {
+        el('btn-force-sync').onclick = async () => {
+            el('btn-force-sync').innerText = '⏳ Syncing...';
+            if ('caches' in window) {
+                const keys = await caches.keys();
+                await Promise.all(keys.map(k => caches.delete(k)));
+            }
+            if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for (let r of regs) {
+                    await r.unregister();
+                }
+            }
+            window.location.href = window.location.origin + window.location.pathname + '?v=' + Date.now();
+        };
+    }
+
     // Initial render: 55px tall by 40px length
     setGeneratorHeight(55, 40);
+
 
 
 });
