@@ -310,20 +310,10 @@ class OpenPixelPoiLED {
 
       // Render output with Pattern Blend Engine & Color Palette FX
       if(config.displayState == DS_PATTERN || config.displayState == DS_PATTERN_ALL  || config.displayState == DS_PATTERN_ALL_ALL){
+
         if(config.frameCount == 0 || config.frameHeight == 0) return;
-
-        // 1. Adaptive RPM Calculation (Centrifugal dynamic speed sync)
-        float speedMult = 1.0f;
-        if (config.adaptiveRpmEnabled && config.imu != NULL) {
-          speedMult = config.imu->getSpinSpeedMultiplier();
-        }
-        uint32_t effectiveSpeed = max((uint32_t)1, (uint32_t)(config.animationSpeed * speedMult));
-        frameIndex = ((micros() - (config.displayStateLastUpdated * 1000)) / (1000000 / effectiveSpeed)) % config.frameCount;
-
-        // 2. Smart Idle Blend Factor (0.0 = full POV, 1.0 = ambient mood lamp)
-        float idleBlend = (config.smartIdleEnabled && config.imu != NULL) ? config.imu->getIdleBlend() : 0.0f;
-
-        if(idleBlend <= 0.001f && lastFrameIndex == frameIndex){
+        frameIndex = ((micros() - (config.displayStateLastUpdated * 1000)) / (1000000/(config.animationSpeed))) % config.frameCount;
+        if(lastFrameIndex == frameIndex){
           return;
         }else{
           lastFrameIndex = frameIndex;
@@ -424,36 +414,11 @@ class OpenPixelPoiLED {
             applyPaletteFX(red, green, blue, config.paletteFxMode, millis(), config.paletteSpeed, j, frameIndex, config.frameCount, config.ledCount);
           }
 
-          // Ignis-Style Pattern-Aura Liquid Flow Mode / Ambient Mood Lamp
-          if (config.ignisAuraFlow || idleBlend > 0.001f) {
-            float blendWeight = config.ignisAuraFlow ? 0.85f : idleBlend;
-            
-            // Extract living fluid harmonic frequency along blade
-            uint8_t flowHue = (uint8_t)(((millis() / 18) + (j * 256 / config.ledCount)) & 0xFF);
-            uint8_t flowR = 0, flowG = 0, flowB = 0;
-            hueToRgb(flowHue, 240, flowR, flowG, flowB);
-            
-            // Harmonize with active pattern colors
-            if (red > 0 || green > 0 || blue > 0) {
-              flowR = (uint8_t)((flowR + red) >> 1);
-              flowG = (uint8_t)((flowG + green) >> 1);
-              flowB = (uint8_t)((flowB + blue) >> 1);
-            }
-            
-            if (config.paletteFxMode > 0) {
-              applyPaletteFX(flowR, flowG, flowB, config.paletteFxMode, millis(), config.paletteSpeed, j, 0, 1, config.ledCount);
-            }
-            
-            red   = (uint8_t)(red   * (1.0f - blendWeight) + flowR * blendWeight);
-            green = (uint8_t)(green * (1.0f - blendWeight) + flowG * blendWeight);
-            blue  = (uint8_t)(blue  * (1.0f - blendWeight) + flowB * blendWeight);
-          }
-
-
           ledStrip->SetPixelColor(config.ledCount-1-j, RgbColor(red, green, blue)); // Invert display for POV arc
 
         }
       }
+
 
 
 else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 || config.displayState == DS_WAITING3 || config.displayState == DS_WAITING4 || config.displayState == DS_WAITING5){

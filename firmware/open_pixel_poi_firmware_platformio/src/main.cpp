@@ -1,5 +1,4 @@
 // Sub-Modules
-#include "open_pixel_poi_imu.cpp"
 #include "open_pixel_poi_led.cpp"
 #include "open_pixel_poi_ble.cpp"
 #include "open_pixel_poi_button.cpp"
@@ -14,7 +13,6 @@
 #endif
 
 
-OpenPixelPoiIMU imu;
 OpenPixelPoiConfig config;
 OpenPixelPoiBLE ble(config);
 OpenPixelPoiLED led(config);
@@ -37,10 +35,6 @@ void setup() {
     config.pattern = (uint8_t *) malloc(10000 * 3 * sizeof(uint8_t));
   }
 
-  // Setup Auto-Detecting IMU & connect to config
-  imu.setup();
-  config.imu = &imu;
-
   config.setup();
   led.setup();
   ble.setup();
@@ -53,7 +47,6 @@ void loop() {
   // https://github.com/espressif/arduino-esp32/blob/50ef6f4369fb85139f000f7bbc5a9f9d5bc02b9f/cores/esp32/main.cpp#L68
   while(true){
     if(ble.multipartPattern == 0){
-      imu.loop();
       ble.loop();
       config.loop();
       led.loop();
@@ -67,6 +60,7 @@ void loop() {
     }
   }
 }
+
 
 
 

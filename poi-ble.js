@@ -529,12 +529,6 @@
             await this._sendMessage([COMM_CODES.CC_SET_PALETTE_SPEED, spd]);
         }
 
-        /**
-         * Toggle Ignis-Style Pattern-Aura Liquid Flow Mode
-         */
-        async setIgnisAuraFlow(enabled) {
-            await this._sendMessage([0x1A, enabled ? 1 : 0]);
-        }
 
 
 

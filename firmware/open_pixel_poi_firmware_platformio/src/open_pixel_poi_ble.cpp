@@ -233,10 +233,8 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
             config.displayState = DS_PATTERN_ALL_ALL;
             config.displayStateLastUpdated = millis();
             bleSendSuccess();
-          }else if(requestCode == 0x1A){ // CC_SET_AURA_FLOW
-            config.setIgnisAuraFlow(bleStatus[2] == 1);
-            bleSendSuccess();
           }else if(requestCode == CC_GET_FW_VERSION){
+
 
             bleSendFWVersion();
           }else if(requestCode == CC_SET_HARDWARE_VERSION){

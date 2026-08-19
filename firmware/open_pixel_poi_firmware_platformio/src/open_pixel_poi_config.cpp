@@ -5,7 +5,6 @@
 #include <LittleFS.h>
 #include <Preferences.h>
 #include "config.h"
-#include "open_pixel_poi_imu.cpp"
 
 
 //#define DEBUG  // Comment this line out to remove printf statements in released version
@@ -82,12 +81,6 @@ class OpenPixelPoiConfig {
     unsigned long lastPaletteMorphTime = 0;
     uint16_t paletteMorphIntervalSeconds = 10;
 
-    // IMU & Ignis-Style Adaptive Spin Sync + Smart Idle
-    OpenPixelPoiIMU* imu = NULL;
-    bool adaptiveRpmEnabled = true;
-    bool smartIdleEnabled = true;
-    bool ignisAuraFlow = false;
-
     // Sequencer
     uint8_t *sequencer = (uint8_t *) malloc(1785*sizeof(uint8_t)); // 255 Instruction max (7 bits per instruction)
     uint16_t sequencerLength;
@@ -97,31 +90,13 @@ class OpenPixelPoiConfig {
     // Variables
     long configLastUpdated;
 
-    void setAdaptiveRpm(bool enabled) {
-      this->adaptiveRpmEnabled = enabled;
-      preferences.putBool("adaptRpm", this->adaptiveRpmEnabled);
-      this->configLastUpdated = millis();
-    }
-
-    void setSmartIdle(bool enabled) {
-      this->smartIdleEnabled = enabled;
-      preferences.putBool("smartIdle", this->smartIdleEnabled);
-      this->configLastUpdated = millis();
-    }
-
-    void setIgnisAuraFlow(bool enabled) {
-      this->ignisAuraFlow = enabled;
-      preferences.putBool("ignisAura", this->ignisAuraFlow);
-      this->configLastUpdated = millis();
-    }
-
-
     uint8_t getActivePatternIndex() {
       if (this->patternBank >= 4) {
         return (this->patternSlot % (4 * PATTERN_BANK_SIZE));
       }
       return (this->patternSlot + (this->patternBank * PATTERN_BANK_SIZE));
     }
+
 
 
     void setPaletteFxMode(uint8_t mode) {
