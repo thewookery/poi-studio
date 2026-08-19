@@ -244,15 +244,12 @@ else if(buttonState == BS_CLICK3_HOLD){
 
     // Single press detected after timeout, increment pattern
     if(buttonState == BS_CLICK_UP && millis() - downTime >= 500){
-      if (config.patternBank >= 4) {
-        config.setPatternSlot((config.patternSlot + 1) % (4 * PATTERN_BANK_SIZE), true);
-      } else {
-        config.setPatternSlot((config.patternSlot + 1) % PATTERN_BANK_SIZE, true);
-      }
+      config.setPatternSlot((config.patternSlot + 1) % PATTERN_BANK_SIZE, true);
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
+
 
     // Double press detected after timeout, do nothing
     if(buttonState == BS_CLICK2_UP && millis() - downTime >= 500){

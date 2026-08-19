@@ -91,13 +91,8 @@ class OpenPixelPoiConfig {
     long configLastUpdated;
 
     uint8_t getActivePatternIndex() {
-      if (this->patternBank >= 4) {
-        return (this->patternSlot % (4 * PATTERN_BANK_SIZE));
-      }
-      return (this->patternSlot + (this->patternBank * PATTERN_BANK_SIZE));
+      return ((this->patternSlot % PATTERN_BANK_SIZE) + ((this->patternBank % PATTERN_BANK_COUNT) * PATTERN_BANK_SIZE));
     }
-
-
 
     void setPaletteFxMode(uint8_t mode) {
       this->paletteFxMode = mode % 25;
@@ -112,16 +107,10 @@ class OpenPixelPoiConfig {
       this->configLastUpdated = millis();
     }
 
-
-
-
     void setPaletteSpeed(uint8_t speed) {
       this->paletteSpeed = max((uint8_t)1, min((uint8_t)10, speed));
       this->configLastUpdated = millis();
     }
-
-
-
 
     void setHardwareVersion(uint8_t hardwareVersion) {
       debugf("Save Hardware Version = %d\n", hardwareVersion);
@@ -198,12 +187,7 @@ class OpenPixelPoiConfig {
         this->blendStartTime = millis();
       }
 
-      if (this->patternBank >= 4) {
-        this->patternSlot = patternSlot % (4 * PATTERN_BANK_SIZE);
-      } else {
-        this->patternSlot = patternSlot % PATTERN_BANK_SIZE;
-        this->autoPaletteMorph = false; // Selecting slot in normal bank stops auto-morph
-      }
+      this->patternSlot = patternSlot % PATTERN_BANK_SIZE;
 
       if(save){
         preferences.putChar("patternSlot", this->patternSlot);
@@ -220,21 +204,14 @@ class OpenPixelPoiConfig {
       this->configLastUpdated = millis();
     }
 
-
     void setPatternBank(uint8_t patternBank, bool save) {
       if (this->blendMode > 0) {
         this->blendStartTime = millis();
       }
       this->patternBank = patternBank % PATTERN_BANK_COUNT;
-      if (this->patternBank >= 4) {
-        this->autoPaletteMorph = true;
-        this->lastPaletteMorphTime = millis();
-        if (this->paletteFxMode == 0) this->paletteFxMode = 1;
-      } else {
-        // ALWAYS cleanly exit autoPaletteMorph and clamp patternSlot when switching back to Banks 1-4!
-        this->autoPaletteMorph = false;
-        this->patternSlot = this->patternSlot % PATTERN_BANK_SIZE;
-      }
+      this->patternSlot = this->patternSlot % PATTERN_BANK_SIZE;
+      this->paletteFxMode = 0; // 100% True-Color RGB by default (no unwanted rainbow bleed)
+
       if(save){
         preferences.putChar("patternBank", this->patternBank);
         preferences.putChar("patternSlot", this->patternSlot);
@@ -245,6 +222,7 @@ class OpenPixelPoiConfig {
       
       this->configLastUpdated = millis();
     }
+
 
 
 
@@ -474,25 +452,16 @@ class OpenPixelPoiConfig {
     }
 
     void loop(){
-      // Pattern Shuffle & Bank 5 Cosmic Auto-Morph Tour
-      bool shouldShuffle = (this->displayState == DS_PATTERN_ALL || this->displayState == DS_PATTERN_ALL_ALL || (this->patternBank >= 4 && this->autoPaletteMorph));
+      // Pattern Shuffle across active bank (or all 5 banks)
+      bool shouldShuffle = (this->displayState == DS_PATTERN_ALL || this->displayState == DS_PATTERN_ALL_ALL);
       if(shouldShuffle && millis() - this->displayStateLastUpdated > this->patternShuffleDuration * 1000){
-        if (this->patternBank >= 4) {
-          // Bank 5 Cosmic Tour: Step pattern slot across all 20 patterns + shift to next mind-bending color scheme!
-          this->patternSlot = (this->patternSlot + 1) % (4 * PATTERN_BANK_SIZE);
-          this->paletteFxMode = (this->paletteFxMode % 24) + 1;
-          if (this->blendMode > 0) this->blendStartTime = millis();
-          loadFrameHeight();
-          loadFrameCount();
-          startLoadingPattern();
-        } else {
-          this->setPatternSlot((this->patternSlot + 1) % PATTERN_BANK_SIZE, false);
-          if(this->patternSlot == 0 && this->displayState == DS_PATTERN_ALL_ALL){
-            this->setPatternBank((this->patternBank + 1) % 4, false);
-          }
+        this->setPatternSlot((this->patternSlot + 1) % PATTERN_BANK_SIZE, false);
+        if(this->patternSlot == 0 && this->displayState == DS_PATTERN_ALL_ALL){
+          this->setPatternBank((this->patternBank + 1) % PATTERN_BANK_COUNT, false);
         }
         this->displayStateLastUpdated += this->patternShuffleDuration * 1000;
       }
+
 
 
 
