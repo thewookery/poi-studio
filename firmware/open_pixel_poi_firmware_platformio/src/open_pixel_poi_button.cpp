@@ -48,6 +48,8 @@ private:
   bool regulatorEnabled = true;
 
   long shutDownAt = 0;
+  bool inPaletteSelectMode = false;
+  uint8_t previewPalette = 0;
 
 public:
   OpenPixelPoiButton(OpenPixelPoiConfig& _config): config(_config) {}    
@@ -101,17 +103,27 @@ public:
         // Trigger Waiting Animation
         config.displayState = DS_WAITING5;
         config.displayStateLastUpdated = millis();
-      }else if(buttonState == BS_CLICK_DOWN && millis() - downTime >= 500){ // Click Hold
-        buttonState = BS_CLICK_HOLD;
-        // Trigger voltage display
-        config.displayState = DS_VOLTAGE;
-        config.displayStateLastUpdated = millis();
+    }else if(buttonState == BS_CLICK_DOWN && millis() - downTime >= 500){ // Click Hold
+        if (inPaletteSelectMode) {
+          // Lock in selected palette!
+          config.setPaletteFxMode(previewPalette);
+          inPaletteSelectMode = false;
+          buttonState = BS_INITIAL;
+          config.displayState = DS_PATTERN;
+          config.displayStateLastUpdated = millis();
+        } else {
+          buttonState = BS_CLICK_HOLD;
+          // Trigger voltage display
+          config.displayState = DS_VOLTAGE;
+          config.displayStateLastUpdated = millis();
+        }
       }else if(buttonState == BS_CLICK_HOLD && millis() - downTime >= 2000){ // Click Long Hold
         buttonState = BS_CLICK_HOLD_LONG;
         config.displayState = DS_SHUTDOWN;
         config.displayStateLastUpdated = millis();
         shutDownAt = millis();
       }else if(buttonState == BS_CLICK2_DOWN && millis() - downTime >= 500){ // Click2 Hold
+        inPaletteSelectMode = false;
         buttonState = BS_CLICK2_HOLD;
         // Trigger bank display
         config.displayState = DS_BANK;
@@ -149,6 +161,7 @@ public:
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK2_HOLD){
+        inPaletteSelectMode = false;
         // 11 options, 500ms each, 0-5500ms, offset by 500 for initial press animation
         int selection = ((millis() - downTime - 500) % 5500) / 500;
         if(selection == 0){
@@ -196,9 +209,7 @@ public:
           config.displayStateLastUpdated = millis();
         }
         buttonState = BS_INITIAL;
-      }
-
-else if(buttonState == BS_CLICK3_HOLD){
+      }else if(buttonState == BS_CLICK3_HOLD){
         if(millis() - downTime < 1000){
           config.setLedBrightness(config.ledBrightnessOptions[0]);
         }else if(millis() - downTime < 1500){
@@ -242,12 +253,22 @@ else if(buttonState == BS_CLICK3_HOLD){
       }
     }
 
-    // Single press detected after timeout, increment pattern
+    // Single press detected after timeout
     if(buttonState == BS_CLICK_UP && millis() - downTime >= 350){
-      config.setPatternSlot((config.patternSlot + 1) % PATTERN_BANK_SIZE, true);
-      config.displayState = DS_PATTERN;
-      config.displayStateLastUpdated = millis();
-      buttonState = BS_INITIAL;
+      if(inPaletteSelectMode){
+        // Step through color palettes one by one with live pattern preview
+        previewPalette = (previewPalette + 1) % 25;
+        config.paletteFxMode = previewPalette;
+        config.displayState = DS_PATTERN;
+        config.displayStateLastUpdated = millis();
+        buttonState = BS_INITIAL;
+      }else{
+        // Normal mode: Increment pattern slot in active bank
+        config.setPatternSlot((config.patternSlot + 1) % PATTERN_BANK_SIZE, true);
+        config.displayState = DS_PATTERN;
+        config.displayStateLastUpdated = millis();
+        buttonState = BS_INITIAL;
+      }
     }
 
     // Double press detected after timeout -> return to pattern
@@ -257,16 +278,18 @@ else if(buttonState == BS_CLICK3_HOLD){
       buttonState = BS_INITIAL;
     }
 
-    // Triple press detected after timeout -> cycle Color Palette FX on poi!
+    // Triple press detected after timeout -> return to pattern
     if(buttonState == BS_CLICK3_UP && millis() - downTime >= 350){
-      config.setPaletteFxMode((config.paletteFxMode + 1) % 25);
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
-    // Quad press detected after timeout -> return to pattern (Animation transitions controlled via Web App only)
+    // Quad press detected after timeout -> Enter Palette Select Mode!
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 350){
+      inPaletteSelectMode = true;
+      previewPalette = (config.paletteFxMode + 1) % 25;
+      config.paletteFxMode = previewPalette;
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;

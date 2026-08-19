@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPoi - 50 Slots, 5 Color-Coded Banks & 25 Palettes (55px DotStar)",
-  "version": "2026.19.55-50slots-5color-fx",
+  "name": "OpenPixelPoi - 50 Slots, 5 Color-Coded Banks & Interactive Palette Browse/Lock (55px DotStar)",
+  "version": "2026.19.55-50slots-lockable-palettes",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -20,7 +20,7 @@
           "offset": 57344
         },
         {
-          "path": "firmware_50slots_v87.bin",
+          "path": "firmware_50slots_v88.bin",
           "offset": 65536
         },
         {
