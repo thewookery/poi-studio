@@ -48,43 +48,110 @@ static inline void applyPaletteFX(uint8_t& red, uint8_t& green, uint8_t& blue, u
   uint8_t safeLedCount = (ledCount > 0) ? ledCount : 55;
 
   switch (mode) {
-    case 1: { // 1. 🌈 RAINBOW SPIN FLOW (Continuous 360° POV Rainbow Vortex)
+    case 1: { // 1. 🌈 RAINBOW SPIN VORTEX (Continuous 360° POV Rainbow)
       uint8_t hue = (uint8_t)(((timeMs * speed / 16) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
       hueToRgb(hue, lum, red, green, blue);
       break;
     }
-    case 2: { // 2. 🌊 RAINBOW BLADE RIPPLE (Flows outward from handle to tip)
+    case 2: { // 2. 🌊 RAINBOW BLADE RIPPLE (Outward radial wave from core to tip)
       uint8_t hue = (uint8_t)(((timeMs * speed / 16) + (ledIndex * 256 / safeLedCount)) & 0xFF);
       hueToRgb(hue, lum, red, green, blue);
       break;
     }
-    case 3: { // 3. 🌀 RAINBOW SPIRAL VORTEX (Dual Angular + Radial Flow)
+    case 3: { // 3. 🌀 RAINBOW SPIRAL VORTEX (Harmonic dual radial + angular flow)
       uint8_t hue = (uint8_t)(((timeMs * speed / 16) + (ledIndex * 4) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
       hueToRgb(hue, lum, red, green, blue);
       break;
     }
-    case 4: { // 4. 💓 CHROMATIC BREATHING PULSE (Sinusoidal Luminous Hue Wave)
+    case 4: { // 4. 💓 CHROMATIC BREATHING PULSE (Sinusoidal saturation & hue breathe)
       uint8_t hueShift = (uint8_t)((timeMs * speed / 20) & 0xFF);
       uint8_t breatheLum = (uint8_t)((lum * (180 + ((timeMs * speed / 8) % 75))) / 255);
       hueToRgb(hueShift, breatheLum, red, green, blue);
       break;
     }
-    case 5: { // 5. 🌆 CYBERPUNK FLOW (Flowing Neon Cyan ➔ Hot Magenta ➔ Electric Blue Wave)
-      uint8_t phase = (uint8_t)(((timeMs * speed / 18) + (frameIndex * 256 / safeFrameCount) + (ledIndex * 2)) & 0xFF);
-      if (phase < 128) {
-        uint8_t t = phase * 2;
-        red = (uint8_t)((lum * t) >> 8);
-        green = (uint8_t)((lum * (255 - t)) >> 8);
-        blue = (uint8_t)((lum * (255 - (t * 55 >> 8))) >> 8);
+    case 5: { // 5. 👁️ HOLOGRAPHIC CHROMATIC ABERRATION (3D RGB Spatial Prism Split)
+      uint8_t rPhase = (uint8_t)(((timeMs * speed / 16) + (frameIndex * 256 / safeFrameCount) + ledIndex * 2) & 0xFF);
+      uint8_t gPhase = (uint8_t)(((timeMs * speed / 16) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
+      uint8_t bPhase = (uint8_t)(((timeMs * speed / 16) + (frameIndex * 256 / safeFrameCount) - ledIndex * 2) & 0xFF);
+      red   = (uint8_t)((lum * (120 + ((rPhase % 135)))) >> 8);
+      green = (uint8_t)((lum * (120 + ((gPhase % 135)))) >> 8);
+      blue  = (uint8_t)((lum * (120 + ((bPhase % 135)))) >> 8);
+      break;
+    }
+    case 6: { // 6. 🌀 KALEIDOSCOPIC MOIRÉ INTERFERENCE (Dual Counter-Rotating Harmonic Bands)
+      int wave1 = (int)((timeMs * speed / 14) + (frameIndex * 768 / safeFrameCount) + (ledIndex * 6));
+      int wave2 = (int)((timeMs * speed / 18) - (frameIndex * 1280 / safeFrameCount) - (ledIndex * 8));
+      uint8_t moireHue = (uint8_t)((wave1 ^ wave2) & 0xFF);
+      hueToRgb(moireHue, lum, red, green, blue);
+      break;
+    }
+    case 7: { // 7. 🌡️ FLIR THERMAL HEAT VISION (Black -> Indigo -> Crimson -> Orange -> Solar -> White)
+      if (lum < 45) {
+        red = (uint8_t)(lum * 2); green = 0; blue = (uint8_t)(lum * 5);
+      } else if (lum < 110) {
+        uint8_t t = (lum - 45) * 255 / 65;
+        red = (uint8_t)(90 + (t * 165 >> 8)); green = 0; blue = (uint8_t)(225 - (t * 200 >> 8));
+      } else if (lum < 190) {
+        uint8_t t = (lum - 110) * 255 / 80;
+        red = 255; green = (uint8_t)(t * 220 >> 8); blue = 0;
       } else {
-        uint8_t t = (phase - 128) * 2;
-        red = (uint8_t)((lum * (255 - t)) >> 8);
-        green = (uint8_t)((lum * t) >> 8);
-        blue = (uint8_t)((lum * (200 + (t * 55 >> 8))) >> 8);
+        uint8_t t = (lum - 190) * 255 / 65;
+        red = 255; green = 255; blue = (uint8_t)(t * 255 >> 8);
       }
       break;
     }
-    case 6: { // 6. 🔥 LIQUID LAVA FLOW (Molten Crimson ➔ Flame Orange ➔ Molten Gold Wave)
+    case 8: { // 8. 🪩 PRISMATIC OPAL & IRIDESCENT OIL SLICK (Refractive Phase Sheen)
+      uint8_t opalAngle = (uint8_t)(((timeMs * speed / 20) + (ledIndex * 12) + (frameIndex * 512 / safeFrameCount)) & 0xFF);
+      uint8_t opalHue = (uint8_t)((opalAngle * 3) & 0xFF);
+      uint8_t opalLum = (uint8_t)((lum * (200 + (opalAngle % 55))) >> 8);
+      hueToRgb(opalHue, opalLum, red, green, blue);
+      red = (uint8_t)((red + lum) >> 1);
+      green = (uint8_t)((green + lum) >> 1);
+      blue = (uint8_t)((blue + lum) >> 1);
+      break;
+    }
+    case 9: { // 9. ⚡ HYPER-DRIVE WARP PLASMA (Deep Core -> Blinding White-Blue Lightning Edge)
+      float radialPower = (float)ledIndex / (float)safeLedCount;
+      uint8_t tipSparks = (uint8_t)(((timeMs * speed / 10) + (ledIndex * 14) + (frameIndex * 120)) & 0xFF);
+      if (radialPower < 0.4f) {
+        red = (uint8_t)((lum * 20) >> 8); green = (uint8_t)((lum * 60) >> 8); blue = lum;
+      } else {
+        uint8_t boost = (uint8_t)((radialPower - 0.4f) * 1.66f * 255);
+        red = (uint8_t)((lum * (40 + (boost * 215 >> 8))) >> 8);
+        green = (uint8_t)((lum * (100 + (boost * 155 >> 8))) >> 8);
+        blue = lum;
+        if (tipSparks > 230 && radialPower > 0.7f) {
+          red = 255; green = 255; blue = 255;
+        }
+      }
+      break;
+    }
+    case 10: { // 10. 🖤 DARK MATTER SUPERNOVA (High-Energy Corona Flares on Negative Void)
+      uint8_t corona = (uint8_t)(((timeMs * speed / 14) + (frameIndex * 256 / safeFrameCount) + (ledIndex * 6)) & 0xFF);
+      red = lum;
+      green = (uint8_t)((lum * (corona % 180)) >> 8);
+      blue = (uint8_t)((lum * (corona > 220 ? (corona - 220) * 6 : 0)) >> 8);
+      break;
+    }
+    case 11: { // 11. 🔮 ABYSSAL BIOLUMINESCENT PLANKTON (Phosphorescent Spark Trails)
+      uint8_t spark = (uint8_t)(((timeMs * speed / 12) + (ledIndex * 10) - (frameIndex * 192 / safeFrameCount)) & 0xFF);
+      red = (uint8_t)((lum * (spark > 235 ? 200 : 0)) >> 8);
+      green = (uint8_t)((lum * (160 + (spark % 95))) >> 8);
+      blue = (uint8_t)((lum * (200 + (spark % 55))) >> 8);
+      break;
+    }
+    case 12: { // 12. 🌆 SYNTHWAVE OUTRUN NEON GRID (Laser Cyan, Hot Pink, Sunset Amber)
+      uint8_t grid = (uint8_t)(((timeMs * speed / 18) + (ledIndex * 8) + (frameIndex * 128 / safeFrameCount)) & 0xFF);
+      if (grid < 85) {
+        red = 0; green = lum; blue = lum;
+      } else if (grid < 170) {
+        red = lum; green = (uint8_t)((lum * 20) >> 8); blue = (uint8_t)((lum * 180) >> 8);
+      } else {
+        red = lum; green = (uint8_t)((lum * 140) >> 8); blue = 0;
+      }
+      break;
+    }
+    case 13: { // 13. 🔥 LIQUID LAVA MOLTEN FLOW (Molten Magma Stream)
       uint8_t heat = (uint8_t)(((timeMs * speed / 16) + (ledIndex * 5) + (frameIndex * 128 / safeFrameCount)) & 0xFF);
       uint8_t hLum = (uint8_t)((lum * (200 + (heat % 55))) / 255);
       if (heat < 85) {
@@ -96,20 +163,20 @@ static inline void applyPaletteFX(uint8_t& red, uint8_t& green, uint8_t& blue, u
       }
       break;
     }
-    case 7: { // 7. 🟩 MATRIX PHOSPHOR RAIN (Flowing Emerald & Neon Rain Trails)
+    case 14: { // 14. 🟩 MATRIX DIGITAL PHOSPHOR RAIN
       uint8_t rain = (uint8_t)(((timeMs * speed / 12) + (ledIndex * 8) + (frameIndex * 64 / safeFrameCount)) & 0xFF);
       if (rain > 220) { red = (uint8_t)((lum * 200) >> 8); green = lum; blue = (uint8_t)((lum * 200) >> 8); }
       else { red = (uint8_t)((lum * 15) >> 8); green = (uint8_t)((lum * (160 + (rain % 95))) >> 8); blue = (uint8_t)((lum * 25) >> 8); }
       break;
     }
-    case 8: { // 8. ❄️ GLACIAL AURORA FLOW (Flowing Arctic Aqua ➔ Ice Blue ➔ Diamond White)
+    case 15: { // 15. ❄️ GLACIAL ARCTIC AURORA (Arctic Aqua -> Ice Blue -> Diamond White)
       uint8_t aurora = (uint8_t)(((timeMs * speed / 18) + (ledIndex * 4) + (frameIndex * 128 / safeFrameCount)) & 0xFF);
       red = (uint8_t)((lum * (80 + (aurora % 140))) >> 8);
       green = (uint8_t)((lum * (180 + (aurora % 75))) >> 8);
       blue = lum;
       break;
     }
-    case 9: { // 9. 🌅 SUNSET DUSK FLOW (Twilight Purple ➔ Crimson ➔ Warm Amber Gold)
+    case 16: { // 16. 🌅 SUNSET TWILIGHT HORIZON (Twilight Purple -> Crimson -> Warm Gold)
       uint8_t dusk = (uint8_t)(((timeMs * speed / 20) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
       if (dusk < 128) {
         red = (uint8_t)((lum * (150 + (dusk * 105 / 128))) >> 8);
@@ -122,106 +189,60 @@ static inline void applyPaletteFX(uint8_t& red, uint8_t& green, uint8_t& blue, u
       }
       break;
     }
-    case 10: { // 10. 🍧 VAPORWAVE PASTEL FLOW (Coral Pink & Mint Turquoise Wave)
+    case 17: { // 17. 🍧 VAPORWAVE PASTEL WAVE (Coral Pink & Mint Turquoise)
       uint8_t phase = (uint8_t)(((timeMs * speed / 18) + (ledIndex * 6)) & 0xFF);
       red = (uint8_t)((lum * (160 + ((phase % 95)))) >> 8);
       green = (uint8_t)((lum * (100 + (((255 - phase) % 120)))) >> 8);
       blue = (uint8_t)((lum * (200 + ((phase % 55)))) >> 8);
       break;
     }
-    case 11: // 11. 🔳 MONOCHROME PHOSPHOR (High-Contrast Pure B&W)
+    case 18: // 18. 🔳 MONOCHROME PHOSPHOR (High-Contrast Pure B&W)
       red = lum; green = lum; blue = lum;
       break;
-    case 12: { // 12. 🍯 AMBER GOLD FLOW (Liquid Amber & Honey Wave)
+    case 19: { // 19. 🍯 AMBER GOLD SHIMMER (Liquid Amber & Honey Wave)
       uint8_t wave = (uint8_t)(((timeMs * speed / 16) + (frameIndex * 128 / safeFrameCount)) & 0xFF);
       red = lum;
       green = (uint8_t)((lum * (140 + (wave % 80))) >> 8);
       blue = 0;
       break;
     }
-    case 13: { // 13. 🌊 DEEP OCEAN FLOW (Ultramarine & Abyssal Teal Wave)
+    case 20: { // 20. 🌊 DEEP OCEAN ABYSSAL WAVE
       uint8_t ocean = (uint8_t)(((timeMs * speed / 16) + (ledIndex * 6) + (frameIndex * 64 / safeFrameCount)) & 0xFF);
       red = 0;
       green = (uint8_t)((lum * (100 + (ocean % 130))) >> 8);
       blue = lum;
       break;
     }
-    case 14: { // 14. 🌋 MAGMA OBSIDIAN FLOW (Molten Gold & Volcanic Crimson Wave)
+    case 21: { // 21. 🌋 VOLCANIC OBSIDIAN MAGMA (Molten Gold & Volcanic Crimson)
       uint8_t lava = (uint8_t)(((timeMs * speed / 16) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
       red = lum;
       green = (uint8_t)((lum * (lava % 190)) >> 8);
       blue = (uint8_t)((lum * (lava > 200 ? (lava - 200) : 0)) >> 8);
       break;
     }
-    case 15: { // 15. ☣️ RADIOACTIVE TOXIC FLOW (Neon Lime & Acid Wave)
+    case 22: { // 22. ☣️ RADIOACTIVE TOXIC ACID (Neon Lime & Chartreuse)
       uint8_t tox = (uint8_t)(((timeMs * speed / 14) + (ledIndex * 8)) & 0xFF);
       red = (uint8_t)((lum * (120 + (tox % 120))) >> 8);
       green = lum;
       blue = 0;
       break;
     }
-    case 16: { // 16. 🍬 COTTON CANDY FLOW (Pastel Pink & Sky Blue Wave)
+    case 23: { // 23. 🍬 COTTON CANDY SWIRL (Pastel Pink & Sky Blue)
       uint8_t cc = (uint8_t)(((timeMs * speed / 18) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
       red = (uint8_t)((lum * (180 + (cc % 75))) >> 8);
       green = (uint8_t)((lum * 80) >> 8);
       blue = (uint8_t)((lum * (180 + ((255 - cc) % 75))) >> 8);
       break;
     }
-    case 17: { // 17. 🌌 GALAXY NEBULA FLOW (Deep Violet & Celestial Starlight Flow)
-      uint8_t neb = (uint8_t)(((timeMs * speed / 18) + (ledIndex * 4) + (frameIndex * 128 / safeFrameCount)) & 0xFF);
-      red = (uint8_t)((lum * (140 + (neb % 100))) >> 8);
-      green = (uint8_t)((lum * (neb > 220 ? (neb - 220) * 3 : 0)) >> 8);
-      blue = lum;
-      break;
-    }
-    case 18: { // 18. 🧪 NEON LIME FLOW (High-Voltage Electric Lime Wave)
-      uint8_t lime = (uint8_t)(((timeMs * speed / 15) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
-      red = (uint8_t)((lum * (160 + (lime % 90))) >> 8);
-      green = lum;
-      blue = (uint8_t)((lum * (lime % 40)) >> 8);
-      break;
-    }
-    case 19: { // 19. ⚡ PLASMA BEAM FLOW (Sapphire & Electric Violet Stream)
-      uint8_t plas = (uint8_t)(((timeMs * speed / 16) + (ledIndex * 6)) & 0xFF);
-      red = (uint8_t)((lum * (120 + (plas % 120))) >> 8);
-      green = (uint8_t)((lum * (plas > 210 ? (plas - 210) * 4 : 0)) >> 8);
-      blue = lum;
-      break;
-    }
-    case 20: { // 20. 🩸 INFERNO SCARLET FLOW (Deep Crimson & Flame Wave)
-      uint8_t inf = (uint8_t)(((timeMs * speed / 18) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
-      red = lum;
-      green = (uint8_t)((lum * (inf % 90)) >> 8);
-      blue = 0;
-      break;
-    }
-    case 21: { // 21. 🪸 BIOLUMINESCENCE FLOW (Emerald & Abyssal Cyan Wave)
-      uint8_t bio = (uint8_t)(((timeMs * speed / 16) + (ledIndex * 5) + (frameIndex * 128 / safeFrameCount)) & 0xFF);
-      red = 0;
-      green = lum;
-      blue = (uint8_t)((lum * (120 + (bio % 130))) >> 8);
-      break;
-    }
-    case 22: { // 22. 🍎 CANDY APPLE FLOW (Ruby Red & Gloss Highlights)
-      uint8_t candy = (uint8_t)(((timeMs * speed / 18) + (ledIndex * 6)) & 0xFF);
-      red = lum;
-      green = (uint8_t)((lum * (candy > 200 ? (candy - 200) * 3 : 0)) >> 8);
-      blue = (uint8_t)((lum * (candy > 220 ? (candy - 220) * 4 : 0)) >> 8);
-      break;
-    }
-    case 23: { // 23. 👑 GOLD & PLATINUM FLOW (Champagne Gold & Platinum Shimmer)
+    case 24: { // 24. 👑 ROYAL GOLD & PLATINUM (Champagne Gold & Platinum)
       uint8_t gold = (uint8_t)(((timeMs * speed / 18) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
       red = lum;
       green = (uint8_t)((lum * (180 + (gold % 70))) >> 8);
       blue = (uint8_t)((lum * (gold % 160)) >> 8);
       break;
     }
-    case 24: { // 24. 🌀 PSYCHEDELIC WARP FLOW (Trippy Dual-Harmonic Spectrum)
-      uint8_t warp = (uint8_t)(((timeMs * speed / 12) + (ledIndex * 8) - (frameIndex * 256 / safeFrameCount)) & 0xFF);
-      hueToRgb(warp, lum, red, green, blue);
-      break;
-    }
   }
+
 }
 
 
@@ -492,43 +513,42 @@ else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 
           }
         }
       }else if(config.displayState == DS_BANK){
-        int chunkSize = max(2, (config.ledCount - 2)/4);
-        int pressTime = (millis() - config.displayStateLastUpdated) % 4500;
-        if (pressTime < 2000){
+        int chunkSize = max(2, (config.ledCount - 2)/5);
+        int pressTime = (millis() - config.displayStateLastUpdated) % 5500;
+        if (pressTime < 2500){
           for (int j=1; j-1 <= pressTime/500; j+=1){
             for(int k=(j-1) * chunkSize; k < j*chunkSize -1; k++){
               ledStrip->SetPixelColor(k, RgbColor(0xFF, 0x00, 0xFF));
             }
           }
         }else{
-          for (int j=0; j < 4; j+=1){
+          for (int j=0; j < 5; j+=1){
             for(int k=j * chunkSize; k < ((j + 1) * chunkSize) -1; k++){
-                ledStrip->SetPixelColor(k, RgbColor(0xFF, 0x00, 0xFF));
-                if (pressTime < 2500){
+                if (j == 4) {
+                  ledStrip->SetPixelColor(k, RgbColor(0xFF, 0xD7, 0x00)); // Gold shimmer for Bank 5 Cosmic Tour
+                } else {
+                  ledStrip->SetPixelColor(k, RgbColor(0xFF, 0x00, 0xFF));
+                }
+                if (pressTime < 3000){
                   if(chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2)){
                     ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
                   }
-                }else if (pressTime < 3000){
-                  if(j == 0 && (chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2))){
-                    ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                  }
-                }else if (pressTime < 3500){
-                  if(j == 1 && (chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2))){
-                    ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                  }
-                }else if (pressTime < 4000){
-                  if(j == 2 && (chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2))){
-                    ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                  }
-                }else if (pressTime < 4500){
-                  if(j == 3 && (chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2))){
-                    ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                  }
+                }else if (pressTime < 3500 && j == 0){
+                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
+                }else if (pressTime < 4000 && j == 1){
+                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
+                }else if (pressTime < 4500 && j == 2){
+                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
+                }else if (pressTime < 5000 && j == 3){
+                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
+                }else if (pressTime < 5500 && j == 4){
+                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0xF5, 0xD4)); // Turquoise glow for Bank 5
                 }
             }
           }
         }
       }
+
 else if(config.displayState == DS_BRIGHTNESS){
         // Override brightness without saving it. Button will save it upon release.
         if(millis() - config.displayStateLastUpdated < 500){

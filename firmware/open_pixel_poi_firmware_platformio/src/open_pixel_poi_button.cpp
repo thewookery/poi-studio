@@ -149,8 +149,8 @@ public:
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK2_HOLD){
-        // 9 options, 500ms each, 0-4500ms, offset by 500 for initial press animation
-        int selection = ((millis() - downTime - 500) % 4500) / 500;
+        // 11 options, 500ms each, 0-5500ms, offset by 500 for initial press animation
+        int selection = ((millis() - downTime - 500) % 5500) / 500;
         if(selection == 0){
           config.setPatternBank(0, true);
           config.displayState = DS_PATTERN;
@@ -168,27 +168,36 @@ public:
           config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
         }else if(selection == 4){
-          config.displayState = DS_PATTERN_ALL_ALL;
+          config.setPatternBank(4, true); // Bank 5: Cosmic Auto-Morph Tour!
+          config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
         }else if(selection == 5){
+          config.displayState = DS_PATTERN_ALL_ALL;
+          config.displayStateLastUpdated = millis();
+        }else if(selection == 6){
           config.setPatternBank(0, true);
           config.displayState = DS_PATTERN_ALL;
           config.displayStateLastUpdated = millis();
-        }else if(selection == 6){
+        }else if(selection == 7){
           config.setPatternBank(1, true);
           config.displayState = DS_PATTERN_ALL;
           config.displayStateLastUpdated = millis();
-        }else if(selection == 7){
+        }else if(selection == 8){
           config.setPatternBank(2, true);
           config.displayState = DS_PATTERN_ALL;
           config.displayStateLastUpdated = millis();
-        }else{
+        }else if(selection == 9){
           config.setPatternBank(3, true);
+          config.displayState = DS_PATTERN_ALL;
+          config.displayStateLastUpdated = millis();
+        }else{
+          config.setPatternBank(4, true);
           config.displayState = DS_PATTERN_ALL;
           config.displayStateLastUpdated = millis();
         }
         buttonState = BS_INITIAL;
       }
+
 else if(buttonState == BS_CLICK3_HOLD){
         if(millis() - downTime < 1000){
           config.setLedBrightness(config.ledBrightnessOptions[0]);

@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=73">
+    <link rel="stylesheet" href="styles.css?v=74">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v73</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v74</span></div>
+
 
 
 
@@ -865,11 +866,22 @@
                 <div>
                     <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">🎰 Active Slot:</span>
                     <select id="ble-ctrl-slot" style="width:100%; font-size:0.75rem; padding:6px; margin-top:2px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+
+                        <option value="0">Slot 1</option>
+                        <option value="1">Slot 2</option>
+                        <option value="2">Slot 3</option>
+                        <option value="3">Slot 4</option>
+                        <option value="4">Slot 5</option>
                     </select>
                 </div>
                 <div>
                     <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">🔀 Active Bank:</span>
                     <select id="ble-ctrl-bank" style="width:100%; font-size:0.75rem; padding:6px; margin-top:2px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                        <option value="0">Bank 1 (Slots 1-5)</option>
+                        <option value="1">Bank 2 (Slots 6-10)</option>
+                        <option value="2">Bank 3 (Slots 11-15)</option>
+                        <option value="3">Bank 4 (Slots 16-20)</option>
+                        <option value="4">🌟 Bank 5 (Cosmic Auto-Morph Tour)</option>
                     </select>
                 </div>
             </div>
@@ -918,30 +930,29 @@
                     <button class="hw-btn" data-pal="2" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">🌊 Rainbow Ripple</button>
                     <button class="hw-btn" data-pal="3" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-pink);">🌀 Rainbow Spiral</button>
                     <button class="hw-btn" data-pal="4" style="font-size:0.65rem; padding:4px 2px; color:#ffd000;">💓 Chroma Pulse</button>
-                    <button class="hw-btn" data-pal="5" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">🌆 Cyberpunk Flow</button>
-                    <button class="hw-btn" data-pal="6" style="font-size:0.65rem; padding:4px 2px; color:#ff7700;">🔥 Liquid Lava</button>
-                    <button class="hw-btn" data-pal="7" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-green);">🟩 Matrix Rain</button>
-                    <button class="hw-btn" data-pal="8" style="font-size:0.65rem; padding:4px 2px; color:#a0e0ff;">❄️ Glacial Aurora</button>
-                    <button class="hw-btn" data-pal="9" style="font-size:0.65rem; padding:4px 2px; color:#ffaa00;">🌅 Sunset Flow</button>
-                    <button class="hw-btn" data-pal="10" style="font-size:0.65rem; padding:4px 2px; color:#ff70a6;">🍧 Vaporwave Flow</button>
-                    <button class="hw-btn" data-pal="11" style="font-size:0.65rem; padding:4px 2px; color:#ffffff;">🔳 B&W Mono</button>
-                    <button class="hw-btn" data-pal="12" style="font-size:0.65rem; padding:4px 2px; color:#ffd000;">🍯 Amber Gold</button>
-                    <button class="hw-btn" data-pal="13" style="font-size:0.65rem; padding:4px 2px; color:#00f5d4;">🌊 Deep Ocean</button>
-                    <button class="hw-btn" data-pal="14" style="font-size:0.65rem; padding:4px 2px; color:#ff3b30;">🌋 Magma Flow</button>
-                    <button class="hw-btn" data-pal="15" style="font-size:0.65rem; padding:4px 2px; color:#bbf705;">☣️ Toxic Acid</button>
-                    <button class="hw-btn" data-pal="16" style="font-size:0.65rem; padding:4px 2px; color:#ff2d55;">🍬 Cotton Candy</button>
-                    <button class="hw-btn" data-pal="17" style="font-size:0.65rem; padding:4px 2px; color:#e01a4f;">🌌 Galaxy Nebula</button>
-                    <button class="hw-btn" data-pal="18" style="font-size:0.65rem; padding:4px 2px; color:#c6ff00;">🧪 Neon Lime</button>
-                    <button class="hw-btn" data-pal="19" style="font-size:0.65rem; padding:4px 2px; color:#7209b7;">⚡ Plasma Beam</button>
-                    <button class="hw-btn" data-pal="20" style="font-size:0.65rem; padding:4px 2px; color:#ff4500;">🩸 Inferno Flow</button>
-                    <button class="hw-btn" data-pal="21" style="font-size:0.65rem; padding:4px 2px; color:#52b788;">🪸 Bio-Lume</button>
-                    <button class="hw-btn" data-pal="22" style="font-size:0.65rem; padding:4px 2px; color:#e63946;">🍎 Candy Apple</button>
-                    <button class="hw-btn" data-pal="23" style="font-size:0.65rem; padding:4px 2px; color:#d4af37;">👑 Gold/Platinum</button>
-                    <button class="hw-btn" data-pal="24" style="font-size:0.65rem; padding:4px 2px; color:#ff00ea;">🌀 Psychedelic</button>
-
+                    <button class="hw-btn" data-pal="5" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">👁️ 3D Hologram</button>
+                    <button class="hw-btn" data-pal="6" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-pink);">🌀 Moiré Kaleidoscope</button>
+                    <button class="hw-btn" data-pal="7" style="font-size:0.65rem; padding:4px 2px; color:#ff3b30;">🌡️ FLIR Thermal</button>
+                    <button class="hw-btn" data-pal="8" style="font-size:0.65rem; padding:4px 2px; color:#a0e0ff;">🪩 Prismatic Opal</button>
+                    <button class="hw-btn" data-pal="9" style="font-size:0.65rem; padding:4px 2px; color:#00f5d4;">⚡ Warp Plasma</button>
+                    <button class="hw-btn" data-pal="10" style="font-size:0.65rem; padding:4px 2px; color:#ffd000;">🖤 Supernova Void</button>
+                    <button class="hw-btn" data-pal="11" style="font-size:0.65rem; padding:4px 2px; color:#52b788;">🔮 Abyssal Plankton</button>
+                    <button class="hw-btn" data-pal="12" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-purple);">🌆 Synthwave Grid</button>
+                    <button class="hw-btn" data-pal="13" style="font-size:0.65rem; padding:4px 2px; color:#ff7700;">🔥 Liquid Lava</button>
+                    <button class="hw-btn" data-pal="14" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-green);">🟩 Matrix Rain</button>
+                    <button class="hw-btn" data-pal="15" style="font-size:0.65rem; padding:4px 2px; color:#a0e0ff;">❄️ Arctic Aurora</button>
+                    <button class="hw-btn" data-pal="16" style="font-size:0.65rem; padding:4px 2px; color:#ffaa00;">🌅 Sunset Twilight</button>
+                    <button class="hw-btn" data-pal="17" style="font-size:0.65rem; padding:4px 2px; color:#ff70a6;">🍧 Vaporwave Pastel</button>
+                    <button class="hw-btn" data-pal="18" style="font-size:0.65rem; padding:4px 2px; color:#ffffff;">🔳 B&W Mono</button>
+                    <button class="hw-btn" data-pal="19" style="font-size:0.65rem; padding:4px 2px; color:#ffd000;">🍯 Amber Gold</button>
+                    <button class="hw-btn" data-pal="20" style="font-size:0.65rem; padding:4px 2px; color:#00f5d4;">🌊 Deep Ocean</button>
+                    <button class="hw-btn" data-pal="21" style="font-size:0.65rem; padding:4px 2px; color:#ff4500;">🌋 Magma Obsidian</button>
+                    <button class="hw-btn" data-pal="22" style="font-size:0.65rem; padding:4px 2px; color:#bbf705;">☣️ Toxic Acid</button>
+                    <button class="hw-btn" data-pal="23" style="font-size:0.65rem; padding:4px 2px; color:#ff2d55;">🍬 Cotton Candy</button>
+                    <button class="hw-btn" data-pal="24" style="font-size:0.65rem; padding:4px 2px; color:#d4af37;">👑 Gold & Platinum</button>
                 </div>
-
             </div>
+
 
             <!-- PATTERN TRANSITION BLEND MODES -->
             <div>
@@ -1373,9 +1384,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=73"></script>
-<script src="poi-engine.js?v=73"></script>
-<script src="poi-ble.js?v=73"></script>
+<script src="master-vault-manifest.js?v=74"></script>
+<script src="poi-engine.js?v=74"></script>
+<script src="poi-ble.js?v=74"></script>
+
 
 
 

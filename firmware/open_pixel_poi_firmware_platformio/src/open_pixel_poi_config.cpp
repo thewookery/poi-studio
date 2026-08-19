@@ -76,6 +76,9 @@ class OpenPixelPoiConfig {
     uint8_t blendMode = 0;     // 0=Cut (OFF by default). Transitions ONLY run when explicitly chosen!
     uint8_t paletteSpeed = 3;  // 1-10 speed multiplier
     unsigned long blendStartTime = 0;
+    bool autoPaletteMorph = false;
+    unsigned long lastPaletteMorphTime = 0;
+    uint16_t paletteMorphIntervalSeconds = 10;
 
     // Sequencer
     uint8_t *sequencer = (uint8_t *) malloc(1785*sizeof(uint8_t)); // 255 Instruction max (7 bits per instruction)
@@ -85,6 +88,13 @@ class OpenPixelPoiConfig {
 
     // Variables
     long configLastUpdated;
+
+    uint8_t getActivePatternIndex() {
+      if (this->patternBank >= 4) {
+        return (this->patternSlot % (4 * PATTERN_BANK_SIZE));
+      }
+      return (this->patternSlot + (this->patternBank * PATTERN_BANK_SIZE));
+    }
 
     void setPaletteFxMode(uint8_t mode) {
       this->paletteFxMode = mode % 25;
@@ -98,6 +108,7 @@ class OpenPixelPoiConfig {
       }
       this->configLastUpdated = millis();
     }
+
 
 
 
@@ -184,7 +195,11 @@ class OpenPixelPoiConfig {
         this->blendStartTime = millis();
       }
 
-      this->patternSlot = patternSlot;
+      if (this->patternBank >= 4) {
+        this->patternSlot = patternSlot % (4 * PATTERN_BANK_SIZE);
+      } else {
+        this->patternSlot = patternSlot % PATTERN_BANK_SIZE;
+      }
 
       if(save){
         preferences.putChar("patternSlot", this->patternSlot);
@@ -206,7 +221,12 @@ class OpenPixelPoiConfig {
       if (this->blendMode > 0) {
         this->blendStartTime = millis();
       }
-      this->patternBank = patternBank;
+      this->patternBank = patternBank % PATTERN_BANK_COUNT;
+      if (this->patternBank >= 4) {
+        this->autoPaletteMorph = true;
+        this->lastPaletteMorphTime = millis();
+        if (this->paletteFxMode == 0) this->paletteFxMode = 1;
+      }
       if(save){
         preferences.putChar("patternBank", this->patternBank);
       }
@@ -230,7 +250,7 @@ class OpenPixelPoiConfig {
     void setFrameHeight(uint8_t frameHeight) {
       this->frameHeight = frameHeight;
       String key = "p";
-      key += this->patternSlot + (this->patternBank * PATTERN_BANK_SIZE);
+      key += this->getActivePatternIndex();
       key += "Height";
       preferences.putChar(key.c_str(), this->frameHeight);
       this->configLastUpdated = millis();
@@ -239,7 +259,7 @@ class OpenPixelPoiConfig {
     void setFrameCount(uint16_t frameCount) {
       this->frameCount = frameCount;
       String key = "p";
-      key += this->patternSlot + (this->patternBank * PATTERN_BANK_SIZE);
+      key += this->getActivePatternIndex();
       key += "FCount";
       preferences.putUShort(key.c_str(), this->frameCount);
       this->configLastUpdated = millis();
@@ -257,23 +277,27 @@ class OpenPixelPoiConfig {
       }
       debugf_noprefix("\n");
 
-      File file = LittleFS.open(String("/pattern") + (this->patternSlot + (this->patternBank * PATTERN_BANK_SIZE)) + ".oppp", FILE_WRITE);
+      File file = LittleFS.open(String("/pattern") + this->getActivePatternIndex() + ".oppp", FILE_WRITE);
       if(!file || file.isDirectory()){
         debugf("− failed to open file for writing\n");
       }else{
         debugf(" - opened file for writing: %d\n");
         
-        int written = file.write(pattern, patternLength);
+        int written = file.write(this->pattern, this->patternLength);
         file.close();
         debugf(" - this much written: %d\n", written);
       }
       
+      startLoadingPattern();
       this->configLastUpdated = millis();
     }
 
     void fillDefaultPattern(){
-      for (int i=0; i < this->frameCount; i++) {
-        for (int j=0; j < this->frameHeight; j++) {
+      debugf("No pattern found, using default\n");
+      this->frameHeight = 5;
+      this->frameCount = 5;
+      for (int i = 0; i < this->frameCount; i++) {
+        for (int j = 0; j < this->frameHeight; j++) {
           if(i % 2 == 1){
             pattern[(i * this->frameHeight * 3) + (j*3) + 0] = 0xFF;
             pattern[(i * this->frameHeight * 3) + (j*3) + 1] = 0xFF;
@@ -291,12 +315,12 @@ class OpenPixelPoiConfig {
       if(patternFile){
         patternFile.close();
       }
-      patternFile = LittleFS.open(String("/pattern") + (this->patternSlot  + (this->patternBank * PATTERN_BANK_SIZE)) + ".oppp");
+      patternFile = LittleFS.open(String("/pattern") + this->getActivePatternIndex() + ".oppp");
       if(!patternFile || patternFile.isDirectory()){
         debugf("− failed to open file for reading\n");
         fillDefaultPattern();
       }else{
-        debugf(" - this much available: %d\n", file.available());
+        debugf(" - this much available: %d\n", patternFile.available());
         // Filling the whole pattern with data is way too slow
         // just fill one pixel so we don't have a completely black pattern if something goes weird
         pattern[0] = 0xFF;
@@ -317,14 +341,14 @@ class OpenPixelPoiConfig {
 
     void loadFrameHeight(){
       String key = "p";
-      key += (this->patternSlot  + (this->patternBank * PATTERN_BANK_SIZE));
+      key += this->getActivePatternIndex();
       key += "Height";
       this->frameHeight = preferences.getChar(key.c_str(), 5);
     }
 
     void loadFrameCount(){
       String key = "p";
-      key += (this->patternSlot  + (this->patternBank * PATTERN_BANK_SIZE));
+      key += this->getActivePatternIndex();
       key += "FCount";
       debugf("key = %s\n", key);
       this->frameCount = preferences.getUShort(key.c_str(), 5);
@@ -440,14 +464,21 @@ class OpenPixelPoiConfig {
     }
 
     void loop(){
-      // Pattern Shuffle
-      if((this->displayState == DS_PATTERN_ALL || this->displayState == DS_PATTERN_ALL_ALL) && millis() - this->displayStateLastUpdated > this->patternShuffleDuration * 1000){
-        this->setPatternSlot((this->patternSlot + 1) % PATTERN_BANK_SIZE, false);
-        if(this->patternSlot == 0 && this->displayState == DS_PATTERN_ALL_ALL){
-          this->setPatternBank((this->patternBank + 1) % PATTERN_BANK_COUNT, false);
+      // Pattern Shuffle & Bank 5 Cosmic Auto-Morph Tour
+      if((this->displayState == DS_PATTERN_ALL || this->displayState == DS_PATTERN_ALL_ALL || this->patternBank >= 4) && millis() - this->displayStateLastUpdated > this->patternShuffleDuration * 1000){
+        if (this->patternBank >= 4) {
+          // Bank 5 Cosmic Tour: Step pattern slot across all 20 patterns + shift to next mind-bending color scheme!
+          this->setPatternSlot((this->patternSlot + 1) % (4 * PATTERN_BANK_SIZE), false);
+          this->paletteFxMode = (this->paletteFxMode % 24) + 1;
+        } else {
+          this->setPatternSlot((this->patternSlot + 1) % PATTERN_BANK_SIZE, false);
+          if(this->patternSlot == 0 && this->displayState == DS_PATTERN_ALL_ALL){
+            this->setPatternBank((this->patternBank + 1) % 4, false);
+          }
         }
         this->displayStateLastUpdated += this->patternShuffleDuration * 1000;
       }
+
 
       // Sequencer (pattern slot, battern bank, brightness, speedx2, durationx2)
       if(this->displayState == DS_PATTERN && this->sequencerStep < (this ->sequencerLength / 7) - 1){
