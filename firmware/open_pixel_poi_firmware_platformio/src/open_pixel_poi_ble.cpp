@@ -317,7 +317,7 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
               bleSendError();
             }
           }else if(requestCode == CC_SET_PALETTE_FX){
-            if(bleStatus[2] >= 0 && bleStatus[2] <= 24){
+            if(bleStatus[2] >= 0 && bleStatus[2] <= 39){
               config.setPaletteFxMode(bleStatus[2]);
               bleSendSuccess();
             }else{

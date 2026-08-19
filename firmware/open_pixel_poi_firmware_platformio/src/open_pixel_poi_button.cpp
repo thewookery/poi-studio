@@ -256,10 +256,10 @@ public:
     // Single press detected after timeout
     if(buttonState == BS_CLICK_UP && millis() - downTime >= 350){
       if(inPaletteSelectMode){
-        // Step through color palettes one by one with live pattern preview
-        previewPalette = (previewPalette + 1) % 25;
+        // Step through color palettes one by one with pure LED blade flow preview
+        previewPalette = (previewPalette + 1) % 40;
         config.paletteFxMode = previewPalette;
-        config.displayState = DS_PATTERN;
+        config.displayState = DS_PALETTE_SELECT;
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
       }else{
@@ -273,24 +273,24 @@ public:
 
     // Double press detected after timeout -> return to pattern
     if(buttonState == BS_CLICK2_UP && millis() - downTime >= 350){
-      config.displayState = DS_PATTERN;
+      config.displayState = inPaletteSelectMode ? DS_PALETTE_SELECT : DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
     // Triple press detected after timeout -> return to pattern
     if(buttonState == BS_CLICK3_UP && millis() - downTime >= 350){
-      config.displayState = DS_PATTERN;
+      config.displayState = inPaletteSelectMode ? DS_PALETTE_SELECT : DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
-    // Quad press detected after timeout -> Enter Palette Select Mode!
+    // Quad press detected after timeout -> Enter Pure Palette Flow Select Mode!
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 350){
       inPaletteSelectMode = true;
-      previewPalette = (config.paletteFxMode + 1) % 25;
+      previewPalette = (config.paletteFxMode + 1) % 40;
       config.paletteFxMode = previewPalette;
-      config.displayState = DS_PATTERN;
+      config.displayState = DS_PALETTE_SELECT;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }

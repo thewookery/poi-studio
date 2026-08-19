@@ -31,7 +31,8 @@ enum DisplayState {
   DS_BRIGHTNESS,
   DS_SPEED,
   DS_SHUTDOWN,
-  DS_PALETTE_MENU
+  DS_PALETTE_MENU,
+  DS_PALETTE_SELECT
 };
 
 
@@ -73,8 +74,8 @@ class OpenPixelPoiConfig {
     uint32_t patternLength;
 
     // Real-Time FX & Transition Engine (Zero-RAM Overhead)
-    uint8_t paletteFxMode = 0; // 0=Normal, 1=Rainbow, 2=Cyberpunk, 3=Fire, 4=Matrix, 5=Acid, 6=Ice
-    uint8_t blendMode = 0;     // 0=Cut (OFF by default). Transitions ONLY run when explicitly chosen!
+    uint8_t paletteFxMode = 0; // 0=Normal True-Color, 1..39=Dynamic Palette & Flow Shaders
+    uint8_t blendMode = 0;     // 0=Cut (OFF by default). Transitions ONLY run when chosen!
     uint8_t paletteSpeed = 3;  // 1-10 speed multiplier
     unsigned long blendStartTime = 0;
     bool autoPaletteMorph = false;
@@ -95,7 +96,7 @@ class OpenPixelPoiConfig {
     }
 
     void setPaletteFxMode(uint8_t mode) {
-      this->paletteFxMode = mode % 25;
+      this->paletteFxMode = mode % 40;
       this->configLastUpdated = millis();
     }
 
