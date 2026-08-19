@@ -199,6 +199,7 @@ class OpenPixelPoiConfig {
         this->patternSlot = patternSlot % (4 * PATTERN_BANK_SIZE);
       } else {
         this->patternSlot = patternSlot % PATTERN_BANK_SIZE;
+        this->autoPaletteMorph = false; // Selecting slot in normal bank stops auto-morph
       }
 
       if(save){
@@ -226,9 +227,14 @@ class OpenPixelPoiConfig {
         this->autoPaletteMorph = true;
         this->lastPaletteMorphTime = millis();
         if (this->paletteFxMode == 0) this->paletteFxMode = 1;
+      } else {
+        // ALWAYS cleanly exit autoPaletteMorph and clamp patternSlot when switching back to Banks 1-4!
+        this->autoPaletteMorph = false;
+        this->patternSlot = this->patternSlot % PATTERN_BANK_SIZE;
       }
       if(save){
         preferences.putChar("patternBank", this->patternBank);
+        preferences.putChar("patternSlot", this->patternSlot);
       }
       loadFrameHeight();
       loadFrameCount();
@@ -236,6 +242,7 @@ class OpenPixelPoiConfig {
       
       this->configLastUpdated = millis();
     }
+
 
 
 
@@ -465,11 +472,16 @@ class OpenPixelPoiConfig {
 
     void loop(){
       // Pattern Shuffle & Bank 5 Cosmic Auto-Morph Tour
-      if((this->displayState == DS_PATTERN_ALL || this->displayState == DS_PATTERN_ALL_ALL || this->patternBank >= 4) && millis() - this->displayStateLastUpdated > this->patternShuffleDuration * 1000){
+      bool shouldShuffle = (this->displayState == DS_PATTERN_ALL || this->displayState == DS_PATTERN_ALL_ALL || (this->patternBank >= 4 && this->autoPaletteMorph));
+      if(shouldShuffle && millis() - this->displayStateLastUpdated > this->patternShuffleDuration * 1000){
         if (this->patternBank >= 4) {
           // Bank 5 Cosmic Tour: Step pattern slot across all 20 patterns + shift to next mind-bending color scheme!
-          this->setPatternSlot((this->patternSlot + 1) % (4 * PATTERN_BANK_SIZE), false);
+          this->patternSlot = (this->patternSlot + 1) % (4 * PATTERN_BANK_SIZE);
           this->paletteFxMode = (this->paletteFxMode % 24) + 1;
+          if (this->blendMode > 0) this->blendStartTime = millis();
+          loadFrameHeight();
+          loadFrameCount();
+          startLoadingPattern();
         } else {
           this->setPatternSlot((this->patternSlot + 1) % PATTERN_BANK_SIZE, false);
           if(this->patternSlot == 0 && this->displayState == DS_PATTERN_ALL_ALL){
@@ -478,6 +490,7 @@ class OpenPixelPoiConfig {
         }
         this->displayStateLastUpdated += this->patternShuffleDuration * 1000;
       }
+
 
 
       // Sequencer (pattern slot, battern bank, brightness, speedx2, durationx2)

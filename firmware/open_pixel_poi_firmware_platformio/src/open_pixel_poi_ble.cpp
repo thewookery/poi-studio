@@ -215,10 +215,11 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
             
             bleSendSuccess();
           }else if(requestCode == CC_SET_PATTERN_SLOT){
-            config.setPatternSlot(bleStatus[2]%PATTERN_BANK_SIZE, true);
+            config.setPatternSlot(bleStatus[2], true);
             config.displayState = DS_PATTERN;
             config.displayStateLastUpdated = millis();
             bleSendSuccess();
+
           }else if(requestCode == CC_SET_PATTERN_ALL){
             config.displayState = DS_PATTERN_ALL;
             config.displayStateLastUpdated = millis();
