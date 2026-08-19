@@ -1,6 +1,6 @@
 {
   "name": "OpenPixelPoi - Studio 25-Palette Edition (55px DotStar)",
-  "version": "2026.8.55-25pal",
+  "version": "2026.9.55-dotstar-direct",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [

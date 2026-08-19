@@ -135,29 +135,19 @@ class OpenPixelPoiLED {
     int frameIndex;
     void setup(){
       debugf("Setup begin\n");
-      // Create Led Strip objects based on config, all unhandled cases fall through with NoStrip
-      if(config.hardwareVersion == 1){
-        if(config.ledType == 1){
-          ledStrip = new NeoPixelStrip(config.ledCount, 8);
-        }
-      }else if(config.hardwareVersion == 2){
-        if(config.ledType == 1){
-          ledStrip = new NeoPixelStrip(config.ledCount, 6);
-        }else if(config.ledType == 2){  
-          ledStrip = new DotStarStrip(config.ledCount, 6, 7);
-        }
-      }
-
-      // Final fallback guard: guarantee 55 DotStar if nothing else matched
-      if(ledStrip == nullptr){
-        ledStrip = new DotStarStrip(55, 6, 7);
+      // Create Led Strip objects based on config, default to DotStar 55px
+      if(config.hardwareVersion == 1 && config.ledType == 1){
+        ledStrip = new NeoPixelStrip(config.ledCount > 0 ? config.ledCount : 20, 8);
+      }else if(config.hardwareVersion == 2 && config.ledType == 1){
+        ledStrip = new NeoPixelStrip(config.ledCount > 0 ? config.ledCount : 25, 6);
+      }else{
+        // 55px DotStar (Pins 6 Data, 7 Clock)
+        ledStrip = new DotStarStrip(config.ledCount > 0 ? config.ledCount : 55, 6, 7);
       }
 
       // LED Setup:
       ledStrip->Begin();
-
       frameIndex = 0;
-
       debugf("LED setup complete\n");
     }
 
