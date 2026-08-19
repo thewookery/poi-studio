@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=78">
+    <link rel="stylesheet" href="styles.css?v=79">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v78</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v79</span></div>
+
 
 
 
@@ -103,10 +104,7 @@
 
     <!-- 5-WORKSPACE PRIMARY NAVIGATION BAR -->
     <div class="workspace-mode-bar">
-        <button class="mode-switch-btn active" id="btn-mode-generator" data-mode="workspace-generator">
-            🎨 Generator
-        </button>
-        <button class="mode-switch-btn" id="btn-mode-stitcher" data-mode="workspace-stitcher">
+        <button class="mode-switch-btn active" id="btn-mode-stitcher" data-mode="workspace-stitcher">
             🗂️ Vault & Show
         </button>
         <button class="mode-switch-btn" id="btn-mode-banks" data-mode="workspace-banks">
@@ -115,20 +113,19 @@
         <button class="mode-switch-btn" id="btn-mode-deck" data-mode="workspace-deck">
             ⚙️ Poi Settings
         </button>
+        <button class="mode-switch-btn" id="btn-mode-generator" data-mode="workspace-generator">
+            🎨 Generator
+        </button>
         <button class="mode-switch-btn" id="btn-mode-firmware" data-mode="workspace-firmware">
             ⚡ Firmware
         </button>
     </div>
 
-
-
-
-
-
     <!-- ==========================================================================
-         WORKSPACE 2: PATTERN VAULT & SHOW STITCHER
+         WORKSPACE 2: PATTERN VAULT & SHOW STITCHER (DEFAULT FIRST VIEW)
          ========================================================================== -->
-    <div id="workspace-stitcher" style="display:none; flex-direction:column; gap:10px; padding:10px 12px;">
+    <div id="workspace-stitcher" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
+
 
         <!-- 1. PATTERN VAULT & STITCHER TIMELINE -->
         <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
@@ -339,9 +336,10 @@
     </div>
 
     <!-- ==========================================================================
-         WORKSPACE 1: ALGORITHMIC PATTERN GENERATOR & POV SHADERS (DEFAULT)
+         WORKSPACE 1: ALGORITHMIC PATTERN GENERATOR & POV SHADERS
          ========================================================================== -->
-    <div id="workspace-generator" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
+    <div id="workspace-generator" style="display:none; flex-direction:column; gap:10px; padding:10px 12px;">
+
         
         <!-- 1. STICKIED PROPS, DIMENSIONS & PRIMARY GENERATOR ACTION BAR -->
         <div class="card-box" style="background:rgba(0, 173, 181, 0.08); border:1px solid rgba(0, 173, 181, 0.35); padding:10px 12px;">
@@ -707,7 +705,9 @@
                 </div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                     <input type="file" id="bank-batch-upload-input" multiple accept="image/*" style="display:none;">
+                    <input type="file" id="bank-single-slot-file-input" accept="image/*" style="display:none;">
                     <button class="hw-btn" id="btn-bank-batch-import" style="font-size:0.72rem; color:var(--neon-cyan); font-weight:800; padding:7px 10px;" title="Batch import multiple images/GIFs, auto-rescale to 55px, and save to My Custom Vault">
+
                         📁 Batch Import to Vault
                     </button>
                     <button class="hw-btn" id="btn-bank-populate-custom" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:800; padding:7px 10px;" title="Auto-fill empty bank slots sequentially with patterns from My Custom Vault">
@@ -805,18 +805,13 @@
             </div>
         </div>
 
-        </div>
-
-
-
-
-
-        <!-- 2. INTERACTIVE 3-BANK CONTAINER (BANKS 1, 2, 3) -->
+        <!-- 2. INTERACTIVE 5-BANK CONTAINER -->
         <div id="banks-container" style="display:flex; flex-direction:column; gap:14px;">
             <!-- Rendered dynamically -->
         </div>
 
     </div>
+
 
     <!-- ==========================================================================
          WORKSPACE 4: POI BLUETOOTH HARDWARE DECK & PAIR MANAGER
@@ -1410,9 +1405,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=78"></script>
-<script src="poi-engine.js?v=78"></script>
-<script src="poi-ble.js?v=78"></script>
+<script src="master-vault-manifest.js?v=79"></script>
+<script src="poi-engine.js?v=79"></script>
+<script src="poi-ble.js?v=79"></script>
+
 
 
 
@@ -1445,8 +1441,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const updateBadge = (id, val) => { const e = el(id); if (e) e.innerText = val; };
 
 
-    // --- WORKSPACE STATE (Default: Algorithmic Generator) ---
-    let activeWorkspace = "workspace-generator";
+    // --- WORKSPACE STATE (Default: Vault & Show) ---
+    let activeWorkspace = "workspace-stitcher";
+
     let currentPattern = "aztec_xicalcoliuhqui_fret";
     let currentHeight = 55;
     let currentWidth = 40;
@@ -4013,7 +4010,51 @@ document.addEventListener('DOMContentLoaded', function() {
         popCustomBtn.onclick = () => autoPopulateEmptySlotsFromCustomVault();
     }
 
+    let targetSlotForDirectUpload = null;
+    const singleSlotFileInput = el('bank-single-slot-file-input');
+    if (singleSlotFileInput) {
+        singleSlotFileInput.onchange = async (e) => {
+            if (e.target.files && e.target.files.length > 0 && targetSlotForDirectUpload) {
+                const file = e.target.files[0];
+                const slot = targetSlotForDirectUpload;
+                try {
+                    const dataUri = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+
+                    const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_\-+]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                    const targetH = bankTargetHeight || currentHeight || 55;
+                    const resampled = await resamplePatternForBank(dataUri, targetH);
+
+                    await assignPatternToBankSlot(slot.bankIndex, slot.slotIndex, {
+                        name: cleanName,
+                        dataUri: resampled.dataUri,
+                        width: resampled.width,
+                        height: resampled.height
+                    });
+                } catch (err) {
+                    console.error("Failed to load file into bank slot:", err);
+                    alert("Could not load that file. Please select a valid PNG, JPG, or GIF.");
+                } finally {
+                    singleSlotFileInput.value = '';
+                    targetSlotForDirectUpload = null;
+                }
+            }
+        };
+    }
+
+    function promptFileForBankSlot(slot) {
+        targetSlotForDirectUpload = slot;
+        if (singleSlotFileInput) {
+            singleSlotFileInput.click();
+        }
+    }
+
     async function assignPatternToBankSlot(bankIdx, slotIdx, patternData) {
+
 
         const globalIdx = bankIdx * BANK_SLOT_COUNT + slotIdx;
         if (globalIdx < 0 || globalIdx >= TOTAL_BANK_SLOTS) return;
@@ -4228,13 +4269,16 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${slot.isAssigned ? `${slot.width}×${slot.height}px` : 'Unassigned'}
                         </span>
                     </div>
-                    <div class="bank-slot-preview-wrap" style="cursor:pointer;" title="Click to load or assign">
+                    <div class="bank-slot-preview-wrap" style="cursor:pointer;" title="Click to choose a file from your device">
                         ${previewHtml}
                     </div>
                     <div class="bank-slot-meta" title="${slot.name}">
                         ${slot.isAssigned ? slot.name : '<span style="color:var(--text-muted); font-style:italic;">No Pattern</span>'}
                     </div>
                     <div class="bank-slot-actions">
+                        <button class="bank-slot-btn" data-slot-action="pick-file" data-idx="${slot.globalIndex}" style="color:var(--neon-cyan); font-weight:700;" title="Select an image or GIF file from your device">
+                            📁 File
+                        </button>
                         <button class="bank-slot-btn" data-slot-action="play" data-idx="${slot.globalIndex}" style="color:var(--accent-color);" title="Command Poi to play this slot">
                             ▶️ Play
                         </button>
@@ -4248,10 +4292,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             🗑️
                         </button>
                     </div>
-
                 `;
 
                 // Wire up card buttons
+                const pickFileBtn = card.querySelector('[data-slot-action="pick-file"]');
+                if (pickFileBtn) {
+                    pickFileBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        promptFileForBankSlot(slot);
+                    };
+                }
+
                 const flashBtn = card.querySelector('[data-slot-action="flash"]');
                 if (flashBtn && slot.isAssigned) {
                     flashBtn.onclick = (e) => {
@@ -4295,28 +4346,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const prevWrap = card.querySelector('.bank-slot-preview-wrap');
                 if (prevWrap) {
-                    prevWrap.onclick = async () => {
-                        if (slot.isAssigned && slot.dataUri) {
-                            loadBankSlotToGenerator(slot);
-                        } else {
-                            const curUri = displayCanvas ? displayCanvas.toDataURL('image/png') : null;
-                            if (!curUri) return;
-                            let name = currentPattern;
-                            if (typeof name === 'string' && name.startsWith('bmp_') && typeof vaultItems !== 'undefined') {
-                                const vaultItem = vaultItems.find(v => v.id === name);
-                                if (vaultItem) name = vaultItem.name;
-                            }
-                            name = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-                            await assignPatternToBankSlot(slot.bankIndex, slot.slotIndex, {
-                                name: name,
-                                dataUri: curUri,
-                                width: currentWidth,
-                                height: currentHeight
-                            });
-                        }
+                    prevWrap.onclick = () => {
+                        promptFileForBankSlot(slot);
                     };
                 }
+
 
                 slotsGrid.appendChild(card);
             });
