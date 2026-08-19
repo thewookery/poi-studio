@@ -14,9 +14,9 @@
 #define OUTPUT_SK9822_2020_DRAW 0.060
 #define OUTPUT_SK9822_2020_LIMIT 100 // Data sheet says max brightness = 10/32 = 79/255, but yolo we do 100/255
 
-// 50 High-Speed Slots (5 Banks x 10 Slots)
+// 60 High-Speed Slots (6 Banks x 10 Slots)
 #define PATTERN_BANK_SIZE 10
-#define PATTERN_BANK_COUNT 5
+#define PATTERN_BANK_COUNT 6
 #define PATTERN_PIXEL_LIMIT 40000
 
 

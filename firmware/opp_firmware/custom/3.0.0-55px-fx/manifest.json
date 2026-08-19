@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPoi - 50 Slots, 5 Banks, 2-Stage Palette & Motion FX Engine (55px DotStar)",
-  "version": "2026.19.55-50slots-v91",
+  "name": "OpenPixelPoi - 60 Slots, 6 Banks, Sacred Math Lines & 2-Stage FX Engine (55px DotStar)",
+  "version": "2026.19.55-60slots-v92",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -20,7 +20,7 @@
           "offset": 57344
         },
         {
-          "path": "firmware_50slots_v91.bin",
+          "path": "firmware_60slots_v92.bin",
           "offset": 65536
         },
         {

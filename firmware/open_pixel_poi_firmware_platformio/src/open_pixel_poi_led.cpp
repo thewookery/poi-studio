@@ -556,24 +556,25 @@ else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 
         // Bank 3: 🟣 Neon Purple (0xBC, 0x13, 0xFE)
         // Bank 4: 🌸 Neon Pink   (0xFF, 0x2E, 0x63)
         // Bank 5: 🩵 Neon Cyan   (0x00, 0xD2, 0xFF)
-        const RgbColor bankColors[5] = {
+        const RgbColor bankColors[6] = {
           RgbColor(0x00, 0xFF, 0x55), // Bank 1: Neon Green
           RgbColor(0xFF, 0xD7, 0x00), // Bank 2: Neon Yellow
           RgbColor(0xBC, 0x13, 0xFE), // Bank 3: Neon Purple
           RgbColor(0xFF, 0x2E, 0x63), // Bank 4: Neon Pink
-          RgbColor(0x00, 0xD2, 0xFF)  // Bank 5: Neon Cyan
+          RgbColor(0x00, 0xD2, 0xFF), // Bank 5: Neon Cyan
+          RgbColor(0xFF, 0xFF, 0xFF)  // Bank 6: Diamond Laser White / Sacred Math
         };
 
         int totalLeds = config.ledCount > 0 ? config.ledCount : 55;
-        int zoneSize = max(1, totalLeds / 5);
-        int pressTime = (millis() - config.displayStateLastUpdated) % 5500;
-        int activeSelection = pressTime / 500; // 0 to 10
+        int zoneSize = max(1, totalLeds / 6);
+        int pressTime = (millis() - config.displayStateLastUpdated) % 6500;
+        int activeSelection = pressTime / 500; // 0 to 12
 
-        if (activeSelection < 5) {
-          // Direct Bank Selection (0: Bank 1, 1: Bank 2, 2: Bank 3, 3: Bank 4, 4: Bank 5)
-          for (int b = 0; b < 5; b++) {
+        if (activeSelection < 6) {
+          // Direct Bank Selection (0: Bank 1, 1: Bank 2, 2: Bank 3, 3: Bank 4, 4: Bank 5, 5: Bank 6)
+          for (int b = 0; b < 6; b++) {
             int startIdx = b * zoneSize;
-            int endIdx = (b == 4) ? totalLeds : (b + 1) * zoneSize;
+            int endIdx = (b == 5) ? totalLeds : (b + 1) * zoneSize;
             bool isSelected = (b == activeSelection);
 
             for (int k = startIdx; k < endIdx; k++) {
@@ -592,8 +593,8 @@ else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 
               }
             }
           }
-        } else if (activeSelection == 5) {
-          // 5: All-Bank Shuffle / Demo Tour (Rainbow Wave across all 5 zones)
+        } else if (activeSelection == 6) {
+          // 6: All-Bank Shuffle / Demo Tour (Rainbow Wave across all 6 zones)
           uint8_t waveOffset = (uint8_t)((millis() / 4) & 0xFF);
           for (int k = 0; k < totalLeds; k++) {
             uint8_t r, g, b;
@@ -601,11 +602,11 @@ else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 
             ledStrip->SetPixelColor(k, RgbColor(r, g, b));
           }
         } else {
-          // 6 to 10: Single-Bank Auto-Loop (6: Bank 1 Loop, 7: Bank 2 Loop, 8: Bank 3 Loop, 9: Bank 4 Loop, 10: Bank 5 Loop)
-          int loopBank = activeSelection - 6; // 0 to 4
-          for (int b = 0; b < 5; b++) {
+          // 7 to 12: Single-Bank Auto-Loop (7: Bank 1, 8: Bank 2, 9: Bank 3, 10: Bank 4, 11: Bank 5, 12: Bank 6)
+          int loopBank = activeSelection - 7; // 0 to 5
+          for (int b = 0; b < 6; b++) {
             int startIdx = b * zoneSize;
-            int endIdx = (b == 4) ? totalLeds : (b + 1) * zoneSize;
+            int endIdx = (b == 5) ? totalLeds : (b + 1) * zoneSize;
             bool isLoopTarget = (b == loopBank);
 
             for (int k = startIdx; k < endIdx; k++) {

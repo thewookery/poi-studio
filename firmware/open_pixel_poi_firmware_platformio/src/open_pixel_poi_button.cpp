@@ -172,49 +172,17 @@ public:
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK2_HOLD){
         paletteSelectStage = 0;
-        // 11 options, 500ms each, 0-5500ms, offset by 500 for initial press animation
-        int selection = ((millis() - downTime - 500) % 5500) / 500;
-        if(selection == 0){
-          config.setPatternBank(0, true);
+        // 13 options (0..5: Banks 1..6, 6: Loop All, 7..12: Loop Banks 1..6), 500ms each = 6500ms
+        int selection = ((millis() - downTime - 500) % 6500) / 500;
+        if(selection <= 5){
+          config.setPatternBank(selection, true);
           config.displayState = DS_PATTERN;
-          config.displayStateLastUpdated = millis();
-        }else if(selection == 1){
-          config.setPatternBank(1, true);
-          config.displayState = DS_PATTERN;
-          config.displayStateLastUpdated = millis();
-        }else if(selection == 2){
-          config.setPatternBank(2, true);
-          config.displayState = DS_PATTERN;
-          config.displayStateLastUpdated = millis();
-        }else if(selection == 3){
-          config.setPatternBank(3, true);
-          config.displayState = DS_PATTERN;
-          config.displayStateLastUpdated = millis();
-        }else if(selection == 4){
-          config.setPatternBank(4, true); // Bank 5: Cosmic Auto-Morph Tour!
-          config.displayState = DS_PATTERN;
-          config.displayStateLastUpdated = millis();
-        }else if(selection == 5){
-          config.displayState = DS_PATTERN_ALL_ALL;
           config.displayStateLastUpdated = millis();
         }else if(selection == 6){
-          config.setPatternBank(0, true);
-          config.displayState = DS_PATTERN_ALL;
+          config.displayState = DS_PATTERN_ALL_ALL;
           config.displayStateLastUpdated = millis();
-        }else if(selection == 7){
-          config.setPatternBank(1, true);
-          config.displayState = DS_PATTERN_ALL;
-          config.displayStateLastUpdated = millis();
-        }else if(selection == 8){
-          config.setPatternBank(2, true);
-          config.displayState = DS_PATTERN_ALL;
-          config.displayStateLastUpdated = millis();
-        }else if(selection == 9){
-          config.setPatternBank(3, true);
-          config.displayState = DS_PATTERN_ALL;
-          config.displayStateLastUpdated = millis();
-        }else{
-          config.setPatternBank(4, true);
+        }else if(selection >= 7 && selection <= 12){
+          config.setPatternBank(selection - 7, false);
           config.displayState = DS_PATTERN_ALL;
           config.displayStateLastUpdated = millis();
         }
