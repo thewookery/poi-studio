@@ -48,8 +48,9 @@ private:
   bool regulatorEnabled = true;
 
   long shutDownAt = 0;
-  bool inPaletteSelectMode = false;
-  uint8_t previewPalette = 0;
+  int paletteSelectStage = 0; // 0 = normal, 1 = selecting Palette, 2 = selecting Motion FX Bank
+  uint8_t previewPalette = 1;
+  uint8_t previewMotion = 0;
 
 public:
   OpenPixelPoiButton(OpenPixelPoiConfig& _config): config(_config) {}    
@@ -104,10 +105,19 @@ public:
         config.displayState = DS_WAITING5;
         config.displayStateLastUpdated = millis();
     }else if(buttonState == BS_CLICK_DOWN && millis() - downTime >= 500){ // Click Hold
-        if (inPaletteSelectMode) {
-          // Lock in selected palette!
+        if (paletteSelectStage == 1) {
+          // Confirmed Palette! Advance to Stage 2: Motion Flow FX Bank
+          paletteSelectStage = 2;
+          previewMotion = 0;
+          config.motionFxMode = previewMotion;
+          buttonState = BS_INITIAL;
+          config.displayState = DS_PALETTE_SELECT;
+          config.displayStateLastUpdated = millis();
+        } else if (paletteSelectStage == 2) {
+          // Confirmed Motion Flow FX! Lock both in and return to normal spinning
+          paletteSelectStage = 0;
           config.setPaletteFxMode(previewPalette);
-          inPaletteSelectMode = false;
+          config.setMotionFxMode(previewMotion);
           buttonState = BS_INITIAL;
           config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
@@ -123,7 +133,7 @@ public:
         config.displayStateLastUpdated = millis();
         shutDownAt = millis();
       }else if(buttonState == BS_CLICK2_DOWN && millis() - downTime >= 500){ // Click2 Hold
-        inPaletteSelectMode = false;
+        paletteSelectStage = 0;
         buttonState = BS_CLICK2_HOLD;
         // Trigger bank display
         config.displayState = DS_BANK;
@@ -161,7 +171,7 @@ public:
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK2_HOLD){
-        inPaletteSelectMode = false;
+        paletteSelectStage = 0;
         // 11 options, 500ms each, 0-5500ms, offset by 500 for initial press animation
         int selection = ((millis() - downTime - 500) % 5500) / 500;
         if(selection == 0){
@@ -255,10 +265,18 @@ public:
 
     // Single press detected after timeout
     if(buttonState == BS_CLICK_UP && millis() - downTime >= 350){
-      if(inPaletteSelectMode){
-        // Step through color palettes one by one with pure LED blade flow preview
-        previewPalette = (previewPalette + 1) % 40;
+      if(paletteSelectStage == 1){
+        // Stage 1: Step through 20 Palettes (1..20)
+        previewPalette = (previewPalette % 20) + 1;
         config.paletteFxMode = previewPalette;
+        config.motionFxMode = 0; // Solid blade preview in Stage 1
+        config.displayState = DS_PALETTE_SELECT;
+        config.displayStateLastUpdated = millis();
+        buttonState = BS_INITIAL;
+      }else if(paletteSelectStage == 2){
+        // Stage 2: Step through 11 Motion Flows (0..10: Solid, Flow Up, Flow Down, Rain, Tidal, Plasma, Stardust, Pulse, POV Spin, Spiral, Strobe)
+        previewMotion = (previewMotion + 1) % 11;
+        config.motionFxMode = previewMotion;
         config.displayState = DS_PALETTE_SELECT;
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
@@ -273,23 +291,25 @@ public:
 
     // Double press detected after timeout -> return to pattern
     if(buttonState == BS_CLICK2_UP && millis() - downTime >= 350){
-      config.displayState = inPaletteSelectMode ? DS_PALETTE_SELECT : DS_PATTERN;
+      config.displayState = (paletteSelectStage > 0) ? DS_PALETTE_SELECT : DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
     // Triple press detected after timeout -> return to pattern
     if(buttonState == BS_CLICK3_UP && millis() - downTime >= 350){
-      config.displayState = inPaletteSelectMode ? DS_PALETTE_SELECT : DS_PATTERN;
+      config.displayState = (paletteSelectStage > 0) ? DS_PALETTE_SELECT : DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
-    // Quad press detected after timeout -> Enter Pure Palette Flow Select Mode!
+    // Quad press detected after timeout -> Enter 2-Stage Palette & Motion FX Selector!
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 350){
-      inPaletteSelectMode = true;
-      previewPalette = (config.paletteFxMode + 1) % 40;
+      paletteSelectStage = 1; // Start in Stage 1: Palette Selection
+      previewPalette = (config.paletteFxMode > 0) ? config.paletteFxMode : 1;
+      previewMotion = config.motionFxMode;
       config.paletteFxMode = previewPalette;
+      config.motionFxMode = 0; // Solid blade preview in Stage 1
       config.displayState = DS_PALETTE_SELECT;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;

@@ -74,7 +74,8 @@ class OpenPixelPoiConfig {
     uint32_t patternLength;
 
     // Real-Time FX & Transition Engine (Zero-RAM Overhead)
-    uint8_t paletteFxMode = 0; // 0=Normal True-Color, 1..39=Dynamic Palette & Flow Shaders
+    uint8_t paletteFxMode = 0; // 0=Normal True-Color, 1..20=Palettes
+    uint8_t motionFxMode = 0;  // 0=Solid, 1=Flow Up, 2=Flow Down, 3=Matrix Rain, 4=Tidal Wave, 5=Plasma, 6=Stardust, 7=Pulse, 8=POV Spin, 9=Spiral, 10=Strobe
     uint8_t blendMode = 0;     // 0=Cut (OFF by default). Transitions ONLY run when chosen!
     uint8_t paletteSpeed = 3;  // 1-10 speed multiplier
     unsigned long blendStartTime = 0;
@@ -96,7 +97,12 @@ class OpenPixelPoiConfig {
     }
 
     void setPaletteFxMode(uint8_t mode) {
-      this->paletteFxMode = mode % 40;
+      this->paletteFxMode = mode % 25;
+      this->configLastUpdated = millis();
+    }
+
+    void setMotionFxMode(uint8_t mode) {
+      this->motionFxMode = mode % 15;
       this->configLastUpdated = millis();
     }
 
@@ -212,6 +218,7 @@ class OpenPixelPoiConfig {
       this->patternBank = patternBank % PATTERN_BANK_COUNT;
       this->patternSlot = this->patternSlot % PATTERN_BANK_SIZE;
       this->paletteFxMode = 0; // 100% True-Color RGB by default (no unwanted rainbow bleed)
+      this->motionFxMode = 0;
 
       if(save){
         preferences.putChar("patternBank", this->patternBank);

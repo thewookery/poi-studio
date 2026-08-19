@@ -80,6 +80,7 @@ enum CommCode {
   CC_SET_PALETTE_FX,              // 21
   CC_SET_BLEND_MODE,              // 22
   CC_SET_PALETTE_SPEED,           // 23
+  CC_SET_MOTION_FX,               // 24
 };
 
 
@@ -334,6 +335,13 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
           }else if(requestCode == CC_SET_PALETTE_SPEED){
             if(bleStatus[2] >= 1 && bleStatus[2] <= 10){
               config.setPaletteSpeed(bleStatus[2]);
+              bleSendSuccess();
+            }else{
+              bleSendError();
+            }
+          }else if(requestCode == CC_SET_MOTION_FX){
+            if(bleStatus[2] >= 0 && bleStatus[2] <= 10){
+              config.setMotionFxMode(bleStatus[2]);
               bleSendSuccess();
             }else{
               bleSendError();

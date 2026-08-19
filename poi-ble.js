@@ -45,7 +45,8 @@
         CC_SET_PATTERN_SHUFFLE_DURATION: 0x14,
         CC_SET_PALETTE_FX: 0x15,
         CC_SET_BLEND_MODE: 0x16,
-        CC_SET_PALETTE_SPEED: 0x17
+        CC_SET_PALETTE_SPEED: 0x17,
+        CC_SET_MOTION_FX: 0x18
     };
 
 
@@ -505,11 +506,19 @@
         }
 
         /**
-         * Set Real-Time Color Palette Filter (0=Normal, 1=Rainbow, 2=Cyberpunk, 3=Fire, 4=Matrix, 5=Acid, 6=Ice)
+         * Set Real-Time Color Palette Filter (0=Normal, 1-20 Palettes)
          */
         async setPaletteFX(paletteId) {
             const id = Math.max(0, Math.min(24, parseInt(paletteId) || 0));
             await this._sendMessage([COMM_CODES.CC_SET_PALETTE_FX, id]);
+        }
+
+        /**
+         * Set Real-Time Motion Flow FX Bank (0=Solid, 1=Flow Up, 2=Flow Down, 3=Rain, 4=Tidal, 5=Plasma, 6=Stardust, 7=Pulse, 8=POV Spin, 9=Spiral, 10=Strobe)
+         */
+        async setMotionFX(motionId) {
+            const id = Math.max(0, Math.min(10, parseInt(motionId) || 0));
+            await this._sendMessage([COMM_CODES.CC_SET_MOTION_FX, id]);
         }
 
 
