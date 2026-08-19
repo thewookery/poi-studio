@@ -1,5 +1,6 @@
 // Open POI Studio 100% Offline Festival Service Worker
-const CACHE_NAME = 'open-poi-studio-v83-offline';
+const CACHE_NAME = 'open-poi-studio-v84-offline';
+
 
 
 

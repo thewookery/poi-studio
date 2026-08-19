@@ -2,7 +2,8 @@
 
 ##### Links
 - [User Manual](./MANUAL.md)
-- [Firmware Flashy Thing](https://mitchlol.github.io/#openpixelpoi)
+- [Open POI Studio](https://thewookery.github.io/poi-studio/)
+
 
 ##### Firmware info
 This is the firmware, it is an arduino project designed to be built in platformio.

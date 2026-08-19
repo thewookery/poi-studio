@@ -80,7 +80,7 @@
         }
 
         /**
-         * Calculate accurate battery status and percentage using Mitch Lustig's Open Pixel Poi voltage curve:
+         * Calculate accurate battery status and percentage using Open Pixel Poi standard voltage curve:
          * - Green (Full / Healthy): >= 3.90V (~75% - 100%)
          * - Yellow (Medium / Nominal): 3.50V - 3.90V (~25% - 75%)
          * - Red (Low / Critical): <= 3.45V (< 25%)
@@ -97,7 +97,7 @@
             
             // If voltage in volts (3.25V - 4.20V)
             if (val > 2.0 && val <= 5.0) {
-                // LiPo 1S curve mapping based on Mitch's thresholds
+                // LiPo 1S curve mapping based on OPP hardware thresholds
                 let pct = Math.round(((val - 3.45) / (4.15 - 3.45)) * 100);
                 pct = Math.max(0, Math.min(100, pct));
                 return {
@@ -108,6 +108,7 @@
                     label: (val >= 3.90) ? 'Good' : (val >= 3.50 ? 'Medium' : 'Low')
                 };
             }
+
 
             // If percentage (0 - 100)
             let pct = Math.max(0, Math.min(100, Math.round(val)));

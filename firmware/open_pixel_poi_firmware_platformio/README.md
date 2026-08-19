@@ -5,8 +5,7 @@
 
 All the library dependencies and board config is contained in the platformio.ini file in this folder.
 
-# Note for self: Export a compiled firmware to web-based firmware flashy tool.
-1. Hit the -> arrow button on the bottom bar to compile and upload the firmware to your PCB.
-1. copy .pio/build/seeed_xiao_esp32c3/firmware.bin to opp_firmware folder in the mitchlol.github.io project, replacing the old one.
-1. update the manifest.json in that same folder with the current date to have some minimal tracking.
-
+# Note: Export a compiled firmware to web-based firmware flasher.
+1. Run `pio run` to compile the firmware binary.
+2. Copy `.pio/build/seeed_xiao_esp32c3/firmware.bin` to `firmware/opp_firmware/custom/3.0.0-55px-fx/`, replacing the old one.
+3. Reload Open POI Studio to flash the updated binary.
