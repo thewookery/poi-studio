@@ -47,19 +47,20 @@ void setup() {
 
 void loop() {
   while(true){
-    ble.loop();
     if(ble.multipartPattern == 0){
+      ble.loop();
       espNow.loop();
       config.loop();
       led.loop();
       button.loop();
     }else{
-      // Fast non-blocking yield during active BLE uploads (prevents packet buffer overflows!)
-      delay(1);
+      delay(25);
+      // jammed recovery
       if(millis() - ble.bleLastReceived > 5000){
         ble.multipartPattern = 0;
       }
     }
+    yield();
   }
 }
 
