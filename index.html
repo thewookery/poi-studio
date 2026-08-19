@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=76">
+    <link rel="stylesheet" href="styles.css?v=77">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v76</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v77</span></div>
+
 
 
 
@@ -704,33 +705,43 @@
                     </div>
                 </div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <input type="file" id="bank-batch-upload-input" multiple accept="image/*" style="display:none;">
+                    <button class="hw-btn" id="btn-bank-batch-import" style="font-size:0.72rem; color:var(--neon-cyan); font-weight:800; padding:7px 10px;" title="Batch import multiple images/GIFs, auto-rescale to 55px, and save to My Custom Vault">
+                        📁 Batch Import to Vault
+                    </button>
+                    <button class="hw-btn" id="btn-bank-populate-custom" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:800; padding:7px 10px;" title="Auto-fill empty bank slots sequentially with patterns from My Custom Vault">
+                        📥 Auto-Fill Empty Slots
+                    </button>
                     <button class="btn-ble-upload" id="btn-bank-flash-all" style="font-size:0.75rem; padding:7px 12px;" title="Sequentially flash all populated slots to connected Poi">
-                        ⚡ Flash All Populated to Poi
+                        ⚡ Flash All to Poi
                     </button>
                     <button class="hw-btn" id="btn-bank-random-fill" style="font-size:0.72rem; color:var(--accent-color); font-weight:800;" title="Randomly fill all empty slots from Vault (Auto-Resized)">
-                        🎲 Random 20 Auto-Fill
+                        🎲 Random Auto-Fill
                     </button>
-                    <button class="hw-btn" id="btn-bank-clear-all" style="font-size:0.72rem; color:#ff4d4d;" title="Clear all 20 slots">
+                    <button class="hw-btn" id="btn-bank-clear-all" style="font-size:0.72rem; color:#ff4d4d;" title="Clear all slots">
                         🗑️ Clear All
                     </button>
                 </div>
             </div>
 
-            <!-- FIRMWARE BANK CAPACITY TOGGLE (STOCK 3-BANK vs CUSTOM 4-BANK) -->
+            <!-- FIRMWARE BANK CAPACITY TOGGLE (STOCK 3-BANK vs STOCK 4-BANK vs STUDIO 5-BANK 50-SLOT) -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px; padding:6px 10px; background:rgba(0,0,0,0.35); border-radius:6px; border:1px solid rgba(0, 255, 136, 0.2);">
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                     <span style="font-size:0.72rem; font-weight:800; color:var(--text-color);">🎛️ Firmware Profile:</span>
                     <div style="display:flex; gap:4px;" id="bank-fw-mode-presets">
                         <button class="hw-btn" id="btn-fw-mode-3" data-fw-banks="3" style="font-size:0.68rem; padding:4px 8px;" title="Standard Stock Mitch Firmware (3 Banks / 15 Slots)">
-                            Standard (3 Banks • 15 Slots)
+                            Standard (3B • 15S)
                         </button>
-                        <button class="hw-btn active" id="btn-fw-mode-4" data-fw-banks="4" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-green);" title="Open POI Studio Custom Firmware (4 Banks / 20 Slots)">
-                            ✨ Custom (4 Banks • 20 Slots)
+                        <button class="hw-btn" id="btn-fw-mode-4" data-fw-banks="4" style="font-size:0.68rem; padding:4px 8px;" title="Legacy 4-Bank Firmware (4 Banks / 20 Slots)">
+                            Legacy (4B • 20S)
+                        </button>
+                        <button class="hw-btn active" id="btn-fw-mode-5" data-fw-banks="5" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-green); font-weight:800;" title="Open POI Studio Custom FX Firmware (5 Banks / 50 Slots • 10 per bank + Ignis Flow)">
+                            🚀 Studio FX (5B • 50 Slots)
                         </button>
                     </div>
                 </div>
                 <div style="font-size:0.65rem; color:var(--text-muted);" id="bank-fw-mode-desc">
-                    Custom 4-Bank mode active (matches Studio Custom Firmware).
+                    Studio FX 50-Slot mode active (5 Banks • 10 Slots/Bank • Ignis Flow).
                 </div>
             </div>
 
@@ -743,7 +754,7 @@
                         <span class="telemetry-pill" id="bank-storage-pct-badge" style="font-size:0.6rem; color:var(--neon-green);">0.0% Used</span>
                     </div>
                     <div style="color:var(--text-muted); font-size:0.68rem;" id="bank-storage-free-text">
-                        2.44 MB Free (Room for ~370 patterns)
+                        2.17 MB Free (Room for ~330 patterns)
                     </div>
                 </div>
                 <div style="width:100%; height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
@@ -785,11 +796,14 @@
             <!-- BANK SELECTOR TABS -->
             <div style="display:flex; gap:6px; flex-wrap:wrap;" id="bank-filter-nav">
                 <button class="hw-btn active" data-bank-filter="all">✨ All Slots</button>
-                <button class="hw-btn" data-bank-filter="0">📁 Bank 1 (Slots 1–5)</button>
-                <button class="hw-btn" data-bank-filter="1">📁 Bank 2 (Slots 1–5)</button>
-                <button class="hw-btn" data-bank-filter="2">📁 Bank 3 (Slots 1–5)</button>
-                <button class="hw-btn" data-bank-filter="3" id="bank-filter-tab-4">📁 Bank 4 (Slots 1–5)</button>
+                <button class="hw-btn" data-bank-filter="0" id="bank-filter-tab-0">📁 Bank 1</button>
+                <button class="hw-btn" data-bank-filter="1" id="bank-filter-tab-1">📁 Bank 2</button>
+                <button class="hw-btn" data-bank-filter="2" id="bank-filter-tab-2">📁 Bank 3</button>
+                <button class="hw-btn" data-bank-filter="3" id="bank-filter-tab-3">📁 Bank 4</button>
+                <button class="hw-btn" data-bank-filter="4" id="bank-filter-tab-4" style="color:var(--neon-yellow);">🌟 Bank 5 (Cosmic Tour)</button>
             </div>
+        </div>
+
         </div>
 
 
@@ -974,10 +988,16 @@
                     <button class="hw-btn" data-blend="8" style="font-size:0.66rem; padding:4px 2px; color:#ffd000;">⚛️ Quantum (260ms)</button>
                     <button class="hw-btn" data-blend="9" style="font-size:0.66rem; padding:4px 2px; color:#ffffff;">☄️ Comet (250ms)</button>
                 </div>
+            </div>
 
-
+            <!-- IGNIS PATTERN-AURA FLUID FLOW TOGGLE -->
+            <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+                <button class="hw-btn" id="btn-ignis-aura-flow" style="width:100%; font-size:0.75rem; color:var(--neon-green); font-weight:800; padding:8px 12px; border-color:var(--neon-green);" title="Extracts the colors of the active pattern and pulses a living liquid light aura across all 3 faces">
+                    🕯️ Ignis Pattern-Aura Flow: OFF
+                </button>
             </div>
         </div>
+
 
         <!-- 3. ADVANCED PRECISION SLIDERS & FINE-TUNING (COLLAPSIBLE) -->
         <details class="card-box" style="background:rgba(0,0,0,0.5); border-color:var(--border-color);">
@@ -1387,9 +1407,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=76"></script>
-<script src="poi-engine.js?v=76"></script>
-<script src="poi-ble.js?v=76"></script>
+<script src="master-vault-manifest.js?v=77"></script>
+<script src="poi-engine.js?v=77"></script>
+<script src="poi-ble.js?v=77"></script>
+
 
 
 
@@ -3659,84 +3680,113 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // =========================================================================
-    // HARDWARE BANK MANAGER (3 STOCK BANKS OR 4 CUSTOM BANKS)
+    // HARDWARE BANK MANAGER (3 STOCK BANKS, 4 LEGACY BANKS, OR 5 STUDIO FX BANKS)
     // =========================================================================
-    const BANK_SLOT_COUNT = 5;
-    let BANK_COUNT = parseInt(localStorage.getItem('open_poi_firmware_bank_mode')) || 4;
+    let BANK_COUNT = parseInt(localStorage.getItem('open_poi_firmware_bank_mode')) || 5;
+    let BANK_SLOT_COUNT = (BANK_COUNT === 5) ? 10 : 5;
     let TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT;
-    const STORAGE_KEY_BANKS = 'open_poi_bank_slots_v4';
+    const STORAGE_KEY_BANKS = 'open_poi_bank_slots_v5';
+    const STORAGE_KEY_USER_VAULT = 'open_poi_user_custom_vault_v1';
 
     let bankSlots = [];
+    let userCustomVault = [];
     let currentBankFilter = 'all';
     let bankTargetHeight = 55;
     let pendingBankAssignData = null;
+    let isIgnisAuraFlowActive = false;
 
     function setFirmwareBankMode(count, saveStorage = true) {
-        BANK_COUNT = parseInt(count) === 3 ? 3 : 4;
+        count = parseInt(count);
+        if (count === 3) {
+            BANK_COUNT = 3;
+            BANK_SLOT_COUNT = 5;
+        } else if (count === 4) {
+            BANK_COUNT = 4;
+            BANK_SLOT_COUNT = 5;
+        } else {
+            BANK_COUNT = 5;
+            BANK_SLOT_COUNT = 10;
+        }
         TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT;
 
         // 1. Update UI Toggle Buttons
         const btn3 = el('btn-fw-mode-3');
         const btn4 = el('btn-fw-mode-4');
+        const btn5 = el('btn-fw-mode-5');
         if (btn3) btn3.classList.toggle('active', BANK_COUNT === 3);
-        if (btn4) {
-            btn4.classList.toggle('active', BANK_COUNT === 4);
-            btn4.style.color = BANK_COUNT === 4 ? 'var(--neon-green)' : 'var(--text-muted)';
+        if (btn4) btn4.classList.toggle('active', BANK_COUNT === 4);
+        if (btn5) {
+            btn5.classList.toggle('active', BANK_COUNT === 5);
+            btn5.style.color = BANK_COUNT === 5 ? 'var(--neon-green)' : 'var(--text-muted)';
         }
 
         // 2. Update Description Banner
         const descEl = el('bank-fw-mode-desc');
         if (descEl) {
-            descEl.innerText = BANK_COUNT === 4 
-                ? "Custom 4-Bank mode active (matches Studio Custom Firmware • 20 Slots)."
-                : "Standard 3-Bank mode active (matches Official Stock Mitch Firmware • 15 Slots).";
+            if (BANK_COUNT === 5) {
+                descEl.innerText = "Studio FX 50-Slot mode active (5 Banks • 10 Slots/Bank • Ignis Flow).";
+            } else if (BANK_COUNT === 4) {
+                descEl.innerText = "Legacy 4-Bank mode active (4 Banks • 20 Slots).";
+            } else {
+                descEl.innerText = "Standard 3-Bank mode active (Official Stock Mitch Firmware • 15 Slots).";
+            }
         }
 
-        // 3. Update Bank 4 Filter Tab Visibility
-        const tab4 = el('bank-filter-tab-4');
-        if (tab4) tab4.style.display = (BANK_COUNT === 4) ? 'inline-block' : 'none';
-        if (currentBankFilter === '3' && BANK_COUNT === 3) {
+        // 3. Update Bank Filter Tabs
+        for (let b = 0; b < 5; b++) {
+            const tab = el(`bank-filter-tab-${b}`);
+            if (tab) {
+                tab.style.display = (b < BANK_COUNT) ? 'inline-block' : 'none';
+                if (b === 4 && BANK_COUNT === 5) {
+                    tab.innerText = '🌟 Bank 5 (Cosmic Tour)';
+                } else {
+                    tab.innerText = `📁 Bank ${b + 1} (Slots ${b * BANK_SLOT_COUNT + 1}–${(b + 1) * BANK_SLOT_COUNT})`;
+                }
+            }
+        }
+
+        if (currentBankFilter !== 'all' && parseInt(currentBankFilter) >= BANK_COUNT) {
             currentBankFilter = 'all';
             document.querySelectorAll('#bank-filter-nav button').forEach(b => {
                 b.classList.toggle('active', b.getAttribute('data-bank-filter') === 'all');
             });
         }
 
-        // 4. Update Send-to-Bank Modal Bank 4 Block
-        const modalBank4 = el('bank-picker-bank-4-block');
-        if (modalBank4) modalBank4.style.display = (BANK_COUNT === 4) ? 'block' : 'none';
-
-        // 5. Update Batch Buttons text
+        // 4. Update Batch Buttons text
         const randFillBtn = el('btn-bank-random-fill');
-        if (randFillBtn) randFillBtn.innerText = `🎲 Random ${TOTAL_BANK_SLOTS} Auto-Fill`;
+        if (randFillBtn) randFillBtn.innerText = `🎲 Random Auto-Fill`;
         
         const rescaleBtn = el('btn-bank-rescale-all');
-        if (rescaleBtn) rescaleBtn.innerHTML = `🔄 Rescale All ${TOTAL_BANK_SLOTS} to <span id="bank-rescale-target-label">${bankTargetHeight}px</span>`;
+        if (rescaleBtn) rescaleBtn.innerHTML = `🔄 Rescale All to <span id="bank-rescale-target-label">${bankTargetHeight}px</span>`;
 
-        // 6. Update BLE Bank Quick-Select options in Poi Settings
+        // 5. Update BLE Bank Quick-Select options in Poi Settings
         const bleBankSel = el('ble-ctrl-bank');
         if (bleBankSel) {
             let opts = '';
-            for (let i = 0; i < BANK_COUNT; i++) opts += `<option value="${i}">Bank ${i + 1} (Slots ${i*5+1}–${i*5+5})</option>`;
+            for (let i = 0; i < BANK_COUNT; i++) {
+                if (i === 4 && BANK_COUNT === 5) {
+                    opts += `<option value="${i}">Bank 5 (🌟 Cosmic Tour & Ignis Flow)</option>`;
+                } else {
+                    opts += `<option value="${i}">Bank ${i + 1} (Slots ${i*BANK_SLOT_COUNT+1}–${(i+1)*BANK_SLOT_COUNT})</option>`;
+                }
+            }
             bleBankSel.innerHTML = opts;
         }
 
-        // 7. Save to persistent localStorage cache
+        // 6. Save to persistent localStorage cache
         if (saveStorage) {
             try {
                 localStorage.setItem('open_poi_firmware_bank_mode', `${BANK_COUNT}`);
             } catch(e) {}
         }
 
+        loadSavedBankSlots();
         renderBankSlotsGrid();
     }
 
-    if (el('btn-fw-mode-3')) {
-        el('btn-fw-mode-3').onclick = () => setFirmwareBankMode(3, true);
-    }
-    if (el('btn-fw-mode-4')) {
-        el('btn-fw-mode-4').onclick = () => setFirmwareBankMode(4, true);
-    }
+    if (el('btn-fw-mode-3')) el('btn-fw-mode-3').onclick = () => setFirmwareBankMode(3, true);
+    if (el('btn-fw-mode-4')) el('btn-fw-mode-4').onclick = () => setFirmwareBankMode(4, true);
+    if (el('btn-fw-mode-5')) el('btn-fw-mode-5').onclick = () => setFirmwareBankMode(5, true);
 
     /**
      * Resamples any image or canvas to exact target hardware LED height and optimal length
@@ -3780,18 +3830,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadSavedBankSlots() {
+        const totalNeeded = 50; // Always support full 50 internal slots
         try {
             let raw = localStorage.getItem(STORAGE_KEY_BANKS);
-            if (!raw) {
-                // Auto-migrate from previous v3 storage if available
-                raw = localStorage.getItem('open_poi_bank_slots_v3');
-            }
+            if (!raw) raw = localStorage.getItem('open_poi_bank_slots_v4');
+            if (!raw) raw = localStorage.getItem('open_poi_bank_slots_v3');
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed)) {
                     bankSlots = [];
-                    // Always allocate 20 slots internally so Bank 4 patterns are never discarded if switching modes
-                    for (let i = 0; i < 20; i++) {
+                    for (let i = 0; i < totalNeeded; i++) {
                         const b = Math.floor(i / BANK_SLOT_COUNT);
                         const s = i % BANK_SLOT_COUNT;
                         if (i < parsed.length && parsed[i] && parsed[i].dataUri) {
@@ -3820,7 +3868,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch(e) {}
 
         bankSlots = [];
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < totalNeeded; i++) {
             const b = Math.floor(i / BANK_SLOT_COUNT);
             const s = i % BANK_SLOT_COUNT;
             bankSlots.push({
@@ -3844,7 +3892,138 @@ document.addEventListener('DOMContentLoaded', function() {
         renderBankSlotsGrid();
     }
 
+    function loadUserCustomVault() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY_USER_VAULT);
+            if (raw) {
+                userCustomVault = JSON.parse(raw) || [];
+            }
+        } catch(e) {
+            userCustomVault = [];
+        }
+    }
+    loadUserCustomVault();
 
+    function saveUserCustomVault() {
+        try {
+            localStorage.setItem(STORAGE_KEY_USER_VAULT, JSON.stringify(userCustomVault));
+        } catch(e) {}
+    }
+
+    async function batchImportFilesToVault(files) {
+        if (!files || files.length === 0) return;
+        const targetH = bankTargetHeight || currentHeight || 55;
+        let importedCount = 0;
+
+        for (let file of files) {
+            if (!file.type.startsWith('image/')) continue;
+            try {
+                const dataUri = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                const resampled = await resamplePatternForBank(dataUri, targetH);
+
+                const item = {
+                    id: `custom_vault_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                    name: cleanName,
+                    category: 'Custom Vault',
+                    dataUri: resampled.dataUri,
+                    width: resampled.width,
+                    height: resampled.height
+                };
+
+                userCustomVault.unshift(item);
+                if (typeof vaultItems !== 'undefined' && Array.isArray(vaultItems)) {
+                    vaultItems.unshift(item);
+                }
+                importedCount++;
+            } catch(e) {
+                console.error("Failed to import file:", file.name, e);
+            }
+        }
+
+        saveUserCustomVault();
+
+        if (importedCount > 0) {
+            if (confirm(`✅ Successfully imported ${importedCount} pattern(s) to your Custom Vault!\n\nWould you like to auto-populate your empty bank slots with these designs now?`)) {
+                await autoPopulateEmptySlotsFromCustomVault();
+            } else {
+                renderBankSlotsGrid();
+            }
+        }
+    }
+
+    async function autoPopulateEmptySlotsFromCustomVault() {
+        const pool = (userCustomVault && userCustomVault.length > 0) ? userCustomVault : (vaultItems || []);
+        if (!pool || pool.length === 0) {
+            alert("No patterns found in your Vault. Use 'Batch Import to Vault' or the Master Vault!");
+            return;
+        }
+
+        const targetH = bankTargetHeight || currentHeight || 55;
+        let poolIdx = 0;
+        let filledCount = 0;
+
+        for (let i = 0; i < TOTAL_BANK_SLOTS; i++) {
+            if (!bankSlots[i].isAssigned) {
+                const item = pool[poolIdx % pool.length];
+                try {
+                    const resampled = await resamplePatternForBank(item.dataUri, targetH);
+                    bankSlots[i].name = item.name;
+                    bankSlots[i].dataUri = resampled.dataUri;
+                    bankSlots[i].width = resampled.width;
+                    bankSlots[i].height = resampled.height;
+                    bankSlots[i].isAssigned = true;
+                    poolIdx++;
+                    filledCount++;
+                } catch(e) {
+                    console.error("Error populating slot:", i, e);
+                }
+            }
+        }
+
+        saveBankSlots();
+        alert(`🎉 Populated ${filledCount} empty bank slot(s) from your Vault!`);
+    }
+
+    // Attach Batch File Import & Auto-Populate events
+    const batchInput = el('bank-batch-upload-input');
+    const batchBtn = el('btn-bank-batch-import');
+    if (batchBtn && batchInput) {
+        batchBtn.onclick = () => batchInput.click();
+        batchInput.onchange = (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                batchImportFilesToVault(Array.from(e.target.files));
+                batchInput.value = '';
+            }
+        };
+    }
+
+    const popCustomBtn = el('btn-bank-populate-custom');
+    if (popCustomBtn) {
+        popCustomBtn.onclick = () => autoPopulateEmptySlotsFromCustomVault();
+    }
+
+    // Ignis Pattern-Aura Flow Toggle
+    const ignisAuraBtn = el('btn-ignis-aura-flow');
+    if (ignisAuraBtn) {
+        ignisAuraBtn.onclick = async () => {
+            isIgnisAuraFlowActive = !isIgnisAuraFlowActive;
+            ignisAuraBtn.classList.toggle('active', isIgnisAuraFlowActive);
+            ignisAuraBtn.innerHTML = isIgnisAuraFlowActive 
+                ? "🕯️ Ignis Pattern-Aura Flow: ON ✨" 
+                : "🕯️ Ignis Pattern-Aura Flow: OFF";
+            ignisAuraBtn.style.color = isIgnisAuraFlowActive ? 'var(--neon-yellow)' : 'var(--neon-green)';
+            if (OpenPixelPoiBLE.isConnected && typeof OpenPixelPoiBLE.setIgnisAuraFlow === 'function') {
+                await OpenPixelPoiBLE.setIgnisAuraFlow(isIgnisAuraFlowActive);
+            }
+        };
+    }
 
     async function assignPatternToBankSlot(bankIdx, slotIdx, patternData) {
         const globalIdx = bankIdx * BANK_SLOT_COUNT + slotIdx;
@@ -3908,13 +4087,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function randomFillEmptyBankSlots() {
-        if (!vaultItems || vaultItems.length === 0) return;
+        const pool = (userCustomVault && userCustomVault.length > 0) ? userCustomVault : (vaultItems || []);
+        if (!pool || pool.length === 0) return;
         const targetH = bankTargetHeight || currentHeight || 55;
 
         for (let i = 0; i < TOTAL_BANK_SLOTS; i++) {
             const slot = bankSlots[i];
             if (!slot.isAssigned) {
-                const randItem = vaultItems[Math.floor(Math.random() * vaultItems.length)];
+                const randItem = pool[Math.floor(Math.random() * pool.length)];
                 if (randItem) {
                     try {
                         const resampled = await resamplePatternForBank(randItem.dataUri, targetH);
@@ -4005,22 +4185,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const bankSection = document.createElement('div');
             bankSection.className = 'bank-section-box';
             
-            const bankSlotsInThisBank = bankSlots.filter(s => s.bankIndex === b);
+            const bankSlotsInThisBank = bankSlots.filter(s => s.bankIndex === b && s.slotIndex < BANK_SLOT_COUNT);
             const bankPopulated = bankSlotsInThisBank.filter(s => s.isAssigned).length;
+            const isTourBank = (b === 4 && BANK_COUNT === 5);
 
             bankSection.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:6px;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:0.84rem; font-weight:800; color:var(--text-color);">📁 Bank ${b + 1}</span>
+                        <span style="font-size:0.84rem; font-weight:800; color:${isTourBank ? 'var(--neon-yellow)' : 'var(--text-color)'};">
+                            ${isTourBank ? '🌟 Bank 5 (Cosmic Tour & Ignis Flow)' : `📁 Bank ${b + 1}`}
+                        </span>
                         <span class="telemetry-pill" style="color:${bankPopulated > 0 ? 'var(--neon-green)' : 'var(--text-muted)'}; font-size:0.65rem;">
-                            ${bankPopulated} / 5 Assigned • ${bankTargetHeight}px LEDs
+                            ${bankPopulated} / ${BANK_SLOT_COUNT} Assigned • ${bankTargetHeight}px LEDs
                         </span>
                     </div>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
                         <button class="hw-btn" data-bank-action="play-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--accent-color);" title="Switch connected poi to Bank ${b + 1}">
                             ▶️ Play Bank ${b + 1}
                         </button>
-                        <button class="hw-btn" data-bank-action="flash-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-green);" title="Flash this 5-slot bank over BLE">
+                        <button class="hw-btn" data-bank-action="flash-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-green);" title="Flash this bank over BLE">
                             🚀 Flash Bank ${b + 1}
                         </button>
                         <button class="hw-btn" data-bank-action="clear-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:#ff4d4d;" title="Clear this bank">
@@ -4121,15 +4304,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                 }
 
-                const previewWrap = card.querySelector('.bank-slot-preview-wrap');
-                if (previewWrap) {
-                    previewWrap.onclick = async () => {
-                        if (slot.isAssigned) {
+                const prevWrap = card.querySelector('.bank-slot-preview-wrap');
+                if (prevWrap) {
+                    prevWrap.onclick = async () => {
+                        if (slot.isAssigned && slot.dataUri) {
                             loadBankSlotToGenerator(slot);
                         } else {
-                            const curUri = displayCanvas.toDataURL('image/png');
+                            const curUri = displayCanvas ? displayCanvas.toDataURL('image/png') : null;
+                            if (!curUri) return;
                             let name = currentPattern;
-                            if (typeof name === 'string' && name.startsWith('bmp_')) {
+                            if (typeof name === 'string' && name.startsWith('bmp_') && typeof vaultItems !== 'undefined') {
                                 const vaultItem = vaultItems.find(v => v.id === name);
                                 if (vaultItem) name = vaultItem.name;
                             }
@@ -4164,7 +4348,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 };
             }
-
 
             const flashBankBtn = bankSection.querySelector('[data-bank-action="flash-bank"]');
             if (flashBankBtn) {

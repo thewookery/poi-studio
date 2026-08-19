@@ -279,12 +279,14 @@ else if(buttonState == BS_CLICK3_HOLD){
 
 
 
-    // Penta press detected after timeout, display voltage
+    // Penta press detected after timeout, toggle Ignis Pattern-Aura Flow Mode!
     if(buttonState == BS_CLICK5_UP && millis() - downTime >= 500){
-      config.displayState = DS_VOLTAGE2;
+      config.setIgnisAuraFlow(!config.ignisAuraFlow);
+      config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
+
 
     // Read battery voltage
     if(BATTERY_VOLTAGE_SENSOR){

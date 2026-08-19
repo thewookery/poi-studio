@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPoi - Adaptive Spin RPM, Smart Idle & 25 Palettes (55px DotStar)",
-  "version": "2026.12.55-ignis-rpm-flow",
+  "name": "OpenPixelPoi - 50 Slots, Ignis Pattern-Aura Flow & 25 Palettes (55px DotStar)",
+  "version": "2026.14.55-50slots-ignis",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [

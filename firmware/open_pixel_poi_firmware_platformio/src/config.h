@@ -14,10 +14,11 @@
 #define OUTPUT_SK9822_2020_DRAW 0.060
 #define OUTPUT_SK9822_2020_LIMIT 100 // Data sheet says max brightness = 10/32 = 79/255, but yolo we do 100/255
 
-// These limits max out the available space in the current partition scheme. They are also hardcoded in the app.
-#define PATTERN_BANK_SIZE 5
+// 50 High-Speed Slots (5 Banks x 10 Slots)
+#define PATTERN_BANK_SIZE 10
 #define PATTERN_BANK_COUNT 5
 #define PATTERN_PIXEL_LIMIT 40000
+
 
 
 #define PATTERN_SHUFFLE_DURATION 10 // This one is editable

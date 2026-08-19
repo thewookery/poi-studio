@@ -86,6 +86,7 @@ class OpenPixelPoiConfig {
     OpenPixelPoiIMU* imu = NULL;
     bool adaptiveRpmEnabled = true;
     bool smartIdleEnabled = true;
+    bool ignisAuraFlow = false;
 
     // Sequencer
     uint8_t *sequencer = (uint8_t *) malloc(1785*sizeof(uint8_t)); // 255 Instruction max (7 bits per instruction)
@@ -107,6 +108,13 @@ class OpenPixelPoiConfig {
       preferences.putBool("smartIdle", this->smartIdleEnabled);
       this->configLastUpdated = millis();
     }
+
+    void setIgnisAuraFlow(bool enabled) {
+      this->ignisAuraFlow = enabled;
+      preferences.putBool("ignisAura", this->ignisAuraFlow);
+      this->configLastUpdated = millis();
+    }
+
 
     uint8_t getActivePatternIndex() {
       if (this->patternBank >= 4) {

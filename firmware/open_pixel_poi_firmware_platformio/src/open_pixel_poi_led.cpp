@@ -424,18 +424,31 @@ class OpenPixelPoiLED {
             applyPaletteFX(red, green, blue, config.paletteFxMode, millis(), config.paletteSpeed, j, frameIndex, config.frameCount, config.ledCount);
           }
 
-          // Ignis-Style Smart Idle Ambient Mood Lamp / Fluid Organic Ribbon
-          if (idleBlend > 0.001f) {
-            uint8_t flowHue = (uint8_t)(((millis() / 20) + (j * 256 / config.ledCount)) & 0xFF);
+          // Ignis-Style Pattern-Aura Liquid Flow Mode / Ambient Mood Lamp
+          if (config.ignisAuraFlow || idleBlend > 0.001f) {
+            float blendWeight = config.ignisAuraFlow ? 0.85f : idleBlend;
+            
+            // Extract living fluid harmonic frequency along blade
+            uint8_t flowHue = (uint8_t)(((millis() / 18) + (j * 256 / config.ledCount)) & 0xFF);
             uint8_t flowR = 0, flowG = 0, flowB = 0;
-            hueToRgb(flowHue, 230, flowR, flowG, flowB);
+            hueToRgb(flowHue, 240, flowR, flowG, flowB);
+            
+            // Harmonize with active pattern colors
+            if (red > 0 || green > 0 || blue > 0) {
+              flowR = (uint8_t)((flowR + red) >> 1);
+              flowG = (uint8_t)((flowG + green) >> 1);
+              flowB = (uint8_t)((flowB + blue) >> 1);
+            }
+            
             if (config.paletteFxMode > 0) {
               applyPaletteFX(flowR, flowG, flowB, config.paletteFxMode, millis(), config.paletteSpeed, j, 0, 1, config.ledCount);
             }
-            red   = (uint8_t)(red   * (1.0f - idleBlend) + flowR * idleBlend);
-            green = (uint8_t)(green * (1.0f - idleBlend) + flowG * idleBlend);
-            blue  = (uint8_t)(blue  * (1.0f - idleBlend) + flowB * idleBlend);
+            
+            red   = (uint8_t)(red   * (1.0f - blendWeight) + flowR * blendWeight);
+            green = (uint8_t)(green * (1.0f - blendWeight) + flowG * blendWeight);
+            blue  = (uint8_t)(blue  * (1.0f - blendWeight) + flowB * blendWeight);
           }
+
 
           ledStrip->SetPixelColor(config.ledCount-1-j, RgbColor(red, green, blue)); // Invert display for POV arc
 
