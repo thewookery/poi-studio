@@ -148,8 +148,14 @@ class OpenPixelPoiLED {
         }
       }
 
+      // Final fallback guard: guarantee 55 DotStar if nothing else matched
+      if(ledStrip == nullptr){
+        ledStrip = new DotStarStrip(55, 6, 7);
+      }
+
       // LED Setup:
       ledStrip->Begin();
+
       frameIndex = 0;
 
       debugf("LED setup complete\n");

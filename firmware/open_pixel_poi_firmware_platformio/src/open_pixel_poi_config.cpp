@@ -365,15 +365,23 @@ class OpenPixelPoiConfig {
       preferences.begin("led_pattern", false);
       debugf("Preffs free entries: %d\n", preferences.freeEntries());
 
-      // Load hardware settings
+      // Load hardware settings with bulletproof defaults for 55px DotStar
       this->hardwareVersion = preferences.getChar("hardwareVersion", DEFAULT_HARDWARE_VERSION);
+      if (this->hardwareVersion <= 0) this->hardwareVersion = 2;
+
       this->ledType = preferences.getChar("ledType", DEFAULT_LED_TYPE);
+      if (this->ledType <= 0) this->ledType = 2; // 2 = DotStar
+
       this->ledCount = preferences.getChar("ledCount", DEFAULT_LED_COUNT);
+      if (this->ledCount <= 0) this->ledCount = 55;
+
       this->deviceName = preferences.getString("deviceName", DEFAULT_DEVICE_NAME);
 
-      // Load Display settings
-      this->ledBrightness = preferences.getChar("brightness", BRIGHTNESS_OPTIONS[0]);
+      // Load Display settings (guarantee visible default brightness)
+      this->ledBrightness = preferences.getChar("brightness", 25);
+      if (this->ledBrightness < 10) this->ledBrightness = 25;
       debugf("- brightness = %d\n", this->ledBrightness);
+
 
       this->ledBrightnessOptions[0] = preferences.getChar("brightnessOp0", BRIGHTNESS_OPTIONS[0]);
       this->ledBrightnessOptions[1] = preferences.getChar("brightnessOp1", BRIGHTNESS_OPTIONS[1]);
