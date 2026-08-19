@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=79">
+    <link rel="stylesheet" href="styles.css?v=80">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v79</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v80</span></div>
+
 
 
 
@@ -82,11 +83,13 @@
 
 
             <div class="hud-quick-actions">
+                <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
                 <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi over BLE">🚀 Upload (BLE)</button>
                 <button class="hw-btn" id="btn-force-sync" style="font-size:0.72rem; color:var(--neon-green); padding:5px 8px;" title="Force Cache Purge & Load Latest Version">🔄 Sync</button>
             </div>
         </div>
+
 
 
         <!-- INLINE NON-INTRUSIVE BLE UPLOAD PROGRESS PILL -->
@@ -1369,8 +1372,79 @@
 
     </div>
 
+    <!-- HARDWARE SETUP & POI PROFILE WIZARD MODAL -->
+    <div id="hw-profile-modal" class="bank-picker-modal-overlay" style="display:none;">
+        <div class="bank-picker-modal-content" style="max-width:560px; border-color:var(--neon-green); background:#0b0f17;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="font-size:0.95rem; font-weight:800; color:var(--neon-green); display:flex; align-items:center; gap:6px;">
+                    <span>🪄</span>
+                    <span>Select Your Poi Hardware Profile</span>
+                </div>
+                <button class="hw-btn" id="btn-close-hw-modal" style="font-size:0.75rem; padding:3px 8px;">✕</button>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin-bottom:12px;">
+                Configure the Studio for your exact Poi model and firmware. You can change this anytime from the top HUD:
+            </div>
+
+            <!-- PROFILE CARDS GRID -->
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;" id="hw-profile-cards-list">
+                <!-- 1. 55px DotStar Studio FX (50-Slot) -->
+                <div class="hw-profile-card active" data-hw-profile="55_dotstar_fx" style="padding:10px 12px; background:rgba(0,255,136,0.08); border:1px solid var(--neon-green); border-radius:6px; cursor:pointer;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar — Studio FX (Recommended)</span>
+                        <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 25 Palettes</span>
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">
+                        • 55 LEDs (3x 55 strips) • 5 Banks $\times$ 10 Slots • Real-time 25 color palettes • Bank 5 Cosmic Tour
+                    </div>
+                </div>
+
+                <!-- 2. 55px DotStar Stock (15-Slot) -->
+                <div class="hw-profile-card" data-hw-profile="55_dotstar_stock" style="padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:6px; cursor:pointer;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.84rem; font-weight:800; color:var(--text-color);">🎯 55px DotStar — Official Stock OPP</span>
+                        <span class="telemetry-pill" style="color:var(--text-muted); font-size:0.62rem;">15 Slots (3 Banks)</span>
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">
+                        • 55 LEDs • Standard 3 Banks $\times$ 5 Slots • Official stock firmware
+                    </div>
+                </div>
+
+                <!-- 3. 25px NeoPixel Stock -->
+                <div class="hw-profile-card" data-hw-profile="25_neopixel" style="padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:6px; cursor:pointer;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.84rem; font-weight:800; color:var(--text-color);">🟢 25px NeoPixel (WS2812B)</span>
+                        <span class="telemetry-pill" style="color:var(--text-muted); font-size:0.62rem;">15 Slots (3 Banks)</span>
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">
+                        • 25 LEDs • Standard 3 Banks • Optimized 25px auto-scaling
+                    </div>
+                </div>
+
+                <!-- 4. 20px / 22px Mini -->
+                <div class="hw-profile-card" data-hw-profile="20_mini" style="padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:6px; cursor:pointer;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.84rem; font-weight:800; color:var(--text-color);">🔵 20px / 22px Mini Blade</span>
+                        <span class="telemetry-pill" style="color:var(--text-muted); font-size:0.62rem;">15 Slots (3 Banks)</span>
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">
+                        • 20–22 LEDs • Compact mini Poi builds
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.68rem; color:var(--text-muted);">Change this anytime from Poi Settings or top HUD.</span>
+                <button class="btn-ble-upload" id="btn-save-hw-profile" style="font-size:0.75rem; padding:7px 16px;">
+                    Apply Profile & Enter Studio 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- FIRMWARE SAFETY / "USE AT YOUR OWN RISK" MODAL DIALOG -->
     <div id="firmware-risk-modal" class="bank-picker-modal-overlay" style="display:none;">
+
         <div class="bank-picker-modal-content" style="max-width:480px; border-color:#ff4d4d; background:#0b0f17;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <div style="font-size:0.95rem; font-weight:800; color:#ff4d4d; display:flex; align-items:center; gap:6px;">
@@ -1405,9 +1479,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=79"></script>
-<script src="poi-engine.js?v=79"></script>
-<script src="poi-ble.js?v=79"></script>
+<script src="master-vault-manifest.js?v=80"></script>
+<script src="poi-engine.js?v=80"></script>
+<script src="poi-ble.js?v=80"></script>
+
 
 
 
@@ -1443,11 +1518,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- WORKSPACE STATE (Default: Vault & Show) ---
     let activeWorkspace = "workspace-stitcher";
+    let customLoadedSlotImg = null;
 
     let currentPattern = "aztec_xicalcoliuhqui_fret";
     let currentHeight = 55;
     let currentWidth = 40;
     let storyboardTargetHeight = 55;
+
 
     let symMirrorH = false;
     let symMirrorV = false;
@@ -2603,7 +2680,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const isMorph = el('btn-morph-enable') ? el('btn-morph-enable').classList.contains('active-green') : false;
 
-        if (typeof currentPattern === 'string' && currentPattern.startsWith('bmp_')) {
+        if (typeof currentPattern === 'string' && (currentPattern.startsWith('slot_edit_') || currentPattern.startsWith('bank_slot_')) && customLoadedSlotImg) {
+            const tempC = document.createElement('canvas');
+            tempC.width = w;
+            tempC.height = h;
+            const tctx = tempC.getContext('2d');
+            tctx.drawImage(customLoadedSlotImg, 0, 0, w, h);
+            ctx.drawImage(tempC, 0, 0);
+        } else if (typeof currentPattern === 'string' && currentPattern.startsWith('bmp_')) {
             const vaultItem = vaultItems.find(v => v.id === currentPattern);
             if (vaultItem && vaultItem.cachedImg) {
                 const tempC = document.createElement('canvas');
@@ -2615,6 +2699,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ctx.drawImage(remapped, 0, 0);
             }
         } else if (isMorph) {
+
             const modelA = morphASelect ? morphASelect.value : 'aztec_xicalcoliuhqui_fret';
             const modelB = morphBSelect ? morphBSelect.value : 'sacred_third_eye_mandala';
             const flowStyle = el('morph-flow-style') ? el('morph-flow-style').value : 'azimuthal_flow';
@@ -3832,6 +3917,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadSavedBankSlots() {
         const totalNeeded = 50; // Always support full 50 internal slots
+        let loadedArray = [];
         try {
             let raw = localStorage.getItem(STORAGE_KEY_BANKS);
             if (!raw) raw = localStorage.getItem('open_poi_bank_slots_v4');
@@ -3839,31 +3925,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed)) {
-                    bankSlots = [];
-                    for (let i = 0; i < totalNeeded; i++) {
-                        const b = Math.floor(i / BANK_SLOT_COUNT);
-                        const s = i % BANK_SLOT_COUNT;
-                        if (i < parsed.length && parsed[i] && parsed[i].dataUri) {
-                            bankSlots.push({
-                                ...parsed[i],
-                                globalIndex: i,
-                                bankIndex: b,
-                                slotIndex: s
-                            });
-                        } else {
-                            bankSlots.push({
-                                globalIndex: i,
-                                bankIndex: b,
-                                slotIndex: s,
-                                name: `Empty Slot ${s + 1}`,
-                                dataUri: null,
-                                width: 40,
-                                height: bankTargetHeight || 55,
-                                isAssigned: false
-                            });
-                        }
-                    }
-                    return;
+                    loadedArray = parsed;
                 }
             }
         } catch(e) {}
@@ -3872,19 +3934,30 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 0; i < totalNeeded; i++) {
             const b = Math.floor(i / BANK_SLOT_COUNT);
             const s = i % BANK_SLOT_COUNT;
-            bankSlots.push({
-                globalIndex: i,
-                bankIndex: b,
-                slotIndex: s,
-                name: `Empty Slot ${s + 1}`,
-                dataUri: null,
-                width: 40,
-                height: bankTargetHeight || 55,
-                isAssigned: false
-            });
+            if (i < loadedArray.length && loadedArray[i] && loadedArray[i].dataUri) {
+                bankSlots.push({
+                    ...loadedArray[i],
+                    globalIndex: i,
+                    bankIndex: b,
+                    slotIndex: s,
+                    isAssigned: true
+                });
+            } else {
+                bankSlots.push({
+                    globalIndex: i,
+                    bankIndex: b,
+                    slotIndex: s,
+                    name: `Empty Slot ${s + 1}`,
+                    dataUri: null,
+                    width: 40,
+                    height: bankTargetHeight || 55,
+                    isAssigned: false
+                });
+            }
         }
     }
     loadSavedBankSlots();
+
 
     function saveBankSlots() {
         try {
@@ -4194,6 +4267,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    async function bulkLoadFilesToSpecificBank(bankIdx, files) {
+        if (!files || files.length === 0) return;
+        const targetH = bankTargetHeight || currentHeight || 55;
+        let loaded = 0;
+
+        for (let s = 0; s < BANK_SLOT_COUNT && s < files.length; s++) {
+            const file = files[s];
+            if (!file.type.startsWith('image/')) continue;
+            try {
+                const dataUri = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_\-+]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                const resampled = await resamplePatternForBank(dataUri, targetH);
+
+                const gIdx = bankIdx * BANK_SLOT_COUNT + s;
+                bankSlots[gIdx] = {
+                    globalIndex: gIdx,
+                    bankIndex: bankIdx,
+                    slotIndex: s,
+                    name: cleanName,
+                    dataUri: resampled.dataUri,
+                    width: resampled.width,
+                    height: resampled.height,
+                    isAssigned: true
+                };
+                loaded++;
+            } catch(e) {
+                console.error("Error loading file in bulk bank load:", e);
+            }
+        }
+
+        saveBankSlots();
+        alert(`🎉 Successfully loaded ${loaded} image(s) into Bank ${bankIdx + 1}!\n\nYou can now click '🚀 Flash Bank ${bankIdx + 1}' to upload this entire bank to your Poi.`);
+    }
+
     function renderBankSlotsGrid() {
         const container = el('banks-container');
         if (!container) return;
@@ -4206,16 +4319,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
         updateStorageTelemetry();
 
-
-
-
         for (let b = 0; b < BANK_COUNT; b++) {
             if (currentBankFilter !== 'all' && currentBankFilter !== `${b}`) continue;
 
             const bankSection = document.createElement('div');
             bankSection.className = 'bank-section-box';
             
-            const bankSlotsInThisBank = bankSlots.filter(s => s.bankIndex === b && s.slotIndex < BANK_SLOT_COUNT);
+            const bankSlotsInThisBank = [];
+            for (let s = 0; s < BANK_SLOT_COUNT; s++) {
+                const gIdx = b * BANK_SLOT_COUNT + s;
+                if (!bankSlots[gIdx]) {
+                    bankSlots[gIdx] = {
+                        globalIndex: gIdx,
+                        bankIndex: b,
+                        slotIndex: s,
+                        name: `Empty Slot ${s + 1}`,
+                        dataUri: null,
+                        width: 40,
+                        height: bankTargetHeight || 55,
+                        isAssigned: false
+                    };
+                } else {
+                    bankSlots[gIdx].bankIndex = b;
+                    bankSlots[gIdx].slotIndex = s;
+                    bankSlots[gIdx].globalIndex = gIdx;
+                }
+                bankSlotsInThisBank.push(bankSlots[gIdx]);
+            }
+
             const bankPopulated = bankSlotsInThisBank.filter(s => s.isAssigned).length;
             const isTourBank = (b === 4 && BANK_COUNT === 5);
 
@@ -4223,13 +4354,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:6px;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-size:0.84rem; font-weight:800; color:${isTourBank ? 'var(--neon-yellow)' : 'var(--text-color)'};">
-                            ${isTourBank ? '🌟 Bank 5 (Cosmic Tour & Ignis Flow)' : `📁 Bank ${b + 1}`}
+                            ${isTourBank ? '🌟 Bank 5 (Cosmic Tour)' : `📁 Bank ${b + 1}`}
                         </span>
                         <span class="telemetry-pill" style="color:${bankPopulated > 0 ? 'var(--neon-green)' : 'var(--text-muted)'}; font-size:0.65rem;">
                             ${bankPopulated} / ${BANK_SLOT_COUNT} Assigned • ${bankTargetHeight}px LEDs
                         </span>
                     </div>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <input type="file" class="bank-bulk-file-input" id="bank-bulk-file-input-${b}" multiple accept="image/*" style="display:none;">
+                        <button class="hw-btn" data-bank-action="bulk-load-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-cyan); font-weight:800;" title="Select multiple images from device to fill Bank ${b + 1} slots sequentially">
+                            📁 Bulk Load Bank ${b + 1}
+                        </button>
                         <button class="hw-btn" data-bank-action="play-bank" data-bank="${b}" style="font-size:0.68rem; padding:4px 8px; color:var(--accent-color);" title="Switch connected poi to Bank ${b + 1}">
                             ▶️ Play Bank ${b + 1}
                         </button>
@@ -4351,11 +4486,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                 }
 
-
                 slotsGrid.appendChild(card);
             });
 
             // Wire up bank section buttons
+            const bulkLoadBtn = bankSection.querySelector('[data-bank-action="bulk-load-bank"]');
+            const bulkFileInput = bankSection.querySelector(`#bank-bulk-file-input-${b}`);
+            if (bulkLoadBtn && bulkFileInput) {
+                bulkLoadBtn.onclick = () => bulkFileInput.click();
+                bulkFileInput.onchange = async (e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                        await bulkLoadFilesToSpecificBank(b, Array.from(e.target.files));
+                        bulkFileInput.value = '';
+                    }
+                };
+            }
+
             const playBankBtn = bankSection.querySelector('[data-bank-action="play-bank"]');
             if (playBankBtn) {
                 playBankBtn.onclick = async () => {
@@ -4380,7 +4526,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const clearBankBtn = bankSection.querySelector('[data-bank-action="clear-bank"]');
             if (clearBankBtn) {
                 clearBankBtn.onclick = () => {
-                    if (confirm(`Clear all 5 slots in Bank ${b + 1}?`)) {
+                    if (confirm(`Clear all ${BANK_SLOT_COUNT} slots in Bank ${b + 1}?`)) {
                         for (let s = 0; s < BANK_SLOT_COUNT; s++) {
                             clearBankSlot(b * BANK_SLOT_COUNT + s);
                         }
@@ -4391,6 +4537,7 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(bankSection);
         }
     }
+
 
     function openBankPickerModal(patternData) {
         pendingBankAssignData = patternData;
@@ -4426,9 +4573,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!slot || !slot.isAssigned || !slot.dataUri) return;
         const img = new Image();
         img.onload = () => {
-            currentWidth = slot.width || img.width;
-            currentHeight = slot.height || img.height;
-            currentPattern = `bank_slot_${slot.globalIndex}`;
+            customLoadedSlotImg = img;
+            currentWidth = slot.width || img.naturalWidth || img.width || 40;
+            currentHeight = slot.height || img.naturalHeight || img.height || bankTargetHeight || 55;
+            currentPattern = `slot_edit_${slot.globalIndex}`;
             baseCanvas.width = currentWidth;
             baseCanvas.height = currentHeight;
             const ctx = baseCanvas.getContext('2d');
@@ -4446,6 +4594,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         img.src = slot.dataUri;
     }
+
 
     let selectedTargetPoiIndex = 'all'; // 'all', 0, 1
 
@@ -4727,8 +4876,76 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // --- HARDWARE PROFILE & FIRST-RUN SETUP WIZARD ---
 
-    // Register 100% Offline Festival Service Worker (PWA) with Auto-Update
+    let activeHardwareProfile = localStorage.getItem('open_poi_hardware_profile_v2') || '55_dotstar_fx';
+
+    function applyHardwareProfile(profileKey) {
+        activeHardwareProfile = profileKey;
+        try {
+            localStorage.setItem('open_poi_hardware_profile_v2', profileKey);
+        } catch(e) {}
+
+        if (profileKey === '55_dotstar_fx') {
+            setGeneratorHeight(55);
+            bankTargetHeight = 55;
+            setFirmwareBankMode(5, true);
+            updateBadge('btn-open-hw-wizard', '🪄 55px FX');
+        } else if (profileKey === '55_dotstar_stock') {
+            setGeneratorHeight(55);
+            bankTargetHeight = 55;
+            setFirmwareBankMode(3, true);
+            updateBadge('btn-open-hw-wizard', '🎯 55px Stock');
+        } else if (profileKey === '25_neopixel') {
+            setGeneratorHeight(25);
+            bankTargetHeight = 25;
+            setFirmwareBankMode(3, true);
+            updateBadge('btn-open-hw-wizard', '🟢 25px Neo');
+        } else if (profileKey === '20_mini') {
+            setGeneratorHeight(20);
+            bankTargetHeight = 20;
+            setFirmwareBankMode(3, true);
+            updateBadge('btn-open-hw-wizard', '🔵 20px Mini');
+        }
+
+        document.querySelectorAll('.hw-profile-card').forEach(card => {
+            const isMatch = card.getAttribute('data-hw-profile') === profileKey;
+            card.classList.toggle('active', isMatch);
+            card.style.borderColor = isMatch ? 'var(--neon-green)' : 'rgba(255,255,255,0.12)';
+            card.style.background = isMatch ? 'rgba(0,255,136,0.08)' : 'rgba(255,255,255,0.03)';
+        });
+    }
+
+    function openHwProfileModal() {
+        const modal = el('hw-profile-modal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeHwProfileModal() {
+        const modal = el('hw-profile-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    document.querySelectorAll('.hw-profile-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const p = this.getAttribute('data-hw-profile');
+            applyHardwareProfile(p);
+        });
+    });
+
+    if (el('btn-open-hw-wizard')) el('btn-open-hw-wizard').onclick = openHwProfileModal;
+    if (el('btn-close-hw-modal')) el('btn-close-hw-modal').onclick = closeHwProfileModal;
+    if (el('btn-save-hw-profile')) el('btn-save-hw-profile').onclick = closeHwProfileModal;
+
+    // Check if first-run on this version
+    const hasSeenWizard = localStorage.getItem('open_poi_wizard_seen_v80');
+    if (!hasSeenWizard) {
+        setTimeout(openHwProfileModal, 400);
+        try { localStorage.setItem('open_poi_wizard_seen_v80', 'true'); } catch(e) {}
+    } else {
+        applyHardwareProfile(activeHardwareProfile);
+    }
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')

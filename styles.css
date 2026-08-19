@@ -1279,6 +1279,11 @@ esp-web-install-button {
     50% { transform: scale(1.02); filter: brightness(1.2); }
 }
 
-
-
-
+.hw-profile-card {
+    transition: all 0.15s ease-in-out;
+}
+.hw-profile-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--neon-cyan) !important;
+    background: rgba(0, 173, 181, 0.08) !important;
+}
