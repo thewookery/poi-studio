@@ -86,22 +86,30 @@ class OpenPixelPoiConfig {
 
     // Variables
     long configLastUpdated;
+    std::function<void()> onConfigChanged = nullptr;
+
+    void notifyChanged() {
+      this->configLastUpdated = millis();
+      if (this->onConfigChanged) {
+        this->onConfigChanged();
+      }
+    }
 
     void setPaletteFxMode(uint8_t mode) {
       this->paletteFxMode = mode % 25;
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
-
 
     void setBlendMode(uint8_t mode) {
       this->blendMode = mode % 5;
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
 
     void setPaletteSpeed(uint8_t speed) {
       this->paletteSpeed = max((uint8_t)1, min((uint8_t)10, speed));
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
+
 
 
     void setHardwareVersion(uint8_t hardwareVersion) {
@@ -128,7 +136,7 @@ class OpenPixelPoiConfig {
       debugf("Save Brightness = %d\n", ledBrightness);
       this->ledBrightness = ledBrightness;
       preferences.putChar("brightness", this->ledBrightness);
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
 
     void setLedBrightnessOptions(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5) {
@@ -145,14 +153,14 @@ class OpenPixelPoiConfig {
       preferences.putChar("brightnessOp3", this->ledBrightnessOptions[3]);
       preferences.putChar("brightnessOp4", this->ledBrightnessOptions[4]);
       preferences.putChar("brightnessOp5", this->ledBrightnessOptions[5]);
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
 
     void setAnimationSpeed(uint16_t animationSpeed) {
       debugf("Save Speed = %d\n", animationSpeed);
       this->animationSpeed = animationSpeed;
       preferences.putUShort("animationSpeed", this->animationSpeed);
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
 
     void setAnimationSpeedOptions(uint16_t s0, uint16_t s1, uint16_t s2, uint16_t s3, uint16_t s4, uint16_t s5) {
@@ -169,7 +177,7 @@ class OpenPixelPoiConfig {
       preferences.putUShort("animSpeedOp3", this->animationSpeedOptions[3]);
       preferences.putUShort("animSpeedOp4", this->animationSpeedOptions[4]);
       preferences.putUShort("animSpeedOp5", this->animationSpeedOptions[5]);
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
 
     void setPatternSlot(uint8_t patternSlot, bool save) {
@@ -193,7 +201,7 @@ class OpenPixelPoiConfig {
       debugf("  - height = %d\n", this->frameHeight);
       debugf("  - count = %d\n", this->frameCount);
       
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
 
 
@@ -206,8 +214,9 @@ class OpenPixelPoiConfig {
       loadFrameCount();
       startLoadingPattern();
       
-      this->configLastUpdated = millis();
+      this->notifyChanged();
     }
+
 
     void setPatternShuffleDuration(uint8_t patternShuffleDuration) {
       debugf("Save Pattern Shuffle Duration = %d\n", patternShuffleDuration);
