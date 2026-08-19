@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=80">
+    <link rel="stylesheet" href="styles.css?v=81">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v80</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v81</span></div>
+
 
 
 
@@ -1022,11 +1023,12 @@
                 </div>
 
                 <div class="ctrl-row">
-                    <span class="ctrl-label">🛡️ BLE Transfer Pacing:</span>
-                    <input type="range" id="ble-ctrl-pacing" min="20" max="150" value="50" style="accent-color:var(--neon-purple);">
-                    <span class="val-mono" id="ble-ctrl-pacing-val">50 ms (Safe)</span>
+                    <span class="ctrl-label">⚡ BLE Transfer Pacing:</span>
+                    <input type="range" id="ble-ctrl-pacing" min="5" max="80" value="16" style="accent-color:var(--neon-purple);">
+                    <span class="val-mono" id="ble-ctrl-pacing-val">16 ms (Turbo Fast ⚡)</span>
                 </div>
             </div>
+
         </details>
 
 
@@ -1479,9 +1481,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=80"></script>
-<script src="poi-engine.js?v=80"></script>
-<script src="poi-ble.js?v=80"></script>
+<script src="master-vault-manifest.js?v=81"></script>
+<script src="poi-engine.js?v=81"></script>
+<script src="poi-ble.js?v=81"></script>
+
 
 
 
@@ -3391,7 +3394,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el('ble-ctrl-pacing')) {
         el('ble-ctrl-pacing').oninput = (e) => {
             const val = parseInt(e.target.value);
-            const label = val <= 30 ? `${val} ms (Fast)` : (val <= 70 ? `${val} ms (Safe)` : `${val} ms (Smooth)`);
+            const label = val <= 18 ? `${val} ms (Turbo Fast ⚡)` : (val <= 35 ? `${val} ms (Fast)` : `${val} ms (Safe)`);
             updateBadge('ble-ctrl-pacing-val', label);
         };
     }
@@ -3438,7 +3441,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const pct = el('inline-ble-pct');
         const details = el('inline-ble-details');
         const label = el('inline-ble-label');
-        const pacing = el('ble-ctrl-pacing') ? parseInt(el('ble-ctrl-pacing').value) : 50;
+        const pacing = el('ble-ctrl-pacing') ? parseInt(el('ble-ctrl-pacing').value) : 16;
 
         if (inlineProg) inlineProg.style.display = 'flex';
         if (label) label.innerText = `Preparing Active Pattern (${currentWidth}x${currentHeight} px)...`;
@@ -3501,7 +3504,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const pct = el('inline-ble-pct');
         const details = el('inline-ble-details');
         const label = el('inline-ble-label');
-        const pacing = el('ble-ctrl-pacing') ? parseInt(el('ble-ctrl-pacing').value) : 50;
+        const pacing = el('ble-ctrl-pacing') ? parseInt(el('ble-ctrl-pacing').value) : 16;
+
 
         if (inlineProg) inlineProg.style.display = 'flex';
         if (label) label.innerText = `Preparing Master Show (${showMasterCanvas.width}x${showMasterCanvas.height} px)...`;
@@ -4639,7 +4643,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const tempC = await getCanvasFromDataUri(slot.dataUri, slot.width, slot.height);
-            const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 50) || 50;
+            const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 16) || 16;
 
             await OpenPixelPoiBLE.uploadPatternToSlot(
                 tempC,
@@ -4682,7 +4686,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 50) || 50;
+        const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 16) || 16;
         showInlineProgress(`🚀 Starting Bank ${bankIdx + 1} Flash (${populated.length} slots)...`, 0);
 
         try {
@@ -4697,10 +4701,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     showInlineProgress(`🚀 Bank ${bankIdx + 1}: Slot ${slot.slotIndex + 1} (${info.deviceName || ''})...`, subPct);
                 }, pacing);
 
-                // Safety pause between slots so ESP32 LittleFS commits to flash
+                // High-speed settling pause between slots (120ms)
                 if (i < populated.length - 1) {
                     showInlineProgress(`⏳ Bank ${bankIdx + 1}: Saved Slot ${slot.slotIndex + 1}. Preparing next slot...`, Math.round(((i + 1) / populated.length) * 100));
-                    await new Promise(r => setTimeout(r, 600));
+                    await new Promise(r => setTimeout(r, 120));
                 }
             }
 
@@ -4732,7 +4736,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 50) || 50;
+        const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 16) || 16;
         showInlineProgress(`🚀 Starting Batch Sync of ${populated.length} slots...`, 0);
 
         try {
@@ -4747,15 +4751,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     showInlineProgress(`🚀 Syncing Slot ${i + 1}/${populated.length} (B${slot.bankIndex + 1}:S${slot.slotIndex + 1} - ${info.deviceName || ''})...`, subPct);
                 }, pacing);
 
-                // Safety pause between slots so ESP32 LittleFS commits to flash
+                // High-speed settling pause between slots (120ms)
                 if (i < populated.length - 1) {
                     showInlineProgress(`⏳ Saved Slot ${i + 1}/${populated.length}. Preparing next slot...`, Math.round(((i + 1) / populated.length) * 100));
-                    await new Promise(r => setTimeout(r, 600));
+                    await new Promise(r => setTimeout(r, 120));
                 }
             }
 
             showInlineProgress(`✅ All ${populated.length} Slots Synced to Poi!`, 100);
             setTimeout(hideInlineProgress, 3000);
+
         } catch(e) {
             alert(`Batch Sync Error: ${e.message}`);
             hideInlineProgress();

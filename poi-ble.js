@@ -548,28 +548,27 @@
             }
 
             const bank = Math.max(0, Math.min(15, parseInt(bankIndex) || 0));
-            const slot = Math.max(0, Math.min(4, parseInt(slotIndex) || 0));
+            const slot = Math.max(0, Math.min(15, parseInt(slotIndex) || 0));
 
-
-            // 1. Select target bank and slot on all connected poi
-            // Give the ESP32 400-500ms to read and close any open LittleFS pattern file
+            // 1. Select target bank and slot on all connected poi (snappy 60ms switch)
             await this.setBank(bank);
-            await new Promise(r => setTimeout(r, 400));
+            await new Promise(r => setTimeout(r, 60));
             await this.setPatternSlot(slot);
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 60));
 
             // 2. Upload pattern (CC_SET_PATTERN packets saved to active bank/slot LittleFS file)
             const result = await this.uploadPattern(canvas, progressCallback, pacingDelayMs);
 
             // 3. Post-upload settle delay so ESP32 LittleFS commits the write
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 100));
 
             // 4. Re-trigger slot playback so ESP32 immediately reloads and displays the new pattern on LEDs!
             await this.setPatternSlot(slot);
-            await new Promise(r => setTimeout(r, 200));
+            await new Promise(r => setTimeout(r, 40));
 
             return result;
         }
+
 
 
 
@@ -679,7 +678,7 @@
                 throw new Error('Another pattern upload is already in progress.');
             }
 
-            const pacing = (typeof pacingDelayMs === 'number' && pacingDelayMs >= 10) ? pacingDelayMs : 45;
+            const pacing = (typeof pacingDelayMs === 'number' && pacingDelayMs >= 5) ? pacingDelayMs : 16;
             const built = this.buildPatternPackets(canvas);
             const packets = built.packets;
             const totalPackets = packets.length;
@@ -689,7 +688,7 @@
             this.isUploading = true;
 
             try {
-                console.log('[BLE Upload] Starting sequential transfer to ' + totalDevices + ' Poi (' + built.width + 'x' + built.height + ', ' + built.totalBytes + ' bytes, ' + totalPackets + ' packets per poi, ' + pacing + 'ms pacing)...');
+                console.log('[BLE Upload] Starting high-speed transfer to ' + totalDevices + ' Poi (' + built.width + 'x' + built.height + ', ' + built.totalBytes + ' bytes, ' + totalPackets + ' packets per poi, ' + pacing + 'ms pacing)...');
 
                 for (let dIdx = 0; dIdx < totalDevices; dIdx++) {
                     const currentDev = this.devices[dIdx];
@@ -716,16 +715,16 @@
                             });
                         }
 
-                        // Smooth hardware pacing delay to ensure ESP32 LittleFS flash writes cleanly
+                        // High-speed hardware pacing delay (16ms)
                         await new Promise(function(r) { setTimeout(r, pacing); });
                     }
 
-                    // Post-upload flash commit settling delay (400ms)
-                    await new Promise(function(r) { setTimeout(r, 400); });
+                    // Post-upload flash commit settling delay (100ms)
+                    await new Promise(function(r) { setTimeout(r, 100); });
 
-                    // Inter-device buffer settling pause (600ms)
+                    // Inter-device buffer settling pause (150ms)
                     if (dIdx < totalDevices - 1) {
-                        await new Promise(function(r) { setTimeout(r, 600); });
+                        await new Promise(function(r) { setTimeout(r, 150); });
                     }
                 }
 
@@ -734,6 +733,7 @@
             } finally {
                 this.isUploading = false;
             }
+
         }
 
     }
