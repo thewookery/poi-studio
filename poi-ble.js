@@ -542,6 +542,53 @@
          * @param {Function} progressCallback Optional callback (progress: 0.0 - 1.0, info)
          * @param {number} pacingDelayMs Optional delay between packets
          */
+        /**
+         * Dynamically calculate adaptive transmission pacing and flash commit settle delays
+         * based on pattern size (prevents data corruption or SPI flash write blocking).
+         */
+        calculateAdaptiveTimings(canvas, userPacing) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const totalPixels = width * height;
+            const totalBytes = totalPixels * 3;
+
+            // 1. Dynamic Packet Pacing:
+            let pacing = 16;
+            if (typeof userPacing === 'number' && userPacing >= 5) {
+                pacing = userPacing;
+                // If pattern is large (>12,000 px) and user set an ultra-low pacing (<12ms), add safety floor
+                if (totalPixels > 15000 && pacing < 18) {
+                    pacing = 18;
+                }
+            } else {
+                if (totalPixels > 25000) {
+                    pacing = 22; // ~75KB - 120KB patterns
+                } else if (totalPixels > 10000) {
+                    pacing = 18; // ~30KB - 75KB patterns
+                } else {
+                    pacing = 16; // Standard fast patterns
+                }
+            }
+
+            // 2. Dynamic Flash Commit Settle Delay:
+            // LittleFS writes data to flash when the final EOF packet arrives.
+            let commitSettleMs = 100;
+            if (totalPixels > 25000) {
+                commitSettleMs = 450; // Heavy SPI flash sector block write
+            } else if (totalPixels > 10000) {
+                commitSettleMs = 250;
+            } else if (totalPixels > 4000) {
+                commitSettleMs = 150;
+            }
+
+            return {
+                totalPixels,
+                totalBytes,
+                pacing,
+                commitSettleMs
+            };
+        }
+
         async uploadPatternToSlot(canvas, bankIndex, slotIndex, progressCallback, pacingDelayMs) {
             if (this.devices.length === 0) {
                 throw new Error('Please connect your Open Pixel Poi via Bluetooth first.');
@@ -549,6 +596,7 @@
 
             const bank = Math.max(0, Math.min(15, parseInt(bankIndex) || 0));
             const slot = Math.max(0, Math.min(15, parseInt(slotIndex) || 0));
+            const timings = this.calculateAdaptiveTimings(canvas, pacingDelayMs);
 
             // 1. Select target bank and slot on all connected poi (snappy 60ms switch)
             await this.setBank(bank);
@@ -556,11 +604,11 @@
             await this.setPatternSlot(slot);
             await new Promise(r => setTimeout(r, 60));
 
-            // 2. Upload pattern (CC_SET_PATTERN packets saved to active bank/slot LittleFS file)
-            const result = await this.uploadPattern(canvas, progressCallback, pacingDelayMs);
+            // 2. Upload pattern with adaptive pacing
+            const result = await this.uploadPattern(canvas, progressCallback, timings.pacing);
 
-            // 3. Post-upload settle delay so ESP32 LittleFS commits the write
-            await new Promise(r => setTimeout(r, 100));
+            // 3. Adaptive Post-upload settle delay so ESP32 LittleFS commits cleanly
+            await new Promise(r => setTimeout(r, timings.commitSettleMs));
 
             // 4. Re-trigger slot playback so ESP32 immediately reloads and displays the new pattern on LEDs!
             await this.setPatternSlot(slot);
@@ -568,6 +616,7 @@
 
             return result;
         }
+
 
 
 
@@ -678,7 +727,8 @@
                 throw new Error('Another pattern upload is already in progress.');
             }
 
-            const pacing = (typeof pacingDelayMs === 'number' && pacingDelayMs >= 5) ? pacingDelayMs : 16;
+            const timings = this.calculateAdaptiveTimings(canvas, pacingDelayMs);
+            const pacing = timings.pacing;
             const built = this.buildPatternPackets(canvas);
             const packets = built.packets;
             const totalPackets = packets.length;
@@ -688,7 +738,7 @@
             this.isUploading = true;
 
             try {
-                console.log('[BLE Upload] Starting high-speed transfer to ' + totalDevices + ' Poi (' + built.width + 'x' + built.height + ', ' + built.totalBytes + ' bytes, ' + totalPackets + ' packets per poi, ' + pacing + 'ms pacing)...');
+                console.log('[BLE Upload] Starting adaptive transfer to ' + totalDevices + ' Poi (' + built.width + 'x' + built.height + ', ' + built.totalBytes + ' bytes, ' + totalPackets + ' packets per poi, ' + pacing + 'ms pacing, ' + timings.commitSettleMs + 'ms commit)...');
 
                 for (let dIdx = 0; dIdx < totalDevices; dIdx++) {
                     const currentDev = this.devices[dIdx];
@@ -715,18 +765,19 @@
                             });
                         }
 
-                        // High-speed hardware pacing delay (16ms)
+                        // High-speed hardware pacing delay
                         await new Promise(function(r) { setTimeout(r, pacing); });
                     }
 
-                    // Post-upload flash commit settling delay (100ms)
-                    await new Promise(function(r) { setTimeout(r, 100); });
+                    // Adaptive post-upload flash commit settling delay
+                    await new Promise(function(r) { setTimeout(r, timings.commitSettleMs); });
 
                     // Inter-device buffer settling pause (150ms)
                     if (dIdx < totalDevices - 1) {
                         await new Promise(function(r) { setTimeout(r, 150); });
                     }
                 }
+
 
                 console.log('[BLE Upload] Pattern successfully delivered cleanly to all ' + totalDevices + ' Open Pixel Poi!');
                 return true;

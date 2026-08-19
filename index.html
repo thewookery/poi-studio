@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=81">
+    <link rel="stylesheet" href="styles.css?v=82">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,8 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v81</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v82</span></div>
+
 
 
 
@@ -1481,9 +1482,10 @@
     </footer>
 </div>
 
-<script src="master-vault-manifest.js?v=81"></script>
-<script src="poi-engine.js?v=81"></script>
-<script src="poi-ble.js?v=81"></script>
+<script src="master-vault-manifest.js?v=82"></script>
+<script src="poi-engine.js?v=82"></script>
+<script src="poi-ble.js?v=82"></script>
+
 
 
 
@@ -4701,10 +4703,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     showInlineProgress(`🚀 Bank ${bankIdx + 1}: Slot ${slot.slotIndex + 1} (${info.deviceName || ''})...`, subPct);
                 }, pacing);
 
-                // High-speed settling pause between slots (120ms)
+                // Adaptive settling pause between slots based on pattern size
                 if (i < populated.length - 1) {
+                    const slotPx = (slot.width || 40) * (slot.height || 55);
+                    const slotPause = slotPx > 20000 ? 300 : (slotPx > 8000 ? 180 : 100);
                     showInlineProgress(`⏳ Bank ${bankIdx + 1}: Saved Slot ${slot.slotIndex + 1}. Preparing next slot...`, Math.round(((i + 1) / populated.length) * 100));
-                    await new Promise(r => setTimeout(r, 120));
+                    await new Promise(r => setTimeout(r, slotPause));
                 }
             }
 
@@ -4751,12 +4755,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     showInlineProgress(`🚀 Syncing Slot ${i + 1}/${populated.length} (B${slot.bankIndex + 1}:S${slot.slotIndex + 1} - ${info.deviceName || ''})...`, subPct);
                 }, pacing);
 
-                // High-speed settling pause between slots (120ms)
+                // Adaptive settling pause between slots based on pattern size
                 if (i < populated.length - 1) {
+                    const slotPx = (slot.width || 40) * (slot.height || 55);
+                    const slotPause = slotPx > 20000 ? 300 : (slotPx > 8000 ? 180 : 100);
                     showInlineProgress(`⏳ Saved Slot ${i + 1}/${populated.length}. Preparing next slot...`, Math.round(((i + 1) / populated.length) * 100));
-                    await new Promise(r => setTimeout(r, 120));
+                    await new Promise(r => setTimeout(r, slotPause));
                 }
             }
+
 
             showInlineProgress(`✅ All ${populated.length} Slots Synced to Poi!`, 100);
             setTimeout(hideInlineProgress, 3000);
