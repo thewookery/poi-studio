@@ -429,10 +429,9 @@ else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 
           green = 0x00;
           blue = 0xff;
         }else if(config.displayState == DS_WAITING2){
-          // Pink for bank select & demo mode!
-          red = 255;
-          green = 0;
-          blue = 255;
+          // Multi-color spectrum indicator for bank selector
+          uint8_t wave = (uint8_t)(((millis() - config.displayStateLastUpdated) * 255) / 500);
+          hueToRgb(wave, 255, red, green, blue);
         }else if(config.displayState == DS_WAITING3){
           // White for brightness!
           red = 0x88;

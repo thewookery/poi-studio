@@ -257,14 +257,15 @@ else if(buttonState == BS_CLICK3_HOLD){
       buttonState = BS_INITIAL;
     }
 
-    // Triple press detected after timeout -> return to pattern (FX controlled via Web App)
+    // Triple press detected after timeout -> cycle Color Palette FX on poi!
     if(buttonState == BS_CLICK3_UP && millis() - downTime >= 350){
+      config.setPaletteFxMode((config.paletteFxMode + 1) % 25);
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
-    // Quad press detected after timeout -> return to pattern (Transitions controlled via Web App)
+    // Quad press detected after timeout -> return to pattern (Animation transitions controlled via Web App only)
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 350){
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
