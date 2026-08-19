@@ -661,6 +661,7 @@
                 <button class="hud-btn-rand" id="btn-quick-rand" style="flex:1; padding:7px 10px; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Roll the dice: clean, aesthetic flow pattern from scratch">🎲 Rand</button>
                 <button class="hud-btn-dl" id="btn-quick-dl-bmp" style="flex:1; padding:7px 10px; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:4px;" title="Download Open Pixel Poi BMP">💾 Save BMP</button>
                 <button class="hw-btn" id="btn-gen-send-bank" style="flex:1; padding:7px 10px; font-size:0.75rem; color:var(--neon-green); font-weight:800; display:flex; align-items:center; justify-content:center; gap:4px; border-color:var(--neon-green);" title="Assign & Flash active pattern to a Hardware Bank Slot">🗃️ Send to Bank...</button>
+                <button class="hw-btn" id="btn-gen-add-show" style="flex:1; padding:7px 10px; font-size:0.75rem; color:var(--neon-purple); font-weight:800; display:flex; align-items:center; justify-content:center; gap:4px; border-color:var(--neon-purple);" title="Add active generated pattern to the Show Timeline">➕ Add to Show</button>
             </div>
 
 
@@ -2228,10 +2229,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function addToStoryboard(item) {
+        if (!item) return;
+
+        let w = item.width;
+        let h = item.height;
+        if (!w || !h) {
+            if (item.canvas) {
+                w = item.canvas.width;
+                h = item.canvas.height;
+            } else if (item.cachedImg) {
+                w = item.cachedImg.naturalWidth || item.cachedImg.width || 40;
+                h = item.cachedImg.naturalHeight || item.cachedImg.height || 55;
+            } else {
+                w = 40;
+                h = 55;
+            }
+        }
+
         let c = document.createElement('canvas');
-        c.width = item.width;
-        c.height = item.height;
-        c.getContext('2d').drawImage(item.cachedImg, 0, 0);
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+
+        if (item.canvas) {
+            ctx.drawImage(item.canvas, 0, 0, w, h);
+        } else if (item.cachedImg) {
+            ctx.drawImage(item.cachedImg, 0, 0, w, h);
+        } else if (item.dataUri) {
+            const img = new Image();
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, w, h);
+                updateStoryboardUI();
+            };
+            img.src = item.dataUri;
+        }
 
         const randomBtn = el('btn-vault-random-add');
         let mode = currentVaultPalette;
@@ -2239,29 +2270,38 @@ document.addEventListener('DOMContentLoaded', function() {
             mode = 'random';
         }
 
-        if (mode && mode !== 'original') {
+        if (mode && mode !== 'original' && !item.skipRemap && item.folder !== 'custom') {
             c = remapBmpCanvas(c, mode);
         }
 
         storyboardQueue.push({
-            id: item.id,
-            name: item.name,
-            width: item.width,
-            height: item.height,
+            id: item.id || `clip_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: item.name || 'Pattern Clip',
+            width: w,
+            height: h,
             canvas: c,
             tint: mode
         });
 
         updateStoryboardUI();
+
+        const accordion = el('accordion-show-cinema');
+        if (accordion && !accordion.open && activeWorkspace === 'workspace-stitcher') {
+            accordion.open = true;
+        }
     }
 
-
+    window.addToStoryboard = addToStoryboard;
+    window.addToStoryboardTimeline = addToStoryboard;
 
 
     function updateStoryboardUI() {
         const timeline = el('storyboard-timeline');
         if (!timeline) return;
-        updateBadge('timeline-count-badge', `${storyboardQueue.length} clip${storyboardQueue.length === 1 ? '' : 's'}`);
+        const countText = `${storyboardQueue.length} clip${storyboardQueue.length === 1 ? '' : 's'}`;
+        updateBadge('timeline-count-badge', countText);
+        updateBadge('timeline-summary-count', countText);
+
 
         if (storyboardQueue.length === 0) {
             timeline.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); margin:auto; padding:12px;">Timeline is empty. Click <b>"➕ Add"</b> on any pattern below to build your seamless master show!</div>';
@@ -5192,7 +5232,34 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    if (el('btn-gen-add-show')) {
+        el('btn-gen-add-show').onclick = () => {
+            let name = currentPattern;
+            if (typeof name === 'string' && name.startsWith('bmp_')) {
+                const vaultItem = vaultItems.find(v => v.id === name);
+                if (vaultItem) name = vaultItem.name;
+            }
+            name = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+            const c = document.createElement('canvas');
+            c.width = displayCanvas.width;
+            c.height = displayCanvas.height;
+            c.getContext('2d').drawImage(displayCanvas, 0, 0);
+
+            addToStoryboard({
+                id: `gen_${Date.now()}`,
+                name: name || 'Generated Pattern',
+                canvas: c,
+                width: c.width,
+                height: c.height,
+                skipRemap: true
+            });
+            alert(`🎬 Added "${name || 'Generated Pattern'}" to your Show Timeline!`);
+        };
+    }
+
     // Hook up Bank Manager top actions
+
     if (el('btn-bank-flash-all')) el('btn-bank-flash-all').onclick = flashAllPopulatedBankSlots;
     if (el('btn-bank-random-fill')) el('btn-bank-random-fill').onclick = randomFillEmptyBankSlots;
     if (el('btn-bank-rescale-all')) {
@@ -5841,15 +5908,17 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (action === 'open-gen') {
                 loadCanvasToGenerator(canvas, name);
             } else if (action === 'add-show') {
-                addToStoryboardTimeline({
+                addToStoryboard({
                     id: `qfx_${Date.now()}`,
                     name: name,
-                    dataUri: canvas.toDataURL('image/png'),
+                    canvas: canvas,
                     width: canvas.width,
-                    height: canvas.height
+                    height: canvas.height,
+                    skipRemap: true
                 });
                 alert(`🎬 Added "${name}" to your Show Timeline!`);
             } else if (action === 'save-vault') {
+
                 await saveCanvasToCustomVault(canvas, name);
             }
         });
