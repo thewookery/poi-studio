@@ -51,6 +51,7 @@ void loop() {
   while(true){
     if(ble.multipartPattern == 0){
       ble.loop();
+      espNow.loop();
       config.loop();
       led.loop();
       button.loop();
