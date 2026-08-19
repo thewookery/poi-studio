@@ -83,43 +83,6 @@ enum CommCode {
 };
 
 
-class MeshScanCallbacks: public BLEAdvertisedDeviceCallbacks {
-private:
-  OpenPixelPoiConfig& config;
-  uint8_t& lastSeq;
-public:
-  MeshScanCallbacks(OpenPixelPoiConfig& _config, uint8_t& _lastSeq) : config(_config), lastSeq(_lastSeq) {}
-
-  void onResult(BLEAdvertisedDevice advertisedDevice) {
-    if (advertisedDevice.haveManufacturerData()) {
-      std::string mfg = advertisedDevice.getManufacturerData();
-      if (mfg.length() >= 7 && mfg[0] == 'P' && mfg[1] == 'O') {
-        uint8_t seq = (uint8_t)mfg[2];
-        if (seq != lastSeq) {
-          lastSeq = seq;
-          uint8_t bank = (uint8_t)mfg[3];
-          uint8_t slot = (uint8_t)mfg[4];
-          uint8_t pal  = (uint8_t)mfg[5];
-          uint8_t br   = (uint8_t)mfg[6];
-
-          if (bank < PATTERN_BANK_COUNT && bank != config.patternBank) {
-            config.setPatternBank(bank, false);
-          }
-          if (slot < PATTERN_BANK_SIZE && slot != config.patternSlot) {
-            config.setPatternSlot(slot, false);
-          }
-          if (pal < 25 && pal != config.paletteFxMode) {
-            config.setPaletteFxMode(pal);
-          }
-          if (br >= 1 && br <= 100 && br != config.ledBrightness) {
-            config.setLedBrightness(br);
-          }
-        }
-      }
-    }
-  }
-};
-
 class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallbacks{
   
   private:
@@ -142,10 +105,6 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
     BLECharacteristic* pixelPoiTxCharacteristic;
     BLECharacteristic* pixelPoiNotifyCharacteristic;
 
-    uint8_t syncSeqNum = 1;
-    uint8_t lastReceivedSeq = 0;
-    BLEScan* pBLEScan = nullptr;
-
     void bleSendError(){
       uint8_t response[] = {0xD0, 0x00, 0x05, CC_ERROR, 0xD1};
       writeToPixelPoi(response);
@@ -166,37 +125,6 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
 
     long bleLastReceived;
     uint8_t multipartPattern = 0;
-
-    void updateAdvertisingData() {
-      if (server == nullptr) return;
-      BLEAdvertising *pAdv = server->getAdvertising();
-      pAdv->stop();
-
-      BLEAdvertisementData advData;
-      advData.setName(config.deviceName.c_str());
-      advData.setCompleteServices(pixelPoiServiceUUID);
-
-      std::string mfg = "";
-      mfg += 'P';
-      mfg += 'O';
-      mfg += (char)syncSeqNum;
-      mfg += (char)config.patternBank;
-      mfg += (char)config.patternSlot;
-      mfg += (char)config.paletteFxMode;
-      mfg += (char)config.ledBrightness;
-      advData.setManufacturerData(mfg);
-
-      pAdv->setAdvertisementData(advData);
-      pAdv->start();
-    }
-
-    void broadcastMeshState() {
-      if (deviceConnected) return;
-      syncSeqNum++;
-      if (syncSeqNum == 0) syncSeqNum = 1;
-      updateAdvertisingData();
-    }
-
     void setup(){
       debugf("Setup begin\n");
       // Create the BLE Device
@@ -217,16 +145,8 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
       pixelPoiRxCharacteristic->setCallbacks(this);
       pixelPoiService->start();
 
-      // Start advertising with mesh payload
-      updateAdvertisingData();
-
-      // Background BLE Scanner for partner Poi
-      pBLEScan = BLEDevice::getScan();
-      pBLEScan->setAdvertisedDeviceCallbacks(new MeshScanCallbacks(config, lastReceivedSeq));
-      pBLEScan->setActiveScan(false);
-      pBLEScan->setInterval(200);
-      pBLEScan->setWindow(40);
-
+      // Start advertising
+      server->getAdvertising()->start();
       debugf("Waiting a client connection to notify..\n");
       debugf("Setup complete\n");
     }
@@ -235,25 +155,18 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
       // disconnecting
       if (!deviceConnected && oldDeviceConnected) {
         delay(500); // give the bluetooth stack the chance to get things ready
-        updateAdvertisingData(); // restart advertising
+        server->startAdvertising(); // restart advertising
         debugf("start advertising\n");
         oldDeviceConnected = deviceConnected;
       }
       // connecting
       if (deviceConnected && !oldDeviceConnected) {
         debugf("connecting!\n");
+        // do stuff here on connecting
         oldDeviceConnected = deviceConnected;
       }
-
-      // Background scan pulse when not connected to phone app
-      if (!deviceConnected && pBLEScan) {
-        static unsigned long lastScanPulse = 0;
-        if (millis() - lastScanPulse > 250) {
-          lastScanPulse = millis();
-          pBLEScan->start(0.08, false);
-        }
-      }
     }
+
 
 
     void writeToPixelPoi(uint8_t* data){

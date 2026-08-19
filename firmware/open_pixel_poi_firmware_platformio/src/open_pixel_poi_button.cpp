@@ -41,7 +41,6 @@ class OpenPixelPoiButton {
 
 private:
   OpenPixelPoiConfig& config;
-  OpenPixelPoiBLE& ble;
 
   int filteredButtonInput = 1000;
   int buttonState = 0;
@@ -51,7 +50,8 @@ private:
   long shutDownAt = 0;
 
 public:
-  OpenPixelPoiButton(OpenPixelPoiConfig& _config, OpenPixelPoiBLE& _ble): config(_config), ble(_ble) {}    
+  OpenPixelPoiButton(OpenPixelPoiConfig& _config): config(_config) {}    
+
 
 
   void setup() {
@@ -188,7 +188,6 @@ public:
           config.displayStateLastUpdated = millis();
         }
         buttonState = BS_INITIAL;
-        ble.broadcastMeshState();
       }
 else if(buttonState == BS_CLICK3_HOLD){
         if(millis() - downTime < 1000){
@@ -207,7 +206,6 @@ else if(buttonState == BS_CLICK3_HOLD){
         buttonState = BS_INITIAL;
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
-        ble.broadcastMeshState();
       }else if(buttonState == BS_CLICK4_HOLD){
         if(millis() - downTime < 1000){
           config.setAnimationSpeed(config.animationSpeedOptions[0]);
@@ -225,7 +223,6 @@ else if(buttonState == BS_CLICK3_HOLD){
         buttonState = BS_INITIAL;
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
-        ble.broadcastMeshState();
       }else if(buttonState == BS_CLICK5_HOLD){
         // 25 Palettes, 400ms per option (0 to 10,000ms)
         int palIndex = ((millis() - downTime - 500) / 400) % 25;
@@ -233,7 +230,6 @@ else if(buttonState == BS_CLICK3_HOLD){
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
-        ble.broadcastMeshState();
       }
     }
 
@@ -243,7 +239,6 @@ else if(buttonState == BS_CLICK3_HOLD){
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
-      ble.broadcastMeshState();
     }
     // Double press detected after timeout, do nothing
     if(buttonState == BS_CLICK2_UP && millis() - downTime >= 500){
@@ -257,7 +252,6 @@ else if(buttonState == BS_CLICK3_HOLD){
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
-      ble.broadcastMeshState();
     }
 
     // Quad press detected after timeout, cycle Blend Transition Mode
@@ -266,8 +260,8 @@ else if(buttonState == BS_CLICK3_HOLD){
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
-      ble.broadcastMeshState();
     }
+
 
 
     // Penta press detected after timeout, display voltage

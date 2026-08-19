@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPoi - Studio 25-Palette + Dual-Sync Edition (55px DotStar)",
-  "version": "2026.6.55-dualsync",
+  "name": "OpenPixelPoi - Studio 25-Palette Edition (55px DotStar)",
+  "version": "2026.7.55-25pal",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
