@@ -4975,15 +4975,70 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewImg = el('bank-picker-preview-img');
         if (previewImg && patternData.dataUri) previewImg.src = patternData.dataUri;
 
-        // Highlight existing assigned slots in modal
-        document.querySelectorAll('.bank-slot-pick-btn').forEach(btn => {
-            const b = parseInt(btn.getAttribute('data-b'));
-            const s = parseInt(btn.getAttribute('data-s'));
-            const g = b * BANK_SLOT_COUNT + s;
-            const isAssigned = bankSlots[g] && bankSlots[g].isAssigned;
-            btn.style.borderColor = isAssigned ? 'var(--neon-green)' : 'rgba(255,255,255,0.12)';
-            btn.innerHTML = `Slot ${s + 1} ${isAssigned ? '🟢' : '⚪'}`;
-        });
+        // Dynamically build slot selector buttons according to active BANK_COUNT (3 for Stock, 4 for 4-Bank, 5 for Custom Firmware)
+        const container = el('bank-picker-slots-container');
+        if (container) {
+            container.innerHTML = '';
+            
+            const bankColors = [
+                { color: 'var(--neon-green)', label: 'Bank 1' },
+                { color: 'var(--neon-yellow)', label: 'Bank 2' },
+                { color: 'var(--neon-purple)', label: 'Bank 3' },
+                { color: 'var(--neon-pink)', label: 'Bank 4 (Custom Firmware)' },
+                { color: 'var(--neon-cyan)', label: 'Bank 5 (Custom Firmware)' }
+            ];
+
+            for (let b = 0; b < BANK_COUNT; b++) {
+                const bankInfo = bankColors[b] || { color: 'var(--accent-color)', label: `Bank ${b + 1}` };
+                const bankWrap = document.createElement('div');
+                bankWrap.style.marginBottom = '6px';
+
+                const title = document.createElement('div');
+                title.style.fontSize = '0.72rem';
+                title.style.fontWeight = '800';
+                title.style.color = bankInfo.color;
+                title.style.marginBottom = '4px';
+                title.innerText = `📁 ${bankInfo.label} (Slots 1–${BANK_SLOT_COUNT}):`;
+                bankWrap.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.style.display = 'grid';
+                grid.style.gridTemplateColumns = BANK_SLOT_COUNT > 5 ? 'repeat(5, 1fr)' : `repeat(${BANK_SLOT_COUNT}, 1fr)`;
+                grid.style.gap = '4px';
+
+                for (let s = 0; s < BANK_SLOT_COUNT; s++) {
+                    const g = b * BANK_SLOT_COUNT + s;
+                    const isAssigned = bankSlots[g] && bankSlots[g].isAssigned;
+                    const btn = document.createElement('button');
+                    btn.className = 'hw-btn bank-slot-pick-btn';
+                    btn.style.fontSize = '0.68rem';
+                    btn.style.padding = '5px 4px';
+                    btn.style.borderColor = isAssigned ? bankInfo.color : 'rgba(255,255,255,0.12)';
+                    btn.innerHTML = `Slot ${s + 1} ${isAssigned ? '🟢' : '⚪'}`;
+                    btn.title = isAssigned ? `Overwrite: ${bankSlots[g].name || 'assigned pattern'}` : 'Assign to this empty slot';
+
+                    btn.onclick = async () => {
+                        if (!pendingBankAssignData) return;
+                        await assignPatternToBankSlot(b, s, pendingBankAssignData);
+
+                        if (bankPickerMode === 'flash') {
+                            closeBankPickerModal();
+                            const assignedSlot = bankSlots[g];
+                            if (assignedSlot) {
+                                await flashSingleBankSlot(assignedSlot);
+                            }
+                        } else {
+                            closeBankPickerModal();
+                        }
+                    };
+
+                    grid.appendChild(btn);
+                }
+
+                bankWrap.appendChild(grid);
+                container.appendChild(bankWrap);
+            }
+        }
 
         modal.style.display = 'flex';
     }
@@ -5961,56 +6016,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <!-- 4-BANK SLOT SELECTOR BUTTONS -->
-            <div style="display:flex; flex-direction:column; gap:8px;" id="bank-picker-slots-container">
-                <!-- Bank 1 -->
-                <div>
-                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-green); margin-bottom:4px;">📁 Bank 1 (Slots 1–5):</div>
-                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
-                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="0">Slot 1</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="1">Slot 2</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="2">Slot 3</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="3">Slot 4</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="0" data-s="4">Slot 5</button>
-                    </div>
-                </div>
-
-                <!-- Bank 2 -->
-                <div>
-                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-yellow); margin-bottom:4px;">📁 Bank 2 (Slots 1–5):</div>
-                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
-                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="0">Slot 1</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="1">Slot 2</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="2">Slot 3</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="3">Slot 4</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="1" data-s="4">Slot 5</button>
-                    </div>
-                </div>
-
-                <!-- Bank 3 -->
-                <div>
-                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-purple); margin-bottom:4px;">📁 Bank 3 (Slots 1–5):</div>
-                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
-                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="0">Slot 1</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="1">Slot 2</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="2">Slot 3</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="3">Slot 4</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="2" data-s="4">Slot 5</button>
-                    </div>
-                </div>
-
-                <!-- Bank 4 (Custom Firmware Only) -->
-                <div id="bank-picker-bank-4-block">
-                    <div style="font-size:0.72rem; font-weight:800; color:var(--neon-pink); margin-bottom:4px;">📁 Bank 4 (Slots 1–5 • Custom Firmware):</div>
-                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
-                        <button class="hw-btn bank-slot-pick-btn" data-b="3" data-s="0">Slot 1</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="3" data-s="1">Slot 2</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="3" data-s="2">Slot 3</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="3" data-s="3">Slot 4</button>
-                        <button class="hw-btn bank-slot-pick-btn" data-b="3" data-s="4">Slot 5</button>
-                    </div>
-                </div>
-            </div>
+            <!-- DYNAMIC BANK SLOT SELECTOR (CONFIGURED BY ACTIVE FIRMWARE MODE) -->
+            <div style="display:flex; flex-direction:column; gap:8px;" id="bank-picker-slots-container"></div>
         </div>
     </div>
 

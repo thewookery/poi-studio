@@ -1286,7 +1286,9 @@ esp-web-install-button {
     box-shadow: 0 0 24px rgba(0, 173, 181, 0.35);
     border-radius: var(--radius-md);
     width: 100%;
-    max-width: 480px;
+    max-width: 520px;
+    max-height: 88vh;
+    overflow-y: auto;
     padding: 16px;
     display: flex;
     flex-direction: column;
