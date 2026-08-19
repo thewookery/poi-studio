@@ -2,7 +2,6 @@
 #include "open_pixel_poi_led.cpp"
 #include "open_pixel_poi_ble.cpp"
 #include "open_pixel_poi_button.cpp"
-#include "open_pixel_poi_mesh.cpp"
 
 //#define DEBUG  // Comment this line out to remove printf statements in released version
 #ifdef DEBUG
@@ -17,7 +16,6 @@
 OpenPixelPoiConfig config;
 OpenPixelPoiBLE ble(config);
 OpenPixelPoiLED led(config);
-OpenPixelPoiMesh mesh(config);
 OpenPixelPoiButton button(config);
 
 void setup() {
@@ -26,7 +24,7 @@ void setup() {
     Serial.setDebugOutput(true);
   #endif
 
-  debugf("Open Pixel POI - Hardened Mesh Engine\n");
+  debugf("Open Pixel POI - Hardened Engine\n");
   debugf("Setup Begin. Free Heap: %d bytes\n", ESP.getFreeHeap());
 
   // MEMORY INTEGRITY GUARDRAIL:
@@ -38,14 +36,7 @@ void setup() {
   config.setup();
   led.setup();
   ble.setup();
-  mesh.setup();
   button.setup();
-
-  // Hook all config/state changes to auto-broadcast over ESP-NOW mesh
-  config.onConfigChanged = [&]() {
-    mesh.broadcastState();
-  };
-
   debugf("- Setup Complete. Running Free Heap: %d bytes\n", ESP.getFreeHeap());
 }
 
@@ -57,7 +48,6 @@ void loop() {
       ble.loop();
       config.loop();
       led.loop();
-      mesh.loop();
       button.loop();
     }else{
       delay(250);
@@ -68,4 +58,5 @@ void loop() {
     }
   }
 }
+
 
