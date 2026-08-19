@@ -1,4 +1,5 @@
 // Sub-Modules
+#include "open_pixel_poi_espnow.cpp"
 #include "open_pixel_poi_led.cpp"
 #include "open_pixel_poi_ble.cpp"
 #include "open_pixel_poi_button.cpp"
@@ -14,6 +15,7 @@
 
 
 OpenPixelPoiConfig config;
+OpenPixelPoiEspNow espNow(config);
 OpenPixelPoiBLE ble(config);
 OpenPixelPoiLED led(config);
 OpenPixelPoiButton button(config);
@@ -38,6 +40,7 @@ void setup() {
   config.setup();
   led.setup();
   ble.setup();
+  espNow.setup();
   button.setup();
   debugf("- Setup Complete. Running Free Heap: %d bytes\n", ESP.getFreeHeap());
 }
