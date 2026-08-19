@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=85">
+    <link rel="stylesheet" href="styles.css?v=86">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -110,7 +110,7 @@
         </div>
     </header>
 
-    <!-- 5-WORKSPACE PRIMARY NAVIGATION BAR -->
+    <!-- 6-WORKSPACE PRIMARY NAVIGATION BAR -->
     <div class="workspace-mode-bar">
         <button class="mode-switch-btn active" id="btn-mode-stitcher" data-mode="workspace-stitcher">
             🗂️ Vault & Show
@@ -118,11 +118,14 @@
         <button class="mode-switch-btn" id="btn-mode-banks" data-mode="workspace-banks">
             🗃️ Bank Manager
         </button>
-        <button class="mode-switch-btn" id="btn-mode-deck" data-mode="workspace-deck">
-            ⚙️ Poi Settings
+        <button class="mode-switch-btn" id="btn-mode-quick-fx" data-mode="workspace-quick-fx">
+            ✨ Quick FX
         </button>
         <button class="mode-switch-btn" id="btn-mode-generator" data-mode="workspace-generator">
             🎨 Generator
+        </button>
+        <button class="mode-switch-btn" id="btn-mode-deck" data-mode="workspace-deck">
+            ⚙️ Poi Settings
         </button>
         <button class="mode-switch-btn" id="btn-mode-firmware" data-mode="workspace-firmware">
             ⚡ Firmware
@@ -134,154 +137,7 @@
          ========================================================================== -->
     <div id="workspace-stitcher" style="display:flex; flex-direction:column; gap:10px; padding:10px 12px;">
 
-
-        <!-- 1. PATTERN VAULT & STITCHER TIMELINE -->
-        <div class="card-box" style="border-color:var(--neon-green); background:rgba(57, 255, 20, 0.03);">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                <span style="font-size:0.82rem; font-weight:800; color:var(--neon-green);">
-                    🎬 Pattern Vault & Stitcher Timeline (<span id="timeline-count-badge">0 clips</span>):
-                </span>
-                <div style="display:flex; gap:6px;">
-                    <button class="hw-btn" id="btn-rand-10-show" style="font-size:0.72rem; color:var(--accent-color); font-weight:700;">🎲 Add Random 10</button>
-                    <button class="hw-btn" id="btn-clear-timeline" style="font-size:0.72rem; color:var(--danger-color); font-weight:700;">Clear</button>
-                </div>
-            </div>
-
-            <!-- HORIZONTAL FILMSTRIP QUEUE -->
-            <div class="storyboard-timeline" id="storyboard-timeline">
-                <div style="font-size:0.75rem; color:var(--text-muted); margin:auto; padding:12px;">
-                    Timeline is empty. Click <b>"➕ Add"</b> on any pattern in the Vault below to build your seamless master show!
-                </div>
-            </div>
-
-            <!-- STORYBOARD TARGET LED HEIGHT RESIZER -->
-
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:8px; padding:6px 10px; background:rgba(0, 173, 181, 0.07); border:1px solid rgba(0, 173, 181, 0.3); border-radius:var(--radius-sm);">
-                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                    <span style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎯 Target Prop LED Height:</span>
-                    <div class="hw-presets" id="sb-h-presets">
-                        <button class="hw-btn active" data-sb-h="55">55px Standard (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-sb-h="22">22px Mini (Open Pixel Poi)</button>
-                        <button class="hw-btn" data-sb-h="32">32px</button>
-                        <button class="hw-btn" data-sb-h="64">64px</button>
-                        <button class="hw-btn" data-sb-h="144">144px HD</button>
-                    </div>
-                </div>
-                <div class="custom-dim-wrap">
-                    <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
-                    <input type="number" id="sb-custom-h-input" value="55" min="8" max="256">
-                    <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
-                </div>
-            </div>
-
-
-            <!-- TRANSITION & FLOW DYNAMICS (RESPONSIVE CARD) -->
-            <div class="card-box" style="margin-top:8px; background:rgba(0,0,0,0.3); border-color:var(--border-color); padding:10px 12px;">
-                <div style="font-size:0.8rem; font-weight:800; color:var(--accent-color); margin-bottom:8px;">
-                    🌊 Show Transition, Flow & Blend Dynamics:
-                </div>
-
-                <div class="flow-controls-grid">
-                    <div class="ctrl-row" style="margin-top:0;">
-                        <span class="ctrl-label">🌊 Flow Transition Style:</span>
-                        <select id="stitch-trans-select" style="width:100%; padding:6px 8px; font-size:0.75rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
-                            <option value="crossfade">🌊 Liquid Cosine Flow (Zero-Glitch Melt)</option>
-                            <option value="diagonal_wave">🌀 Polar Diagonal Wave Sweep (Base ➔ Tip)</option>
-                            <option value="quantum_rails">✨ Quantum Rail Interlacer (Holographic Dissolve)</option>
-                            <option value="simplex_warp">🌪️ Simplex Domain Warp (Liquid Glass)</option>
-                            <option value="black">🕶️ Dip to Black Fade</option>
-                            <option value="strobe">⚡ Stroboscopic White POV Flash</option>
-                            <option value="none">✂️ Clean Hard Cut (No Overlap)</option>
-                        </select>
-                    </div>
-
-                    <div class="ctrl-row" style="margin-top:0;">
-                        <span class="ctrl-label">⏱️ Clip Spin Duration:</span>
-                        <select id="stitch-duration-select" style="width:100%; padding:6px 8px; font-size:0.75rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
-                            <option value="uniform_240">Uniform Standard (240px / ~1.3s)</option>
-                            <option value="uniform_180">Uniform Compact (180px / ~1.0s)</option>
-                            <option value="uniform_120">Uniform Micro (120px / ~0.6s)</option>
-                            <option value="proportional">Proportional (Original BMP Width)</option>
-                        </select>
-                    </div>
-
-                    <div class="ctrl-row" style="margin-top:0;">
-                        <span class="ctrl-label">📐 Blend Overlap (Crossfade Width):</span>
-                        <input type="range" id="stitch-overlap-slider" min="0" max="96" value="0" style="accent-color:var(--neon-green);">
-                        <span class="val-mono" id="stitch-overlap-val" style="color:var(--neon-green);">0px</span>
-                    </div>
-
-                </div>
-
-                <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
-                    <button class="toggle-btn active-green" id="btn-stitch-seamless-loop" data-active="true" style="font-size:0.75rem; padding:6px 12px; font-weight:800;" title="Fuse tail to head for seamless loop">
-                        ♾️ 100% Zero-Seam Loop: ON
-                    </button>
-                    <div style="font-size:0.7rem; color:var(--text-muted);" id="timeline-stats-badge">Total Length: 0px (~0 KB)</div>
-                </div>
-
-            </div>
-
-
-            <!-- OPEN PIXEL POI 40,000 PIXEL SD BUFFER TELEMETRY BAR -->
-            <div class="card-box" style="margin-top:6px; background:#070a12; border:1px solid #1e293b; padding:8px 10px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
-                    <span style="font-size:0.72rem; font-weight:800; color:var(--text-color);">
-                        💾 Open Pixel Poi SD Buffer Capacity:
-                    </span>
-                    <span class="telemetry-pill" id="sb-memory-pct-badge" style="font-size:0.72rem; color:var(--neon-green);">0 / 40,000 px (0.0%) • SAFE FOR POI</span>
-                </div>
-                <div style="height:6px; background:#121824; border-radius:3px; overflow:hidden; border:1px solid #1e293b;">
-                    <div id="sb-memory-progress-bar" style="height:100%; width:0%; background:linear-gradient(to right, #00adb5, #39ff14); transition:width 0.2s ease;"></div>
-                </div>
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px; font-size:0.64rem; color:var(--text-muted);">
-                    <span>Max Allowed: <b style="color:#fff;" id="sb-max-w-badge">727 px</b> width at <span id="sb-cur-h-badge">55px</span> height</span>
-                    <span id="sb-loop-notice-badge" style="color:var(--neon-green); font-weight:700;">♾️ Auto-Loops at 40,000 Pixels</span>
-                </div>
-            </div>
-
-            <!-- DEDICATED STORYBOARD SHOW CINEMA PLAYER -->
-            <div class="storyboard-cinema-box" id="storyboard-cinema-box">
-                <div class="cinema-header-row">
-                    <div class="cinema-title">🎬 Master Show Cinema Streamer (Zero-Seam Liquid Flow)</div>
-                    <div class="cinema-badge" id="cinema-status-badge">0 clips in show</div>
-                </div>
-
-                <!-- FULL-WIDTH SHOW INFINITE STREAMER -->
-                <div class="cinema-stream-wrap">
-                    <canvas id="show-stream-canvas" width="600" height="70"></canvas>
-                </div>
-
-                <!-- SHOW FULL-LENGTH STRIP PREVIEW & SCRUBBER -->
-                <div class="cinema-strip-wrap" id="show-strip-wrap" title="Full stitched show ribbon">
-                    <canvas id="show-strip-canvas" width="800" height="38"></canvas>
-                </div>
-
-                <!-- SHOW CONTROLS -->
-                <div class="cinema-controls-row">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <button class="cinema-btn-play" id="btn-cinema-toggle">⏸️ Pause Show</button>
-                        <button class="cinema-btn-action" id="btn-cinema-rewind">⏪ Rewind</button>
-                    </div>
-                    
-                    <div style="display:flex; align-items:center; gap:6px; flex:1; max-width:240px;">
-                        <span style="font-size:0.68rem; color:var(--text-muted);">Speed:</span>
-                        <input type="range" id="cinema-speed-slider" min="0" max="600" value="180">
-                        <span class="val-mono" id="cinema-speed-val">180</span>
-                    </div>
-
-                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <button class="btn-ble-upload" id="btn-export-cinema-ble" title="Flash compiled Master Show directly to Poi">🚀 Upload Show to Poi (BLE)</button>
-                        <button class="hw-btn" id="btn-export-cinema-bank" style="font-size:0.75rem; color:var(--neon-green); font-weight:800; border-color:var(--neon-green); padding:7px 12px;" title="Assign compiled Master Show to a Hardware Bank Slot">🗃️ Send Show to Bank...</button>
-                        <button class="btn-join-export" id="btn-export-cinema-bmp">💾 Export Master 24-bit BMP</button>
-                    </div>
-
-
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. MASTER BMP PATTERN VAULT -->
+        <!-- 1. MASTER BMP PATTERN VAULT (PROMINENT TOP VIEW) -->
         <div class="card-box" style="border-color:rgba(188, 19, 254, 0.4); background:rgba(188, 19, 254, 0.03);">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
                 <div>
@@ -302,39 +158,41 @@
                 <button class="hw-btn" data-folder="custom" id="filter-custom-vault" style="color:var(--neon-green); font-weight:800;">🎨 My Custom Vault (<span id="vault-custom-count">0</span>)</button>
             </div>
 
-
-            <!-- PROMINENT INTERACTIVE BMP COLOR PALETTE & RANDOM REMIX BAR -->
-            <div class="card-box" style="margin-bottom:10px; background:rgba(0, 0, 0, 0.6); border:1px solid rgba(188, 19, 254, 0.5); padding:10px 12px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-                    <div style="font-size:0.78rem; font-weight:800; color:var(--neon-purple); display:flex; align-items:center; gap:6px;">
-                        <span>🎨 Live BMP Color Remixer & Palette Tint:</span>
-                    </div>
-                    <button class="toggle-btn" id="btn-vault-random-add" data-active="false" style="font-size:0.72rem; padding:5px 10px; font-weight:700;" title="Randomize colors each time a pattern is added">
-                        🎲 Random on Add: OFF
-                    </button>
-                </div>
-
-
-                <!-- QUICK PALETTE PRESET BUTTONS (REAL-TIME LIVE TINTING) -->
-                <div style="display:flex; gap:5px; flex-wrap:wrap;" id="vault-palette-btns">
-                    <button class="hw-btn active" data-vpal="original" style="font-size:0.72rem; padding:5px 10px;">🖼️ Original BMP</button>
-                    <button class="hw-btn" data-vpal="random" style="font-size:0.72rem; padding:5px 10px; color:var(--accent-color); font-weight:800;">🎲 Shuffle / Random</button>
-                    <button class="hw-btn" data-vpal="fire" style="font-size:0.72rem; padding:5px 10px; color:#ff4d4d;">🔥 Fire & Heat</button>
-                    <button class="hw-btn" data-vpal="cyber" style="font-size:0.72rem; padding:5px 10px; color:#00ffff;">🌈 Cyber Neon</button>
-                    <button class="hw-btn" data-vpal="psychedelic" style="font-size:0.72rem; padding:5px 10px; color:#bc13fe;">🔮 Psychedelic</button>
-                    <button class="hw-btn" data-vpal="matrix" style="font-size:0.72rem; padding:5px 10px; color:#39ff14;">🟢 Matrix Emerald</button>
-                    <button class="hw-btn" data-vpal="ocean" style="font-size:0.72rem; padding:5px 10px; color:#00adb5;">🌊 Deep Ocean</button>
-                    <button class="hw-btn" data-vpal="sunset" style="font-size:0.72rem; padding:5px 10px; color:#ffb703;">⚡ Electric Sunset</button>
-                    <button class="hw-btn" data-vpal="invert" style="font-size:0.72rem; padding:5px 10px; color:#e0e6ed;">🕶️ Invert</button>
-                </div>
-            </div>
-
             <!-- SEARCH BAR -->
             <div class="search-input-wrap">
                 <span>🔍</span>
                 <input type="text" id="vault-search-input" placeholder="Search patterns (e.g. skull, galaxy, pikachu, wave, eye, mario, flower)...">
             </div>
 
+            <!-- COLLAPSIBLE LIVE BMP COLOR REMIXER & PALETTE TINT -->
+            <details class="studio-accordion" id="accordion-vault-remixer" style="margin-top:10px;">
+                <summary>
+                    <span style="color:var(--neon-purple); display:flex; align-items:center; gap:6px;">
+                        <span>🎨</span>
+                        <span>Live BMP Color Remixer & Palette Tint</span>
+                    </span>
+                    <span class="accordion-chevron">▶</span>
+                </summary>
+                <div class="studio-accordion-content">
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">Tint any pattern live or randomize colors on add:</span>
+                        <button class="toggle-btn" id="btn-vault-random-add" data-active="false" style="font-size:0.72rem; padding:5px 10px; font-weight:700;" title="Randomize colors each time a pattern is added">
+                            🎲 Random on Add: OFF
+                        </button>
+                    </div>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;" id="vault-palette-btns">
+                        <button class="hw-btn active" data-vpal="original" style="font-size:0.72rem; padding:5px 10px;">🖼️ Original BMP</button>
+                        <button class="hw-btn" data-vpal="random" style="font-size:0.72rem; padding:5px 10px; color:var(--accent-color); font-weight:800;">🎲 Shuffle / Random</button>
+                        <button class="hw-btn" data-vpal="fire" style="font-size:0.72rem; padding:5px 10px; color:#ff4d4d;">🔥 Fire & Heat</button>
+                        <button class="hw-btn" data-vpal="cyber" style="font-size:0.72rem; padding:5px 10px; color:#00ffff;">🌈 Cyber Neon</button>
+                        <button class="hw-btn" data-vpal="psychedelic" style="font-size:0.72rem; padding:5px 10px; color:#bc13fe;">🔮 Psychedelic</button>
+                        <button class="hw-btn" data-vpal="matrix" style="font-size:0.72rem; padding:5px 10px; color:#39ff14;">🟢 Matrix Emerald</button>
+                        <button class="hw-btn" data-vpal="ocean" style="font-size:0.72rem; padding:5px 10px; color:#00adb5;">🌊 Deep Ocean</button>
+                        <button class="hw-btn" data-vpal="sunset" style="font-size:0.72rem; padding:5px 10px; color:#ffb703;">⚡ Electric Sunset</button>
+                        <button class="hw-btn" data-vpal="invert" style="font-size:0.72rem; padding:5px 10px; color:#e0e6ed;">🕶️ Invert</button>
+                    </div>
+                </div>
+            </details>
 
             <!-- PATTERN CARDS GRID -->
             <div class="gallery-grid" id="vault-cards-grid" style="margin-top:10px; max-height:550px; overflow-y:auto; padding-right:4px;">
@@ -342,8 +200,466 @@
             </div>
         </div>
 
+        <!-- 2. COLLAPSIBLE SHOW TIMELINE & CINEMA SEQUENCER -->
+        <details class="studio-accordion" id="accordion-show-cinema" style="border-color:var(--neon-green);">
+            <summary>
+                <span style="color:var(--neon-green); display:flex; align-items:center; gap:6px;">
+                    <span>🎬</span>
+                    <span>Master Show Timeline & Cinema Sequencer (<span id="timeline-summary-count">0 clips</span>)</span>
+                </span>
+                <span class="accordion-chevron">▶</span>
+            </summary>
+            <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">
+                        Sequence multiple patterns into continuous seamless shows.
+                    </span>
+                    <div style="display:flex; gap:6px;">
+                        <button class="hw-btn" id="btn-rand-10-show" style="font-size:0.72rem; color:var(--accent-color); font-weight:700;">🎲 Add Random 10</button>
+                        <button class="hw-btn" id="btn-clear-timeline" style="font-size:0.72rem; color:var(--danger-color); font-weight:700;">Clear</button>
+                    </div>
+                </div>
+
+                <!-- HORIZONTAL FILMSTRIP QUEUE -->
+                <div class="storyboard-timeline" id="storyboard-timeline">
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin:auto; padding:12px;">
+                        Timeline is empty. Click <b>"➕ Add"</b> on any pattern in the Vault above to build your seamless master show!
+                    </div>
+                </div>
+
+                <!-- STORYBOARD TARGET LED HEIGHT RESIZER -->
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:6px 10px; background:rgba(0, 173, 181, 0.07); border:1px solid rgba(0, 173, 181, 0.3); border-radius:var(--radius-sm);">
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span style="font-size:0.75rem; font-weight:800; color:var(--accent-color);">🎯 Target Prop LED Height:</span>
+                        <div class="hw-presets" id="sb-h-presets">
+                            <button class="hw-btn active" data-sb-h="55">55px Standard (Open Pixel Poi)</button>
+                            <button class="hw-btn" data-sb-h="22">22px Mini (Open Pixel Poi)</button>
+                            <button class="hw-btn" data-sb-h="32">32px</button>
+                            <button class="hw-btn" data-sb-h="64">64px</button>
+                            <button class="hw-btn" data-sb-h="144">144px HD</button>
+                        </div>
+                    </div>
+                    <div class="custom-dim-wrap">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">Custom:</span>
+                        <input type="number" id="sb-custom-h-input" value="55" min="8" max="256">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">px</span>
+                    </div>
+                </div>
+
+                <!-- TRANSITION & FLOW DYNAMICS -->
+                <div class="card-box" style="background:rgba(0,0,0,0.3); border-color:var(--border-color); padding:10px 12px;">
+                    <div style="font-size:0.8rem; font-weight:800; color:var(--accent-color); margin-bottom:8px;">
+                        🌊 Show Transition, Flow & Blend Dynamics:
+                    </div>
+
+                    <div class="flow-controls-grid">
+                        <div class="ctrl-row" style="margin-top:0;">
+                            <span class="ctrl-label">🌊 Flow Transition Style:</span>
+                            <select id="stitch-trans-select" style="width:100%; padding:6px 8px; font-size:0.75rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="crossfade">🌊 Liquid Cosine Flow (Zero-Glitch Melt)</option>
+                                <option value="diagonal_wave">🌀 Polar Diagonal Wave Sweep (Base ➔ Tip)</option>
+                                <option value="quantum_rails">✨ Quantum Rail Interlacer (Holographic Dissolve)</option>
+                                <option value="simplex_warp">🌪️ Simplex Domain Warp (Liquid Glass)</option>
+                                <option value="black">🕶️ Dip to Black Fade</option>
+                                <option value="strobe">⚡ Stroboscopic White POV Flash</option>
+                                <option value="none">✂️ Clean Hard Cut (No Overlap)</option>
+                            </select>
+                        </div>
+
+                        <div class="ctrl-row" style="margin-top:0;">
+                            <span class="ctrl-label">⏱️ Clip Spin Duration:</span>
+                            <select id="stitch-duration-select" style="width:100%; padding:6px 8px; font-size:0.75rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="uniform_240">Uniform Standard (240px / ~1.3s)</option>
+                                <option value="uniform_180">Uniform Compact (180px / ~1.0s)</option>
+                                <option value="uniform_120">Uniform Micro (120px / ~0.6s)</option>
+                                <option value="proportional">Proportional (Original BMP Width)</option>
+                            </select>
+                        </div>
+
+                        <div class="ctrl-row" style="margin-top:0;">
+                            <span class="ctrl-label">📐 Blend Overlap (Crossfade Width):</span>
+                            <input type="range" id="stitch-overlap-slider" min="0" max="96" value="0" style="accent-color:var(--neon-green);">
+                            <span class="val-mono" id="stitch-overlap-val" style="color:var(--neon-green);">0px</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
+                        <button class="toggle-btn active-green" id="btn-stitch-seamless-loop" data-active="true" style="font-size:0.75rem; padding:6px 12px; font-weight:800;" title="Fuse tail to head for seamless loop">
+                            ♾️ 100% Zero-Seam Loop: ON
+                        </button>
+                        <div style="font-size:0.7rem; color:var(--text-muted);" id="timeline-stats-badge">Total Length: 0px (~0 KB)</div>
+                    </div>
+                </div>
+
+                <!-- 40,000 PIXEL SD BUFFER TELEMETRY BAR -->
+                <div class="card-box" style="background:#070a12; border:1px solid #1e293b; padding:8px 10px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-size:0.72rem; font-weight:800; color:var(--text-color);">
+                            💾 Open Pixel Poi SD Buffer Capacity:
+                        </span>
+                        <span class="telemetry-pill" id="sb-memory-pct-badge" style="font-size:0.72rem; color:var(--neon-green);">0 / 40,000 px (0.0%) • SAFE FOR POI</span>
+                    </div>
+                    <div style="height:6px; background:#121824; border-radius:3px; overflow:hidden; border:1px solid #1e293b;">
+                        <div id="sb-memory-progress-bar" style="height:100%; width:0%; background:linear-gradient(to right, #00adb5, #39ff14); transition:width 0.2s ease;"></div>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px; font-size:0.64rem; color:var(--text-muted);">
+                        <span>Max Allowed: <b style="color:#fff;" id="sb-max-w-badge">727 px</b> width at <span id="sb-cur-h-badge">55px</span> height</span>
+                        <span id="sb-loop-notice-badge" style="color:var(--neon-green); font-weight:700;">♾️ Auto-Loops at 40,000 Pixels</span>
+                    </div>
+                </div>
+
+                <!-- DEDICATED STORYBOARD SHOW CINEMA PLAYER -->
+                <div class="storyboard-cinema-box" id="storyboard-cinema-box">
+                    <div class="cinema-header-row">
+                        <div class="cinema-title">🎬 Master Show Cinema Streamer (Zero-Seam Liquid Flow)</div>
+                        <div class="cinema-badge" id="cinema-status-badge">0 clips in show</div>
+                    </div>
+
+                    <div class="cinema-stream-wrap">
+                        <canvas id="show-stream-canvas" width="600" height="70"></canvas>
+                    </div>
+
+                    <div class="cinema-strip-wrap" id="show-strip-wrap" title="Full stitched show ribbon">
+                        <canvas id="show-strip-canvas" width="800" height="38"></canvas>
+                    </div>
+
+                    <div class="cinema-controls-row">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <button class="cinema-btn-play" id="btn-cinema-toggle">⏸️ Pause Show</button>
+                            <button class="cinema-btn-action" id="btn-cinema-rewind">⏪ Rewind</button>
+                        </div>
+                        
+                        <div style="display:flex; align-items:center; gap:6px; flex:1; max-width:240px;">
+                            <span style="font-size:0.68rem; color:var(--text-muted);">Speed:</span>
+                            <input type="range" id="cinema-speed-slider" min="0" max="600" value="180">
+                            <span class="val-mono" id="cinema-speed-val">180</span>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <button class="btn-ble-upload" id="btn-export-cinema-ble" title="Flash compiled Master Show directly to Poi">🚀 Upload Show to Poi (BLE)</button>
+                            <button class="hw-btn" id="btn-export-cinema-bank" style="font-size:0.75rem; color:var(--neon-green); font-weight:800; border-color:var(--neon-green); padding:7px 12px;" title="Assign compiled Master Show to a Hardware Bank Slot">🗃️ Send Show to Bank...</button>
+                            <button class="btn-join-export" id="btn-export-cinema-bmp">💾 Export Master 24-bit BMP</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
 
     </div>
+
+    <!-- ==========================================================================
+         WORKSPACE: QUICK FX GENERATOR SUITE (OFFICIAL PATTERN MODES & INSTANT BANK SEND)
+         ========================================================================== -->
+    <div id="workspace-quick-fx" style="display:none; flex-direction:column; gap:12px; padding:10px 12px;">
+
+        <!-- 1. QUICK FX HEADER & DIMENSION CONTROLLER -->
+        <div class="card-box" style="border-color:var(--neon-cyan); background:rgba(0, 173, 181, 0.05); padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <div style="font-size:0.88rem; font-weight:800; color:var(--text-color); display:flex; align-items:center; gap:6px;">
+                        <span>✨ Quick FX Generators</span>
+                        <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.65rem;">Direct Bank Slot Ready</span>
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">
+                        Instant POV pattern generators — configure, preview live, and send straight into any bank slot or editor in 1 click!
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:0.72rem; color:var(--text-muted);">LED Height:</span>
+                    <span class="val-mono" id="qfx-led-height-badge" style="color:var(--neon-green); font-weight:800;">55px</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. QUICK FX CARDS GRID -->
+        <div class="fx-gen-grid">
+
+            <!-- A. TEXT BANNER GENERATOR -->
+            <div class="fx-gen-card" style="border-color:rgba(0, 255, 136, 0.35);">
+                <div class="fx-gen-header">
+                    <span style="color:var(--neon-green);">🔤 POV Text Banner</span>
+                    <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.6rem;">High-Aura Text</span>
+                </div>
+                <div class="fx-gen-preview-wrap">
+                    <canvas id="qfx-canvas-text" width="160" height="55"></canvas>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <div class="ctrl-row" style="margin:0;">
+                        <span class="ctrl-label">Text:</span>
+                        <input type="text" id="qfx-text-input" value="OPEN POI" style="flex:1; padding:5px 8px; font-size:0.75rem; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px; text-transform:uppercase;">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Font Style:</span>
+                            <select id="qfx-text-font" style="width:100%; font-size:0.72rem; padding:4px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="monospace">💻 Cyber Mono</option>
+                                <option value="impact">💥 Impact Heavy</option>
+                                <option value="block">🧱 Matrix Block</option>
+                                <option value="cursive">✨ Neon Script</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Text Color:</span>
+                            <input type="color" id="qfx-text-color" value="#00ff88" style="width:100%; height:26px; background:none; border:none; cursor:pointer;">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.68rem;">
+                        <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                            <input type="checkbox" id="qfx-text-glow" checked>
+                            <span>Neon Aura Outline</span>
+                        </label>
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <span style="color:var(--text-muted);">Letter Space:</span>
+                            <input type="range" id="qfx-text-spacing" min="0" max="16" value="4" style="width:60px; accent-color:var(--neon-green);">
+                        </div>
+                    </div>
+                </div>
+                <div class="fx-gen-actions-row">
+                    <button class="fx-gen-btn fx-gen-btn-primary" data-qfx-action="send-bank" data-target="text">🚀 Send to Bank Slot</button>
+                    <button class="fx-gen-btn" data-qfx-action="open-gen" data-target="text">🎨 Edit</button>
+                    <button class="fx-gen-btn" data-qfx-action="add-show" data-target="text">➕ Show</button>
+                    <button class="fx-gen-btn" data-qfx-action="save-vault" data-target="text">💾 Vault</button>
+                </div>
+            </div>
+
+            <!-- B. MULTI-ZONE STACKED BLADE -->
+            <div class="fx-gen-card" style="border-color:rgba(188, 19, 254, 0.35);">
+                <div class="fx-gen-header">
+                    <span style="color:var(--neon-purple);">🥞 Multi-Zone Stacked Blade</span>
+                    <span class="telemetry-pill" style="color:var(--neon-purple); font-size:0.6rem;">3 Vertical Bands</span>
+                </div>
+                <div class="fx-gen-preview-wrap">
+                    <canvas id="qfx-canvas-stacked" width="160" height="55"></canvas>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; font-size:0.65rem;">
+                        <div>
+                            <span style="color:var(--accent-color); font-weight:700;">Top Tip:</span>
+                            <select id="qfx-stacked-z1" style="width:100%; font-size:0.68rem; padding:3px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:3px;">
+                                <option value="flame">🔥 Fire Flame</option>
+                                <option value="strobe">⚡ Fast Strobe</option>
+                                <option value="solid">🟢 Solid Neon</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span style="color:var(--neon-pink); font-weight:700;">Middle:</span>
+                            <select id="qfx-stacked-z2" style="width:100%; font-size:0.68rem; padding:3px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:3px;">
+                                <option value="rainbow">🌈 Rainbow Wave</option>
+                                <option value="matrix">💻 Matrix Rain</option>
+                                <option value="checker">🏁 Checkers</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span style="color:var(--neon-yellow); font-weight:700;">Handle:</span>
+                            <select id="qfx-stacked-z3" style="width:100%; font-size:0.68rem; padding:3px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:3px;">
+                                <option value="pulse">💓 Pulse Beacon</option>
+                                <option value="sparkle">✨ Stardust</option>
+                                <option value="solid_cyan">🧊 Cyan Solid</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ctrl-row" style="margin:0;">
+                        <span class="ctrl-label" style="font-size:0.68rem;">Zone Split:</span>
+                        <input type="range" id="qfx-stacked-split" min="10" max="40" value="25" style="flex:1; accent-color:var(--neon-purple);">
+                    </div>
+                </div>
+                <div class="fx-gen-actions-row">
+                    <button class="fx-gen-btn fx-gen-btn-primary" data-qfx-action="send-bank" data-target="stacked">🚀 Send to Bank Slot</button>
+                    <button class="fx-gen-btn" data-qfx-action="open-gen" data-target="stacked">🎨 Edit</button>
+                    <button class="fx-gen-btn" data-qfx-action="add-show" data-target="stacked">➕ Show</button>
+                    <button class="fx-gen-btn" data-qfx-action="save-vault" data-target="stacked">💾 Vault</button>
+                </div>
+            </div>
+
+            <!-- C. STROBE SPEED BLASTER -->
+            <div class="fx-gen-card" style="border-color:rgba(255, 221, 0, 0.35);">
+                <div class="fx-gen-header">
+                    <span style="color:var(--neon-yellow);">⚡ Strobe & Speed Blaster</span>
+                    <span class="telemetry-pill" style="color:var(--neon-yellow); font-size:0.6rem;">High-Speed Freeze</span>
+                </div>
+                <div class="fx-gen-preview-wrap">
+                    <canvas id="qfx-canvas-strobe" width="160" height="55"></canvas>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Strobe Mode:</span>
+                            <select id="qfx-strobe-mode" style="width:100%; font-size:0.72rem; padding:4px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="white_burst">⚪ Pure White Freeze</option>
+                                <option value="dual_alt">🔴/🔵 Dual Alternating</option>
+                                <option value="rainbow_flash">🌈 Rainbow Strobes</option>
+                                <option value="neon_pulse">⚡ Neon Cyan/Pink</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Bar Width:</span>
+                            <select id="qfx-strobe-width" style="width:100%; font-size:0.72rem; padding:4px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="1">1px (Ultra Crisp)</option>
+                                <option value="2" selected>2px (Standard)</option>
+                                <option value="4">4px (Bold Strobe)</option>
+                                <option value="8">8px (Heavy Bar)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ctrl-row" style="margin:0;">
+                        <span class="ctrl-label" style="font-size:0.68rem;">Dark Gap:</span>
+                        <input type="range" id="qfx-strobe-gap" min="1" max="16" value="4" style="flex:1; accent-color:var(--neon-yellow);">
+                        <span class="val-mono" id="qfx-strobe-gap-val" style="color:var(--neon-yellow); font-size:0.7rem;">4px</span>
+                    </div>
+                </div>
+                <div class="fx-gen-actions-row">
+                    <button class="fx-gen-btn fx-gen-btn-primary" data-qfx-action="send-bank" data-target="strobe">🚀 Send to Bank Slot</button>
+                    <button class="fx-gen-btn" data-qfx-action="open-gen" data-target="strobe">🎨 Edit</button>
+                    <button class="fx-gen-btn" data-qfx-action="add-show" data-target="strobe">➕ Show</button>
+                    <button class="fx-gen-btn" data-qfx-action="save-vault" data-target="strobe">💾 Vault</button>
+                </div>
+            </div>
+
+            <!-- D. RAINBOW RIBBONS & CHROMATIC WAVES -->
+            <div class="fx-gen-card" style="border-color:rgba(0, 210, 255, 0.35);">
+                <div class="fx-gen-header">
+                    <span style="color:var(--neon-cyan);">🌈 Rainbow Ribbons & Waves</span>
+                    <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.6rem;">Harmonic Spectrum</span>
+                </div>
+                <div class="fx-gen-preview-wrap">
+                    <canvas id="qfx-canvas-rainbow" width="160" height="55"></canvas>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Flow Pattern:</span>
+                            <select id="qfx-rainbow-flow" style="width:100%; font-size:0.72rem; padding:4px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="diagonal">🌀 Diagonal Ribbon (45°)</option>
+                                <option value="sine">🌊 Sine Flow Wave</option>
+                                <option value="helix">🧬 Double Helix</option>
+                                <option value="radial">🎯 Concentric Pulse</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Repeats:</span>
+                            <input type="range" id="qfx-rainbow-repeats" min="1" max="8" value="3" style="width:100%; accent-color:var(--neon-cyan);">
+                        </div>
+                    </div>
+                </div>
+                <div class="fx-gen-actions-row">
+                    <button class="fx-gen-btn fx-gen-btn-primary" data-qfx-action="send-bank" data-target="rainbow">🚀 Send to Bank Slot</button>
+                    <button class="fx-gen-btn" data-qfx-action="open-gen" data-target="rainbow">🎨 Edit</button>
+                    <button class="fx-gen-btn" data-qfx-action="add-show" data-target="rainbow">➕ Show</button>
+                    <button class="fx-gen-btn" data-qfx-action="save-vault" data-target="rainbow">💾 Vault</button>
+                </div>
+            </div>
+
+            <!-- E. CHECKERBOARD & MATRIX GRID -->
+            <div class="fx-gen-card" style="border-color:rgba(57, 255, 20, 0.35);">
+                <div class="fx-gen-header">
+                    <span style="color:var(--neon-green);">🏁 Checkerboard & Matrix</span>
+                    <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.6rem;">Optical Grid</span>
+                </div>
+                <div class="fx-gen-preview-wrap">
+                    <canvas id="qfx-canvas-checker" width="160" height="55"></canvas>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Color A:</span>
+                            <input type="color" id="qfx-chk-color-a" value="#bc13fe" style="width:100%; height:26px; background:none; border:none; cursor:pointer;">
+                        </div>
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Color B:</span>
+                            <input type="color" id="qfx-chk-color-b" value="#39ff14" style="width:100%; height:26px; background:none; border:none; cursor:pointer;">
+                        </div>
+                    </div>
+                    <div class="ctrl-row" style="margin:0;">
+                        <span class="ctrl-label" style="font-size:0.68rem;">Tile Size:</span>
+                        <input type="range" id="qfx-chk-size" min="4" max="24" value="10" step="2" style="flex:1; accent-color:var(--neon-green);">
+                        <span class="val-mono" id="qfx-chk-size-val" style="color:var(--neon-green); font-size:0.7rem;">10px</span>
+                    </div>
+                </div>
+                <div class="fx-gen-actions-row">
+                    <button class="fx-gen-btn fx-gen-btn-primary" data-qfx-action="send-bank" data-target="checker">🚀 Send to Bank Slot</button>
+                    <button class="fx-gen-btn" data-qfx-action="open-gen" data-target="checker">🎨 Edit</button>
+                    <button class="fx-gen-btn" data-qfx-action="add-show" data-target="checker">➕ Show</button>
+                    <button class="fx-gen-btn" data-qfx-action="save-vault" data-target="checker">💾 Vault</button>
+                </div>
+            </div>
+
+            <!-- F. STARDUST & SPARKLE EMBERS -->
+            <div class="fx-gen-card" style="border-color:rgba(255, 107, 107, 0.35);">
+                <div class="fx-gen-header">
+                    <span style="color:#ff6b6b;">💫 Stardust & Sparkle Embers</span>
+                    <span class="telemetry-pill" style="color:#ff6b6b; font-size:0.6rem;">Organic Particles</span>
+                </div>
+                <div class="fx-gen-preview-wrap">
+                    <canvas id="qfx-canvas-sparkle" width="160" height="55"></canvas>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Sparkle Theme:</span>
+                            <select id="qfx-sparkle-theme" style="width:100%; font-size:0.72rem; padding:4px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="gold_fire">🔥 Golden Fireflies</option>
+                                <option value="diamond">💎 Diamond White</option>
+                                <option value="neon_fairy">🧚 Neon Fairy Dust</option>
+                                <option value="matrix_code">💻 Emerald Matrix</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Density:</span>
+                            <input type="range" id="qfx-sparkle-density" min="20" max="150" value="70" style="width:100%; accent-color:#ff6b6b;">
+                        </div>
+                    </div>
+                </div>
+                <div class="fx-gen-actions-row">
+                    <button class="fx-gen-btn fx-gen-btn-primary" data-qfx-action="send-bank" data-target="sparkle">🚀 Send to Bank Slot</button>
+                    <button class="fx-gen-btn" data-qfx-action="open-gen" data-target="sparkle">🎨 Edit</button>
+                    <button class="fx-gen-btn" data-qfx-action="add-show" data-target="sparkle">➕ Show</button>
+                    <button class="fx-gen-btn" data-qfx-action="save-vault" data-target="sparkle">💾 Vault</button>
+                </div>
+            </div>
+
+            <!-- G. CHASERS & HAZARD STRIPES -->
+            <div class="fx-gen-card" style="border-color:rgba(255, 183, 3, 0.35);">
+                <div class="fx-gen-header">
+                    <span style="color:#ffb703;">🏎️ Chasers & Hazard Stripes</span>
+                    <span class="telemetry-pill" style="color:#ffb703; font-size:0.6rem;">Slanted POV Bars</span>
+                </div>
+                <div class="fx-gen-preview-wrap">
+                    <canvas id="qfx-canvas-hazard" width="160" height="55"></canvas>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Stripe Angle:</span>
+                            <select id="qfx-hazard-angle" style="width:100%; font-size:0.72rem; padding:4px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="45">📐 Forward Slant (45°)</option>
+                                <option value="-45">📐 Reverse Slant (-45°)</option>
+                                <option value="0">📏 Vertical Bars (0°)</option>
+                                <option value="90">➖ Horizontal Beams</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span style="font-size:0.66rem; color:var(--text-muted);">Color Preset:</span>
+                            <select id="qfx-hazard-colors" style="width:100%; font-size:0.72rem; padding:4px; background:#121824; color:#fff; border:1px solid var(--border-color); border-radius:4px;">
+                                <option value="yellow_black">⚠️ Hazard Caution</option>
+                                <option value="cyan_pink">🧊 Cyber Synthwave</option>
+                                <option value="green_black">🟢 Acid Laser</option>
+                                <option value="red_white">🚨 Emergency Strobe</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="fx-gen-actions-row">
+                    <button class="fx-gen-btn fx-gen-btn-primary" data-qfx-action="send-bank" data-target="hazard">🚀 Send to Bank Slot</button>
+                    <button class="fx-gen-btn" data-qfx-action="open-gen" data-target="hazard">🎨 Edit</button>
+                    <button class="fx-gen-btn" data-qfx-action="add-show" data-target="hazard">➕ Show</button>
+                    <button class="fx-gen-btn" data-qfx-action="save-vault" data-target="hazard">💾 Vault</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
 
     <!-- ==========================================================================
          WORKSPACE 1: ALGORITHMIC PATTERN GENERATOR & POV SHADERS
@@ -916,88 +1232,90 @@
             </div>
         </div>
 
-        <!-- 2.5 LIVE FX & BLEND ENGINE (CUSTOM FX FIRMWARE CONTROLS) -->
-        <div class="card-box" style="border-color:var(--neon-purple); background:rgba(188, 19, 254, 0.04);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-size:0.82rem; font-weight:800; color:var(--neon-purple);">🎨 Live Color Palette & Blend Engine:</span>
-                <span class="telemetry-pill" style="color:var(--neon-purple); font-size:0.62rem; font-weight:800;">50-Slot FX</span>
+        <!-- 2.5 LIVE FX & BLEND ENGINE (COLLAPSIBLE) -->
+        <details class="studio-accordion" style="border-color:var(--neon-purple);">
+            <summary>
+                <span style="color:var(--neon-purple); display:flex; align-items:center; gap:6px;">
+                    <span>🎨</span>
+                    <span>Live Color Palettes & POV Blend Engine (50-Slot FX)</span>
+                </span>
+                <span class="accordion-chevron">▶</span>
+            </summary>
+            <div class="studio-accordion-content">
+                <!-- COLOR PALETTE FILTER BUTTONS -->
+                <div style="margin-bottom:8px;">
+                    <div style="font-size:0.7rem; font-weight:700; color:var(--text-color); margin-bottom:4px;">
+                        🌈 Real-Time Color Palette Filter:
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(95px, 1fr)); gap:4px; max-height:160px; overflow-y:auto; padding-right:2px;" id="fx-palette-buttons">
+                        <button class="hw-btn active" data-pal="0" style="font-size:0.65rem; padding:4px 2px;">⚪ Normal (RGB)</button>
+                        <button class="hw-btn" data-pal="1" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-green);">🌈 Rainbow Spin</button>
+                        <button class="hw-btn" data-pal="2" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">🌊 Rainbow Ripple</button>
+                        <button class="hw-btn" data-pal="3" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-pink);">🌀 Rainbow Spiral</button>
+                        <button class="hw-btn" data-pal="4" style="font-size:0.65rem; padding:4px 2px; color:#ffd000;">💓 Chroma Pulse</button>
+                        <button class="hw-btn" data-pal="5" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">👁️ 3D Hologram</button>
+                        <button class="hw-btn" data-pal="6" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-pink);">🌀 Moiré Kaleidoscope</button>
+                        <button class="hw-btn" data-pal="7" style="font-size:0.65rem; padding:4px 2px; color:#ff3b30;">🌡️ FLIR Thermal</button>
+                        <button class="hw-btn" data-pal="8" style="font-size:0.65rem; padding:4px 2px; color:#a0e0ff;">🪩 Prismatic Opal</button>
+                        <button class="hw-btn" data-pal="9" style="font-size:0.65rem; padding:4px 2px; color:#00f5d4;">⚡ Warp Plasma</button>
+                        <button class="hw-btn" data-pal="10" style="font-size:0.65rem; padding:4px 2px; color:#ffd000;">🖤 Supernova Void</button>
+                        <button class="hw-btn" data-pal="11" style="font-size:0.65rem; padding:4px 2px; color:#52b788;">🔮 Abyssal Plankton</button>
+                        <button class="hw-btn" data-pal="12" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-pink);">🌆 Synthwave Grid</button>
+                        <button class="hw-btn" data-pal="13" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">🧊 Cyberpunk Neon</button>
+                        <button class="hw-btn" data-pal="14" style="font-size:0.65rem; padding:4px 2px; color:#ff5500;">🔥 Inferno Fire</button>
+                        <button class="hw-btn" data-pal="15" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-green);">💻 Matrix Terminal</button>
+                        <button class="hw-btn" data-pal="16" style="font-size:0.65rem; padding:4px 2px; color:#a6ff00;">🧪 Toxic Acid</button>
+                        <button class="hw-btn" data-pal="17" style="font-size:0.65rem; padding:4px 2px; color:#00e5ff;">❄️ Glacial Ice</button>
+                        <button class="hw-btn" data-pal="18" style="font-size:0.65rem; padding:4px 2px; color:#ff7700;">🌅 Miami Sunset</button>
+                        <button class="hw-btn" data-pal="19" style="font-size:0.65rem; padding:4px 2px; color:#ff00bb;">💖 Ultraviolet</button>
+                        <button class="hw-btn" data-pal="20" style="font-size:0.65rem; padding:4px 2px; color:#e0e0e0;">⚡ Pure Monopulse</button>
+                        <button class="hw-btn" data-pal="21" style="font-size:0.65rem; padding:4px 2px; color:#00ffaa;">🌿 Emerald Forest</button>
+                        <button class="hw-btn" data-pal="22" style="font-size:0.65rem; padding:4px 2px; color:#ff0055;">🩸 Crimson Eclipse</button>
+                        <button class="hw-btn" data-pal="23" style="font-size:0.65rem; padding:4px 2px; color:#ffdd00;">✨ Golden Solar</button>
+                        <button class="hw-btn" data-pal="24" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-purple);">🌌 Deep Nebula</button>
+                    </div>
+                </div>
+
+                <!-- PALETTE CYCLE SPEED -->
+                <div style="margin-bottom:8px;">
+                    <div class="ctrl-row">
+                        <span class="ctrl-label" style="color:var(--text-color);">⚡ FX Cycle Speed (1-10):</span>
+                        <input type="range" id="fx-ctrl-palette-speed" min="1" max="10" value="3" style="accent-color:var(--neon-purple);">
+                        <span class="val-mono" id="fx-ctrl-palette-speed-val">3x</span>
+                    </div>
+                </div>
+
+                <!-- PATTERN TRANSITION BLEND MODES -->
+                <div>
+                    <div style="font-size:0.7rem; font-weight:700; color:var(--text-color); margin-bottom:4px;">
+                        🔀 Pattern Transition Blend Mode (350ms Snappy):
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:4px;" id="fx-blend-buttons">
+                        <button class="hw-btn active" data-blend="0" style="font-size:0.66rem; padding:4px 2px;">✂️ Cut (OFF)</button>
+                        <button class="hw-btn" data-blend="1" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-green);">✨ Fade (220ms)</button>
+                        <button class="hw-btn" data-blend="2" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-yellow);">⚡ Flash (180ms)</button>
+                        <button class="hw-btn" data-blend="3" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-cyan);">🏁 Wipe (260ms)</button>
+                        <button class="hw-btn" data-blend="4" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-pink);">💖 Glow (280ms)</button>
+                        <button class="hw-btn" data-blend="5" style="font-size:0.66rem; padding:4px 2px; color:#00f5d4;">👁️ Iris (240ms)</button>
+                        <button class="hw-btn" data-blend="6" style="font-size:0.66rem; padding:4px 2px; color:#ff7700;">🔄 Squeeze (240ms)</button>
+                        <button class="hw-btn" data-blend="7" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-purple);">⚡ Glitch (220ms)</button>
+                        <button class="hw-btn" data-blend="8" style="font-size:0.66rem; padding:4px 2px; color:#ffd000;">⚛️ Quantum (260ms)</button>
+                        <button class="hw-btn" data-blend="9" style="font-size:0.66rem; padding:4px 2px; color:#ffffff;">☄️ Comet (250ms)</button>
+                    </div>
+                </div>
             </div>
-
-
-            <!-- COLOR PALETTE FILTER BUTTONS -->
-            <div style="margin-bottom:8px;">
-                <div style="font-size:0.7rem; font-weight:700; color:var(--text-color); margin-bottom:4px;">
-                    🌈 Real-Time Color Palette Filter:
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(95px, 1fr)); gap:4px; max-height:160px; overflow-y:auto; padding-right:2px;" id="fx-palette-buttons">
-                    <button class="hw-btn active" data-pal="0" style="font-size:0.65rem; padding:4px 2px;">⚪ Normal (RGB)</button>
-                    <button class="hw-btn" data-pal="1" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-green);">🌈 Rainbow Spin</button>
-                    <button class="hw-btn" data-pal="2" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">🌊 Rainbow Ripple</button>
-                    <button class="hw-btn" data-pal="3" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-pink);">🌀 Rainbow Spiral</button>
-                    <button class="hw-btn" data-pal="4" style="font-size:0.65rem; padding:4px 2px; color:#ffd000;">💓 Chroma Pulse</button>
-                    <button class="hw-btn" data-pal="5" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">👁️ 3D Hologram</button>
-                    <button class="hw-btn" data-pal="6" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-pink);">🌀 Moiré Kaleidoscope</button>
-                    <button class="hw-btn" data-pal="7" style="font-size:0.65rem; padding:4px 2px; color:#ff3b30;">🌡️ FLIR Thermal</button>
-                    <button class="hw-btn" data-pal="8" style="font-size:0.65rem; padding:4px 2px; color:#a0e0ff;">🪩 Prismatic Opal</button>
-                    <button class="hw-btn" data-pal="9" style="font-size:0.65rem; padding:4px 2px; color:#00f5d4;">⚡ Warp Plasma</button>
-                    <button class="hw-btn" data-pal="10" style="font-size:0.65rem; padding:4px 2px; color:#ffd000;">🖤 Supernova Void</button>
-                    <button class="hw-btn" data-pal="11" style="font-size:0.65rem; padding:4px 2px; color:#52b788;">🔮 Abyssal Plankton</button>
-                    <button class="hw-btn" data-pal="12" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-pink);">🌆 Synthwave Grid</button>
-                    <button class="hw-btn" data-pal="13" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">🧊 Cyberpunk Neon</button>
-                    <button class="hw-btn" data-pal="14" style="font-size:0.65rem; padding:4px 2px; color:#ff5500;">🔥 Inferno Fire</button>
-                    <button class="hw-btn" data-pal="15" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-green);">💻 Matrix Terminal</button>
-                    <button class="hw-btn" data-pal="16" style="font-size:0.65rem; padding:4px 2px; color:#a6ff00;">🧪 Toxic Acid</button>
-                    <button class="hw-btn" data-pal="17" style="font-size:0.65rem; padding:4px 2px; color:#00e5ff;">❄️ Glacial Ice</button>
-                    <button class="hw-btn" data-pal="18" style="font-size:0.65rem; padding:4px 2px; color:#ff7700;">🌅 Miami Sunset</button>
-                    <button class="hw-btn" data-pal="19" style="font-size:0.65rem; padding:4px 2px; color:#ff00bb;">💖 Ultraviolet</button>
-                    <button class="hw-btn" data-pal="20" style="font-size:0.65rem; padding:4px 2px; color:#e0e0e0;">⚡ Pure Monopulse</button>
-                    <button class="hw-btn" data-pal="21" style="font-size:0.65rem; padding:4px 2px; color:#00ffaa;">🌿 Emerald Forest</button>
-                    <button class="hw-btn" data-pal="22" style="font-size:0.65rem; padding:4px 2px; color:#ff0055;">🩸 Crimson Eclipse</button>
-                    <button class="hw-btn" data-pal="23" style="font-size:0.65rem; padding:4px 2px; color:#ffdd00;">✨ Golden Solar</button>
-                    <button class="hw-btn" data-pal="24" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-purple);">🌌 Deep Nebula</button>
-                </div>
-            </div>
-
-            <!-- PALETTE CYCLE SPEED -->
-            <div style="margin-bottom:8px;">
-                <div class="ctrl-row">
-                    <span class="ctrl-label" style="color:var(--text-color);">⚡ FX Cycle Speed (1-10):</span>
-                    <input type="range" id="fx-ctrl-palette-speed" min="1" max="10" value="3" style="accent-color:var(--neon-purple);">
-                    <span class="val-mono" id="fx-ctrl-palette-speed-val">3x</span>
-                </div>
-            </div>
-
-            <!-- PATTERN TRANSITION BLEND MODES -->
-            <div>
-                <div style="font-size:0.7rem; font-weight:700; color:var(--text-color); margin-bottom:4px;">
-                    🔀 Pattern Transition Blend Mode (350ms Snappy):
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:4px;" id="fx-blend-buttons">
-                    <button class="hw-btn active" data-blend="0" style="font-size:0.66rem; padding:4px 2px;">✂️ Cut (OFF)</button>
-                    <button class="hw-btn" data-blend="1" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-green);">✨ Fade (220ms)</button>
-                    <button class="hw-btn" data-blend="2" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-yellow);">⚡ Flash (180ms)</button>
-                    <button class="hw-btn" data-blend="3" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-cyan);">🏁 Wipe (260ms)</button>
-                    <button class="hw-btn" data-blend="4" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-pink);">💖 Glow (280ms)</button>
-                    <button class="hw-btn" data-blend="5" style="font-size:0.66rem; padding:4px 2px; color:#00f5d4;">👁️ Iris (240ms)</button>
-                    <button class="hw-btn" data-blend="6" style="font-size:0.66rem; padding:4px 2px; color:#ff7700;">🔄 Squeeze (240ms)</button>
-                    <button class="hw-btn" data-blend="7" style="font-size:0.66rem; padding:4px 2px; color:var(--neon-purple);">⚡ Glitch (220ms)</button>
-                    <button class="hw-btn" data-blend="8" style="font-size:0.66rem; padding:4px 2px; color:#ffd000;">⚛️ Quantum (260ms)</button>
-                    <button class="hw-btn" data-blend="9" style="font-size:0.66rem; padding:4px 2px; color:#ffffff;">☄️ Comet (250ms)</button>
-                </div>
-            </div>
-        </div>
-
-
+        </details>
 
         <!-- 3. ADVANCED PRECISION SLIDERS & FINE-TUNING (COLLAPSIBLE) -->
-        <details class="card-box" style="background:rgba(0,0,0,0.5); border-color:var(--border-color);">
-
-            <summary style="font-size:0.78rem; font-weight:800; color:var(--text-color); cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-                <span>⚙️ Advanced Precision Sliders & BLE Timing</span>
-                <span style="font-size:0.7rem; color:var(--accent-color);">Tap to Expand ▼</span>
+        <details class="studio-accordion">
+            <summary>
+                <span style="color:var(--text-color); display:flex; align-items:center; gap:6px;">
+                    <span>⚙️</span>
+                    <span>Advanced Precision Sliders & BLE Timing</span>
+                </span>
+                <span class="accordion-chevron">▶</span>
             </summary>
-
-            <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+            <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:8px;">
                 <div class="ctrl-row">
                     <span class="ctrl-label">☀️ Precision Brightness (1-100):</span>
                     <input type="range" id="ble-ctrl-brightness" min="1" max="100" value="10" style="accent-color:var(--neon-yellow);">
@@ -1016,39 +1334,41 @@
                     <span class="val-mono" id="ble-ctrl-pacing-val">16 ms (Turbo Fast ⚡)</span>
                 </div>
             </div>
-
         </details>
 
-
-
-        <!-- 3. HARDWARE FLASH MEMORY & SAFETY DIAGNOSTICS -->
-        <div class="card-box" style="background:rgba(20, 30, 45, 0.6); border-color:rgba(0, 255, 136, 0.25);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="font-size:0.8rem; font-weight:800; color:var(--neon-green);">💾 ESP32-C3 Hardware Flash & Partition Storage:</span>
-                <span class="val-mono" style="color:var(--neon-yellow);">4 MB SPI Flash • 320 KB SRAM</span>
-            </div>
-
-            <!-- LIVE STORAGE BAR IN POI SETTINGS -->
-            <div style="margin-bottom:8px; padding:6px 8px; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.06);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:0.7rem;">
-                    <div><b>LittleFS Storage:</b> <span id="poi-settings-storage-used" style="color:var(--neon-green);">0 KB</span> / 2,504 KB (<span id="poi-settings-storage-pct">0%</span> used)</div>
-                    <div style="color:var(--text-muted); font-size:0.65rem;" id="poi-settings-storage-free">2.44 MB Free (~370 patterns)</div>
+        <!-- 3. HARDWARE FLASH MEMORY & SAFETY DIAGNOSTICS (COLLAPSIBLE) -->
+        <details class="studio-accordion" style="border-color:rgba(0, 255, 136, 0.25);">
+            <summary>
+                <span style="color:var(--neon-green); display:flex; align-items:center; gap:6px;">
+                    <span>💾</span>
+                    <span>ESP32-C3 Hardware Flash & Partition Storage</span>
+                </span>
+                <span class="accordion-chevron">▶</span>
+            </summary>
+            <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:8px;">
+                <!-- LIVE STORAGE BAR IN POI SETTINGS -->
+                <div style="padding:6px 8px; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.06);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:0.7rem;">
+                        <div><b>LittleFS Storage:</b> <span id="poi-settings-storage-used" style="color:var(--neon-green);">0 KB</span> / 2,504 KB (<span id="poi-settings-storage-pct">0%</span> used)</div>
+                        <div style="color:var(--text-muted); font-size:0.65rem;" id="poi-settings-storage-free">2.44 MB Free (~370 patterns)</div>
+                    </div>
+                    <div style="width:100%; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden;">
+                        <div id="poi-settings-storage-bar" style="width:1%; height:100%; background:linear-gradient(90deg, var(--neon-green), var(--accent-color));"></div>
+                    </div>
                 </div>
-                <div style="width:100%; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden;">
-                    <div id="poi-settings-storage-bar" style="width:1%; height:100%; background:linear-gradient(90deg, var(--neon-green), var(--accent-color));"></div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:6px; color:var(--text-muted); font-size:0.68rem; line-height:1.4;">
+                    <div>• <b>Total SPI Flash:</b> 4,096 KB (4.00 MB)</div>
+                    <div>• <b>LittleFS Partition:</b> 2,504 KB (~2.45 MB)</div>
+                    <div>• <b>Program Firmware:</b> 1,464 KB (1.03 MB used)</div>
+                    <div>• <b>Avg Pattern (55x40):</b> 6.6 KB (&lt;0.3% per slot)</div>
+                </div>
+                <div style="font-size:0.65rem; color:var(--neon-green); line-height:1.4;">
+                    🛡️ <b>Partition Safety:</b> Bluetooth transfers write exclusively into the LittleFS filesystem partition (<code>0x17E000</code>). Operating firmware and bootloader are completely sandboxed and untouchable via BLE.
                 </div>
             </div>
+        </details>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:6px; color:var(--text-muted); font-size:0.68rem; line-height:1.4;">
-                <div>• <b>Total SPI Flash:</b> 4,096 KB (4.00 MB)</div>
-                <div>• <b>LittleFS Partition:</b> 2,504 KB (~2.45 MB)</div>
-                <div>• <b>Program Firmware:</b> 1,464 KB (1.03 MB used)</div>
-                <div>• <b>Avg Pattern (55x40):</b> 6.6 KB (<0.3% per slot)</div>
-            </div>
-            <div style="margin-top:6px; font-size:0.65rem; color:var(--neon-green); line-height:1.4;">
-                🛡️ <b>Partition Safety:</b> Bluetooth transfers write exclusively into the LittleFS filesystem partition (<code>0x17E000</code>). Operating firmware and bootloader are completely sandboxed and untouchable via BLE.
-            </div>
-        </div>
 
 
         <!-- 4. SCAN OPTIONS & TROUBLESHOOTING GUIDE -->
@@ -1524,7 +1844,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Timeline Storyboard Queue
     const storyboardQueue = [];
 
-    // --- 5-WORKSPACE PRIMARY MODE SWITCHER ---
+    // --- 6-WORKSPACE PRIMARY MODE SWITCHER ---
     function switchWorkspace(mode) {
         activeWorkspace = mode;
         document.querySelectorAll('.mode-switch-btn').forEach(b => {
@@ -1534,12 +1854,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const wStitcher = el('workspace-stitcher');
         const wGen = el('workspace-generator');
         const wBanks = el('workspace-banks');
+        const wQuickFx = el('workspace-quick-fx');
         const wDeck = el('workspace-deck');
         const wFirmware = el('workspace-firmware');
 
         if (wGen) wGen.style.display = (mode === 'workspace-generator') ? 'flex' : 'none';
         if (wStitcher) wStitcher.style.display = (mode === 'workspace-stitcher') ? 'flex' : 'none';
         if (wBanks) wBanks.style.display = (mode === 'workspace-banks') ? 'flex' : 'none';
+        if (wQuickFx) wQuickFx.style.display = (mode === 'workspace-quick-fx') ? 'flex' : 'none';
         if (wDeck) wDeck.style.display = (mode === 'workspace-deck') ? 'flex' : 'none';
         if (wFirmware) wFirmware.style.display = (mode === 'workspace-firmware') ? 'flex' : 'none';
 
@@ -1547,8 +1869,11 @@ document.addEventListener('DOMContentLoaded', function() {
             triggerSmoothRender();
         } else if (mode === 'workspace-banks') {
             renderBankSlotsGrid();
+        } else if (mode === 'workspace-quick-fx') {
+            if (typeof renderAllQuickGenerators === 'function') renderAllQuickGenerators();
         }
     }
+
 
     document.querySelectorAll('.mode-switch-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -5121,10 +5446,476 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Initial render: 55px tall by 40px length
+    // =========================================================================
+    // QUICK FX GENERATOR SUITE ENGINE (7 MODES)
+    // =========================================================================
+    function getQuickFxTargetHeight() {
+        return bankTargetHeight || currentHeight || 55;
+    }
+
+    function renderTextBannerFx() {
+        const c = el('qfx-canvas-text');
+        if (!c) return;
+        const h = getQuickFxTargetHeight();
+        const text = (el('qfx-text-input') ? el('qfx-text-input').value.trim().toUpperCase() : 'OPEN POI') || 'OPEN POI';
+        const fontStyle = el('qfx-text-font') ? el('qfx-text-font').value : 'monospace';
+        const color = el('qfx-text-color') ? el('qfx-text-color').value : '#00ff88';
+        const glow = el('qfx-text-glow') ? el('qfx-text-glow').checked : true;
+        const spacing = parseInt(el('qfx-text-spacing') ? el('qfx-text-spacing').value : 4) || 4;
+
+        const charWidth = Math.max(12, Math.floor(h * 0.55));
+        const totalW = Math.max(60, text.length * (charWidth + spacing) + 24);
+        c.width = totalW;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, totalW, h);
+
+        let fontFace = 'monospace';
+        if (fontStyle === 'impact') fontFace = 'Impact, sans-serif';
+        else if (fontStyle === 'block') fontFace = 'Courier New, monospace';
+        else if (fontStyle === 'cursive') fontFace = 'Brush Script MT, cursive, sans-serif';
+
+        const fontSize = Math.floor(h * 0.72);
+        ctx.font = `900 ${fontSize}px ${fontFace}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        if (glow) {
+            ctx.shadowColor = color;
+            ctx.shadowBlur = Math.max(4, Math.floor(h * 0.3));
+        }
+
+        ctx.fillStyle = color;
+        let startX = 12 + charWidth / 2;
+        for (let i = 0; i < text.length; i++) {
+            ctx.fillText(text[i], startX, h / 2 + 1);
+            startX += charWidth + spacing;
+        }
+        ctx.shadowBlur = 0;
+    }
+
+    function renderMultiZoneStackedFx() {
+        const c = el('qfx-canvas-stacked');
+        if (!c) return;
+        const h = getQuickFxTargetHeight();
+        const w = 120;
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+
+        const split = parseInt(el('qfx-stacked-split') ? el('qfx-stacked-split').value : 25) || 25;
+        const z1H = Math.max(4, Math.floor(h * (split / 100)));
+        const z2H = Math.max(4, Math.floor(h * 0.5));
+        const z3H = Math.max(4, h - z1H - z2H);
+
+        const z1Mode = el('qfx-stacked-z1') ? el('qfx-stacked-z1').value : 'flame';
+        const z2Mode = el('qfx-stacked-z2') ? el('qfx-stacked-z2').value : 'rainbow';
+        const z3Mode = el('qfx-stacked-z3') ? el('qfx-stacked-z3').value : 'pulse';
+
+        // Render Zone 1 (Top Tip)
+        for (let y = 0; y < z1H; y++) {
+            for (let x = 0; x < w; x++) {
+                if (z1Mode === 'flame') {
+                    const heat = Math.sin(x * 0.2 + y * 0.3) * 0.5 + 0.5;
+                    ctx.fillStyle = `rgb(255, ${Math.floor(heat * 180)}, 0)`;
+                } else if (z1Mode === 'strobe') {
+                    ctx.fillStyle = (Math.floor(x / 4) % 2 === 0) ? '#ffffff' : '#000000';
+                } else {
+                    ctx.fillStyle = '#00ff88';
+                }
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+
+        // Render Zone 2 (Middle)
+        for (let y = z1H; y < z1H + z2H; y++) {
+            for (let x = 0; x < w; x++) {
+                if (z2Mode === 'rainbow') {
+                    const hue = (x * 4 + (y - z1H) * 8) % 360;
+                    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                } else if (z2Mode === 'matrix') {
+                    const m = Math.sin(x * 0.4 + y * 0.8);
+                    ctx.fillStyle = m > 0.3 ? `rgb(0, ${Math.floor(m * 255)}, 50)` : '#000000';
+                } else {
+                    ctx.fillStyle = ((Math.floor(x / 6) + Math.floor(y / 6)) % 2 === 0) ? '#bc13fe' : '#00ffff';
+                }
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+
+        // Render Zone 3 (Handle)
+        for (let y = z1H + z2H; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                if (z3Mode === 'pulse') {
+                    const p = Math.sin(x * 0.1) * 0.5 + 0.5;
+                    ctx.fillStyle = `rgb(${Math.floor(p * 255)}, 0, ${Math.floor(p * 200)})`;
+                } else if (z3Mode === 'sparkle') {
+                    const isSparkle = ((x * 17 + y * 31) % 11 === 0);
+                    ctx.fillStyle = isSparkle ? '#ffffff' : '#000000';
+                } else {
+                    ctx.fillStyle = '#00f5d4';
+                }
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+    }
+
+    function renderStrobeSpeedBlasterFx() {
+        const c = el('qfx-canvas-strobe');
+        if (!c) return;
+        const h = getQuickFxTargetHeight();
+        const w = 120;
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+
+        const mode = el('qfx-strobe-mode') ? el('qfx-strobe-mode').value : 'white_burst';
+        const barW = parseInt(el('qfx-strobe-width') ? el('qfx-strobe-width').value : 2) || 2;
+        const gap = parseInt(el('qfx-strobe-gap') ? el('qfx-strobe-gap').value : 4) || 4;
+        updateBadge('qfx-strobe-gap-val', `${gap}px`);
+
+        const stride = barW + gap;
+        let barIndex = 0;
+
+        for (let x = 0; x < w; x += stride) {
+            let color = '#ffffff';
+            if (mode === 'dual_alt') {
+                color = (barIndex % 2 === 0) ? '#ff0055' : '#00d2ff';
+            } else if (mode === 'rainbow_flash') {
+                const hue = (barIndex * 45) % 360;
+                color = `hsl(${hue}, 100%, 55%)`;
+            } else if (mode === 'neon_pulse') {
+                color = (barIndex % 2 === 0) ? '#00ff88' : '#bc13fe';
+            }
+
+            ctx.fillStyle = color;
+            ctx.fillRect(x, 0, barW, h);
+            barIndex++;
+        }
+    }
+
+    function renderRainbowRibbonFx() {
+        const c = el('qfx-canvas-rainbow');
+        if (!c) return;
+        const h = getQuickFxTargetHeight();
+        const w = 160;
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+
+        const flow = el('qfx-rainbow-flow') ? el('qfx-rainbow-flow').value : 'diagonal';
+        const repeats = parseInt(el('qfx-rainbow-repeats') ? el('qfx-rainbow-repeats').value : 3) || 3;
+
+        for (let x = 0; x < w; x++) {
+            for (let y = 0; y < h; y++) {
+                let hue = 0;
+                if (flow === 'diagonal') {
+                    hue = ((x / w) * repeats * 360 + (y / h) * 180) % 360;
+                } else if (flow === 'sine') {
+                    const wave = Math.sin((x / w) * Math.PI * 2 * repeats) * (h * 0.35) + h * 0.5;
+                    const dist = Math.abs(y - wave) / (h * 0.4);
+                    hue = ((x / w) * 360 * repeats) % 360;
+                    ctx.fillStyle = dist <= 1 ? `hsl(${hue}, 100%, ${Math.floor((1 - dist) * 60)}%)` : '#000000';
+                    ctx.fillRect(x, y, 1, 1);
+                    continue;
+                } else if (flow === 'helix') {
+                    const wave1 = Math.sin((x / w) * Math.PI * 2 * repeats) * (h * 0.3) + h * 0.5;
+                    const wave2 = Math.cos((x / w) * Math.PI * 2 * repeats) * (h * 0.3) + h * 0.5;
+                    const d1 = Math.abs(y - wave1);
+                    const d2 = Math.abs(y - wave2);
+                    if (d1 < 3) ctx.fillStyle = '#00ffff';
+                    else if (d2 < 3) ctx.fillStyle = '#ff0077';
+                    else ctx.fillStyle = '#000000';
+                    ctx.fillRect(x, y, 1, 1);
+                    continue;
+                } else {
+                    const cx = w / 2;
+                    const cy = h / 2;
+                    const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+                    hue = (dist * repeats * 12) % 360;
+                }
+
+                ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+    }
+
+    function renderCheckerMatrixFx() {
+        const c = el('qfx-canvas-checker');
+        if (!c) return;
+        const h = getQuickFxTargetHeight();
+        const w = 140;
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+
+        const colA = el('qfx-chk-color-a') ? el('qfx-chk-color-a').value : '#bc13fe';
+        const colB = el('qfx-chk-color-b') ? el('qfx-chk-color-b').value : '#39ff14';
+        const size = parseInt(el('qfx-chk-size') ? el('qfx-chk-size').value : 10) || 10;
+        updateBadge('qfx-chk-size-val', `${size}px`);
+
+        for (let x = 0; x < w; x += size) {
+            for (let y = 0; y < h; y += size) {
+                const isEven = (Math.floor(x / size) + Math.floor(y / size)) % 2 === 0;
+                ctx.fillStyle = isEven ? colA : colB;
+                ctx.fillRect(x, y, size, size);
+            }
+        }
+    }
+
+    function renderStardustSparklesFx() {
+        const c = el('qfx-canvas-sparkle');
+        if (!c) return;
+        const h = getQuickFxTargetHeight();
+        const w = 140;
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+
+        const theme = el('qfx-sparkle-theme') ? el('qfx-sparkle-theme').value : 'gold_fire';
+        const density = parseInt(el('qfx-sparkle-density') ? el('qfx-sparkle-density').value : 70) || 70;
+
+        for (let i = 0; i < density; i++) {
+            const x = Math.floor((Math.sin(i * 127.1) * 0.5 + 0.5) * w);
+            const y = Math.floor((Math.cos(i * 311.7) * 0.5 + 0.5) * h);
+            const size = (i % 3 === 0) ? 2 : 1;
+
+            let col = '#ffffff';
+            if (theme === 'gold_fire') {
+                col = (i % 2 === 0) ? '#ffb703' : '#ff5500';
+            } else if (theme === 'neon_fairy') {
+                col = (i % 2 === 0) ? '#00ffff' : '#ff00aa';
+            } else if (theme === 'matrix_code') {
+                col = (i % 2 === 0) ? '#39ff14' : '#00ffaa';
+            }
+
+            ctx.fillStyle = col;
+            ctx.fillRect(x, y, size, size);
+        }
+    }
+
+    function renderHazardChasersFx() {
+        const c = el('qfx-canvas-hazard');
+        if (!c) return;
+        const h = getQuickFxTargetHeight();
+        const w = 140;
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+
+        const angle = parseInt(el('qfx-hazard-angle') ? el('qfx-hazard-angle').value : 45) || 45;
+        const colors = el('qfx-hazard-colors') ? el('qfx-hazard-colors').value : 'yellow_black';
+
+        let col1 = '#ffb703', col2 = '#000000';
+        if (colors === 'cyan_pink') { col1 = '#00f5d4'; col2 = '#7b2cbf'; }
+        else if (colors === 'green_black') { col1 = '#39ff14'; col2 = '#000000'; }
+        else if (colors === 'red_white') { col1 = '#ff0055'; col2 = '#ffffff'; }
+
+        const stripeW = 12;
+        for (let x = 0; x < w; x++) {
+            for (let y = 0; y < h; y++) {
+                let offset = 0;
+                if (angle === 45) offset = x + y;
+                else if (angle === -45) offset = x - y + h;
+                else if (angle === 0) offset = x;
+                else offset = y;
+
+                const isCol1 = (Math.floor(offset / stripeW) % 2 === 0);
+                ctx.fillStyle = isCol1 ? col1 : col2;
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+    }
+
+    function renderAllQuickGenerators() {
+        updateBadge('qfx-led-height-badge', `${getQuickFxTargetHeight()}px`);
+        renderTextBannerFx();
+        renderMultiZoneStackedFx();
+        renderStrobeSpeedBlasterFx();
+        renderRainbowRibbonFx();
+        renderCheckerMatrixFx();
+        renderStardustSparklesFx();
+        renderHazardChasersFx();
+    }
+
+    function getQuickFxCanvasAndName(target) {
+        let canvas = null, name = 'Custom FX';
+        if (target === 'text') {
+            canvas = el('qfx-canvas-text');
+            name = `Text: ${el('qfx-text-input') ? el('qfx-text-input').value.trim() : 'OPEN POI'}`;
+        } else if (target === 'stacked') {
+            canvas = el('qfx-canvas-stacked');
+            name = `Stacked Blade FX`;
+        } else if (target === 'strobe') {
+            canvas = el('qfx-canvas-strobe');
+            name = `Speed Strobe Blaster`;
+        } else if (target === 'rainbow') {
+            canvas = el('qfx-canvas-rainbow');
+            name = `Rainbow Ribbon Flow`;
+        } else if (target === 'checker') {
+            canvas = el('qfx-canvas-checker');
+            name = `Checker Matrix Grid`;
+        } else if (target === 'sparkle') {
+            canvas = el('qfx-canvas-sparkle');
+            name = `Stardust Sparkle Embers`;
+        } else if (target === 'hazard') {
+            canvas = el('qfx-canvas-hazard');
+            name = `Hazard Chaser Stripes`;
+        }
+        return { canvas, name };
+    }
+
+    function loadCanvasToGenerator(canvas, name) {
+        if (!canvas) return;
+        const img = new Image();
+        img.onload = () => {
+            customLoadedSlotImg = img;
+            currentWidth = canvas.width;
+            currentHeight = canvas.height;
+            currentPattern = `slot_edit_${Date.now()}`;
+            baseCanvas.width = currentWidth;
+            baseCanvas.height = currentHeight;
+            
+            // Clear symmetries to prevent weird split/wonky images
+            symKaleido = 0;
+            symMirrorH = false;
+            symMirrorV = false;
+            symMirrorDiag = false;
+            symInvert180 = false;
+            ['btn-sym-mh', 'btn-sym-mv', 'btn-sym-diag', 'btn-sym-inv180', 'btn-sym-k4', 'btn-sym-k6', 'btn-sym-k8', 'btn-sym-k12'].forEach(id => {
+                if (el(id)) el(id).classList.remove('active');
+            });
+
+            // Clear shader FX
+            ['fx-strobe', 'fx-rgb', 'fx-wave', 'fx-glow'].forEach(id => {
+                if (el(id)) {
+                    el(id).value = 0;
+                    updateBadge(id + '-val', 'Off');
+                }
+            });
+
+            ['gen-length-slider', 'tab-length-slider'].forEach(id => {
+                if (el(id)) el(id).value = currentWidth;
+            });
+            ['gen-length-val', 'tab-length-val'].forEach(id => {
+                updateBadge(id, `${currentWidth}px`);
+            });
+
+            switchWorkspace('workspace-generator');
+            triggerSmoothRender();
+        };
+        img.src = canvas.toDataURL('image/png');
+    }
+
+    async function saveCanvasToCustomVault(canvas, name) {
+        if (!canvas) return;
+        const targetH = bankTargetHeight || currentHeight || 55;
+        const resampled = await resamplePatternForBank(canvas.toDataURL('image/png'), targetH);
+        const item = {
+            id: `custom_vault_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+            name: name || 'Custom Generated FX',
+            rawFile: `${(name || 'fx_pattern').replace(/[^a-zA-Z0-9_-]/g, '_')}.png`,
+            folder: 'custom',
+            category: 'Custom Vault',
+            dataUri: resampled.dataUri,
+            width: resampled.width,
+            height: resampled.height
+        };
+        const img = new Image();
+        img.src = item.dataUri;
+        item.cachedImg = img;
+        userCustomVault.unshift(item);
+        vaultItems.unshift(item);
+        saveUserCustomVault();
+        refreshVaultBadgeCounts();
+        if (typeof renderVaultCards === 'function') renderVaultCards();
+        alert(`🎉 Saved "${item.name}" to your Persistent Custom Vault!`);
+    }
+
+    // Attach Quick FX card input event listeners
+    ['qfx-text-input', 'qfx-text-font', 'qfx-text-color', 'qfx-text-glow', 'qfx-text-spacing'].forEach(id => {
+        const elem = el(id);
+        if (elem) elem.addEventListener('input', renderTextBannerFx);
+    });
+
+    ['qfx-stacked-z1', 'qfx-stacked-z2', 'qfx-stacked-z3', 'qfx-stacked-split'].forEach(id => {
+        const elem = el(id);
+        if (elem) elem.addEventListener('input', renderMultiZoneStackedFx);
+    });
+
+    ['qfx-strobe-mode', 'qfx-strobe-width', 'qfx-strobe-gap'].forEach(id => {
+        const elem = el(id);
+        if (elem) elem.addEventListener('input', renderStrobeSpeedBlasterFx);
+    });
+
+    ['qfx-rainbow-flow', 'qfx-rainbow-repeats'].forEach(id => {
+        const elem = el(id);
+        if (elem) elem.addEventListener('input', renderRainbowRibbonFx);
+    });
+
+    ['qfx-chk-color-a', 'qfx-chk-color-b', 'qfx-chk-size'].forEach(id => {
+        const elem = el(id);
+        if (elem) elem.addEventListener('input', renderCheckerMatrixFx);
+    });
+
+    ['qfx-sparkle-theme', 'qfx-sparkle-density'].forEach(id => {
+        const elem = el(id);
+        if (elem) elem.addEventListener('input', renderStardustSparklesFx);
+    });
+
+    ['qfx-hazard-angle', 'qfx-hazard-colors'].forEach(id => {
+        const elem = el(id);
+        if (elem) elem.addEventListener('input', renderHazardChasersFx);
+    });
+
+    // Attach Quick FX action button listeners
+    document.querySelectorAll('[data-qfx-action]').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const action = this.getAttribute('data-qfx-action');
+            const target = this.getAttribute('data-target');
+            const { canvas, name } = getQuickFxCanvasAndName(target);
+            if (!canvas) return;
+
+            if (action === 'send-bank') {
+                openBankPickerModal({
+                    name: name,
+                    dataUri: canvas.toDataURL('image/png'),
+                    width: canvas.width,
+                    height: canvas.height
+                });
+            } else if (action === 'open-gen') {
+                loadCanvasToGenerator(canvas, name);
+            } else if (action === 'add-show') {
+                addToStoryboardTimeline({
+                    id: `qfx_${Date.now()}`,
+                    name: name,
+                    dataUri: canvas.toDataURL('image/png'),
+                    width: canvas.width,
+                    height: canvas.height
+                });
+                alert(`🎬 Added "${name}" to your Show Timeline!`);
+            } else if (action === 'save-vault') {
+                await saveCanvasToCustomVault(canvas, name);
+            }
+        });
+    });
+
+    // Initial render
     setGeneratorHeight(55, 40);
     setFirmwareBankMode(BANK_COUNT, false);
     renderBankSlotsGrid();
+    renderAllQuickGenerators();
+
 
 });
 
