@@ -33,7 +33,7 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v92</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v93</span></div>
             <div class="hud-quick-actions">
                 <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -1055,7 +1055,6 @@
                 <button class="hw-btn" data-bank-filter="2" id="bank-filter-tab-2">📁 Bank 3</button>
                 <button class="hw-btn" data-bank-filter="3" id="bank-filter-tab-3">📁 Bank 4</button>
                 <button class="hw-btn" data-bank-filter="4" id="bank-filter-tab-4" style="color:var(--neon-cyan);">🌟 Bank 5 (Cosmic)</button>
-                <button class="hw-btn" data-bank-filter="5" id="bank-filter-tab-5" style="color:#ffffff; font-weight:800;">📐 Bank 6 (Sacred Math)</button>
             </div>
         </div>
 
@@ -1542,9 +1541,9 @@
                             • <b>Speeds:</b> 1 to 2,000 FPS (6 levels)
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=92">
+                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=93">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4;">
-                                    ⚡ Flash 55px DotStar Studio FX (60 Slots • Sacred Math)
+                                    ⚡ Flash 55px DotStar Studio FX (50 Slots)
                                 </button>
                                 <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
                                     ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
@@ -4130,12 +4129,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // =========================================================================
-    // HARDWARE BANK MANAGER (3 STOCK BANKS, 4 LEGACY BANKS, 5 BANKS, OR 6 STUDIO FX BANKS)
+    // HARDWARE BANK MANAGER (3 STOCK BANKS, 4 LEGACY BANKS, OR 5 STUDIO FX BANKS)
     // =========================================================================
-    let BANK_COUNT = parseInt(localStorage.getItem('open_poi_firmware_bank_mode')) || 6;
-    let BANK_SLOT_COUNT = (BANK_COUNT >= 5) ? 10 : 5;
+    let BANK_COUNT = parseInt(localStorage.getItem('open_poi_firmware_bank_mode')) || 5;
+    let BANK_SLOT_COUNT = (BANK_COUNT === 5) ? 10 : 5;
     let TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT;
-    const STORAGE_KEY_BANKS = 'open_poi_bank_slots_v6';
+    const STORAGE_KEY_BANKS = 'open_poi_bank_slots_v5';
 
     let bankSlots = [];
     let currentBankFilter = 'all';
@@ -4152,11 +4151,8 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (count === 4) {
             BANK_COUNT = 4;
             BANK_SLOT_COUNT = 5;
-        } else if (count === 5) {
-            BANK_COUNT = 5;
-            BANK_SLOT_COUNT = 10;
         } else {
-            BANK_COUNT = 6;
+            BANK_COUNT = 5;
             BANK_SLOT_COUNT = 10;
         }
         TOTAL_BANK_SLOTS = BANK_COUNT * BANK_SLOT_COUNT;
@@ -4165,21 +4161,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn3 = el('btn-fw-mode-3');
         const btn4 = el('btn-fw-mode-4');
         const btn5 = el('btn-fw-mode-5');
-        const btn6 = el('btn-fw-mode-6');
         if (btn3) btn3.classList.toggle('active', BANK_COUNT === 3);
         if (btn4) btn4.classList.toggle('active', BANK_COUNT === 4);
-        if (btn5) btn5.classList.toggle('active', BANK_COUNT === 5);
-        if (btn6) {
-            btn6.classList.toggle('active', BANK_COUNT === 6);
-            btn6.style.color = BANK_COUNT === 6 ? 'var(--neon-green)' : 'var(--text-muted)';
+        if (btn5) {
+            btn5.classList.toggle('active', BANK_COUNT === 5);
+            btn5.style.color = BANK_COUNT === 5 ? 'var(--neon-green)' : 'var(--text-muted)';
         }
 
         // 2. Update Description Banner
         const descEl = el('bank-fw-mode-desc');
         if (descEl) {
-            if (BANK_COUNT === 6) {
-                descEl.innerText = "Studio FX 60-Slot mode active (6 Banks • 10 Slots per Bank • 60 Slots Total • Sacred Math in Bank 6).";
-            } else if (BANK_COUNT === 5) {
+            if (BANK_COUNT === 5) {
                 descEl.innerText = "Studio FX 50-Slot mode active (5 Banks • 10 Slots per Bank • 50 Slots Total).";
             } else if (BANK_COUNT === 4) {
                 descEl.innerText = "Legacy 4-Bank mode active (4 Banks • 20 Slots).";
@@ -4189,7 +4181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // 3. Update Bank Filter Tabs
-        for (let b = 0; b < 6; b++) {
+        for (let b = 0; b < 5; b++) {
             const tab = el(`bank-filter-tab-${b}`);
             if (tab) {
                 tab.style.display = (b < BANK_COUNT) ? 'inline-block' : 'none';
@@ -4217,10 +4209,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (bleBankSel) {
             let opts = '';
             for (let i = 0; i < BANK_COUNT; i++) {
-                if (i === 4 && BANK_COUNT >= 5) {
-                    opts += `<option value="${i}">Bank 5 (🌟 Cosmic & Optical Flow)</option>`;
-                } else if (i === 5 && BANK_COUNT === 6) {
-                    opts += `<option value="${i}">Bank 6 (📐 Sacred Math & Laser Lines)</option>`;
+                if (i === 4 && BANK_COUNT === 5) {
+                    opts += `<option value="${i}">Bank 5 (🌟 Cosmic Tour & Ignis Flow)</option>`;
                 } else {
                     opts += `<option value="${i}">Bank ${i + 1} (Slots ${i*BANK_SLOT_COUNT+1}–${(i+1)*BANK_SLOT_COUNT})</option>`;
                 }
@@ -4242,7 +4232,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el('btn-fw-mode-3')) el('btn-fw-mode-3').onclick = () => setFirmwareBankMode(3, true);
     if (el('btn-fw-mode-4')) el('btn-fw-mode-4').onclick = () => setFirmwareBankMode(4, true);
     if (el('btn-fw-mode-5')) el('btn-fw-mode-5').onclick = () => setFirmwareBankMode(5, true);
-    if (el('btn-fw-mode-6')) el('btn-fw-mode-6').onclick = () => setFirmwareBankMode(6, true);
 
     /**
      * Resamples any image or canvas to exact target hardware LED height and optimal length
@@ -4286,11 +4275,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadSavedBankSlots() {
-        const totalNeeded = 60; // 6 Banks x 10 Slots = 60 slots
+        const totalNeeded = 50; // Always support full 50 internal slots (5 Banks x 10 Slots)
         let loadedArray = [];
         try {
             let raw = localStorage.getItem(STORAGE_KEY_BANKS);
-            if (!raw) raw = localStorage.getItem('open_poi_bank_slots_v5');
             if (!raw) raw = localStorage.getItem('open_poi_bank_slots_v4');
             if (raw) {
                 const parsed = JSON.parse(raw);
@@ -4299,8 +4287,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         } catch(e) {}
-
-        const mathVaultPatterns = (window.MASTER_BMP_VAULT || []).filter(x => x.folder === 'math');
 
         bankSlots = [];
         for (let i = 0; i < totalNeeded; i++) {
@@ -4312,19 +4298,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     globalIndex: i,
                     bankIndex: b,
                     slotIndex: s,
-                    isAssigned: true
-                });
-            } else if (b === 5 && s < mathVaultPatterns.length) {
-                // Preload Bank 6 with Sacred Math & Performance Lines!
-                const mp = mathVaultPatterns[s];
-                bankSlots.push({
-                    globalIndex: i,
-                    bankIndex: b,
-                    slotIndex: s,
-                    name: mp.name,
-                    dataUri: mp.dataUri,
-                    width: mp.width || 180,
-                    height: mp.height || 55,
                     isAssigned: true
                 });
             } else {
@@ -5038,8 +5011,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { color: 'var(--neon-yellow)', label: 'Bank 2' },
                 { color: 'var(--neon-purple)', label: 'Bank 3' },
                 { color: 'var(--neon-pink)', label: 'Bank 4' },
-                { color: 'var(--neon-cyan)', label: 'Bank 5 (🌟 Cosmic)' },
-                { color: '#ffffff', label: 'Bank 6 (📐 Sacred Math)' }
+                { color: 'var(--neon-cyan)', label: 'Bank 5 (🌟 Cosmic)' }
             ];
 
             for (let b = 0; b < BANK_COUNT; b++) {

@@ -48,6 +48,8 @@ private:
   bool regulatorEnabled = true;
 
   long shutDownAt = 0;
+  bool inBankSelectMode = false;
+  uint8_t previewBank = 0;
   int paletteSelectStage = 0; // 0 = normal, 1 = selecting Palette, 2 = selecting Motion FX Bank
   uint8_t previewPalette = 1;
   uint8_t previewMotion = 0;
@@ -105,7 +107,14 @@ public:
         config.displayState = DS_WAITING5;
         config.displayStateLastUpdated = millis();
     }else if(buttonState == BS_CLICK_DOWN && millis() - downTime >= 500){ // Click Hold
-        if (paletteSelectStage == 1) {
+        if (inBankSelectMode) {
+          // Confirmed Bank Selection! Lock and return to pattern
+          inBankSelectMode = false;
+          config.setPatternBank(previewBank, true);
+          buttonState = BS_INITIAL;
+          config.displayState = DS_PATTERN;
+          config.displayStateLastUpdated = millis();
+        } else if (paletteSelectStage == 1) {
           // Confirmed Palette! Advance to Stage 2: Motion Flow FX Bank
           paletteSelectStage = 2;
           previewMotion = 0;
@@ -134,8 +143,10 @@ public:
         shutDownAt = millis();
       }else if(buttonState == BS_CLICK2_DOWN && millis() - downTime >= 500){ // Click2 Hold
         paletteSelectStage = 0;
+        inBankSelectMode = true;
+        previewBank = (config.patternBank < 5) ? config.patternBank : 0;
+        config.patternBank = previewBank;
         buttonState = BS_CLICK2_HOLD;
-        // Trigger bank display
         config.displayState = DS_BANK;
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK3_DOWN && millis() - downTime >= 500){ // Click3 Hold
@@ -171,21 +182,6 @@ public:
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK2_HOLD){
-        paletteSelectStage = 0;
-        // 13 options (0..5: Banks 1..6, 6: Loop All, 7..12: Loop Banks 1..6), 500ms each = 6500ms
-        int selection = ((millis() - downTime - 500) % 6500) / 500;
-        if(selection <= 5){
-          config.setPatternBank(selection, true);
-          config.displayState = DS_PATTERN;
-          config.displayStateLastUpdated = millis();
-        }else if(selection == 6){
-          config.displayState = DS_PATTERN_ALL_ALL;
-          config.displayStateLastUpdated = millis();
-        }else if(selection >= 7 && selection <= 12){
-          config.setPatternBank(selection - 7, false);
-          config.displayState = DS_PATTERN_ALL;
-          config.displayStateLastUpdated = millis();
-        }
         buttonState = BS_INITIAL;
       }else if(buttonState == BS_CLICK3_HOLD){
         if(millis() - downTime < 1000){
@@ -222,18 +218,22 @@ public:
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
       }else if(buttonState == BS_CLICK5_HOLD){
-        // 25 Palettes, 400ms per option (0 to 10,000ms)
-        int palIndex = ((millis() - downTime - 500) / 400) % 25;
-        config.setPaletteFxMode(palIndex);
+        buttonState = BS_INITIAL;
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
-        buttonState = BS_INITIAL;
       }
     }
 
     // Single press detected after timeout
     if(buttonState == BS_CLICK_UP && millis() - downTime >= 350){
-      if(paletteSelectStage == 1){
+      if(inBankSelectMode){
+        // Bank Menu Active: Step forward (Bank 1 -> 2 -> 3 -> 4 -> 5 -> 1 infinite round robin!)
+        previewBank = (previewBank + 1) % 5;
+        config.patternBank = previewBank;
+        config.displayState = DS_BANK;
+        config.displayStateLastUpdated = millis();
+        buttonState = BS_INITIAL;
+      }else if(paletteSelectStage == 1){
         // Stage 1: Step through 20 Palettes (1..20)
         previewPalette = (previewPalette % 20) + 1;
         config.paletteFxMode = previewPalette;
@@ -257,9 +257,13 @@ public:
       }
     }
 
-    // Double press detected after timeout -> return to pattern
+    // Double press detected after timeout -> Enter Persistent Bank Selector Menu!
     if(buttonState == BS_CLICK2_UP && millis() - downTime >= 350){
-      config.displayState = (paletteSelectStage > 0) ? DS_PALETTE_SELECT : DS_PATTERN;
+      paletteSelectStage = 0;
+      inBankSelectMode = true;
+      previewBank = (config.patternBank < 5) ? config.patternBank : 0;
+      config.patternBank = previewBank;
+      config.displayState = DS_BANK;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
@@ -273,6 +277,7 @@ public:
 
     // Quad press detected after timeout -> Enter 2-Stage Palette & Motion FX Selector!
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 350){
+      inBankSelectMode = false;
       paletteSelectStage = 1; // Start in Stage 1: Palette Selection
       previewPalette = (config.paletteFxMode > 0) ? config.paletteFxMode : 1;
       previewMotion = config.motionFxMode;
