@@ -234,10 +234,10 @@ public:
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
       }else if(paletteSelectStage == 1){
-        // Stage 1: Step through 20 Palettes (1..20)
-        previewPalette = (previewPalette % 20) + 1;
+        // Stage 1: Step through 32 Curated Pro Palettes (1..32)
+        previewPalette = (previewPalette % 32) + 1;
         config.paletteFxMode = previewPalette;
-        config.motionFxMode = 0; // Solid blade preview in Stage 1
+        config.motionFxMode = 0; // Multi-color gradient spectrum preview in Stage 1
         config.displayState = DS_PALETTE_SELECT;
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
