@@ -243,41 +243,36 @@ else if(buttonState == BS_CLICK3_HOLD){
     }
 
     // Single press detected after timeout, increment pattern
-    if(buttonState == BS_CLICK_UP && millis() - downTime >= 500){
+    if(buttonState == BS_CLICK_UP && millis() - downTime >= 350){
       config.setPatternSlot((config.patternSlot + 1) % PATTERN_BANK_SIZE, true);
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
-
-    // Double press detected after timeout, do nothing
-    if(buttonState == BS_CLICK2_UP && millis() - downTime >= 500){
-      config.displayState = DS_PATTERN;
-      config.displayStateLastUpdated = millis();
-      buttonState = BS_INITIAL;
-    }
-    // Triple press detected after timeout, cycle Color Palette FX
-    if(buttonState == BS_CLICK3_UP && millis() - downTime >= 500){
-      config.setPaletteFxMode((config.paletteFxMode + 1) % 25);
+    // Double press detected after timeout -> return to pattern
+    if(buttonState == BS_CLICK2_UP && millis() - downTime >= 350){
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
-    // Quad press detected after timeout, cycle Blend Transition Mode
-    if(buttonState == BS_CLICK4_UP && millis() - downTime >= 500){
-      config.setBlendMode((config.blendMode + 1) % 10);
+    // Triple press detected after timeout -> return to pattern (FX controlled via Web App)
+    if(buttonState == BS_CLICK3_UP && millis() - downTime >= 350){
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
 
+    // Quad press detected after timeout -> return to pattern (Transitions controlled via Web App)
+    if(buttonState == BS_CLICK4_UP && millis() - downTime >= 350){
+      config.displayState = DS_PATTERN;
+      config.displayStateLastUpdated = millis();
+      buttonState = BS_INITIAL;
+    }
 
-
-
-    // Penta press detected after timeout, display voltage
-    if(buttonState == BS_CLICK5_UP && millis() - downTime >= 500){
+    // Penta press detected after timeout -> display voltage breakdown
+    if(buttonState == BS_CLICK5_UP && millis() - downTime >= 350){
       config.displayState = DS_VOLTAGE2;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;

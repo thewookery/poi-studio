@@ -325,7 +325,7 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
             }
 
           }else if(requestCode == CC_SET_BLEND_MODE){
-            if(bleStatus[2] >= 0 && bleStatus[2] <= 4){
+            if(bleStatus[2] >= 0 && bleStatus[2] <= 9){
               config.setBlendMode(bleStatus[2]);
               bleSendSuccess();
             }else{

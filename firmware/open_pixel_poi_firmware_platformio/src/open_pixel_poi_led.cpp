@@ -516,37 +516,73 @@ else if(config.displayState == DS_WAITING || config.displayState == DS_WAITING2 
           }
         }
       }else if(config.displayState == DS_BANK){
-        int chunkSize = max(2, (config.ledCount - 2)/5);
+        // 5 Color-Coded Bank Zones across the strip:
+        // Bank 1: 🟢 Neon Green (0x00, 0xFF, 0x55)
+        // Bank 2: 🟡 Neon Yellow (0xFF, 0xD7, 0x00)
+        // Bank 3: 🟣 Neon Purple (0xBC, 0x13, 0xFE)
+        // Bank 4: 🌸 Neon Pink   (0xFF, 0x2E, 0x63)
+        // Bank 5: 🩵 Neon Cyan   (0x00, 0xD2, 0xFF)
+        const RgbColor bankColors[5] = {
+          RgbColor(0x00, 0xFF, 0x55), // Bank 1: Neon Green
+          RgbColor(0xFF, 0xD7, 0x00), // Bank 2: Neon Yellow
+          RgbColor(0xBC, 0x13, 0xFE), // Bank 3: Neon Purple
+          RgbColor(0xFF, 0x2E, 0x63), // Bank 4: Neon Pink
+          RgbColor(0x00, 0xD2, 0xFF)  // Bank 5: Neon Cyan
+        };
+
+        int totalLeds = config.ledCount > 0 ? config.ledCount : 55;
+        int zoneSize = max(1, totalLeds / 5);
         int pressTime = (millis() - config.displayStateLastUpdated) % 5500;
-        if (pressTime < 2500){
-          for (int j=1; j-1 <= pressTime/500; j+=1){
-            for(int k=(j-1) * chunkSize; k < j*chunkSize -1; k++){
-              ledStrip->SetPixelColor(k, RgbColor(0xFF, 0x00, 0xFF));
+        int activeSelection = pressTime / 500; // 0 to 10
+
+        if (activeSelection < 5) {
+          // Direct Bank Selection (0: Bank 1, 1: Bank 2, 2: Bank 3, 3: Bank 4, 4: Bank 5)
+          for (int b = 0; b < 5; b++) {
+            int startIdx = b * zoneSize;
+            int endIdx = (b == 4) ? totalLeds : (b + 1) * zoneSize;
+            bool isSelected = (b == activeSelection);
+
+            for (int k = startIdx; k < endIdx; k++) {
+              if (isSelected) {
+                // Highlight active selected bank with white pulsing shimmer
+                bool pulse = ((millis() / 80) % 2 == 0);
+                if (pulse) {
+                  ledStrip->SetPixelColor(k, RgbColor(255, 255, 255));
+                } else {
+                  ledStrip->SetPixelColor(k, bankColors[b]);
+                }
+              } else {
+                // Dim baseline illumination for other banks
+                RgbColor dimCol = RgbColor(bankColors[b].R / 5, bankColors[b].G / 5, bankColors[b].B / 5);
+                ledStrip->SetPixelColor(k, dimCol);
+              }
             }
           }
-        }else{
-          for (int j=0; j < 5; j+=1){
-            for(int k=j * chunkSize; k < ((j + 1) * chunkSize) -1; k++){
-                if (j == 4) {
-                  ledStrip->SetPixelColor(k, RgbColor(0xFF, 0xD7, 0x00)); // Gold shimmer for Bank 5 Cosmic Tour
-                } else {
-                  ledStrip->SetPixelColor(k, RgbColor(0xFF, 0x00, 0xFF));
-                }
-                if (pressTime < 3000){
-                  if(chunkSize <= 4 || (k - (j* chunkSize) > 0 && k - (j* chunkSize) < chunkSize - 2)){
-                    ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                  }
-                }else if (pressTime < 3500 && j == 0){
-                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                }else if (pressTime < 4000 && j == 1){
-                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                }else if (pressTime < 4500 && j == 2){
-                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                }else if (pressTime < 5000 && j == 3){
-                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0x00, 0xFF));
-                }else if (pressTime < 5500 && j == 4){
-                  ledStrip->SetPixelColor(k, RgbColor(0x00, 0xF5, 0xD4)); // Turquoise glow for Bank 5
-                }
+        } else if (activeSelection == 5) {
+          // 5: All-Bank Shuffle / Demo Tour (Rainbow Wave across all 5 zones)
+          uint8_t waveOffset = (uint8_t)((millis() / 4) & 0xFF);
+          for (int k = 0; k < totalLeds; k++) {
+            uint8_t r, g, b;
+            hueToRgb((uint8_t)(waveOffset + (k * 256 / totalLeds)), 255, r, g, b);
+            ledStrip->SetPixelColor(k, RgbColor(r, g, b));
+          }
+        } else {
+          // 6 to 10: Single-Bank Auto-Loop (6: Bank 1 Loop, 7: Bank 2 Loop, 8: Bank 3 Loop, 9: Bank 4 Loop, 10: Bank 5 Loop)
+          int loopBank = activeSelection - 6; // 0 to 4
+          for (int b = 0; b < 5; b++) {
+            int startIdx = b * zoneSize;
+            int endIdx = (b == 4) ? totalLeds : (b + 1) * zoneSize;
+            bool isLoopTarget = (b == loopBank);
+
+            for (int k = startIdx; k < endIdx; k++) {
+              if (isLoopTarget) {
+                // Breathing strobe in bank color to indicate Loop Mode
+                uint8_t breathe = (uint8_t)(128 + 127 * sin((millis() % 500) * 3.14159 / 250.0));
+                RgbColor loopCol = RgbColor((bankColors[b].R * breathe) >> 8, (bankColors[b].G * breathe) >> 8, (bankColors[b].B * breathe) >> 8);
+                ledStrip->SetPixelColor(k, loopCol);
+              } else {
+                ledStrip->SetPixelColor(k, RgbColor(0, 0, 0));
+              }
             }
           }
         }
