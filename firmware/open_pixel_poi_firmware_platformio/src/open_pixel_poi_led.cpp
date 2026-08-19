@@ -223,8 +223,8 @@ static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& 
   uint8_t index256 = 0;
 
   switch (motionId) {
-    case 0: { // 0. Solid Blade Gradient (Static Color Layout)
-      index256 = (uint8_t)((ledIndex * 255) / max(1, safeLedCount - 1));
+    case 0: { // 0. ⚪ No Effect (Pure Static Palette Tone Remap / No Motion)
+      index256 = lum;
       break;
     }
     case 1: { // 1. ⬆️ Flow UP (Geyser Outward to Tip)
