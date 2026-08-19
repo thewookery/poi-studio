@@ -184,35 +184,83 @@ class OpenPixelPoiLED {
           green = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 1];
           blue = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 2];
 
-          // Apply Zero-RAM Transition Modes
+          // Apply Snappy Zero-RAM Transition Modes
           if (isTransitioning) {
             if (config.blendMode == 1) {
-              // 1. Smooth Fade-In (Linear ramp)
+              // 1. Fast Fade-In (Smooth linear ramp)
               red = (uint8_t)(red * tProgress);
               green = (uint8_t)(green * tProgress);
               blue = (uint8_t)(blue * tProgress);
             } else if (config.blendMode == 2) {
-              // 2. Energy Flash Pulse
-              if (tProgress < 0.25f) {
-                uint8_t burst = (uint8_t)((1.0f - (tProgress / 0.25f)) * 255);
+              // 2. Energy Flash Burst
+              if (tProgress < 0.30f) {
+                uint8_t burst = (uint8_t)((1.0f - (tProgress / 0.30f)) * 255);
                 red = min(255, (int)(red + burst));
                 green = min(255, (int)(green + burst));
                 blue = min(255, (int)(blue + burst));
               }
             } else if (config.blendMode == 3) {
-              // 3. Curtain Wipe In (Wipes along strip)
+              // 3. Fast Curtain Wipe In (Top to bottom)
               int wipeLimit = (int)(tProgress * config.ledCount);
               if (j > wipeLimit) {
                 red = 0; green = 0; blue = 0;
               }
             } else if (config.blendMode == 4) {
               // 4. Glow Pulse In
-              float pulse = 0.4f + 0.6f * tProgress;
+              float pulse = 0.3f + 0.7f * tProgress;
               red = (uint8_t)(red * pulse);
               green = (uint8_t)(green * pulse);
               blue = (uint8_t)(blue * pulse);
+            } else if (config.blendMode == 5) {
+              // 5. Iris Burst (Center-Out expand)
+              int center = config.ledCount / 2;
+              int radius = (int)(tProgress * (config.ledCount / 2 + 1));
+              if (abs(j - center) > radius) {
+                red = 0; green = 0; blue = 0;
+              }
+            } else if (config.blendMode == 6) {
+              // 6. Dual-End Squeeze In (Top & Bottom inward to center)
+              int edgeReach = (int)(tProgress * (config.ledCount / 2 + 1));
+              int distFromEnd = min(j, config.ledCount - 1 - j);
+              if (distFromEnd > edgeReach) {
+                red = 0; green = 0; blue = 0;
+              }
+            } else if (config.blendMode == 7) {
+              // 7. Strobe Sparkle / Glitch Shimmer
+              bool strobeOn = ((int)(tProgress * 20) % 2 == 0);
+              if (!strobeOn && tProgress < 0.70f) {
+                red = (uint8_t)(red * 0.15f);
+                green = (uint8_t)(green * 0.15f);
+                blue = (uint8_t)(blue * 0.15f);
+              } else {
+                red = (uint8_t)(red * tProgress);
+                green = (uint8_t)(green * tProgress);
+                blue = (uint8_t)(blue * tProgress);
+              }
+            } else if (config.blendMode == 8) {
+              // 8. Interleaved Quantum Dissolve (Odd pixels then Even pixels)
+              if (j % 2 == 0) {
+                float oddProg = min(1.0f, tProgress * 1.5f);
+                red = (uint8_t)(red * oddProg);
+                green = (uint8_t)(green * oddProg);
+                blue = (uint8_t)(blue * oddProg);
+              } else {
+                float evenProg = max(0.0f, (tProgress - 0.33f) * 1.5f);
+                red = (uint8_t)(red * evenProg);
+                green = (uint8_t)(green * evenProg);
+                blue = (uint8_t)(blue * evenProg);
+              }
+            } else if (config.blendMode == 9) {
+              // 9. Fast Cascading Comet Sweep
+              int cometPos = (int)(tProgress * (config.ledCount + 6));
+              if (j > cometPos) {
+                red = 0; green = 0; blue = 0;
+              } else if (abs(j - cometPos) <= 2) {
+                red = 255; green = 255; blue = 255; // White comet tip
+              }
             }
           }
+
 
 
           // Apply Real-Time Color Palette Filter (25 Zero-RAM Palettes)

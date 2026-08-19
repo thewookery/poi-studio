@@ -256,11 +256,12 @@ else if(buttonState == BS_CLICK3_HOLD){
 
     // Quad press detected after timeout, cycle Blend Transition Mode
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 500){
-      config.setBlendMode((config.blendMode + 1) % 5);
+      config.setBlendMode((config.blendMode + 1) % 10);
       config.displayState = DS_PATTERN;
       config.displayStateLastUpdated = millis();
       buttonState = BS_INITIAL;
     }
+
 
 
 

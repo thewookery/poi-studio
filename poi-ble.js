@@ -513,12 +513,13 @@
 
 
         /**
-         * Set Pattern Transition Blend Mode (0=Cut, 1=CrossFade, 2=Additive, 3=Screen, 4=CurtainWipe)
+         * Set Pattern Transition Blend Mode (0=Cut, 1=Fade, 2=Flash, 3=Wipe, 4=Glow, 5=Iris, 6=Squeeze, 7=Glitch, 8=Quantum, 9=Comet)
          */
         async setBlendMode(modeId) {
-            const mode = Math.max(0, Math.min(4, parseInt(modeId) || 0));
+            const mode = Math.max(0, Math.min(9, parseInt(modeId) || 0));
             await this._sendMessage([COMM_CODES.CC_SET_BLEND_MODE, mode]);
         }
+
 
         /**
          * Set Palette Color Cycle Speed (1-10)
