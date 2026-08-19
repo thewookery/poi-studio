@@ -16,7 +16,8 @@
 OpenPixelPoiConfig config;
 OpenPixelPoiBLE ble(config);
 OpenPixelPoiLED led(config);
-OpenPixelPoiButton button(config);
+OpenPixelPoiButton button(config, ble);
+
 
 void setup() {
   #ifdef DEBUG
