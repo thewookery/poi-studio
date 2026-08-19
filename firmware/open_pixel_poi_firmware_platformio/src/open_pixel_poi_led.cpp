@@ -151,6 +151,21 @@ class OpenPixelPoiLED {
       debugf("LED setup complete\n");
     }
 
+    uint16_t getBlendDuration(uint8_t mode) {
+      switch (mode) {
+        case 1: return 220; // Fast Smooth Fade
+        case 2: return 180; // Instant Energy Flash Burst
+        case 3: return 260; // Crisp Curtain Wipe
+        case 4: return 280; // Glowing Pulse Bloom
+        case 5: return 240; // Iris Pop Center-Out
+        case 6: return 240; // Dual-End Squeeze Inward
+        case 7: return 220; // Cyber Glitch Strobe
+        case 8: return 260; // Quantum Dissolve
+        case 9: return 250; // Fast Comet Sweep
+        default: return 200;
+      }
+    }
+
     void loop(){
       // Set Brightness. 
       // Low voltage = force low brightness
@@ -175,9 +190,11 @@ class OpenPixelPoiLED {
           lastFrameIndex = frameIndex;
         }
 
-        // Zero-RAM Transition Engine
-        bool isTransitioning = (config.blendMode > 0 && (millis() - config.blendStartTime < config.blendDurationMs));
-        float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)config.blendDurationMs) : 1.0f;
+        // Zero-RAM Transition Engine (strictly OFF when blendMode == 0)
+        uint16_t currentDuration = getBlendDuration(config.blendMode);
+        bool isTransitioning = (config.blendMode > 0 && config.blendStartTime > 0 && (millis() - config.blendStartTime < currentDuration));
+        float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)currentDuration) : 1.0f;
+
 
         for (int j=0; j<config.ledCount; j++){
           red = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 0];

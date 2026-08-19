@@ -73,10 +73,9 @@ class OpenPixelPoiConfig {
 
     // Real-Time FX & Transition Engine (Zero-RAM Overhead)
     uint8_t paletteFxMode = 0; // 0=Normal, 1=Rainbow, 2=Cyberpunk, 3=Fire, 4=Matrix, 5=Acid, 6=Ice
-    uint8_t blendMode = 1;     // 0=Cut, 1=Fade, 2=Flash, 3=Wipe, 4=Glow, 5=Iris, 6=Squeeze, 7=Glitch, 8=Quantum, 9=Comet
+    uint8_t blendMode = 0;     // 0=Cut (OFF by default). Transitions ONLY run when explicitly chosen!
     uint8_t paletteSpeed = 3;  // 1-10 speed multiplier
     unsigned long blendStartTime = 0;
-    uint16_t blendDurationMs = 350; // Fast & snappy 350ms transition
 
     // Sequencer
     uint8_t *sequencer = (uint8_t *) malloc(1785*sizeof(uint8_t)); // 255 Instruction max (7 bits per instruction)
@@ -94,8 +93,12 @@ class OpenPixelPoiConfig {
 
     void setBlendMode(uint8_t mode) {
       this->blendMode = mode % 10;
+      if (this->blendMode > 0) {
+        this->blendStartTime = millis(); // Instant visual preview
+      }
       this->configLastUpdated = millis();
     }
+
 
 
     void setPaletteSpeed(uint8_t speed) {
@@ -200,6 +203,9 @@ class OpenPixelPoiConfig {
 
 
     void setPatternBank(uint8_t patternBank, bool save) {
+      if (this->blendMode > 0) {
+        this->blendStartTime = millis();
+      }
       this->patternBank = patternBank;
       if(save){
         preferences.putChar("patternBank", this->patternBank);
@@ -210,6 +216,7 @@ class OpenPixelPoiConfig {
       
       this->configLastUpdated = millis();
     }
+
 
 
 
