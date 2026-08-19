@@ -608,21 +608,21 @@
             const slot = Math.max(0, Math.min(15, parseInt(slotIndex) || 0));
             const timings = this.calculateAdaptiveTimings(canvas, pacingDelayMs);
 
-            // 1. Select target bank and slot on all connected poi (snappy 60ms switch)
+            // 1. Select target bank and slot on all connected poi
             await this.setBank(bank);
-            await new Promise(r => setTimeout(r, 60));
+            await new Promise(r => setTimeout(r, 80));
             await this.setPatternSlot(slot);
-            await new Promise(r => setTimeout(r, 60));
+            await new Promise(r => setTimeout(r, 80));
 
             // 2. Upload pattern with adaptive pacing
             const result = await this.uploadPattern(canvas, progressCallback, timings.pacing);
 
             // 3. Adaptive Post-upload settle delay so ESP32 LittleFS commits cleanly
-            await new Promise(r => setTimeout(r, timings.commitSettleMs));
+            await new Promise(r => setTimeout(r, timings.commitSettleMs + 100));
 
             // 4. Re-trigger slot playback so ESP32 immediately reloads and displays the new pattern on LEDs!
             await this.setPatternSlot(slot);
-            await new Promise(r => setTimeout(r, 40));
+            await new Promise(r => setTimeout(r, 60));
 
             return result;
         }

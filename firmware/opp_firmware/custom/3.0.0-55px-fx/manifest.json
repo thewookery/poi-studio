@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPoi - 50 Slots, Non-Blocking ESP-NOW Prop Sync, 32 Pro Palettes (55px DotStar)",
-  "version": "2026.19.55-50slots-v98",
+  "name": "OpenPixelPoi - 50 Slots, Turbo Zero-Stall BLE, ESP-NOW Prop Sync (55px DotStar)",
+  "version": "2026.19.55-50slots-v99",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -20,7 +20,7 @@
           "offset": 57344
         },
         {
-          "path": "firmware_50slots_v98.bin",
+          "path": "firmware_50slots_v99.bin",
           "offset": 65536
         },
         {

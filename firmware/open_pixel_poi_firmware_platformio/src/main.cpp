@@ -46,18 +46,16 @@ void setup() {
 }
 
 void loop() {
-  // Redundent loop to avoid a lag every 2 seconds caused by 
-  // https://github.com/espressif/arduino-esp32/blob/50ef6f4369fb85139f000f7bbc5a9f9d5bc02b9f/cores/esp32/main.cpp#L68
   while(true){
+    ble.loop();
     if(ble.multipartPattern == 0){
-      ble.loop();
       espNow.loop();
       config.loop();
       led.loop();
       button.loop();
     }else{
-      delay(250);
-      // jammed
+      // Fast non-blocking yield during active BLE uploads (prevents packet buffer overflows!)
+      delay(1);
       if(millis() - ble.bleLastReceived > 5000){
         ble.multipartPattern = 0;
       }
