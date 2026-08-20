@@ -1,5 +1,4 @@
 // Sub-Modules
-#include "open_pixel_poi_espnow.cpp"
 #include "open_pixel_poi_led.cpp"
 #include "open_pixel_poi_ble.cpp"
 #include "open_pixel_poi_button.cpp"
@@ -15,7 +14,6 @@
 
 
 OpenPixelPoiConfig config;
-OpenPixelPoiEspNow espNow(config);
 OpenPixelPoiBLE ble(config);
 OpenPixelPoiLED led(config);
 OpenPixelPoiButton button(config);
@@ -40,27 +38,26 @@ void setup() {
   config.setup();
   led.setup();
   ble.setup();
-  espNow.setup();
   button.setup();
   debugf("- Setup Complete. Running Free Heap: %d bytes\n", ESP.getFreeHeap());
 }
 
 void loop() {
+  // Redundent loop to avoid a lag every 2 seconds caused by 
+  // https://github.com/espressif/arduino-esp32/blob/50ef6f4369fb85139f000f7bbc5a9f9d5bc02b9f/cores/esp32/main.cpp#L68
   while(true){
     if(ble.multipartPattern == 0){
       ble.loop();
-      espNow.loop();
       config.loop();
       led.loop();
       button.loop();
     }else{
-      delay(25);
-      // jammed recovery
+      delay(250);
+      // jammed
       if(millis() - ble.bleLastReceived > 5000){
         ble.multipartPattern = 0;
       }
     }
-    yield();
   }
 }
 

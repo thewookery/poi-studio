@@ -111,7 +111,6 @@ public:
           // Confirmed Bank Selection! Lock and return to pattern
           inBankSelectMode = false;
           config.setPatternBank(previewBank, true);
-          if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
           buttonState = BS_INITIAL;
           config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
@@ -128,7 +127,6 @@ public:
           paletteSelectStage = 0;
           config.setPaletteFxMode(previewPalette);
           config.setMotionFxMode(previewMotion);
-          if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
           buttonState = BS_INITIAL;
           config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
@@ -253,7 +251,6 @@ public:
       }else{
         // Normal mode: Increment pattern slot in active bank
         config.setPatternSlot((config.patternSlot + 1) % PATTERN_BANK_SIZE, true);
-        if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
