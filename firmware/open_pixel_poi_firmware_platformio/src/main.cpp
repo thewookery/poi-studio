@@ -1,5 +1,4 @@
 // Sub-Modules
-#include "open_pixel_poi_espnow.cpp"
 #include "open_pixel_poi_led.cpp"
 #include "open_pixel_poi_ble.cpp"
 #include "open_pixel_poi_button.cpp"
@@ -15,7 +14,6 @@
 
 
 OpenPixelPoiConfig config;
-OpenPixelPoiEspNow espNow(config);
 OpenPixelPoiBLE ble(config);
 OpenPixelPoiLED led(config);
 OpenPixelPoiButton button(config);
@@ -39,8 +37,7 @@ void setup() {
 
   config.setup();
   led.setup();
-  espNow.setup(); // Setup WiFi/ESP-NOW STA mode and modem sleep first
-  ble.setup();    // Setup BLE second so Bluetooth owns the radio
+  ble.setup();
   button.setup();
   debugf("- Setup Complete. Running Free Heap: %d bytes\n", ESP.getFreeHeap());
 }
@@ -49,22 +46,19 @@ void loop() {
   while(true){
     if(ble.multipartPattern == 0){
       ble.loop();
-      if (!ble.deviceConnected) {
-        espNow.loop();
-      }
       config.loop();
       led.loop();
       button.loop();
     }else{
-      delay(15);
-      // jammed recovery
+      delay(250);
+      // jammed
       if(millis() - ble.bleLastReceived > 5000){
         ble.multipartPattern = 0;
       }
     }
-    yield();
   }
 }
+
 
 
 

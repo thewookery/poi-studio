@@ -6,7 +6,6 @@
 #include <Update.h>
 #include "config.h"
 #include "open_pixel_poi_config.cpp"
-#include "open_pixel_poi_espnow.cpp"
 
 
 // BLE
@@ -204,11 +203,9 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
           CommCode requestCode = static_cast<CommCode>(bleStatus[1]);
           if(requestCode == CC_SET_BRIGHTNESS){
             config.setLedBrightness(bleStatus[2]);
-            if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
             bleSendSuccess();
           }else if(requestCode == CC_SET_SPEED){
             config.setAnimationSpeed(bleStatus[2] << 8 | bleStatus[3]);
-            if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
             bleSendSuccess();
           }else if(requestCode == CC_SET_PATTERN){
             for (int i=0; i<sizeof(config.pattern); i++){
@@ -227,24 +224,20 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
             config.setPatternSlot(bleStatus[2], true);
             config.displayState = DS_PATTERN;
             config.displayStateLastUpdated = millis();
-            if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
             bleSendSuccess();
 
           }else if(requestCode == CC_SET_PATTERN_ALL){
             config.displayState = DS_PATTERN_ALL;
             config.displayStateLastUpdated = millis();
-            if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
             bleSendSuccess();
           }else if(requestCode == CC_SET_BANK){
             config.setPatternBank(bleStatus[2]%PATTERN_BANK_COUNT, true);
             config.displayState = DS_PATTERN;
             config.displayStateLastUpdated = millis();
-            if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
             bleSendSuccess();
           }else if(requestCode == CC_SET_BANK_ALL){
             config.displayState = DS_PATTERN_ALL_ALL;
             config.displayStateLastUpdated = millis();
-            if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
             bleSendSuccess();
           }else if(requestCode == CC_GET_FW_VERSION){
 
@@ -332,7 +325,6 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
           }else if(requestCode == CC_SET_PALETTE_FX){
             if(bleStatus[2] >= 0 && bleStatus[2] <= 39){
               config.setPaletteFxMode(bleStatus[2]);
-              if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
               bleSendSuccess();
             }else{
               bleSendError();
@@ -355,7 +347,6 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
           }else if(requestCode == CC_SET_MOTION_FX){
             if(bleStatus[2] >= 0 && bleStatus[2] <= 10){
               config.setMotionFxMode(bleStatus[2]);
-              if (OpenPixelPoiEspNow::instance) OpenPixelPoiEspNow::instance->broadcastState();
               bleSendSuccess();
             }else{
               bleSendError();
