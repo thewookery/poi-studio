@@ -1,0 +1,111 @@
+(kicad_pcb (version 20221018) (generator pcbnew)
+
+  (general
+    (thickness 1.6)
+  )
+
+  (paper "A4")
+  (layers
+    (0 "F.Cu" signal)
+    (31 "B.Cu" signal)
+    (32 "B.Adhes" user "B.Adhesive")
+    (33 "F.Adhes" user "F.Adhesive")
+    (34 "B.Paste" user)
+    (35 "F.Paste" user)
+    (36 "B.SilkS" user "B.Silkscreen")
+    (37 "F.SilkS" user "F.Silkscreen")
+    (38 "B.Mask" user)
+    (39 "F.Mask" user)
+    (40 "Dwgs.User" user "User.Drawings")
+    (41 "Cmts.User" user "User.Comments")
+    (42 "Eco1.User" user "User.Eco1")
+    (43 "Eco2.User" user "User.Eco2")
+    (44 "Edge.Cuts" user)
+    (45 "Margin" user)
+    (46 "B.CrtYd" user "B.Courtyard")
+    (47 "F.CrtYd" user "F.Courtyard")
+    (48 "B.Fab" user)
+    (49 "F.Fab" user)
+  )
+
+  (setup
+    (pad_to_mask_clearance 0.05)
+    (pcbplotparams
+      (layerselection 0x00010fc_ffffffff)
+      (plot_on_all_layers_selection 0x0000000_00000000)
+      (disableapertmacros false)
+      (usegerberextensions true)
+      (usegerberattributes true)
+      (usegerberadvancedattributes true)
+      (creategerberjobfile true)
+      (svgprecision 4)
+      (excludeedgelayer true)
+      (linewidth 0.1)
+      (plotframeref false)
+      (viasonmask false)
+      (mode 1)
+      (useauxorigin false)
+      (hpglpennumber 1)
+      (hpglpenspeed 20)
+      (hpglpendiameter 15.000000)
+      (pdf_front_fp_property_popups true)
+      (pdf_back_fp_property_popups true)
+      (dxfpolygonmode true)
+      (dxfimperprogramming false)
+      (dxflinecategory 0)
+      (dxfcenteronrigin false)
+      (dxfprecision 4)
+    )
+  )
+
+  (net 0 "")
+  (net 1 "GND")
+  (net 2 "+3V3")
+  (net 3 "+5V_USB")
+  (net 4 "VBATT")
+  (net 5 "LED_DATA")
+  (net 6 "LED_CLK")
+  (net 7 "BATT_SENSE")
+  (net 8 "BTN_INPUT")
+  (net 9 "USB_CC1")
+  (net 10 "USB_CC2")
+
+  ;; --- BOARD OUTLINE (18.0mm x 38.0mm with 2.5mm fillet corners) ---
+  (gr_line (start 2.5 0) (end 15.5 0) (layer "Edge.Cuts") (width 0.1))
+  (gr_arc (start 15.5 0) (mid 17.27 0.73) (end 18.0 2.5) (layer "Edge.Cuts") (width 0.1))
+  (gr_line (start 18.0 2.5) (end 18.0 35.5) (layer "Edge.Cuts") (width 0.1))
+  (gr_arc (start 18.0 35.5) (mid 17.27 37.27) (end 15.5 38.0) (layer "Edge.Cuts") (width 0.1))
+  (gr_line (start 15.5 38.0) (end 2.5 38.0) (layer "Edge.Cuts") (width 0.1))
+  (gr_arc (start 2.5 38.0) (mid 0.73 37.27) (end 0 35.5) (layer "Edge.Cuts") (width 0.1))
+  (gr_line (start 0 35.5) (end 0 2.5) (layer "Edge.Cuts") (width 0.1))
+  (gr_arc (start 0 2.5) (mid 0.73 0.73) (end 2.5 0) (layer "Edge.Cuts") (width 0.1))
+
+  ;; --- SILKSCREEN LABELS ---
+  (gr_text "OPEN PIXEL" (at 9.0 7.5) (layer "F.SilkS") (effects (font (size 0.8 0.8) (thickness 0.15) (bold yes))))
+  (gr_text "MICRO-CORE v1.0" (at 9.0 9.0) (layer "F.SilkS") (effects (font (size 0.65 0.65) (thickness 0.12))))
+  (gr_text "BATT+" (at 15.5 31.5) (layer "F.SilkS") (effects (font (size 0.6 0.6) (thickness 0.12))))
+  (gr_text "BATT-" (at 15.5 36.5) (layer "F.SilkS") (effects (font (size 0.6 0.6) (thickness 0.12))))
+  (gr_text "VCC  GND  DAT  CLK" (at 9.0 37.0) (layer "F.SilkS") (effects (font (size 0.55 0.55) (thickness 0.1))))
+  (gr_text "FPC 1     FPC 2     FPC 3" (at 9.0 21.5) (layer "F.SilkS") (effects (font (size 0.5 0.5) (thickness 0.1))))
+  (gr_text "BTN" (at 9.0 26.5) (layer "F.SilkS") (effects (font (size 0.6 0.6) (thickness 0.12))))
+  (gr_text "CHG" (at 3.5 5.0) (layer "F.SilkS") (effects (font (size 0.5 0.5) (thickness 0.1))))
+  (gr_text "FULL" (at 3.5 7.5) (layer "F.SilkS") (effects (font (size 0.5 0.5) (thickness 0.1))))
+
+  ;; --- SOLDER PADS: HEAVY-DUTY LED HEADER (J6: 4-Pin 2.54mm pitch) ---
+  (pad "1" thru_hole circle (at 5.0 35.5) (size 1.6 1.6) (drill 0.9) (layers "*.Cu" "*.Mask") (net 4)) ;; VCC/VBATT
+  (pad "2" thru_hole circle (at 7.54 35.5) (size 1.6 1.6) (drill 0.9) (layers "*.Cu" "*.Mask") (net 1)) ;; GND
+  (pad "3" thru_hole circle (at 10.08 35.5) (size 1.6 1.6) (drill 0.9) (layers "*.Cu" "*.Mask") (net 5)) ;; DATA
+  (pad "4" thru_hole circle (at 12.62 35.5) (size 1.6 1.6) (drill 0.9) (layers "*.Cu" "*.Mask") (net 6)) ;; CLOCK
+
+  ;; --- SOLDER PADS: EXTERNAL BUTTON HEADER (J7: 2-Pin 2.54mm pitch) ---
+  (pad "1" thru_hole circle (at 1.8 28.5) (size 1.4 1.4) (drill 0.8) (layers "*.Cu" "*.Mask") (net 8)) ;; BTN
+  (pad "2" thru_hole circle (at 1.8 31.04) (size 1.4 1.4) (drill 0.8) (layers "*.Cu" "*.Mask") (net 1)) ;; GND
+
+  ;; --- JST-PH 2.0mm LiPo BATTERY CONNECTOR PADS (J2) ---
+  (pad "1" thru_hole roundrect (at 15.0 33.0) (size 1.7 1.5) (drill 0.9) (layers "*.Cu" "*.Mask") (roundrect_rratio 0.2) (net 4)) ;; BATT+
+  (pad "2" thru_hole circle (at 15.0 35.0) (size 1.7 1.5) (drill 0.9) (layers "*.Cu" "*.Mask") (net 1)) ;; BATT-
+
+  ;; --- MOUNTING / LANYARD HOLE (2.2mm for M2 screw or flow cord) ---
+  (pad "" np_thru_hole circle (at 1.8 1.8) (size 2.2 2.2) (drill 2.2) (layers "*.Cu" "*.Mask"))
+  (pad "" np_thru_hole circle (at 16.2 1.8) (size 2.2 2.2) (drill 2.2) (layers "*.Cu" "*.Mask"))
+)

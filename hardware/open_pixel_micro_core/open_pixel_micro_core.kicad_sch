@@ -1,0 +1,20 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid "d8f36a80-e38a-4db5-9e4a-1029384756ab")
+
+  (paper "A4")
+
+  (title_block
+    (title "Open Pixel Micro-Core Universal Flow Prop Controller")
+    (date "2026-08-20")
+    (rev "v1.0.0")
+    (company "Open Pixel Poi / Open POI Studio")
+    (comment 1 "Ultra-Compact 18mm x 38mm form factor for 3/4 inch tubing")
+    (comment 2 "Supports Poi, Staff, Levitation Wand, Hoops, and Juggling Props")
+    (comment 3 "ESP32-C3 RISC-V 160MHz BLE/WiFi, LiPo JST + 18650, 3x FPC + Direct Solder")
+  )
+
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)

@@ -1,0 +1,24 @@
+Comment,Designator,Footprint,LCSC Part #,Quantity,Description
+Seeed XIAO ESP32-C3,U1,MODULE_XIAO_ESP32C3,C2913204,1,"RISC-V MCU Module 160MHz WiFi/BLE5, 4MB Flash"
+TP4054,U2,SOT-23-5,C24388,1,Linear Li-Ion/LiPo Battery Charger IC 500mA
+DW01A,U3,SOT-23-6,C35114,1,One-Cell Lithium-Ion Battery Protection IC
+FS8205A,U4,SOT-23-6,C32254,1,Dual N-Channel Enhancement Mode Power MOSFET 20V 6A
+ME6211C33M5G,U5,SOT-23-5,C82942,1,Low Dropout Voltage Regulator 3.3V 500mA Ultra-Low Iq
+TYPE-C-16P,J1,USB-C-SMD-16P,C165948,1,USB Type-C 16-Pin Receptacle with CC1/CC2
+JST-PH-2P,J2,JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal,C295748,1,2-Pin 2.0mm Pitch LiPo Battery Connector
+FPC-0.5-4P,"J3, J4, J5",FPC_0.5mm_4P_FlipLock,C288374,3,4-Pin 0.5mm Pitch ZIF Flip-Lock Ribbon Header
+HDR-1x4-2.54,J6,PinHeader_1x04_P2.54mm_Vertical,C124375,1,"4-Pin 2.54mm Heavy-Duty LED Output Solder Header (VCC, GND, DAT, CLK)"
+HDR-1x2-2.54,J7,PinHeader_1x02_P2.54mm_Vertical,C124374,1,"2-Pin 2.54mm External Button Header (BTN, GND)"
+TS-1187A,SW1,SW_SPST_3x4mm_SMD,C115383,1,3x4x2.0mm Ultra-Low Profile Tactile Push Switch
+LED-RED-0603,D1,LED_0603_1608Metric,C2286,1,Red SMT LED (Charging Status)
+LED-BLUE-0603,D2,LED_0603_1608Metric,C72041,1,Blue SMT LED (Charge Complete / Standby)
+5.1k 1% 0603,"R1, R2",R_0603_1608Metric,C23186,2,USB-C CC1/CC2 PD Configuration Pull-Down Resistors
+2.0k 1% 0603,R3,R_0603_1608Metric,C25890,1,TP4054 Program Resistor (500mA Fast Charge)
+1.0k 1% 0603,"R4, R5",R_0603_1608Metric,C21190,2,Status LED Current Limiting Resistors
+100 1% 0603,R6,R_0603_1608Metric,C22775,1,DW01A VDD Filter Resistor
+1.0k 1% 0603,R7,R_0603_1608Metric,C21190,1,DW01A Current Sense Filter Resistor
+100k 0.1% 0603,"R8, R9",R_0603_1608Metric,C120760,2,Precision Battery Voltage Divider (50% scale to A0)
+33 1% 0603,"R10, R11",R_0603_1608Metric,C23180,2,High-Speed SPI Data & Clock Series Damping Resistors (20MHz)
+10k 1% 0603,R12,R_0603_1608Metric,C25804,1,Button Hardware Pull-Up Resistor
+10uF 10V 0603,"C1, C2, C3, C4",C_0603_1608Metric,C19702,4,Input/Output Power Decoupling Ceramic Capacitors
+100nF 50V 0603,"C5, C6, C7",C_0603_1608Metric,C14663,3,High-Frequency Noise Filter Capacitors & ADC Snubber
