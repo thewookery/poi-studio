@@ -563,32 +563,31 @@
             const totalBytes = totalPixels * 3;
 
             // 1. Dynamic Packet Pacing:
-            let pacing = 16;
-            if (typeof userPacing === 'number' && userPacing >= 5) {
+            let pacing = 25;
+            if (typeof userPacing === 'number' && userPacing >= 10) {
                 pacing = userPacing;
-                // If pattern is large (>12,000 px) and user set an ultra-low pacing (<12ms), add safety floor
-                if (totalPixels > 15000 && pacing < 18) {
-                    pacing = 18;
+                if (totalPixels > 15000 && pacing < 25) {
+                    pacing = 28;
                 }
             } else {
                 if (totalPixels > 25000) {
-                    pacing = 22; // ~75KB - 120KB patterns
+                    pacing = 32; // ~75KB - 120KB patterns
                 } else if (totalPixels > 10000) {
-                    pacing = 18; // ~30KB - 75KB patterns
+                    pacing = 28; // ~30KB - 75KB patterns
                 } else {
-                    pacing = 16; // Standard fast patterns
+                    pacing = 25; // Standard rock-solid fast patterns (~0.35s total)
                 }
             }
 
             // 2. Dynamic Flash Commit Settle Delay:
             // LittleFS writes data to flash when the final EOF packet arrives.
-            let commitSettleMs = 100;
+            let commitSettleMs = 180;
             if (totalPixels > 25000) {
-                commitSettleMs = 450; // Heavy SPI flash sector block write
+                commitSettleMs = 500; // Heavy SPI flash sector block write
             } else if (totalPixels > 10000) {
-                commitSettleMs = 250;
+                commitSettleMs = 300;
             } else if (totalPixels > 4000) {
-                commitSettleMs = 150;
+                commitSettleMs = 200;
             }
 
             return {

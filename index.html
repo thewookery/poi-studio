@@ -33,12 +33,11 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v101</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v102</span></div>
             <div class="hud-quick-actions">
                 <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
-                <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect (BLE)</button>
-                <button class="ble-connect-btn" id="btn-wifi-connect" style="border-color:rgba(0,255,136,0.5); color:var(--neon-green);" title="Connect to Poi over Wi-Fi Hotspot (192.168.4.1)">🌐 Connect (Wi-Fi)</button>
-                <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi">🚀 Upload</button>
+                <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
+                <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi over BLE">🚀 Upload (BLE)</button>
                 <button class="hw-btn" id="btn-force-sync" style="font-size:0.72rem; color:var(--neon-green); padding:5px 8px;" title="Force Cache Purge & Load Latest Version">🔄 Sync</button>
             </div>
         </div>
@@ -1539,47 +1538,23 @@
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
                     
-                    <!-- 1. 55-PIXELS DOTSTAR 50-SLOT STUDIO FX EDITION (GOLDEN BLE BASE) -->
+                    <!-- 55-PIXELS DOTSTAR 50-SLOT IGNIS-STYLE PROP SYNC EDITION -->
                     <div class="firmware-card" style="border-color:rgba(0,255,136,0.5); background:rgba(0,255,136,0.06);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX (Rock-Solid BLE Base)</span>
-                            <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 32 Palettes • BLE</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX (50 Slots • Ignis-Style Prop Sync)</span>
+                            <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 32 Palettes • BLE Sync</span>
                         </div>
                         <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
                             • <b>50 Pattern Slots:</b> 5 Hardware Banks $\times$ 10 Slots each<br>
                             • <b>32 Curated Pro Color Palettes:</b> Full blade multi-color spectrum previews<br>
-                            • <b>11 Motion Flow FX:</b> Matrix Rain, Geyser, Waves, Plasma, Strobe<br>
-                            • <b>Click-Through Bank Menu:</b> Infinite round-robin (1➔5➔1) & 0.5s lock<br>
-                            • <b>High-Speed BLE:</b> Turbo ~0.5s uploads with partition storage telemetry
+                            • <b>11 Motion Flow FX:</b> Matrix Rain, Geyser, Waves, Plasma, Strobe, Stardust<br>
+                            • <b>Ignis-Style Wireless Prop Sync:</b> Instant button & app mirroring to sister prop<br>
+                            • <b>Rock-Solid Web Bluetooth:</b> High-speed upload pacing & partition storage telemetry
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=96">
+                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=102">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4;">
-                                    ⚡ Flash 55px DotStar Base (50 Slots • 32 Palettes • BLE)
-                                </button>
-                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
-                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
-                                </span>
-                            </esp-web-install-button>
-                        </div>
-                    </div>
-
-                    <!-- 2. 55-PIXELS DOTSTAR WI-FI & ESP-NOW PROP SYNC EDITION -->
-                    <div class="firmware-card" style="border-color:rgba(0,229,255,0.5); background:rgba(0,229,255,0.06); margin-top:12px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-cyan);">🌐 55px DotStar Wi-Fi & ESP-NOW Prop Sync Edition</span>
-                            <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">50 Slots • Wi-Fi + ESP-NOW</span>
-                        </div>
-                        <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
-                            • <b>Ultra-Fast Wi-Fi Hotspot:</b> Connect phone to <code>OpenPixelPoi</code> for ~1.5s bank uploads<br>
-                            • <b>Native ESP-NOW Prop Sync:</b> Zero-latency wireless sister-prop mirroring on Channel 1<br>
-                            • <b>50 Pattern Slots & 32 Pro Palettes:</b> Full-blade spectrum previews and 11 Motion Flows<br>
-                            • <b>Built-in Web Server:</b> Accessible at <code>http://192.168.4.1</code> with CORS REST API
-                        </div>
-                        <div class="firmware-flash-wrap" style="margin-top:8px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-wifi/manifest.json?v=101">
-                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4; border-color:var(--neon-cyan); color:var(--neon-cyan);">
-                                    🌐 Flash 55px DotStar (Wi-Fi + ESP-NOW Prop Sync)
+                                    ⚡ Flash 55px DotStar Studio FX (50 Slots • Ignis Prop Sync)
                                 </button>
                                 <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
                                     ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
@@ -1765,8 +1740,8 @@
 
 <script src="master-vault-manifest.js?v=85"></script>
 <script src="poi-engine.js?v=85"></script>
-<script src="poi-ble.js?v=85"></script>
-<script src="poi-wifi.js?v=101"></script>
+<script src="poi-ble.js?v=102"></script>
+
 
 
 
@@ -5619,33 +5594,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Wi-Fi Connect Button Event Listener
-    const btnWiFi = el('btn-wifi-connect');
-    if (btnWiFi) {
-        btnWiFi.onclick = async () => {
-            if (window.poiWiFi && window.poiWiFi.isConnected) {
-                window.poiWiFi.disconnect();
-                return;
-            }
-            btnWiFi.innerHTML = '🌐 Connecting...';
-            btnWiFi.disabled = true;
-            try {
-                const res = await window.poiWiFi.checkConnection('192.168.4.1');
-                if (!res.success) {
-                    btnWiFi.innerHTML = '🌐 Connect (Wi-Fi)';
-                    btnWiFi.disabled = false;
-                    alert('Could not reach Open Pixel Poi at 192.168.4.1.\n\nMake sure your computer/phone is connected to the "OpenPixelPoi" Wi-Fi hotspot (Password: openpoi123)!');
-                } else {
-                    btnWiFi.disabled = false;
-                }
-            } catch (err) {
-                btnWiFi.innerHTML = '🌐 Connect (Wi-Fi)';
-                btnWiFi.disabled = false;
-                alert('Wi-Fi connection error: ' + err.message);
-            }
-        };
-    }
-
+    // =========================================================================
     // QUICK FX GENERATOR SUITE ENGINE (7 MODES)
     // =========================================================================
     function getQuickFxTargetHeight() {

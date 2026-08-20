@@ -1,10 +1,7 @@
 // Sub-Modules
-#ifdef USE_WIFI_MODE
-#include "open_pixel_poi_wifi.cpp"
-#else
-#include "open_pixel_poi_ble.cpp"
-#endif
+#include "open_pixel_poi_espnow.cpp"
 #include "open_pixel_poi_led.cpp"
+#include "open_pixel_poi_ble.cpp"
 #include "open_pixel_poi_button.cpp"
 
 //#define DEBUG  // Comment this line out to remove printf statements in released version
@@ -18,11 +15,8 @@
 
 
 OpenPixelPoiConfig config;
-#ifdef USE_WIFI_MODE
-OpenPixelPoiWiFi wifi(config);
-#else
+OpenPixelPoiEspNow espNow(config);
 OpenPixelPoiBLE ble(config);
-#endif
 OpenPixelPoiLED led(config);
 OpenPixelPoiButton button(config);
 
@@ -45,38 +39,31 @@ void setup() {
 
   config.setup();
   led.setup();
-#ifdef USE_WIFI_MODE
-  wifi.setup();
-#else
   ble.setup();
-#endif
+  espNow.setup();
   button.setup();
   debugf("- Setup Complete. Running Free Heap: %d bytes\n", ESP.getFreeHeap());
 }
 
 void loop() {
   while(true){
-#ifdef USE_WIFI_MODE
-    wifi.loop();
-    config.loop();
-    led.loop();
-    button.loop();
-#else
     if(ble.multipartPattern == 0){
       ble.loop();
+      espNow.loop();
       config.loop();
       led.loop();
       button.loop();
     }else{
-      delay(250);
-      // jammed
+      delay(25);
+      // jammed recovery
       if(millis() - ble.bleLastReceived > 5000){
         ble.multipartPattern = 0;
       }
     }
-#endif
+    yield();
   }
 }
+
 
 
 
