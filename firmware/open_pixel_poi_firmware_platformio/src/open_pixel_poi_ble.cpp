@@ -345,7 +345,7 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
               bleSendError();
             }
           }else if(requestCode == CC_SET_MOTION_FX){
-            if(bleStatus[2] >= 0 && bleStatus[2] <= 10){
+            if(bleStatus[2] >= 0 && bleStatus[2] <= 16){
               config.setMotionFxMode(bleStatus[2]);
               bleSendSuccess();
             }else{

@@ -235,16 +235,16 @@ public:
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
       }else if(paletteSelectStage == 1){
-        // Stage 1: Step through 32 Curated Pro Palettes (1..32)
-        previewPalette = (previewPalette % 32) + 1;
+        // Stage 1: Step through 33 Curated States (0: Blank/Native Colors, 1..32: Curated Pro Palettes)
+        previewPalette = (previewPalette + 1) % 33;
         config.paletteFxMode = previewPalette;
         config.motionFxMode = 0; // Multi-color gradient spectrum preview in Stage 1
         config.displayState = DS_PALETTE_SELECT;
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;
       }else if(paletteSelectStage == 2){
-        // Stage 2: Step through 11 Motion Flows (0..10: Solid, Flow Up, Flow Down, Rain, Tidal, Plasma, Stardust, Pulse, POV Spin, Spiral, Strobe)
-        previewMotion = (previewMotion + 1) % 11;
+        // Stage 2: Step through 17 Crazy Motion Flows (0..16: Solid, Flow Up, Flow Down, Rain, Tidal, Plasma, Stardust, Pulse, POV Spin, Spiral, Strobe, Hyperspace Warp, Glitch, Aurora, Lava, Disco, Black Hole)
+        previewMotion = (previewMotion + 1) % 17;
         config.motionFxMode = previewMotion;
         config.displayState = DS_PALETTE_SELECT;
         config.displayStateLastUpdated = millis();
@@ -280,7 +280,7 @@ public:
     if(buttonState == BS_CLICK4_UP && millis() - downTime >= 350){
       inBankSelectMode = false;
       paletteSelectStage = 1; // Start in Stage 1: Palette Selection
-      previewPalette = (config.paletteFxMode > 0) ? config.paletteFxMode : 1;
+      previewPalette = config.paletteFxMode;
       previewMotion = config.motionFxMode;
       config.paletteFxMode = previewPalette;
       config.motionFxMode = 0; // Solid blade preview in Stage 1

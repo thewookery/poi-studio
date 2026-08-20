@@ -857,22 +857,24 @@ select:focus {
     font-size: 0.58rem;
     color: var(--neon-green);
     font-family: monospace;
-}
 .vault-card-btns {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr 34px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
     gap: 4px;
     width: 100%;
-    margin-top: 4px;
+    margin-top: 2px;
 }
 .btn-add-timeline {
+    flex: 1;
+    min-width: 0;
     background: linear-gradient(135deg, #00adb5, #39ff14);
     color: #0c0f17;
-    font-size: 0.65rem;
+    font-size: 0.66rem;
     font-weight: 900;
     border: none;
     border-radius: 4px;
-    padding: 5px 3px;
+    padding: 6px 2px;
     cursor: pointer;
     text-align: center;
     transition: all 0.15s ease;
@@ -881,18 +883,21 @@ select:focus {
     justify-content: center;
     gap: 2px;
     white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
 }
 .btn-add-timeline:hover {
     box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
     filter: brightness(1.1);
 }
 .btn-send-bank {
+    flex: 1;
+    min-width: 0;
     background: #10221c;
-    border: 1px solid rgba(0, 255, 136, 0.4);
+    border: 1px solid rgba(0, 255, 136, 0.5);
     color: var(--neon-green);
-    font-size: 0.65rem;
+    font-size: 0.66rem;
     font-weight: 800;
-    padding: 5px 3px;
+    padding: 6px 2px;
     border-radius: 4px;
     cursor: pointer;
     text-align: center;
@@ -902,6 +907,7 @@ select:focus {
     justify-content: center;
     gap: 2px;
     white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
 }
 .btn-send-bank:hover {
     background: rgba(0, 255, 136, 0.25);
@@ -910,12 +916,13 @@ select:focus {
     color: #ffffff;
 }
 .btn-rotate-card {
+    flex: 0 0 28px;
     background: #1c2436;
     border: 1px solid var(--border-color);
     color: var(--text-color);
-    font-size: 0.68rem;
+    font-size: 0.70rem;
     font-weight: 700;
-    padding: 5px 2px;
+    padding: 6px 0;
     border-radius: 4px;
     cursor: pointer;
     text-align: center;
@@ -923,8 +930,7 @@ select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
 }
 .btn-rotate-card:hover {
     background: rgba(188, 19, 254, 0.25);

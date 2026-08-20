@@ -33,7 +33,7 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v96 (Rock-Solid Base)</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v97 (Full Brightness FX)</span></div>
             <div class="hud-quick-actions">
                 <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -1195,7 +1195,7 @@
                         🌈 Step 1: Base Color Palette:
                     </div>
                     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(95px, 1fr)); gap:4px; max-height:140px; overflow-y:auto; padding-right:2px; margin-bottom:8px;" id="fx-palette-buttons">
-                        <button class="hw-btn active" data-pal="0" style="font-size:0.65rem; padding:4px 2px;">⚪ Normal (RGB)</button>
+                        <button class="hw-btn active" data-pal="0" style="font-size:0.65rem; padding:4px 2px;">⚪ Blank (Original RGB)</button>
                         <button class="hw-btn" data-pal="1" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-green);">🌈 Rainbow</button>
                         <button class="hw-btn" data-pal="2" style="font-size:0.65rem; padding:4px 2px; color:#ff3b30;">🌡️ FLIR Heat</button>
                         <button class="hw-btn" data-pal="3" style="font-size:0.65rem; padding:4px 2px; color:#a0e0ff;">🪩 Prismatic Opal</button>
@@ -1233,7 +1233,7 @@
                     <div style="font-size:0.7rem; font-weight:700; color:var(--text-color); margin-bottom:4px;">
                         🌀 Step 2: Motion Flow FX Bank (Applied to Active Palette):
                     </div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(95px, 1fr)); gap:4px; max-height:120px; overflow-y:auto; padding-right:2px; margin-bottom:8px;" id="fx-motion-buttons">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(95px, 1fr)); gap:4px; max-height:140px; overflow-y:auto; padding-right:2px; margin-bottom:8px;" id="fx-motion-buttons">
                         <button class="hw-btn active" data-motion="0" style="font-size:0.65rem; padding:4px 2px;">⚪ No Motion (Static Tint)</button>
                         <button class="hw-btn" data-motion="1" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-green);">⬆️ Flow UP (Geyser)</button>
                         <button class="hw-btn" data-motion="2" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-cyan);">⬇️ Flow DOWN</button>
@@ -1245,6 +1245,12 @@
                         <button class="hw-btn" data-motion="8" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-yellow);">🔄 POV Spin CW</button>
                         <button class="hw-btn" data-motion="9" style="font-size:0.65rem; padding:4px 2px; color:var(--neon-purple);">🌀 3D Spiral Helix</button>
                         <button class="hw-btn" data-motion="10" style="font-size:0.65rem; padding:4px 2px; color:#ffffff;">⚡ Strobe Blade</button>
+                        <button class="hw-btn" data-motion="11" style="font-size:0.65rem; padding:4px 2px; color:#00ffff;">🌌 Warp Pulse</button>
+                        <button class="hw-btn" data-motion="12" style="font-size:0.65rem; padding:4px 2px; color:#39ff14;">⚡ Glitch Spark</button>
+                        <button class="hw-btn" data-motion="13" style="font-size:0.65rem; padding:4px 2px; color:#ff00ea;">🌈 Aurora Wave</button>
+                        <button class="hw-btn" data-motion="14" style="font-size:0.65rem; padding:4px 2px; color:#ff3b00;">🌋 Lava Flare</button>
+                        <button class="hw-btn" data-motion="15" style="font-size:0.65rem; padding:4px 2px; color:#ffff00;">🪩 Disco Strobe</button>
+                        <button class="hw-btn" data-motion="16" style="font-size:0.65rem; padding:4px 2px; color:#a066ff;">🪐 Black Hole</button>
                     </div>
                 </div>
 
@@ -1538,23 +1544,23 @@
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
                     
-                    <!-- 55-PIXELS DOTSTAR 50-SLOT STUDIO FX EDITION (GOLDEN BLE BASE) -->
+                    <!-- 55-PIXELS DOTSTAR 50-SLOT STUDIO FX EDITION (GOLDEN BLE BASE v97) -->
                     <div class="firmware-card" style="border-color:rgba(0,255,136,0.5); background:rgba(0,255,136,0.06);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX (Rock-Solid BLE Base)</span>
-                            <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 32 Palettes • BLE</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX (Peak Brightness • 17 Motion FX)</span>
+                            <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 32 Palettes • 17 FX</span>
                         </div>
                         <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
                             • <b>50 Pattern Slots:</b> 5 Hardware Banks $\times$ 10 Slots each<br>
-                            • <b>32 Curated Pro Color Palettes:</b> Full blade multi-color spectrum previews<br>
-                            • <b>11 Motion Flow FX:</b> Matrix Rain, Geyser, Waves, Plasma, Strobe, Stardust<br>
-                            • <b>Click-Through Bank Menu:</b> Infinite round-robin (1➔5➔1) & 0.5s lock<br>
-                            • <b>Rock-Solid Web Bluetooth:</b> 100% instant pairing, zero-lag control & telemetry
+                            • <b>32 Curated Pro Color Palettes:</b> Full-blade multi-color previews + Blank (Original RGB)<br>
+                            • <b>17 Motion Flow FX:</b> Warp Shockwave, Glitch Spark, Aurora, Lava Flare, Disco, Black Hole<br>
+                            • <b>100% Peak Value Luminance:</b> Full brilliance across all colors without dimming<br>
+                            • <b>Rock-Solid Web Bluetooth:</b> Instant pairing, zero-lag controls & telemetry
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=96">
+                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=97">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4;">
-                                    ⚡ Flash 55px DotStar Base (50 Slots • 32 Palettes • Golden Base)
+                                    ⚡ Flash 55px DotStar FX (50 Slots • 17 Motion Flows • Peak Brightness)
                                 </button>
                                 <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
                                     ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.

@@ -355,7 +355,8 @@ static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& 
 
   // Negative Space Protection: Never alter black pixels
   if (red == 0 && green == 0 && blue == 0) return;
-  uint8_t lum = (uint8_t)((red * 77 + green * 150 + blue * 29) >> 8);
+  // Maximum Value / Peak Intensity: Preserves 100% full brightness across all color channels
+  uint8_t lum = max(red, max(green, blue));
   if (lum == 0) { red = 0; green = 0; blue = 0; return; }
 
   uint16_t safeFrameCount = (frameCount > 0) ? frameCount : 1;
@@ -406,9 +407,45 @@ static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& 
       break;
     }
     case 10: { // 10. ⚡ Hyper-Strobe Shimmer Blade
-      bool strobe = ((frameIndex % 2) == 0) || ((millis() / 40) % 2 == 0);
+      bool strobe = ((frameIndex % 2) == 0) || ((millis() / 35) % 2 == 0);
       index256 = (uint8_t)((timeMs * speed / 18) & 0xFF);
-      if (!strobe) lum = (uint8_t)(lum >> 2);
+      if (!strobe) { red = 0; green = 0; blue = 0; return; }
+      break;
+    }
+    case 11: { // 11. 🌌 Hyperspace Warp Shockwave (Explosive Quantum Pulse)
+      uint32_t phase = (timeMs * speed / 8) & 0xFF;
+      uint32_t dist = (ledIndex * 255) / safeLedCount;
+      index256 = (uint8_t)((phase - ((dist * dist) >> 8)) & 0xFF);
+      break;
+    }
+    case 12: { // 12. ⚡ Glitch Matrix Cyber Spark (Rhythmic Glitch Shimmer)
+      uint8_t noise = (uint8_t)(((ledIndex * 73) ^ (frameIndex * 151) ^ (timeMs >> 4)) & 0xFF);
+      index256 = (uint8_t)(((timeMs * speed / 12) + noise) & 0xFF);
+      break;
+    }
+    case 13: { // 13. 🌈 Rainbow Aurora Waveform (Flowing Harmonic Undulation)
+      int a1 = (int)((timeMs * speed / 14) + ledIndex * 7);
+      int a2 = (int)((timeMs * speed / 22) - ledIndex * 5);
+      index256 = (uint8_t)(((a1 + a2) / 2) & 0xFF);
+      break;
+    }
+    case 14: { // 14. 🌋 Lava Bubble / Solar Flare (Bouncing Fiery Thermal Pockets)
+      uint8_t b1 = (uint8_t)((timeMs * speed / 10) + ledIndex * 16);
+      uint8_t b2 = (uint8_t)((timeMs * speed / 15) - ledIndex * 20);
+      index256 = (uint8_t)(max(b1, b2) & 0xFF);
+      break;
+    }
+    case 15: { // 15. 🪩 Disco BPM Strobe Blast (High-Contrast Dance Floor Flash)
+      uint8_t beat = ((timeMs * speed / 25) % 8);
+      bool isFlash = (beat == 0 || beat == 2 || (ledIndex % 4 == (beat / 2)));
+      index256 = (uint8_t)((timeMs * speed / 12) & 0xFF);
+      if (!isFlash) { red = 0; green = 0; blue = 0; return; }
+      break;
+    }
+    case 16: { // 16. 🪐 Black Hole Gravitational Pull (Inward Accretion Vortex)
+      uint32_t phase = (timeMs * speed / 7) & 0xFF;
+      uint32_t invDist = ((safeLedCount - 1 - ledIndex) * 255) / safeLedCount;
+      index256 = (uint8_t)((phase + ((invDist * invDist) >> 8)) & 0xFF);
       break;
     }
     default: {
@@ -779,7 +816,17 @@ else if(config.displayState == DS_BRIGHTNESS){
       }else if(config.displayState == DS_PALETTE_SELECT){
         // Dedicated Multi-Color Palette & Motion Preview across the full LED blade
         int totalLeds = config.ledCount > 0 ? config.ledCount : 55;
-        if (config.motionFxMode == 0) {
+        if (config.paletteFxMode == 0) {
+          // Stage 1 Blank Mode: Pure Original RGB Bitmap (Clean Diamond White Strobe Pulse)
+          bool pulse = ((millis() / 120) % 2 == 0);
+          for (int j = 0; j < totalLeds; j++) {
+            if (pulse) {
+              ledStrip->SetPixelColor(j, (j % 2 == 0) ? RgbColor(255, 255, 255) : RgbColor(120, 120, 120));
+            } else {
+              ledStrip->SetPixelColor(j, (j % 2 == 1) ? RgbColor(255, 255, 255) : RgbColor(60, 60, 60));
+            }
+          }
+        } else if (config.motionFxMode == 0) {
           // Stage 1: Spread the full rich multi-color palette spectrum across all 55 LEDs!
           for (int j = 0; j < totalLeds; j++) {
             uint8_t stripIndex = (uint8_t)((j * 255) / max(1, totalLeds - 1));
