@@ -2083,8 +2083,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="vault-card-dims">${item.width}×${item.height} px ${item.wasRotated ? '🔄 90°' : ''}</div>
                 </div>
                 <div class="vault-card-btns">
-                    <button class="btn-add-timeline" data-id="${item.id}" title="Add to Show Timeline">➕ Add</button>
-                    <button class="btn-rotate-card" data-id="${item.id}" title="Rotate 90°">🔄 Rotate</button>
+                    <button class="btn-add-timeline" data-id="${item.id}" title="Add to Show Timeline">➕ Show</button>
+                    <button class="btn-send-bank" data-id="${item.id}" title="Send this pattern to any Bank Slot (1–50)">📁 Bank</button>
+                    <button class="btn-rotate-card" data-id="${item.id}" title="Rotate 90°">🔄</button>
                 </div>
             `;
 
@@ -2104,6 +2105,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 addBtn.onclick = (e) => {
                     e.stopPropagation();
                     addToStoryboard(item);
+                };
+            }
+
+            // Send to Bank Slot Modal
+            const bankBtn = card.querySelector('.btn-send-bank');
+            if (bankBtn) {
+                bankBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openBankPickerModal({
+                        name: item.name,
+                        dataUri: item.dataUri,
+                        width: item.width,
+                        height: item.height
+                    });
                 };
             }
 
