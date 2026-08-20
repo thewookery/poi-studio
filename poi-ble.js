@@ -180,7 +180,20 @@
                     return existing;
                 }
 
-                const server = await device.gatt.connect();
+                let server = null;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    try {
+                        server = await device.gatt.connect();
+                        break;
+                    } catch (e) {
+                        if (attempt === 3) throw e;
+                        await new Promise(r => setTimeout(r, 200));
+                    }
+                }
+
+                // 150ms settle pause for mobile GATT MTU negotiation
+                await new Promise(r => setTimeout(r, 150));
+
                 const service = await server.getPrimaryService(NORDIC_UART_SERVICE);
                 const rxChar = await service.getCharacteristic(NORDIC_UART_RX_CHAR);
                 let txChar = null;

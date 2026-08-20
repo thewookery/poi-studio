@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include <esp_now.h>
 #include <esp_wifi.h>
+#include <esp_coexist.h>
 #include "open_pixel_poi_config.cpp"
 
 #define POI_SYNC_MAGIC 0x504F4953 // "POIS" (Open Pixel Poi Sync)
@@ -54,6 +55,7 @@ public:
   void setup() {
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
+    esp_coex_preference_set(ESP_COEX_PREFER_BT);
     esp_wifi_set_ps(WIFI_PS_MIN_MODEM); // Yield 2.4GHz RF baseband to BLE
 
     if (esp_now_init() != ESP_OK) {
