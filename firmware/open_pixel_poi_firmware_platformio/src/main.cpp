@@ -39,8 +39,8 @@ void setup() {
 
   config.setup();
   led.setup();
-  ble.setup();
-  espNow.setup();
+  espNow.setup(); // Setup WiFi/ESP-NOW STA mode and modem sleep first
+  ble.setup();    // Setup BLE second so Bluetooth owns the radio
   button.setup();
   debugf("- Setup Complete. Running Free Heap: %d bytes\n", ESP.getFreeHeap());
 }
@@ -49,12 +49,14 @@ void loop() {
   while(true){
     if(ble.multipartPattern == 0){
       ble.loop();
-      espNow.loop();
+      if (!ble.deviceConnected) {
+        espNow.loop();
+      }
       config.loop();
       led.loop();
       button.loop();
     }else{
-      delay(25);
+      delay(15);
       // jammed recovery
       if(millis() - ble.bleLastReceived > 5000){
         ble.multipartPattern = 0;

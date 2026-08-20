@@ -99,7 +99,6 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
     BLEUUID pixelPoiNotifyCharacteristicUUID = BLEUUID("6E400004-B5A3-F393-E0A9-E50E24DCCA9E");
 
     BLEServer* server;
-    bool deviceConnected = false;
     bool oldDeviceConnected = false;
     
     BLEService* pixelPoiService;
@@ -125,6 +124,7 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
   public:
     OpenPixelPoiBLE(OpenPixelPoiConfig& _config): config(_config) {}
 
+    bool deviceConnected = false;
     long bleLastReceived;
     uint8_t multipartPattern = 0;
     void setup(){
@@ -148,6 +148,11 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
       pixelPoiService->start();
 
       // Start advertising
+      BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+      pAdvertising->addServiceUUID(pixelPoiServiceUUID);
+      pAdvertising->setScanResponse(true);
+      pAdvertising->setMinPreferred(0x06);
+      pAdvertising->setMinPreferred(0x12);
       server->getAdvertising()->start();
       debugf("Waiting a client connection to notify..\n");
       debugf("Setup complete\n");

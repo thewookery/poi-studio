@@ -54,6 +54,7 @@ public:
   void setup() {
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
+    esp_wifi_set_ps(WIFI_PS_MIN_MODEM); // Yield 2.4GHz RF baseband to BLE
 
     if (esp_now_init() != ESP_OK) {
       return;
