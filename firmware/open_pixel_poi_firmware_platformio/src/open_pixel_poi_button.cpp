@@ -2,7 +2,11 @@
 #define _OPEN_PIXEL_POI_BUTTON
 
 #include "open_pixel_poi_config.cpp"
+#ifdef USE_WIFI_MODE
+#include "open_pixel_poi_wifi.cpp"
+#else
 #include "open_pixel_poi_ble.cpp"
+#endif
 #include <driver/rtc_io.h>
 
 #include <driver/gpio.h>
@@ -111,6 +115,9 @@ public:
           // Confirmed Bank Selection! Lock and return to pattern
           inBankSelectMode = false;
           config.setPatternBank(previewBank, true);
+          #ifdef USE_WIFI_MODE
+          if (OpenPixelPoiWiFi::instance) OpenPixelPoiWiFi::instance->broadcastState();
+          #endif
           buttonState = BS_INITIAL;
           config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
@@ -127,6 +134,9 @@ public:
           paletteSelectStage = 0;
           config.setPaletteFxMode(previewPalette);
           config.setMotionFxMode(previewMotion);
+          #ifdef USE_WIFI_MODE
+          if (OpenPixelPoiWiFi::instance) OpenPixelPoiWiFi::instance->broadcastState();
+          #endif
           buttonState = BS_INITIAL;
           config.displayState = DS_PATTERN;
           config.displayStateLastUpdated = millis();
@@ -251,6 +261,9 @@ public:
       }else{
         // Normal mode: Increment pattern slot in active bank
         config.setPatternSlot((config.patternSlot + 1) % PATTERN_BANK_SIZE, true);
+        #ifdef USE_WIFI_MODE
+        if (OpenPixelPoiWiFi::instance) OpenPixelPoiWiFi::instance->broadcastState();
+        #endif
         config.displayState = DS_PATTERN;
         config.displayStateLastUpdated = millis();
         buttonState = BS_INITIAL;

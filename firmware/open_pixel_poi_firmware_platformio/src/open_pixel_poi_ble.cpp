@@ -1,6 +1,8 @@
 #ifndef _OPEN_PIXEL_POI_BLE
 #define _OPEN_PIXEL_POI_BLE
 
+#ifndef USE_WIFI_MODE
+
 // Some things need to be included here, seems files are loaded alphabetically
 #include <arduino.h>
 #include <Update.h>
@@ -410,5 +412,6 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
 
 };
 
-#endif
+#endif // USE_WIFI_MODE
+#endif // _OPEN_PIXEL_POI_BLE
 

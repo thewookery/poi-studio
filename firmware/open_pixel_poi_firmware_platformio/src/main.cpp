@@ -1,6 +1,10 @@
 // Sub-Modules
-#include "open_pixel_poi_led.cpp"
+#ifdef USE_WIFI_MODE
+#include "open_pixel_poi_wifi.cpp"
+#else
 #include "open_pixel_poi_ble.cpp"
+#endif
+#include "open_pixel_poi_led.cpp"
 #include "open_pixel_poi_button.cpp"
 
 //#define DEBUG  // Comment this line out to remove printf statements in released version
@@ -14,7 +18,11 @@
 
 
 OpenPixelPoiConfig config;
+#ifdef USE_WIFI_MODE
+OpenPixelPoiWiFi wifi(config);
+#else
 OpenPixelPoiBLE ble(config);
+#endif
 OpenPixelPoiLED led(config);
 OpenPixelPoiButton button(config);
 
@@ -37,15 +45,23 @@ void setup() {
 
   config.setup();
   led.setup();
+#ifdef USE_WIFI_MODE
+  wifi.setup();
+#else
   ble.setup();
+#endif
   button.setup();
   debugf("- Setup Complete. Running Free Heap: %d bytes\n", ESP.getFreeHeap());
 }
 
 void loop() {
-  // Redundent loop to avoid a lag every 2 seconds caused by 
-  // https://github.com/espressif/arduino-esp32/blob/50ef6f4369fb85139f000f7bbc5a9f9d5bc02b9f/cores/esp32/main.cpp#L68
   while(true){
+#ifdef USE_WIFI_MODE
+    wifi.loop();
+    config.loop();
+    led.loop();
+    button.loop();
+#else
     if(ble.multipartPattern == 0){
       ble.loop();
       config.loop();
@@ -58,6 +74,7 @@ void loop() {
         ble.multipartPattern = 0;
       }
     }
+#endif
   }
 }
 

@@ -33,11 +33,12 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v96</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v101</span></div>
             <div class="hud-quick-actions">
                 <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
-                <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
-                <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi over BLE">🚀 Upload (BLE)</button>
+                <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect (BLE)</button>
+                <button class="ble-connect-btn" id="btn-wifi-connect" style="border-color:rgba(0,255,136,0.5); color:var(--neon-green);" title="Connect to Poi over Wi-Fi Hotspot (192.168.4.1)">🌐 Connect (Wi-Fi)</button>
+                <button class="btn-ble-upload" id="btn-ble-upload-active" title="Upload Active Pattern Directly to Poi">🚀 Upload</button>
                 <button class="hw-btn" id="btn-force-sync" style="font-size:0.72rem; color:var(--neon-green); padding:5px 8px;" title="Force Cache Purge & Load Latest Version">🔄 Sync</button>
             </div>
         </div>
@@ -1538,11 +1539,11 @@
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
                     
-                    <!-- 55-PIXELS DOTSTAR 50-SLOT STUDIO FX EDITION -->
+                    <!-- 1. 55-PIXELS DOTSTAR 50-SLOT STUDIO FX EDITION (GOLDEN BLE BASE) -->
                     <div class="firmware-card" style="border-color:rgba(0,255,136,0.5); background:rgba(0,255,136,0.06);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX (50 Slots • 32 Palettes)</span>
-                            <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 32 Palettes</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX (Rock-Solid BLE Base)</span>
+                            <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 32 Palettes • BLE</span>
                         </div>
                         <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
                             • <b>50 Pattern Slots:</b> 5 Hardware Banks $\times$ 10 Slots each<br>
@@ -1554,7 +1555,31 @@
                         <div class="firmware-flash-wrap" style="margin-top:8px;">
                             <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=96">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4;">
-                                    ⚡ Flash 55px DotStar Studio FX (50 Slots • 32 Palettes)
+                                    ⚡ Flash 55px DotStar Base (50 Slots • 32 Palettes • BLE)
+                                </button>
+                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
+                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
+                                </span>
+                            </esp-web-install-button>
+                        </div>
+                    </div>
+
+                    <!-- 2. 55-PIXELS DOTSTAR WI-FI & ESP-NOW PROP SYNC EDITION -->
+                    <div class="firmware-card" style="border-color:rgba(0,229,255,0.5); background:rgba(0,229,255,0.06); margin-top:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-cyan);">🌐 55px DotStar Wi-Fi & ESP-NOW Prop Sync Edition</span>
+                            <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">50 Slots • Wi-Fi + ESP-NOW</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
+                            • <b>Ultra-Fast Wi-Fi Hotspot:</b> Connect phone to <code>OpenPixelPoi</code> for ~1.5s bank uploads<br>
+                            • <b>Native ESP-NOW Prop Sync:</b> Zero-latency wireless sister-prop mirroring on Channel 1<br>
+                            • <b>50 Pattern Slots & 32 Pro Palettes:</b> Full-blade spectrum previews and 11 Motion Flows<br>
+                            • <b>Built-in Web Server:</b> Accessible at <code>http://192.168.4.1</code> with CORS REST API
+                        </div>
+                        <div class="firmware-flash-wrap" style="margin-top:8px;">
+                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-wifi/manifest.json?v=101">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4; border-color:var(--neon-cyan); color:var(--neon-cyan);">
+                                    🌐 Flash 55px DotStar (Wi-Fi + ESP-NOW Prop Sync)
                                 </button>
                                 <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
                                     ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
@@ -1741,6 +1766,7 @@
 <script src="master-vault-manifest.js?v=85"></script>
 <script src="poi-engine.js?v=85"></script>
 <script src="poi-ble.js?v=85"></script>
+<script src="poi-wifi.js?v=101"></script>
 
 
 
@@ -3776,18 +3802,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // Upload Active Pattern (Canvas) to Poi over BLE (Seamless Inline Progress)
+    // Upload Active Pattern (Canvas) to Poi over Wi-Fi or BLE (Seamless Inline Progress)
     async function uploadActivePatternToPoi() {
+        const isWiFi = (window.poiWiFi && window.poiWiFi.isConnected);
+        const isBLE = (window.OpenPixelPoiBLE && OpenPixelPoiBLE.isConnected);
 
-        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
-            alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
-            return;
-        }
-
-        if (!OpenPixelPoiBLE.isConnected) {
-            try {
-                await OpenPixelPoiBLE.connectDevice();
-            } catch (e) {
+        if (!isWiFi && !isBLE) {
+            if (window.OpenPixelPoiBLE && OpenPixelPoiBLE.isSupported()) {
+                try {
+                    await OpenPixelPoiBLE.connectDevice();
+                } catch (e) {
+                    return;
+                }
+            } else {
+                alert("Connect your Open Pixel Poi via Wi-Fi or Bluetooth first!");
                 return;
             }
         }
@@ -3805,27 +3833,40 @@ document.addEventListener('DOMContentLoaded', function() {
         if (pct) pct.innerText = '0%';
 
         try {
-            await OpenPixelPoiBLE.uploadPattern(baseCanvas, (progress, info) => {
-                const p = Math.round(progress * 100);
-                const devP = Math.round(info.deviceProgress * 100);
-                if (fill) fill.style.width = `${p}%`;
-                if (pct) pct.innerText = `${p}%`;
-                if (label) label.innerText = `📡 Flashing Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName})...`;
-                if (details) details.innerText = `Packet ${info.chunk}/${info.totalChunks} (${devP}%) • Overall Sync: ${p}%`;
-            }, pacing);
+            if (window.poiWiFi && window.poiWiFi.isConnected) {
+                if (label) label.innerText = `🌐 Streaming pattern over Wi-Fi to LittleFS...`;
+                if (fill) fill.style.width = '50%';
+                if (pct) pct.innerText = '50%';
+                await window.poiWiFi.uploadPatternToSlot(displayCanvas, 0, 0, (progress, msg) => {
+                    const p = Math.round(progress * 100);
+                    if (fill) fill.style.width = `${p}%`;
+                    if (pct) pct.innerText = `${p}%`;
+                    if (label) label.innerText = `🌐 ${msg}`;
+                });
+            } else {
+                await OpenPixelPoiBLE.uploadPattern(baseCanvas, (progress, info) => {
+                    const p = Math.round(progress * 100);
+                    const devP = Math.round(info.deviceProgress * 100);
+                    if (fill) fill.style.width = `${p}%`;
+                    if (pct) pct.innerText = `${p}%`;
+                    if (label) label.innerText = `📡 Flashing Poi ${info.deviceIndex}/${info.totalDevices} (${info.deviceName})...`;
+                    if (details) details.innerText = `Packet ${info.chunk}/${info.totalChunks} (${devP}%) • Overall Sync: ${p}%`;
+                }, pacing);
+            }
 
-            if (label) label.innerText = `✅ Pattern Flashed Cleanly to All Connected Poi!`;
+            if (label) label.innerText = `✅ Pattern Uploaded Cleanly to Open Pixel Poi!`;
             if (pct) pct.innerText = `100%`;
             setTimeout(() => {
                 if (inlineProg) inlineProg.style.display = 'none';
             }, 2500);
         } catch (err) {
-            alert("BLE Upload Failed: " + err.message);
+            alert("Upload Failed: " + err.message);
             if (inlineProg) inlineProg.style.display = 'none';
         }
     }
 
     if (el('btn-ble-upload-active')) el('btn-ble-upload-active').onclick = uploadActivePatternToPoi;
+
 
     // Upload Master Show to Poi over BLE (Seamless Inline Progress)
     async function uploadMasterShowToPoi() {
@@ -5151,66 +5192,79 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function flashSingleBankSlot(slot) {
-        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
-            alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
-            return;
-        }
-
-        if (!OpenPixelPoiBLE.isConnected) {
-            try {
-                await OpenPixelPoiBLE.connectDevice();
-            } catch (e) {
-                return;
-            }
-        }
-
-        if (!slot.isAssigned || !slot.dataUri) {
+        if (!slot || !slot.isAssigned || !slot.dataUri) {
             alert('This slot is empty.');
             return;
+        }
+
+        const isWiFi = (window.poiWiFi && window.poiWiFi.isConnected);
+        const isBLE = (window.OpenPixelPoiBLE && OpenPixelPoiBLE.isConnected);
+
+        if (!isWiFi && !isBLE) {
+            if (window.OpenPixelPoiBLE && OpenPixelPoiBLE.isSupported()) {
+                try {
+                    await OpenPixelPoiBLE.connectDevice();
+                } catch (e) {
+                    return;
+                }
+            } else {
+                alert('Connect your Open Pixel Poi via Wi-Fi or Bluetooth first!');
+                return;
+            }
         }
 
         showInlineProgress(`🚀 Preparing Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1}...`, 0);
 
         try {
             const tempC = await getCanvasFromDataUri(slot.dataUri, slot.width, slot.height);
-            const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 16) || 16;
 
-            await OpenPixelPoiBLE.uploadPatternToSlot(
-                tempC,
-                slot.bankIndex,
-                slot.slotIndex,
-                (overallPct, info) => {
-                    const pctInt = Math.round(overallPct * 100);
-                    showInlineProgress(
-                        `📡 Flashing Bank ${slot.bankIndex + 1}: Slot ${slot.slotIndex + 1} (${info.deviceName || ''})...`,
-                        pctInt
-                    );
-                },
-                pacing
-            );
+            if (window.poiWiFi && window.poiWiFi.isConnected) {
+                showInlineProgress(`🌐 Wi-Fi Streaming Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1}...`, 50);
+                await window.poiWiFi.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex, (pct, msg) => {
+                    showInlineProgress(`🌐 ${msg}`, Math.round(pct * 100));
+                });
+            } else {
+                const pacing = parseInt(el('ble-ctrl-pacing') ? el('ble-ctrl-pacing').value : 16) || 16;
+                await OpenPixelPoiBLE.uploadPatternToSlot(
+                    tempC,
+                    slot.bankIndex,
+                    slot.slotIndex,
+                    (overallPct, info) => {
+                        const pctInt = Math.round(overallPct * 100);
+                        showInlineProgress(
+                            `📡 Flashing Bank ${slot.bankIndex + 1}: Slot ${slot.slotIndex + 1} (${info.deviceName || ''})...`,
+                            pctInt
+                        );
+                    },
+                    pacing
+                );
+            }
             
             updateStorageTelemetry();
             const transferredKb = ((4 + (slot.width || 40) * (slot.height || 55) * 3) / 1024).toFixed(1);
             const totalKb = (bankSlots.slice(0, TOTAL_BANK_SLOTS).reduce((acc, s) => acc + (s.isAssigned ? (4 + s.width * s.height * 3) : 0), 0) / 1024);
             const freeMb = Math.max(0, (2504 - totalKb) / 1024).toFixed(2);
-            showInlineProgress(`✅ Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1} Flashed! (${transferredKb} KB • Total Used: ${(totalKb/1024).toFixed(2)} MB / 2.50 MB • ${freeMb} MB Free)`, 100);
+            showInlineProgress(`✅ Bank ${slot.bankIndex + 1} Slot ${slot.slotIndex + 1} Uploaded! (${transferredKb} KB • Total Used: ${(totalKb/1024).toFixed(2)} MB / 2.50 MB • ${freeMb} MB Free)`, 100);
             setTimeout(hideInlineProgress, 3500);
         } catch(e) {
-            alert(`Flash failed: ${e.message}`);
+            alert(`Upload failed: ${e.message}`);
             hideInlineProgress();
         }
     }
 
     async function flashEntireBank(bankIdx) {
-        if (!window.OpenPixelPoiBLE || !OpenPixelPoiBLE.isSupported()) {
-            alert("Web Bluetooth is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
-            return;
-        }
+        const isWiFi = (window.poiWiFi && window.poiWiFi.isConnected);
+        const isBLE = (window.OpenPixelPoiBLE && OpenPixelPoiBLE.isConnected);
 
-        if (!OpenPixelPoiBLE.isConnected) {
-            try {
-                await OpenPixelPoiBLE.connectDevice();
-            } catch (e) {
+        if (!isWiFi && !isBLE) {
+            if (window.OpenPixelPoiBLE && OpenPixelPoiBLE.isSupported()) {
+                try {
+                    await OpenPixelPoiBLE.connectDevice();
+                } catch (e) {
+                    return;
+                }
+            } else {
+                alert('Connect your Open Pixel Poi via Wi-Fi or Bluetooth first!');
                 return;
             }
         }
@@ -5231,18 +5285,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 bankBytes += 4 + (slot.width || 40) * (slot.height || 55) * 3;
                 const tempC = await getCanvasFromDataUri(slot.dataUri, slot.width, slot.height);
 
-                showInlineProgress(`🚀 Bank ${bankIdx + 1}: Flashing ${i + 1}/${populated.length} (Slot ${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
+                if (window.poiWiFi && window.poiWiFi.isConnected) {
+                    showInlineProgress(`🌐 Wi-Fi Streaming ${i + 1}/${populated.length} (Slot ${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
+                    await window.poiWiFi.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex);
+                } else {
+                    showInlineProgress(`🚀 Bank ${bankIdx + 1}: Flashing ${i + 1}/${populated.length} (Slot ${slot.slotIndex + 1})...`, Math.round((i / populated.length) * 100));
+                    await OpenPixelPoiBLE.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex, (pct, info) => {
+                        const subPct = Math.round(((i + pct) / populated.length) * 100);
+                        showInlineProgress(`🚀 Bank ${bankIdx + 1}: Slot ${slot.slotIndex + 1} (${info.deviceName || ''})...`, subPct);
+                    }, pacing);
+                }
 
-                await OpenPixelPoiBLE.uploadPatternToSlot(tempC, slot.bankIndex, slot.slotIndex, (pct, info) => {
-                    const subPct = Math.round(((i + pct) / populated.length) * 100);
-                    showInlineProgress(`🚀 Bank ${bankIdx + 1}: Slot ${slot.slotIndex + 1} (${info.deviceName || ''})...`, subPct);
-                }, pacing);
-
-                // Adaptive settling pause between slots based on pattern size
                 if (i < populated.length - 1) {
-                    const slotPx = (slot.width || 40) * (slot.height || 55);
-                    const slotPause = slotPx > 20000 ? 300 : (slotPx > 8000 ? 180 : 100);
-                    showInlineProgress(`⏳ Bank ${bankIdx + 1}: Saved Slot ${slot.slotIndex + 1}. Preparing next slot...`, Math.round(((i + 1) / populated.length) * 100));
+                    const slotPause = (window.poiWiFi && window.poiWiFi.isConnected) ? 50 : 150;
                     await new Promise(r => setTimeout(r, slotPause));
                 }
             }
@@ -5250,10 +5305,10 @@ document.addEventListener('DOMContentLoaded', function() {
             updateStorageTelemetry();
             const totalKb = (bankSlots.slice(0, TOTAL_BANK_SLOTS).reduce((acc, s) => acc + (s.isAssigned ? (4 + s.width * s.height * 3) : 0), 0) / 1024);
             const freeMb = Math.max(0, (2504 - totalKb) / 1024).toFixed(2);
-            showInlineProgress(`✅ Bank ${bankIdx + 1} Flashed Complete! (${populated.length} slots • ${(bankBytes/1024).toFixed(1)} KB • Total: ${(totalKb/1024).toFixed(2)} MB / 2.50 MB • ${freeMb} MB Free)`, 100);
+            showInlineProgress(`✅ Bank ${bankIdx + 1} Upload Complete! (${populated.length} slots • ${(bankBytes/1024).toFixed(1)} KB • Total: ${(totalKb/1024).toFixed(2)} MB / 2.50 MB • ${freeMb} MB Free)`, 100);
             setTimeout(hideInlineProgress, 4000);
         } catch(e) {
-            alert(`Bank Flash Error: ${e.message}`);
+            alert(`Bank Upload Error: ${e.message}`);
             hideInlineProgress();
         }
     }
@@ -5564,7 +5619,33 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // =========================================================================
+    // Wi-Fi Connect Button Event Listener
+    const btnWiFi = el('btn-wifi-connect');
+    if (btnWiFi) {
+        btnWiFi.onclick = async () => {
+            if (window.poiWiFi && window.poiWiFi.isConnected) {
+                window.poiWiFi.disconnect();
+                return;
+            }
+            btnWiFi.innerHTML = '🌐 Connecting...';
+            btnWiFi.disabled = true;
+            try {
+                const res = await window.poiWiFi.checkConnection('192.168.4.1');
+                if (!res.success) {
+                    btnWiFi.innerHTML = '🌐 Connect (Wi-Fi)';
+                    btnWiFi.disabled = false;
+                    alert('Could not reach Open Pixel Poi at 192.168.4.1.\n\nMake sure your computer/phone is connected to the "OpenPixelPoi" Wi-Fi hotspot (Password: openpoi123)!');
+                } else {
+                    btnWiFi.disabled = false;
+                }
+            } catch (err) {
+                btnWiFi.innerHTML = '🌐 Connect (Wi-Fi)';
+                btnWiFi.disabled = false;
+                alert('Wi-Fi connection error: ' + err.message);
+            }
+        };
+    }
+
     // QUICK FX GENERATOR SUITE ENGINE (7 MODES)
     // =========================================================================
     function getQuickFxTargetHeight() {
