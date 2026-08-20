@@ -857,6 +857,7 @@ select:focus {
     font-size: 0.58rem;
     color: var(--neon-green);
     font-family: monospace;
+}
 .vault-card-btns {
     display: flex;
     align-items: stretch;
