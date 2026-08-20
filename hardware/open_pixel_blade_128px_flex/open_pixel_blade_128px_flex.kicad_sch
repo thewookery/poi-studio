@@ -1,0 +1,20 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid "a1b2c3d4-e5f6-7a8b-9c0d-1234567890ab")
+
+  (paper "A3")
+
+  (title_block
+    (title "Open Pixel 128-LED Flexible Blade PCB (FPC)")
+    (date "2026-08-20")
+    (rev "v1.0.0")
+    (company "Open Pixel Poi / Open POI Studio")
+    (comment 1 "128 Ultra-High-Density SK9822-2020 DotStar LEDs @ 2.5mm pitch")
+    (comment 2 "Dimensions: 10mm x 345mm Flexible Polyimide FPC (0.12mm)")
+    (comment 3 "Compatible with 1S 18650 Battery (1.5 - 3.5 hrs run-time)")
+  )
+
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)

@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=98">
+    <link rel="stylesheet" href="styles.css?v=99">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,7 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v98 (Dark Theme Restored)</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v99 (Mobile USB-C Assistant)</span></div>
             <div class="hud-quick-actions">
                 <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -1455,6 +1455,9 @@
                 <span>Select Hardware Profile & Flash (Web Serial)</span>
             </div>
 
+            <!-- DYNAMIC WEB SERIAL / MOBILE USB FLASHING ASSISTANT -->
+            <div id="webserial-assistant-box" style="margin-bottom:12px; padding:12px 14px; border-radius:8px; border:1px solid rgba(0, 173, 181, 0.35); background:#0b111c;"></div>
+
             <!-- 1. OFFICIAL STOCK FIRMWARE SECTION (3 MAIN STOCK FLASH AREAS) -->
             <div style="margin-bottom:14px;">
                 <div style="font-size:0.75rem; font-weight:800; color:var(--text-color); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
@@ -1849,6 +1852,8 @@ document.addEventListener('DOMContentLoaded', function() {
             renderBankSlotsGrid();
         } else if (mode === 'workspace-quick-fx') {
             if (typeof renderAllQuickGenerators === 'function') renderAllQuickGenerators();
+        } else if (mode === 'workspace-firmware') {
+            checkWebSerialSupport();
         }
     }
 
@@ -1917,6 +1922,79 @@ document.addEventListener('DOMContentLoaded', function() {
         el('btn-deck-goto-firmware').onclick = function() {
             switchWorkspace('workspace-firmware');
         };
+    }
+
+    // --- WEB SERIAL DETECTION & MOBILE USB-C FLASHING ASSISTANT ---
+    function checkWebSerialSupport() {
+        const box = el('webserial-assistant-box');
+        if (!box) return;
+        const isSupported = ('serial' in navigator);
+
+        if (isSupported) {
+            box.style.borderColor = 'rgba(0, 255, 136, 0.5)';
+            box.style.background = 'rgba(0, 255, 136, 0.05)';
+            box.innerHTML = `
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.1rem;">⚡</span>
+                        <div>
+                            <div style="font-size:0.8rem; font-weight:800; color:var(--neon-green);">Web Serial is Active & Ready</div>
+                            <div style="font-size:0.68rem; color:var(--text-muted);">You can flash directly via USB-C on this device without installing any drivers.</div>
+                        </div>
+                    </div>
+                    <span class="telemetry-pill" style="color:var(--neon-green); border-color:var(--neon-green); font-size:0.68rem; font-weight:800;">✅ Active</span>
+                </div>
+            `;
+        } else {
+            box.style.borderColor = 'rgba(255, 183, 3, 0.5)';
+            box.style.background = 'rgba(255, 183, 3, 0.05)';
+            box.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                        <div style="font-size:0.82rem; font-weight:800; color:var(--neon-yellow); display:flex; align-items:center; gap:6px;">
+                            <span>📱</span>
+                            <span>Flash from Android Phone via USB-C (Enable Web Serial)</span>
+                        </div>
+                        <button class="hw-btn" id="btn-recheck-webserial" style="font-size:0.68rem; padding:3px 8px; color:var(--neon-green);">🔄 Check Again</button>
+                    </div>
+                    <div style="font-size:0.72rem; color:var(--text-color); line-height:1.45;">
+                        Mobile Chrome requires enabling the <b>Web Serial API</b> flag once to talk to the Poi over USB-C.
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px; background:#070a11; padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        <input type="text" id="input-webserial-flag" value="chrome://flags/#enable-web-serial" readonly style="flex:1; background:transparent; border:none; color:var(--neon-cyan); font-family:monospace; font-size:0.75rem; outline:none;">
+                        <button class="hw-btn" id="btn-copy-webserial-flag" style="font-size:0.7rem; font-weight:800; padding:5px 10px; color:var(--neon-yellow);" title="Copy Flag URL to Clipboard">📋 Copy URL</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:6px; font-size:0.68rem; color:var(--text-muted);">
+                        <div style="background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:4px;"><b>1.</b> Tap <b>Copy URL</b> above</div>
+                        <div style="background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:4px;"><b>2.</b> Paste in Chrome URL bar</div>
+                        <div style="background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:4px;"><b>3.</b> Set to <b>Enabled</b> & Relaunch</div>
+                    </div>
+                </div>
+            `;
+
+            const copyBtn = el('btn-copy-webserial-flag');
+            if (copyBtn) {
+                copyBtn.onclick = () => {
+                    const input = el('input-webserial-flag');
+                    if (input) {
+                        input.select();
+                        navigator.clipboard.writeText(input.value).then(() => {
+                            copyBtn.innerText = '✅ Copied!';
+                            setTimeout(() => { copyBtn.innerText = '📋 Copy URL'; }, 2500);
+                        }).catch(() => {
+                            alert('Copied chrome://flags/#enable-web-serial to clipboard!');
+                        });
+                    }
+                };
+            }
+
+            const recheckBtn = el('btn-recheck-webserial');
+            if (recheckBtn) {
+                recheckBtn.onclick = () => {
+                    checkWebSerialSupport();
+                };
+            }
+        }
     }
 
 
@@ -6086,6 +6164,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setFirmwareBankMode(BANK_COUNT, false);
     renderBankSlotsGrid();
     renderAllQuickGenerators();
+    checkWebSerialSupport();
 
 
 });

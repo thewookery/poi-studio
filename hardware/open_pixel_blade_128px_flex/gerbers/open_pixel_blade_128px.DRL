@@ -1,0 +1,11 @@
+; DRILL file {Blade128Gen} date 2026-08-20
+; FORMAT={3:3}/ metric / absolute / zero suppression: trailing
+METRIC,TZ
+T01C0.300
+%
+T01
+X5000Y10000
+X5000Y100000
+X5000Y200000
+X5000Y300000
+M30

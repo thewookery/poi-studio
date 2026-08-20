@@ -1,0 +1,13 @@
+%TF.GenerationSoftware,OpenPixelStudio,Blade128Gen,v1.0*%
+%TF.SameCoordinates,Original*%
+%TF.FileFunction,Soldermask,Top*%
+%FSLAX46Y46*%
+%MOMM*%
+%LPD*%
+%ADD10R,0.900000X4.100000*%
+D10*
+X2000000Y2500000D03*
+X4000000Y2500000D03*
+X6000000Y2500000D03*
+X8000000Y2500000D03*
+M02*

@@ -1,0 +1,4 @@
+Comment,Designator,Footprint,LCSC Part #,Quantity,Description
+SK9822-2020,D1-D128,LED_SK9822_2020Metric,C2913210,128,2.0x2.0mm Top-SMD Addressable RGB LED with Integrated Driver
+100nF 25V 0402,C1-C128,C_0402_1005Metric,C1525,128,Decoupling Ceramic Capacitor (1 per LED for noise immunity)
+10uF 10V 0603,"C129, C130, C131",C_0603_1608Metric,C19702,3,"Bulk Power Filtering Capacitors (Head, Middle, Tail)"
