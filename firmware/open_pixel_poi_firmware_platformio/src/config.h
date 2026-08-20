@@ -7,12 +7,12 @@
 #define BATTERY_VOLTAGE_CRITICAL 3.33
 #define BATTERY_VOLTAGE_SHUTDOWN 3.25
 
-#define OUTPUT_PCB_CURRENT_LIMIT 1.2
+#define OUTPUT_PCB_CURRENT_LIMIT 1.5
 #define OUTPUT_CHANNELS 3
 #define OUTPUT_WS2812B_5050_DRAW 0.050
 #define OUTPUT_WS2812B_5050_LIMIT 255
 #define OUTPUT_SK9822_2020_DRAW 0.060
-#define OUTPUT_SK9822_2020_LIMIT 100 // Data sheet says max brightness = 10/32 = 79/255, but yolo we do 100/255
+#define OUTPUT_SK9822_2020_LIMIT 160 // Enhanced high-lumen optical headroom for full brightness
 
 // 50 High-Speed Slots (5 Banks x 10 Slots)
 #define PATTERN_BANK_SIZE 10
