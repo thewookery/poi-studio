@@ -1670,6 +1670,22 @@
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">
                     
+                    <!-- LINUX 1-CLICK CLI FLASHER -->
+                    <div class="firmware-card" style="border-color:rgba(0, 210, 255, 0.35);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.78rem; font-weight:800; color:var(--neon-cyan);">🐧 Linux 1-Click CLI Flasher</span>
+                            <span class="telemetry-pill" style="color:var(--neon-cyan); border-color:var(--neon-cyan); font-size:0.62rem;">Bash Script</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.3; margin-top:3px;">
+                            Native Bash script for Ubuntu, Debian, Arch, Fedora, and Raspberry Pi OS. Automatically sets up udev rules and flashes via esptool.py!
+                        </div>
+                        <div style="margin-top:6px;">
+                            <a href="firmware/flash_linux.sh" download="flash_linux.sh" class="hw-btn" style="display:inline-block; text-decoration:none; width:100%; text-align:center; font-size:0.72rem; padding:6px 10px; color:var(--neon-cyan); border-color:var(--neon-cyan);">
+                                📥 Download flash_linux.sh
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- CUSTOM PLATFORMIO SOURCE CODE -->
                     <div class="firmware-card">
                         <span style="font-size:0.78rem; font-weight:800; color:var(--neon-purple);">🛠️ Custom PlatformIO Source</span>
@@ -2076,27 +2092,59 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // --- WEB SERIAL DETECTION & MOBILE USB-C FLASHING ASSISTANT ---
+    // --- WEB SERIAL DETECTION & CROSS-PLATFORM (LINUX / ANDROID / WINDOWS / MAC) FLASHING ASSISTANT ---
     function checkWebSerialSupport() {
         const box = el('webserial-assistant-box');
         if (!box) return;
         const isSupported = ('serial' in navigator);
+        const isLinux = /Linux/i.test(navigator.userAgent) && !/Android/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
 
         if (isSupported) {
             box.style.borderColor = 'rgba(0, 255, 136, 0.5)';
             box.style.background = 'rgba(0, 255, 136, 0.05)';
+            
+            let linuxHelperHtml = "";
+            if (isLinux) {
+                linuxHelperHtml = `
+                    <div style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px; font-size:0.68rem; color:var(--text-muted);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span>🐧 <b>Linux Note:</b> If port permission is denied, add your user to <code>dialout</code>:</span>
+                            <button class="hw-btn" id="btn-copy-linux-cmd" style="font-size:0.65rem; padding:2px 6px; color:var(--neon-cyan);">📋 Copy Command</button>
+                        </div>
+                        <input type="text" id="input-linux-cmd" value="sudo usermod -a -G dialout,plugdev $USER" readonly style="width:100%; background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:3px; padding:3px 6px; color:var(--neon-cyan); font-family:monospace; font-size:0.68rem; outline:none;">
+                    </div>
+                `;
+            }
+
             box.innerHTML = `
                 <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-size:1.1rem;">⚡</span>
                         <div>
-                            <div style="font-size:0.8rem; font-weight:800; color:var(--neon-green);">Web Serial is Active & Ready</div>
-                            <div style="font-size:0.68rem; color:var(--text-muted);">You can flash directly via USB-C on this device without installing any drivers.</div>
+                            <div style="font-size:0.8rem; font-weight:800; color:var(--neon-green);">Web Serial & WebUSB Active (Cross-Platform Ready)</div>
+                            <div style="font-size:0.68rem; color:var(--text-muted);">${isLinux ? 'Linux (Ubuntu/Debian/Arch/Fedora) detected.' : isAndroid ? 'Android WebUSB polyfill active.' : 'Ready to flash directly via USB-C on this device.'}</div>
                         </div>
                     </div>
                     <span class="telemetry-pill" style="color:var(--neon-green); border-color:var(--neon-green); font-size:0.68rem; font-weight:800;">✅ Active</span>
                 </div>
+                ${linuxHelperHtml}
             `;
+
+            const copyLinuxBtn = el('btn-copy-linux-cmd');
+            if (copyLinuxBtn) {
+                copyLinuxBtn.onclick = () => {
+                    const input = el('input-linux-cmd');
+                    if (input) {
+                        input.select();
+                        navigator.clipboard.writeText(input.value).then(() => {
+                            copyLinuxBtn.innerText = '✅ Copied!';
+                            setTimeout(() => { copyLinuxBtn.innerText = '📋 Copy Command'; }, 2500);
+                        });
+                    }
+                };
+            }
+
         } else {
             box.style.borderColor = 'rgba(255, 183, 3, 0.5)';
             box.style.background = 'rgba(255, 183, 3, 0.05)';
@@ -2105,12 +2153,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
                         <div style="font-size:0.82rem; font-weight:800; color:var(--neon-yellow); display:flex; align-items:center; gap:6px;">
                             <span>📱</span>
-                            <span>Flash from Android Phone via USB-C (Enable Web Serial)</span>
+                            <span>Flash via USB-C (Enable Web Serial / WebUSB)</span>
                         </div>
                         <button class="hw-btn" id="btn-recheck-webserial" style="font-size:0.68rem; padding:3px 8px; color:var(--neon-green);">🔄 Check Again</button>
                     </div>
                     <div style="font-size:0.72rem; color:var(--text-color); line-height:1.45;">
-                        Mobile Chrome requires enabling the <b>Web Serial API</b> flag once to talk to the Poi over USB-C.
+                        If the device picker does not appear, enable <b>Web Serial API</b> or connect with a USB-C OTG cable.
                     </div>
                     <div style="display:flex; align-items:center; gap:6px; background:#070a11; padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
                         <input type="text" id="input-webserial-flag" value="chrome://flags/#enable-web-serial" readonly style="flex:1; background:transparent; border:none; color:var(--neon-cyan); font-family:monospace; font-size:0.75rem; outline:none;">
