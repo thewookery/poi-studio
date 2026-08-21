@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=99">
+    <link rel="stylesheet" href="styles.css?v=100">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
 
@@ -33,7 +33,7 @@
     <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
     <header class="pinned-top-hud">
         <div class="hud-brand-row">
-            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v99 (Mobile USB-C Assistant)</span></div>
+            <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--text-muted); font-weight:600; background:rgba(255,255,255,0.06); padding:2px 5px; border-radius:3px;">v100 (ESP-NOW Mesh & Nunchuk Edition)</span></div>
             <div class="hud-quick-actions">
                 <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                 <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -1577,7 +1577,85 @@
 
             </div>
 
-            <!-- 3. LEGACY FIRMWARE & SOURCE CODE SECTION -->
+            <!-- 3. EXPERIMENTAL: PURE ESP-NOW MESH & NUNCHUK BRIDGE (PASSWORD PROTECTED) -->
+            <div style="margin-top:14px; border-top:1px solid rgba(188, 19, 254, 0.35); padding-top:12px; margin-bottom:14px;" id="sec-espnow-protected">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                    <div style="font-size:0.8rem; font-weight:800; color:var(--neon-purple); display:flex; align-items:center; gap:6px;">
+                        <span>🎮</span>
+                        <span>Experimental: Pure ESP-NOW Mesh & Nunchuk Bridge System</span>
+                    </div>
+                    <span class="telemetry-pill" id="espnow-lock-badge" style="color:var(--neon-yellow); border-color:var(--neon-yellow); font-size:0.62rem; font-weight:800;">🔒 Password Protected</span>
+                </div>
+
+                <!-- LOCKED GATE CARD -->
+                <div id="espnow-locked-gate" class="firmware-card" style="border-color:rgba(188, 19, 254, 0.4); background:rgba(188, 19, 254, 0.04); text-align:center; padding:16px 12px;">
+                    <div style="font-size:1.6rem; margin-bottom:6px;">🔐</div>
+                    <div style="font-size:0.84rem; font-weight:800; color:var(--neon-purple);">Developer Access Required</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted); max-width:440px; margin:4px auto 10px auto; line-height:1.45;">
+                        This section contains experimental <b>Pure ESP-NOW Receiver</b> firmware for Props (Poi, Hat, Wand) and the <b>Master Wii Nunchuk Bridge Transmitter</b>. Enter the developer password to unlock flasher controls.
+                    </div>
+                    <div style="display:flex; justify-content:center; align-items:center; gap:8px; max-width:300px; margin:0 auto;">
+                        <input type="password" id="input-espnow-pass" placeholder="Enter Developer Password..." style="flex:1; background:#070a11; border:1px solid rgba(188,19,254,0.4); border-radius:4px; padding:6px 10px; color:var(--text-color); font-size:0.75rem; text-align:center; outline:none;">
+                        <button class="hw-btn" id="btn-unlock-espnow" style="font-size:0.75rem; font-weight:800; padding:6px 14px; color:var(--neon-purple); border-color:var(--neon-purple);">🔓 Unlock</button>
+                    </div>
+                    <div id="espnow-pass-error" style="font-size:0.68rem; color:#ff4d4d; margin-top:6px; display:none;">⚠️ Invalid Developer Password. Try again.</div>
+                </div>
+
+                <!-- UNLOCKED CONTENT (HIDDEN BY DEFAULT) -->
+                <div id="espnow-unlocked-content" style="display:none; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
+                    
+                    <!-- 1. PURE ESP-NOW PROP RECEIVER (POI / HAT / STICK) -->
+                    <div class="firmware-card" style="border-color:rgba(188, 19, 254, 0.5); background:rgba(188, 19, 254, 0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-purple);">🪩 Pure ESP-NOW Prop Receiver (Poi / Hat / Stick)</span>
+                            <span class="telemetry-pill" style="color:var(--neon-purple); font-size:0.62rem; font-weight:800;">55px DotStar • Zero BLE</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
+                            • <b>100% Zero-Bluetooth Protocol:</b> Eliminates all radio drops on spinning poi<br>
+                            • <b>Instant Radio Sync:</b> Listens directly for master Nunchuk / Bridge broadcasts<br>
+                            • <b>High-Speed 20MHz SPI Engine:</b> 50 Slots • 32 Palettes • 17 Motion Flows • Peak Brightness<br>
+                            • <b>Unlimited Multi-Prop Mesh:</b> Syncs unlimited poi, hats, and wands in microsecond unison
+                        </div>
+                        <div class="firmware-flash-wrap" style="margin-top:8px;">
+                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-espnow/manifest.json?v=99">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4; border-color:var(--neon-purple); color:var(--neon-purple);">
+                                    ⚡ Flash Pure ESP-NOW Prop Receiver (55px DotStar)
+                                </button>
+                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
+                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
+                                </span>
+                            </esp-web-install-button>
+                        </div>
+                    </div>
+
+                    <!-- 2. MASTER WII NUNCHUK ESP-NOW BRIDGE TRANSMITTER -->
+                    <div class="firmware-card" style="border-color:rgba(0, 210, 255, 0.5); background:rgba(0, 210, 255, 0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-cyan);">🕹️ Master Wii Nunchuk Bridge Transmitter</span>
+                            <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">Handheld Bridge • I2C</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
+                            • <b>Wii Nunchuk I2C Master:</b> Reads Joystick (X/Y), Buttons (C/Z), and 3-Axis Tilt (X/Y/Z)<br>
+                            • <b>Wireless ESP-NOW Broadcast:</b> Transmits real-time packet commands across 100+ meters<br>
+                            • <b>Web Studio BLE Gateway:</b> Connects to Open POI Studio on your phone simultaneously<br>
+                            • <b>Real-Time Interactive Drops:</b> Joystick pattern change, C palette cycle, Z trigger strobe
+                        </div>
+                        <div class="firmware-flash-wrap" style="margin-top:8px;">
+                            <esp-web-install-button manifest="firmware/opp_firmware/custom/1.0.0-bridge-nunchuk/manifest.json?v=99">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4; border-color:var(--neon-cyan); color:var(--neon-cyan);">
+                                    ⚡ Flash Master Nunchuk Bridge (Xiao ESP32-C3)
+                                </button>
+                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
+                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
+                                </span>
+                            </esp-web-install-button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 4. LEGACY FIRMWARE & SOURCE CODE SECTION -->
             <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:10px;">
                 <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); margin-bottom:6px;">
                     📁 Legacy Firmware & Source Code
@@ -1854,6 +1932,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof renderAllQuickGenerators === 'function') renderAllQuickGenerators();
         } else if (mode === 'workspace-firmware') {
             checkWebSerialSupport();
+            initEspNowProtection();
         }
     }
 
@@ -1879,6 +1958,71 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.style.opacity = isUnlocked ? '1' : '0.4';
             btn.style.cursor = isUnlocked ? 'pointer' : 'not-allowed';
         });
+    }
+
+    // --- PASSWORD PROTECTION FOR EXPERIMENTAL ESP-NOW MESH SECTION ---
+    const ESPNOW_ALLOWED_HASHES = [
+        "d1f71ec58153477779595b7d1641683ab4ce3b2fd07a7864af865db8445f2717", // 'wookery'
+        "259fa722f3279777a88aa2727b0374135c665739784b28f262d646ff67acf062", // 'openpoi'
+        "5c328e3b2e77b6299b9cf9067b5b54668df2624a9a08e6702c89fcae1adff9c0"  // 'nunchuk'
+    ];
+
+    async function sha256Hex(text) {
+        const msgBuffer = new TextEncoder().encode(text.trim().toLowerCase());
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function initEspNowProtection() {
+        const isUnlocked = (sessionStorage.getItem('espnow_unlocked') === '1');
+        const gate = el('espnow-locked-gate');
+        const content = el('espnow-unlocked-content');
+        const badge = el('espnow-lock-badge');
+        const passInput = el('input-espnow-pass');
+        const unlockBtn = el('btn-unlock-espnow');
+        const errEl = el('espnow-pass-error');
+
+        if (isUnlocked) {
+            if (gate) gate.style.display = 'none';
+            if (content) content.style.display = 'grid';
+            if (badge) {
+                badge.innerText = '🔓 Developer Access';
+                badge.style.color = 'var(--neon-purple)';
+                badge.style.borderColor = 'var(--neon-purple)';
+            }
+        }
+
+        async function attemptUnlock() {
+            if (!passInput) return;
+            const inputVal = passInput.value.trim();
+            if (!inputVal) return;
+            const hash = await sha256Hex(inputVal);
+            if (ESPNOW_ALLOWED_HASHES.includes(hash)) {
+                sessionStorage.setItem('espnow_unlocked', '1');
+                if (gate) gate.style.display = 'none';
+                if (content) content.style.display = 'grid';
+                if (badge) {
+                    badge.innerText = '🔓 Developer Access';
+                    badge.style.color = 'var(--neon-purple)';
+                    badge.style.borderColor = 'var(--neon-purple)';
+                }
+                if (errEl) errEl.style.display = 'none';
+                const chk = el('chk-firmware-safety-agree');
+                setFirmwareUnlocked(chk ? chk.checked : false);
+            } else {
+                if (errEl) errEl.style.display = 'block';
+                passInput.value = '';
+                passInput.focus();
+            }
+        }
+
+        if (unlockBtn) unlockBtn.onclick = attemptUnlock;
+        if (passInput) {
+            passInput.onkeydown = (e) => {
+                if (e.key === 'Enter') attemptUnlock();
+            };
+        }
     }
 
     if (el('chk-firmware-safety-agree')) {
@@ -6165,6 +6309,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderBankSlotsGrid();
     renderAllQuickGenerators();
     checkWebSerialSupport();
+    initEspNowProtection();
 
 
 });

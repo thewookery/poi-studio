@@ -1,0 +1,26 @@
+{
+  "name": "Master Wii Nunchuk ESP-NOW Bridge Transmitter (Xiao ESP32-C3)",
+  "version": "1.0.0-nunchuk-v99",
+  "home_assistant_domain": "open_pixel_poi",
+  "funding_url": "https://github.com/thewookery/poi-studio",
+  "new_install_prompt_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "bootloader.bin",
+          "offset": 0
+        },
+        {
+          "path": "partitions.bin",
+          "offset": 32768
+        },
+        {
+          "path": "firmware.bin",
+          "offset": 65536
+        }
+      ]
+    }
+  ]
+}

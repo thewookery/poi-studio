@@ -1,0 +1,340 @@
+#ifndef _OPEN_PIXEL_POI_BUTTON
+#define _OPEN_PIXEL_POI_BUTTON
+
+#include "open_pixel_poi_config.cpp"
+#include "open_pixel_poi_espnow_recv.cpp"
+
+#include <driver/rtc_io.h>
+
+#include <driver/gpio.h>
+#include "esp_sleep.h"
+
+//#define DEBUG  // Comment this line out to remove printf statements in released version
+#ifdef DEBUG
+#define debugf(...) Serial.print("<<button>> ");Serial.printf(__VA_ARGS__);
+#define debugf_noprefix(...) Serial.printf(__VA_ARGS__);
+#else
+#define debugf(...)
+#define debugf_noprefix(...)
+#endif
+
+enum ButtonState {
+  BS_INITIAL,
+  BS_CLICK_DOWN,
+  BS_CLICK_HOLD,
+  BS_CLICK_HOLD_LONG,
+  BS_CLICK_UP,
+  BS_CLICK2_DOWN,
+  BS_CLICK2_HOLD,
+  BS_CLICK2_UP,
+  BS_CLICK3_DOWN,
+  BS_CLICK3_HOLD,
+  BS_CLICK3_UP,
+  BS_CLICK4_DOWN,
+  BS_CLICK4_HOLD,
+  BS_CLICK4_UP,
+  BS_CLICK5_DOWN,
+  BS_CLICK5_HOLD,
+  BS_CLICK5_UP
+};
+
+class OpenPixelPoiButton {
+
+private:
+  OpenPixelPoiConfig& config;
+
+  int filteredButtonInput = 1000;
+  int buttonState = 0;
+  long downTime = 0;
+  bool regulatorEnabled = true;
+
+  long shutDownAt = 0;
+  bool inBankSelectMode = false;
+  uint8_t previewBank = 0;
+  int paletteSelectStage = 0; // 0 = normal, 1 = selecting Palette, 2 = selecting Motion FX Bank
+  uint8_t previewPalette = 1;
+  uint8_t previewMotion = 0;
+
+public:
+  OpenPixelPoiButton(OpenPixelPoiConfig& _config): config(_config) {}    
+
+
+
+  void setup() {
+    // Voltage Input
+    pinMode(A0, INPUT);
+
+    //Button Input
+    pinMode(3,INPUT_PULLUP);
+
+    // Regulator Output
+    pinMode(D7, OUTPUT);
+    regulatorEnabled = true;
+    digitalWrite(D7, HIGH);
+
+  }
+
+  void loop() {
+    filteredButtonInput = (filteredButtonInput * 0.92) + (analogRead(3) * .08);
+    if(filteredButtonInput < 100){
+      if(buttonState == BS_INITIAL){ // Single Click
+        downTime = millis();
+        buttonState = BS_CLICK_DOWN;
+        // Trigger Waiting Animation
+        config.displayState = DS_WAITING;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK_UP){ // Double Click
+        downTime = millis();
+        buttonState = BS_CLICK2_DOWN;
+        // Trigger Waiting Animation
+        config.displayState = DS_WAITING2;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK2_UP){ // Triple Click
+        downTime = millis();
+        buttonState = BS_CLICK3_DOWN;
+        // Trigger Waiting Animation
+        config.displayState = DS_WAITING3;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK3_UP){ // Quad Click
+        downTime = millis();
+        buttonState = BS_CLICK4_DOWN;
+        // Trigger Waiting Animation
+        config.displayState = DS_WAITING4;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK4_UP){ // Penta Click
+        downTime = millis();
+        buttonState = BS_CLICK5_DOWN;
+        // Trigger Waiting Animation
+        config.displayState = DS_WAITING5;
+        config.displayStateLastUpdated = millis();
+    }else if(buttonState == BS_CLICK_DOWN && millis() - downTime >= 500){ // Click Hold
+        if (inBankSelectMode) {
+          // Confirmed Bank Selection! Lock and return to pattern
+          inBankSelectMode = false;
+          config.setPatternBank(previewBank, true);
+          buttonState = BS_INITIAL;
+          config.displayState = DS_PATTERN;
+          config.displayStateLastUpdated = millis();
+        } else if (paletteSelectStage == 1) {
+          // Confirmed Palette! Advance to Stage 2: Motion Flow FX Bank
+          paletteSelectStage = 2;
+          previewMotion = 0;
+          config.motionFxMode = previewMotion;
+          buttonState = BS_INITIAL;
+          config.displayState = DS_PALETTE_SELECT;
+          config.displayStateLastUpdated = millis();
+        } else if (paletteSelectStage == 2) {
+          // Confirmed Motion Flow FX! Lock both in and return to normal spinning
+          paletteSelectStage = 0;
+          config.setPaletteFxMode(previewPalette);
+          config.setMotionFxMode(previewMotion);
+          buttonState = BS_INITIAL;
+          config.displayState = DS_PATTERN;
+          config.displayStateLastUpdated = millis();
+        } else {
+          buttonState = BS_CLICK_HOLD;
+          // Trigger voltage display
+          config.displayState = DS_VOLTAGE;
+          config.displayStateLastUpdated = millis();
+        }
+      }else if(buttonState == BS_CLICK_HOLD && millis() - downTime >= 2000){ // Click Long Hold
+        buttonState = BS_CLICK_HOLD_LONG;
+        config.displayState = DS_SHUTDOWN;
+        config.displayStateLastUpdated = millis();
+        shutDownAt = millis();
+      }else if(buttonState == BS_CLICK2_DOWN && millis() - downTime >= 500){ // Click2 Hold
+        paletteSelectStage = 0;
+        inBankSelectMode = true;
+        previewBank = (config.patternBank < 5) ? config.patternBank : 0;
+        config.patternBank = previewBank;
+        buttonState = BS_CLICK2_HOLD;
+        config.displayState = DS_BANK;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK3_DOWN && millis() - downTime >= 500){ // Click3 Hold
+        buttonState = BS_CLICK3_HOLD;
+        // Trigger voltage display
+        config.displayState = DS_BRIGHTNESS;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK4_DOWN && millis() - downTime >= 500){ // Click4 Hold
+        buttonState = BS_CLICK4_HOLD;
+        // Trigger speed display
+        config.displayState = DS_SPEED;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK5_DOWN && millis() - downTime >= 500){ // Click5 Hold
+        buttonState = BS_CLICK5_HOLD;
+        // Trigger live visual palette picker menu
+        config.displayState = DS_PALETTE_MENU;
+        config.displayStateLastUpdated = millis();
+      }
+
+    }else{
+      if(buttonState == BS_CLICK_DOWN){
+        buttonState = BS_CLICK_UP;
+      }else if(buttonState == BS_CLICK2_DOWN){
+        buttonState = BS_CLICK2_UP;
+      }else if(buttonState == BS_CLICK3_DOWN){
+        buttonState = BS_CLICK3_UP;
+      }else if(buttonState == BS_CLICK4_DOWN){
+        buttonState = BS_CLICK4_UP;
+      }else if(buttonState == BS_CLICK5_DOWN){
+        buttonState = BS_CLICK5_UP;
+      }else if(buttonState == BS_CLICK_HOLD){
+        buttonState = BS_INITIAL;
+        config.displayState = DS_PATTERN;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK2_HOLD){
+        buttonState = BS_INITIAL;
+      }else if(buttonState == BS_CLICK3_HOLD){
+        if(millis() - downTime < 1000){
+          config.setLedBrightness(config.ledBrightnessOptions[0]);
+        }else if(millis() - downTime < 1500){
+          config.setLedBrightness(config.ledBrightnessOptions[1]);
+        }else if(millis() - downTime < 2000){
+          config.setLedBrightness(config.ledBrightnessOptions[2]);
+        }else if(millis() - downTime < 2500){
+          config.setLedBrightness(config.ledBrightnessOptions[3]);
+        }else if(millis() - downTime < 3000){
+          config.setLedBrightness(config.ledBrightnessOptions[4]);
+        }else{
+          config.setLedBrightness(config.ledBrightnessOptions[5]);
+        }
+        buttonState = BS_INITIAL;
+        config.displayState = DS_PATTERN;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK4_HOLD){
+        if(millis() - downTime < 1000){
+          config.setAnimationSpeed(config.animationSpeedOptions[0]);
+        }else if(millis() - downTime < 1500){
+          config.setAnimationSpeed(config.animationSpeedOptions[1]);
+        }else if(millis() - downTime < 2000){
+          config.setAnimationSpeed(config.animationSpeedOptions[2]);
+        }else if(millis() - downTime < 2500){
+          config.setAnimationSpeed(config.animationSpeedOptions[3]);
+        }else if(millis() - downTime < 3000){
+          config.setAnimationSpeed(config.animationSpeedOptions[4]);
+        }else{
+          config.setAnimationSpeed(config.animationSpeedOptions[5]);
+        }
+        buttonState = BS_INITIAL;
+        config.displayState = DS_PATTERN;
+        config.displayStateLastUpdated = millis();
+      }else if(buttonState == BS_CLICK5_HOLD){
+        buttonState = BS_INITIAL;
+        config.displayState = DS_PATTERN;
+        config.displayStateLastUpdated = millis();
+      }
+    }
+
+    // Single press detected after timeout
+    if(buttonState == BS_CLICK_UP && millis() - downTime >= 350){
+      if(inBankSelectMode){
+        // Bank Menu Active: Step forward (Bank 1 -> 2 -> 3 -> 4 -> 5 -> 1 infinite round robin!)
+        previewBank = (previewBank + 1) % 5;
+        config.patternBank = previewBank;
+        config.displayState = DS_BANK;
+        config.displayStateLastUpdated = millis();
+        buttonState = BS_INITIAL;
+      }else if(paletteSelectStage == 1){
+        // Stage 1: Step through 33 Curated States (0: Blank/Native Colors, 1..32: Curated Pro Palettes)
+        previewPalette = (previewPalette + 1) % 33;
+        config.paletteFxMode = previewPalette;
+        config.motionFxMode = 0; // Multi-color gradient spectrum preview in Stage 1
+        config.displayState = DS_PALETTE_SELECT;
+        config.displayStateLastUpdated = millis();
+        buttonState = BS_INITIAL;
+      }else if(paletteSelectStage == 2){
+        // Stage 2: Step through 17 Crazy Motion Flows (0..16: Solid, Flow Up, Flow Down, Rain, Tidal, Plasma, Stardust, Pulse, POV Spin, Spiral, Strobe, Hyperspace Warp, Glitch, Aurora, Lava, Disco, Black Hole)
+        previewMotion = (previewMotion + 1) % 17;
+        config.motionFxMode = previewMotion;
+        config.displayState = DS_PALETTE_SELECT;
+        config.displayStateLastUpdated = millis();
+        buttonState = BS_INITIAL;
+      }else{
+        // Normal mode: Increment pattern slot in active bank
+        config.setPatternSlot((config.patternSlot + 1) % PATTERN_BANK_SIZE, true);
+        config.displayState = DS_PATTERN;
+        config.displayStateLastUpdated = millis();
+        buttonState = BS_INITIAL;
+      }
+    }
+
+    // Double press detected after timeout -> Enter Persistent Bank Selector Menu!
+    if(buttonState == BS_CLICK2_UP && millis() - downTime >= 350){
+      paletteSelectStage = 0;
+      inBankSelectMode = true;
+      previewBank = (config.patternBank < 5) ? config.patternBank : 0;
+      config.patternBank = previewBank;
+      config.displayState = DS_BANK;
+      config.displayStateLastUpdated = millis();
+      buttonState = BS_INITIAL;
+    }
+
+    // Triple press detected after timeout -> return to pattern
+    if(buttonState == BS_CLICK3_UP && millis() - downTime >= 350){
+      config.displayState = (paletteSelectStage > 0) ? DS_PALETTE_SELECT : DS_PATTERN;
+      config.displayStateLastUpdated = millis();
+      buttonState = BS_INITIAL;
+    }
+
+    // Quad press detected after timeout -> Enter 2-Stage Palette & Motion FX Selector!
+    if(buttonState == BS_CLICK4_UP && millis() - downTime >= 350){
+      inBankSelectMode = false;
+      paletteSelectStage = 1; // Start in Stage 1: Palette Selection
+      previewPalette = config.paletteFxMode;
+      previewMotion = config.motionFxMode;
+      config.paletteFxMode = previewPalette;
+      config.motionFxMode = 0; // Solid blade preview in Stage 1
+      config.displayState = DS_PALETTE_SELECT;
+      config.displayStateLastUpdated = millis();
+      buttonState = BS_INITIAL;
+    }
+
+    // Penta press detected after timeout -> display voltage breakdown
+    if(buttonState == BS_CLICK5_UP && millis() - downTime >= 350){
+      config.displayState = DS_VOLTAGE2;
+      config.displayStateLastUpdated = millis();
+      buttonState = BS_INITIAL;
+    }
+
+
+
+    // Read battery voltage
+    if(BATTERY_VOLTAGE_SENSOR){
+      if(config.displayState != DS_SHUTDOWN){ // Don't read voltage during shutdown sequence as it swings due to dimming
+        config.batteryVoltage = (config.batteryVoltage * 0.999) + ((analogReadMilliVolts(A0)/500.0) * .001);
+      }
+    }else{
+      config.batteryVoltage = 4.2;
+    }
+
+    
+
+    // Super low voltage, emergency shutdown (uses data from previous read, this is ok). 
+    if (config.batteryState == BAT_SHUTDOWN && config.displayState != DS_SHUTDOWN){
+      config.displayState = DS_SHUTDOWN;
+      config.displayStateLastUpdated = millis();
+      shutDownAt = millis();
+    }
+
+    // do a shutdown if flaged
+    if(shutDownAt != 0 && millis() - shutDownAt > 2000){
+      // Regulator Shutdown
+      digitalWrite(D7, LOW);
+      delay(500);
+      
+      //hold disable, isolate and power domain config functions may be unnecessary
+      //gpio_deep_sleep_hold_dis();
+      //esp_sleep_config_gpio_isolate();
+      //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+
+      // ESP32 Shutdown sequence
+      gpio_set_direction(gpio_num_t(3), GPIO_MODE_INPUT);
+      esp_deep_sleep_enable_gpio_wakeup(0b001000, ESP_GPIO_WAKEUP_GPIO_LOW);
+      esp_deep_sleep_start();
+    }
+
+  }
+
+};
+
+#endif
