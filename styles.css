@@ -1,11 +1,20 @@
+/* ==========================================================================
+   OPEN POI STUDIO - ULTRA-CLEAN WORKSTATION UI REFRESH (BUILD v104)
+   Inspired by PlinkyHub, Teenage Engineering & Modern Synth Workstations
+   ========================================================================== */
+
 :root {
-    --bg-color: #121217;
-    --hud-bg: rgba(18, 18, 23, 0.95);
-    --sidebar-bg: #16161f;
-    --card-bg: #1a1a24;
-    --card-bg-hover: #222230;
+    --bg-color: #0e1017;
+    --sidebar-bg: #13151f;
+    --hud-bg: rgba(16, 19, 29, 0.96);
+    --card-bg: #161824;
+    --card-bg-hover: #1c2030;
     --card-border: rgba(255, 255, 255, 0.08);
+    --card-border-subtle: rgba(255, 255, 255, 0.05);
+    
+    /* SYNTH ACCENT PALETTE */
     --accent-color: #00897B;
+    --accent-cyan: #00d2ff;
     --accent-glow: rgba(0, 137, 123, 0.35);
     --neon-pink: #ff2e63;
     --neon-purple: #bc13fe;
@@ -13,9 +22,11 @@
     --neon-yellow: #ffb703;
     --neon-cyan: #00d2ff;
     --text-color: #f1f5f9;
-    --text-muted: #8e9db2;
+    --text-muted: #8a99ad;
     --border-color: rgba(255, 255, 255, 0.08);
     --danger-color: #ff4757;
+    
+    /* REFINED RADII & SPACING */
     --radius-xs: 4px;
     --radius-sm: 6px;
     --radius-md: 10px;
@@ -36,10 +47,10 @@
     height: 6px;
 }
 ::-webkit-scrollbar-track {
-    background: #0d0d12;
+    background: #090a0f;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -54,10 +65,11 @@ body {
     line-height: 1.45;
     min-height: 100vh;
     overflow-x: hidden;
+    letter-spacing: -0.01em;
 }
 
 /* ==========================================================================
-   PLINKYHUB MULTI-WINDOW & SIDEBAR APP SHELL
+   APP SHELL & SIDEBAR NAVIGATION
    ========================================================================== */
 .app-shell {
     display: flex;
@@ -78,7 +90,7 @@ body {
     top: 0;
     height: 100vh;
     z-index: 120;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
     padding: 14px 10px;
     gap: 12px;
 }
@@ -87,7 +99,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 8px 10px 8px;
+    padding: 4px 8px 12px 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .sidebar-brand-title {
@@ -119,13 +131,13 @@ body {
     gap: 10px;
     padding: 9px 12px;
     border-radius: var(--radius-sm);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: var(--text-muted);
     background: transparent;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
     text-align: left;
     width: 100%;
 }
@@ -135,9 +147,9 @@ body {
 }
 .sidebar-item.active {
     color: #ffffff;
-    background: rgba(0, 137, 123, 0.2);
-    border-color: rgba(0, 137, 123, 0.5);
-    box-shadow: 0 0 14px rgba(0, 137, 123, 0.3);
+    background: rgba(0, 137, 123, 0.18);
+    border-color: rgba(0, 137, 123, 0.45);
+    box-shadow: 0 0 12px rgba(0, 137, 123, 0.25);
 }
 .sidebar-item-icon {
     font-size: 1.05rem;
@@ -198,7 +210,7 @@ body {
         padding: 6px 8px;
         border-right: none;
         border-top: 1px solid var(--border-color);
-        background: rgba(18, 18, 23, 0.97);
+        background: rgba(16, 19, 29, 0.97);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         justify-content: space-around;
@@ -244,7 +256,7 @@ body {
 }
 
 /* ==========================================================================
-   PINNED FLOATING VISUALIZER HUD (ALWAYS VISIBLE DURING SCROLLING)
+   PINNED TOP HEADER & ACTION HUD
    ========================================================================== */
 .pinned-top-hud {
     position: sticky;
@@ -254,8 +266,8 @@ body {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.75);
-    padding: 8px 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    padding: 8px 14px;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -268,7 +280,7 @@ body {
     gap: 8px;
 }
 .hud-title {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 900;
     letter-spacing: 0.5px;
     color: #ffffff;
@@ -291,12 +303,12 @@ body {
     font-size: 0.72rem;
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 0 8px rgba(0, 210, 255, 0.35);
+    box-shadow: 0 0 8px rgba(0, 210, 255, 0.25);
     transition: all 0.15s ease;
 }
 .hud-btn-mutate:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 12px rgba(0, 210, 255, 0.65);
+    box-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
 }
 .hud-btn-chaos {
     background: linear-gradient(135deg, #ff007f, #bc13fe);
@@ -307,12 +319,12 @@ body {
     font-size: 0.72rem;
     font-weight: 900;
     cursor: pointer;
-    box-shadow: 0 0 8px rgba(255, 0, 127, 0.35);
+    box-shadow: 0 0 8px rgba(255, 0, 127, 0.25);
     transition: all 0.15s ease;
 }
 .hud-btn-chaos:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 12px rgba(255, 0, 127, 0.7);
+    box-shadow: 0 0 12px rgba(255, 0, 127, 0.5);
 }
 .hud-btn-rand {
     background: linear-gradient(135deg, #00ff88, #00adb5);
@@ -323,12 +335,12 @@ body {
     font-size: 0.72rem;
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 0 8px rgba(0, 255, 136, 0.35);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.25);
     transition: all 0.15s ease;
 }
 .hud-btn-rand:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 12px rgba(0, 255, 136, 0.65);
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
 }
 .hud-btn-dl {
     background: #00adb5;
@@ -344,11 +356,25 @@ body {
 }
 .hud-btn-dl:hover {
     transform: translateY(-1px);
-    filter: brightness(1.15);
+    filter: brightness(1.12);
 }
 
+/* ==========================================================================
+   REUSABLE CARD BOXES & WORKSTATION MODULES
+   ========================================================================== */
+.card-box {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 4px 16px rgba(0, 0, 0, 0.25);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.card-box:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+}
 
-/* DUAL REAL-TIME VISUALIZERS (RESPONSIVE & FLUID) */
+/* DUAL REAL-TIME VISUALIZERS */
 .hud-visualizers {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
@@ -362,8 +388,8 @@ body {
 }
 
 .hud-viz-box {
-    background: #04070e;
-    border: 1px solid var(--border-color);
+    background: #090a10;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--radius-sm);
     padding: 6px 8px;
     display: flex;
@@ -391,7 +417,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #020306;
+    background: #040508;
     border-radius: var(--radius-xs);
 }
 .infinite-canvas-wrap canvas {
@@ -407,7 +433,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #020306;
+    background: #040508;
     border-radius: var(--radius-xs);
     cursor: grab;
 }
@@ -448,157 +474,11 @@ body {
 .val-mono {
     font-family: monospace;
     font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--accent-color);
-    min-width: 40px;
-    text-align: right;
-}
-
-/* RESPONSIVE FLOW & TRANSITION CONTROLS GRID */
-.flow-controls-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr 1fr;
-    gap: 10px;
-}
-@media (max-width: 768px) {
-    .flow-controls-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-}
-
-
-
-
-/* ==========================================================================
-   APP NAVIGATION TABS (TOUCH SCROLLABLE + WRAP AWARE)
-   ========================================================================== */
-.app-tabs-nav {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 6px 10px;
-    background: #090d16;
-    border-bottom: 1px solid var(--border-color);
-    -webkit-overflow-scrolling: touch;
-}
-
-.tab-btn {
-    background: #0f1726;
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    padding: 6px 11px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    flex-shrink: 0;
-}
-.tab-btn:hover {
-    color: var(--text-color);
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-.tab-btn.active {
-    background: rgba(0, 173, 181, 0.18);
-    color: #ffffff;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* ==========================================================================
-   TAB CONTENT PANES
+   BUTTONS, TOGGLES & HARDWARE CONTROLS
    ========================================================================== */
-.app-tab-content {
-    padding: 10px 12px;
-}
-.tab-pane {
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-}
-.tab-pane.active {
-    display: flex;
-}
-
-.pane-header {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-bottom: 2px;
-}
-.pane-title {
-    font-size: 0.88rem;
-    font-weight: 800;
-}
-.pane-sub {
-    font-size: 0.68rem;
-    color: var(--text-muted);
-}
-
-/* GALLERIES */
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-    gap: 8px;
-}
-.preset-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-.preset-card:hover {
-    background: var(--card-bg-hover);
-    border-color: var(--accent-color);
-    transform: translateY(-1px);
-}
-.preset-card.active {
-    border-color: var(--neon-pink);
-    background: rgba(255, 46, 99, 0.08);
-    box-shadow: 0 0 8px rgba(255, 46, 99, 0.35);
-}
-.preset-icon {
-    font-size: 1.25rem;
-    margin-bottom: 2px;
-}
-.preset-name {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-}
-.preset-desc {
-    font-size: 0.62rem;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-}
-
-/* CARD BOXES */
-.card-box {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 10px 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-/* HARDWARE BUTTONS & ENGAGED HALO */
 .hw-presets {
     display: flex;
     align-items: center;
@@ -606,8 +486,8 @@ body {
     flex-wrap: wrap;
 }
 .hw-btn {
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #141722;
+    border: 1px solid rgba(255, 255, 255, 0.09);
     color: var(--text-color);
     padding: 6px 11px;
     font-size: 0.74rem;
@@ -632,35 +512,35 @@ body {
 .toggle-btn.active, 
 .lock-toggle-btn.active, 
 .btn-sym.active {
-    background: rgba(0, 173, 181, 0.22) !important;
-    border-color: #00adb5 !important;
+    background: rgba(0, 137, 123, 0.22) !important;
+    border-color: #00897B !important;
     color: #ffffff !important;
-    box-shadow: 0 0 12px rgba(0, 173, 181, 0.65), inset 0 0 6px rgba(0, 173, 181, 0.25) !important;
+    box-shadow: 0 0 12px rgba(0, 137, 123, 0.35), inset 0 0 6px rgba(0, 137, 123, 0.2) !important;
     font-weight: 800;
 }
 
 .toggle-btn.active-green,
 .hw-btn.active-green {
-    background: rgba(0, 255, 136, 0.2) !important;
+    background: rgba(0, 255, 136, 0.18) !important;
     border-color: var(--neon-green) !important;
     color: #ffffff !important;
-    box-shadow: 0 0 14px rgba(0, 255, 136, 0.65), inset 0 0 6px rgba(0, 255, 136, 0.25) !important;
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.35), inset 0 0 6px rgba(0, 255, 136, 0.15) !important;
     font-weight: 800;
 }
 
 .lock-toggle-btn.active,
 .toggle-btn.active-purple {
-    background: rgba(188, 19, 254, 0.22) !important;
+    background: rgba(188, 19, 254, 0.2) !important;
     border-color: var(--neon-purple) !important;
     color: #ffffff !important;
-    box-shadow: 0 0 14px rgba(188, 19, 254, 0.65), inset 0 0 6px rgba(188, 19, 254, 0.25) !important;
+    box-shadow: 0 0 12px rgba(188, 19, 254, 0.35), inset 0 0 6px rgba(188, 19, 254, 0.15) !important;
     font-weight: 800;
 }
 
 /* SLEEK REUSABLE TOGGLE BUTTONS */
 .toggle-btn, .lock-toggle-btn {
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #141722;
+    border: 1px solid rgba(255, 255, 255, 0.09);
     color: var(--text-muted);
     padding: 6px 11px;
     font-size: 0.74rem;
@@ -686,7 +566,7 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
-    background: #080c14;
+    background: #0a0c12;
     padding: 4px 8px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
@@ -721,9 +601,9 @@ body {
 /* SLICK TOUCH SLIDER TRACK & THUMB */
 input[type="range"] {
     flex: 1;
-    height: 8px;
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 7px;
+    background: #11141e;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 4px;
     outline: none;
     cursor: pointer;
@@ -733,42 +613,42 @@ input[type="range"] {
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-    height: 8px;
+    height: 7px;
     border-radius: 4px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: #00adb5;
+    background: #00897B;
     border: 2px solid #ffffff;
-    box-shadow: 0 0 8px rgba(0, 173, 181, 0.75), 0 2px 5px rgba(0,0,0,0.5);
+    box-shadow: 0 0 8px rgba(0, 137, 123, 0.6), 0 2px 5px rgba(0,0,0,0.5);
     cursor: grab;
-    margin-top: -7px;
+    margin-top: -6.5px;
     transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:active {
     transform: scale(1.15);
-    box-shadow: 0 0 14px rgba(0, 255, 136, 0.9), 0 0 20px rgba(0, 173, 181, 0.8);
+    box-shadow: 0 0 14px rgba(0, 255, 136, 0.8);
     background: #00ff88;
 }
 
 input[type="range"]::-moz-range-thumb {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: #00adb5;
+    background: #00897B;
     border: 2px solid #ffffff;
-    box-shadow: 0 0 8px rgba(0, 173, 181, 0.75);
+    box-shadow: 0 0 8px rgba(0, 137, 123, 0.6);
     cursor: grab;
 }
 
 select {
-    background: #0c121e;
+    background: #11141e;
     border: 1px solid var(--border-color);
     color: var(--text-color);
     padding: 6px 9px;
@@ -783,11 +663,11 @@ select:focus {
 }
 
 /* ==========================================================================
-   STITCHER STORYBOARD TIMELINE & DEDICATED SHOW CINEMA PLAYER
+   STORYBOARD TIMELINE & CINEMA PLAYER
    ========================================================================== */
 .storyboard-timeline {
-    background: #060910;
-    border: 1px dashed rgba(0, 173, 181, 0.5);
+    background: #08090f;
+    border: 1px dashed rgba(0, 137, 123, 0.45);
     border-radius: var(--radius-md);
     min-height: 78px;
     padding: 8px;
@@ -799,8 +679,8 @@ select:focus {
 }
 .storyboard-node {
     position: relative;
-    background: #0f1624;
-    border: 1px solid var(--accent-color);
+    background: #141722;
+    border: 1px solid rgba(0, 137, 123, 0.5);
     border-radius: var(--radius-sm);
     padding: 4px;
     display: flex;
@@ -842,13 +722,12 @@ select:focus {
 }
 .storyboard-btn-mini:hover {
     background: var(--accent-color);
-    color: #000;
+    color: #fff;
 }
 
-/* DEDICATED STORYBOARD SHOW CINEMA PLAYER */
 .storyboard-cinema-box {
-    background: #04070e;
-    border: 1px solid rgba(0, 255, 136, 0.35);
+    background: #08090f;
+    border: 1px solid rgba(0, 255, 136, 0.3);
     border-radius: var(--radius-md);
     padding: 10px 12px;
     display: flex;
@@ -872,11 +751,11 @@ select:focus {
 .cinema-badge {
     font-size: 0.68rem;
     font-family: monospace;
-    color: var(--accent-color);
+    color: var(--accent-cyan);
 }
 .cinema-stream-wrap {
     height: 64px;
-    background: #020306;
+    background: #040508;
     border-radius: var(--radius-sm);
     overflow: hidden;
     display: flex;
@@ -891,7 +770,7 @@ select:focus {
 }
 .cinema-strip-wrap {
     height: 38px;
-    background: #020306;
+    background: #040508;
     border-radius: var(--radius-sm);
     overflow-x: auto;
     overflow-y: hidden;
@@ -914,7 +793,7 @@ select:focus {
     flex-wrap: wrap;
 }
 .cinema-btn-play {
-    background: linear-gradient(135deg, #00ff88, #00adb5);
+    background: linear-gradient(135deg, #00ff88, #00897B);
     color: #070a12;
     border: none;
     padding: 6px 12px;
@@ -925,12 +804,12 @@ select:focus {
     transition: all 0.15s ease;
 }
 .cinema-btn-play:hover {
-    filter: brightness(1.15);
+    filter: brightness(1.12);
     transform: translateY(-1px);
 }
 .cinema-btn-action {
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #141722;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-color);
     padding: 6px 10px;
     font-size: 0.72rem;
@@ -942,46 +821,26 @@ select:focus {
     border-color: var(--accent-color);
 }
 
-
-/* CATEGORY FILTER PILLS */
-.cat-filter-pills {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 6px 0;
-    -webkit-overflow-scrolling: touch;
+/* ==========================================================================
+   PATTERN VAULT GALLERY CARDS
+   ========================================================================== */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
 }
-.cat-pill-btn {
-    background: #141926;
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    font-size: 0.68rem;
-    font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    flex-shrink: 0;
-}
-.cat-pill-btn:hover {
-    background: #1d273a;
-    color: #fff;
-}
-.cat-pill-btn.active {
-    background: var(--accent-color);
-    color: #0c0f17;
-    border-color: var(--accent-color);
-    font-weight: 800;
+@media (max-width: 480px) {
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 6px;
+    }
 }
 
-/* VAULT CARDS */
 .vault-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background: #141722;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-sm);
-    padding: 6px;
+    padding: 7px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -992,17 +851,19 @@ select:focus {
 .vault-card:hover {
     border-color: var(--accent-color);
     background: var(--card-bg-hover);
+    transform: translateY(-1px);
 }
 .vault-card.active {
     border-color: var(--neon-pink);
     box-shadow: 0 0 8px rgba(255, 46, 99, 0.3);
 }
 .vault-card-img {
-    height: 42px;
+    height: 44px;
     max-width: 100%;
     image-rendering: pixelated;
-    border-radius: 2px;
+    border-radius: 3px;
     background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     cursor: pointer;
 }
 .vault-card-meta {
@@ -1035,7 +896,7 @@ select:focus {
 .btn-add-timeline {
     flex: 1;
     min-width: 0;
-    background: linear-gradient(135deg, #00adb5, #39ff14);
+    background: linear-gradient(135deg, #00897B, #00ff88);
     color: #0c0f17;
     font-size: 0.66rem;
     font-weight: 900;
@@ -1050,17 +911,16 @@ select:focus {
     justify-content: center;
     gap: 2px;
     white-space: nowrap;
-    -webkit-tap-highlight-color: transparent;
 }
 .btn-add-timeline:hover {
-    box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.35);
     filter: brightness(1.1);
 }
 .btn-send-bank {
     flex: 1;
     min-width: 0;
-    background: #10221c;
-    border: 1px solid rgba(0, 255, 136, 0.5);
+    background: #0f1c19;
+    border: 1px solid rgba(0, 255, 136, 0.45);
     color: var(--neon-green);
     font-size: 0.66rem;
     font-weight: 800;
@@ -1074,17 +934,15 @@ select:focus {
     justify-content: center;
     gap: 2px;
     white-space: nowrap;
-    -webkit-tap-highlight-color: transparent;
 }
 .btn-send-bank:hover {
-    background: rgba(0, 255, 136, 0.25);
+    background: rgba(0, 255, 136, 0.2);
     border-color: var(--neon-green);
-    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
     color: #ffffff;
 }
 .btn-rotate-card {
     flex: 0 0 28px;
-    background: #1c2436;
+    background: #141722;
     border: 1px solid var(--border-color);
     color: var(--text-color);
     font-size: 0.70rem;
@@ -1097,21 +955,19 @@ select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    -webkit-tap-highlight-color: transparent;
 }
 .btn-rotate-card:hover {
-    background: rgba(188, 19, 254, 0.25);
+    background: rgba(188, 19, 254, 0.2);
     border-color: var(--neon-purple);
     color: #fff;
 }
-
 
 .search-input-wrap {
     position: relative;
     display: flex;
     align-items: center;
-    background: #090e18;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #090a10;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-sm);
     padding: 6px 10px;
     gap: 8px;
@@ -1119,7 +975,7 @@ select:focus {
 }
 .search-input-wrap:focus-within {
     border-color: var(--accent-color);
-    box-shadow: 0 0 10px rgba(0, 173, 181, 0.3);
+    box-shadow: 0 0 10px rgba(0, 137, 123, 0.25);
 }
 .search-input-wrap input {
     background: transparent;
@@ -1131,7 +987,7 @@ select:focus {
 }
 
 .btn-join-add {
-    background: #141c2c;
+    background: #141722;
     border: 1px solid var(--accent-color);
     color: var(--accent-color);
     font-size: 0.75rem;
@@ -1146,7 +1002,7 @@ select:focus {
     color: #000;
 }
 .btn-join-export {
-    background: linear-gradient(135deg, #00adb5, #00ff88);
+    background: linear-gradient(135deg, #00897B, #00ff88);
     color: #070a12;
     font-size: 0.75rem;
     font-weight: 900;
@@ -1157,7 +1013,7 @@ select:focus {
     transition: all 0.15s ease;
 }
 .btn-join-export:hover {
-    filter: brightness(1.15);
+    filter: brightness(1.12);
     transform: translateY(-1px);
 }
 
@@ -1170,15 +1026,15 @@ select:focus {
 }
 
 /* ==========================================================================
-   WEB BLUETOOTH (BLE) HARDWARE UPLINK STYLES
+   WEB BLUETOOTH (BLE) HARDWARE UPLINK
    ========================================================================== */
 .ble-connect-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(0, 173, 181, 0.12);
+    background: rgba(0, 137, 123, 0.12);
     border: 1px solid var(--accent-color);
-    color: var(--accent-color);
+    color: var(--neon-green);
     font-size: 0.72rem;
     font-weight: 800;
     padding: 5px 10px;
@@ -1188,11 +1044,11 @@ select:focus {
 }
 .ble-connect-btn:hover {
     background: var(--accent-color);
-    color: #070a12;
+    color: #ffffff;
     box-shadow: 0 0 12px var(--accent-glow);
 }
 .ble-connect-btn.connected {
-    background: rgba(0, 255, 136, 0.12);
+    background: rgba(0, 255, 136, 0.15);
     border-color: var(--neon-green);
     color: var(--neon-green);
 }
@@ -1214,12 +1070,12 @@ select:focus {
     padding: 6px 12px;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.25);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
     transition: all 0.15s ease;
 }
 .btn-ble-upload:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 16px rgba(0, 255, 136, 0.5);
+    box-shadow: 0 0 16px rgba(0, 255, 136, 0.4);
 }
 
 /* INLINE SLEEK BLUETOOTH UPLOAD PROGRESS PILL */
@@ -1227,12 +1083,12 @@ select:focus {
     display: none;
     flex-direction: column;
     gap: 4px;
-    background: rgba(14, 20, 32, 0.95);
+    background: rgba(16, 19, 29, 0.97);
     border: 1px solid var(--neon-purple);
     border-radius: var(--radius-sm);
     padding: 6px 10px;
     margin-top: 4px;
-    box-shadow: 0 0 15px rgba(188, 19, 254, 0.25);
+    box-shadow: 0 0 15px rgba(188, 19, 254, 0.2);
     animation: fadeIn 0.2s ease-out;
 }
 @keyframes fadeIn {
@@ -1249,7 +1105,7 @@ select:focus {
 .inline-ble-track {
     width: 100%;
     height: 7px;
-    background: #060910;
+    background: #08090f;
     border-radius: 4px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1262,65 +1118,17 @@ select:focus {
     transition: width 0.1s ease;
 }
 
-/* 6-WORKSPACE PRIMARY NAVIGATION BAR */
-.workspace-mode-bar {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 5px;
-    padding: 8px 12px 0 12px;
-}
-@media (max-width: 768px) {
-    .workspace-mode-bar {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 5px;
-    }
-}
-@media (max-width: 480px) {
-    .workspace-mode-bar {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 4px;
-    }
-}
-.mode-switch-btn {
-    background: #0c121e;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-muted);
-    font-size: 0.74rem;
-    font-weight: 800;
-    padding: 8px 6px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.mode-switch-btn:hover {
-    background: #141d2e;
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.18);
-    transform: translateY(-1px);
-}
-.mode-switch-btn:active {
-    transform: scale(0.98);
-}
-.mode-switch-btn.active {
-    background: linear-gradient(135deg, rgba(0, 173, 181, 0.22), rgba(0, 255, 136, 0.15));
-    border-color: var(--neon-green);
-    color: var(--neon-green);
-    box-shadow: 0 0 12px rgba(0, 255, 136, 0.22);
-}
-
-/* FIRMWARE FLASHER & ESP WEB TOOLS STYLING */
+/* ==========================================================================
+   FIRMWARE FLASHER & ESP WEB TOOLS
+   ========================================================================== */
 esp-web-install-button {
     display: block;
     width: 100%;
 }
 .firmware-card {
-    background: #0a0f19;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: var(--radius-sm);
+    background: #141722;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -1328,8 +1136,8 @@ esp-web-install-button {
     transition: all 0.2s ease;
 }
 .firmware-card:hover {
-    border-color: rgba(0, 173, 181, 0.4);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    border-color: rgba(0, 137, 123, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 .firmware-step-badge {
     display: inline-flex;
@@ -1339,21 +1147,22 @@ esp-web-install-button {
     height: 22px;
     border-radius: 50%;
     background: var(--accent-color);
-    color: #000;
+    color: #fff;
     font-weight: 800;
     font-size: 0.75rem;
     margin-right: 6px;
 }
 
-
-/* HARDWARE BANK MANAGER STYLING */
+/* ==========================================================================
+   HARDWARE BANK MANAGER & SLOT RACK
+   ========================================================================== */
 .bank-section-box {
-    background: rgba(11, 16, 26, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     padding: 12px;
     margin-bottom: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .bank-slots-grid {
@@ -1364,7 +1173,7 @@ esp-web-install-button {
 }
 
 .bank-slot-card {
-    background: #090e18;
+    background: #11141e;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-sm);
     padding: 9px;
@@ -1377,13 +1186,13 @@ esp-web-install-button {
 
 .bank-slot-card:hover {
     border-color: var(--accent-color);
-    box-shadow: 0 0 14px rgba(0, 173, 181, 0.2);
+    box-shadow: 0 0 14px rgba(0, 137, 123, 0.2);
     transform: translateY(-2px);
 }
 
 .bank-slot-card.populated {
-    border-color: rgba(0, 255, 136, 0.35);
-    background: linear-gradient(180deg, rgba(0, 255, 136, 0.03) 0%, #090e18 100%);
+    border-color: rgba(0, 255, 136, 0.3);
+    background: linear-gradient(180deg, rgba(0, 255, 136, 0.02) 0%, #11141e 100%);
 }
 
 .bank-slot-header {
@@ -1396,7 +1205,7 @@ esp-web-install-button {
 
 .bank-slot-preview-wrap {
     height: 74px;
-    background: #04060b;
+    background: #040508;
     border-radius: var(--radius-xs);
     border: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
@@ -1441,8 +1250,8 @@ esp-web-install-button {
 }
 
 .bank-slot-btn {
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: #161a26;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: var(--text-color);
     padding: 5px 6px;
     font-size: 0.68rem;
@@ -1459,16 +1268,17 @@ esp-web-install-button {
     color: #ffffff;
 }
 
-/* BANK SELECTION MODAL / QUICK DIALOG */
-
+/* ==========================================================================
+   MODALS & DIALOGS
+   ========================================================================== */
 .bank-picker-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(6px);
+    background: rgba(4, 5, 8, 0.85);
+    backdrop-filter: blur(8px);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -1477,9 +1287,9 @@ esp-web-install-button {
 }
 
 .bank-picker-modal {
-    background: #0d1320;
+    background: #141722;
     border: 1px solid var(--accent-color);
-    box-shadow: 0 0 24px rgba(0, 173, 181, 0.35);
+    box-shadow: 0 0 24px rgba(0, 137, 123, 0.35);
     border-radius: var(--radius-md);
     width: 100%;
     max-width: 520px;
@@ -1519,24 +1329,23 @@ esp-web-install-button {
 .hw-profile-card:hover {
     transform: translateY(-1px);
     border-color: var(--neon-cyan) !important;
-    background: rgba(0, 173, 181, 0.08) !important;
+    background: rgba(0, 137, 123, 0.08) !important;
 }
 
 /* ==========================================================================
-   MODERN ACCORDION & COLLAPSIBLE DRAWER STYLING
+   MODERN ACCORDION & COLLAPSIBLE DRAWER
    ========================================================================== */
 .studio-accordion {
-    background: rgba(11, 16, 26, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
     overflow: hidden;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .studio-accordion[open] {
-    border-color: rgba(0, 173, 181, 0.4);
-    background: rgba(11, 16, 26, 0.95);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+    border-color: rgba(0, 137, 123, 0.4);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
 }
 .studio-accordion summary {
     list-style: none;
@@ -1556,7 +1365,7 @@ esp-web-install-button {
     display: none;
 }
 .studio-accordion summary:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
     color: #ffffff;
 }
 .studio-accordion summary .accordion-chevron {
@@ -1575,7 +1384,7 @@ esp-web-install-button {
 }
 
 /* ==========================================================================
-   QUICK FX GENERATOR SUITE STYLING
+   QUICK FX GENERATOR SUITE
    ========================================================================== */
 .fx-gen-grid {
     display: grid;
@@ -1583,8 +1392,8 @@ esp-web-install-button {
     gap: 12px;
 }
 .fx-gen-card {
-    background: rgba(11, 16, 26, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     padding: 12px;
     display: flex;
@@ -1594,8 +1403,8 @@ esp-web-install-button {
     position: relative;
 }
 .fx-gen-card:hover {
-    border-color: rgba(0, 173, 181, 0.45);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    border-color: rgba(0, 137, 123, 0.45);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
 }
 .fx-gen-header {
     display: flex;
@@ -1606,8 +1415,8 @@ esp-web-install-button {
 }
 .fx-gen-preview-wrap {
     height: 80px;
-    background: #020306;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #040508;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--radius-sm);
     overflow: hidden;
     display: flex;
@@ -1628,8 +1437,8 @@ esp-web-install-button {
     margin-top: 2px;
 }
 .fx-gen-btn {
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #141722;
+    border: 1px solid rgba(255, 255, 255, 0.09);
     color: var(--text-color);
     font-size: 0.7rem;
     font-weight: 700;
@@ -1643,16 +1452,16 @@ esp-web-install-button {
 }
 .fx-gen-btn:hover {
     background: var(--accent-color);
-    color: #000;
+    color: #fff;
     border-color: var(--accent-color);
 }
 .fx-gen-btn-primary {
-    background: linear-gradient(135deg, #00adb5, #00ff88);
+    background: linear-gradient(135deg, #00897B, #00ff88);
     color: #070a12;
     font-weight: 800;
     border: none;
 }
 .fx-gen-btn-primary:hover {
-    filter: brightness(1.15);
+    filter: brightness(1.12);
     color: #000;
 }
