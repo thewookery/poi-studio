@@ -12,9 +12,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=107">
+    <link rel="stylesheet" href="styles.css?v=108">
     <!-- GOOGLE WEB SERIAL POLYFILL OVER WEBUSB (ENABLES ANDROID CHROME USB-C FLASHING) -->
     <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.15/dist/serial.umd.js"></script>
+    <script src="https://unpkg.com/esptool-js@0.4.5/bundle.js"></script>
     <script>
         (function() {
             try {
@@ -105,7 +106,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v107 (Android 1-Tap USB-C Flasher)</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v108 (Direct In-App USB Flasher)</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -2020,26 +2021,220 @@ document.addEventListener('DOMContentLoaded', function() {
             checkWebSerialSupport();
             initEspNowProtection();
 
-    // Wire up Android 1-Tap Flash buttons
+    // --- DIRECT IN-APP ESPTOOL-JS FIRMWARE FLASHER (WEBUSB / WEBSERIAL) ---
+    let currentFlashManifest = null;
+    let currentFlashTitle = "Firmware";
+    let isFlashingInProgress = false;
+
+    function openInAppFlasher(manifestUrl, title) {
+        currentFlashManifest = manifestUrl;
+        currentFlashTitle = title || "Firmware";
+        const modal = el('in-app-flasher-modal');
+        const titleEl = el('flasher-modal-title');
+        const statusEl = el('flasher-status-label');
+        const pctEl = el('flasher-pct-label');
+        const barEl = el('flasher-progress-bar');
+        const consoleEl = el('flasher-console-logs');
+        const startBtn = el('btn-flasher-start');
+
+        if (titleEl) titleEl.innerText = `⚡ Flash: ${currentFlashTitle}`;
+        if (statusEl) statusEl.innerText = 'Ready to connect USB-C cable';
+        if (pctEl) pctEl.innerText = '0%';
+        if (barEl) {
+            barEl.style.width = '0%';
+            barEl.style.background = 'linear-gradient(90deg, #00897B, #00ff88)';
+        }
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.innerText = '🚀 Start USB Flash';
+        }
+        if (consoleEl) {
+            consoleEl.innerText = `[Open POI Studio Flasher Ready]\nTarget Firmware: ${currentFlashTitle}\nManifest: ${manifestUrl}\n\nEnsure your Poi power switch is ON and tap "Start USB Flash"...`;
+        }
+
+        if (modal) modal.style.display = 'flex';
+    }
+    window.openInAppFlasher = openInAppFlasher;
+
+    function closeInAppFlasher() {
+        if (isFlashingInProgress) {
+            if (!confirm("Flashing is currently in progress. Are you sure you want to exit?")) return;
+        }
+        const modal = el('in-app-flasher-modal');
+        if (modal) modal.style.display = 'none';
+        isFlashingInProgress = false;
+    }
+
+    if (el('btn-close-flasher-modal')) el('btn-close-flasher-modal').onclick = closeInAppFlasher;
+    if (el('btn-flasher-cancel')) el('btn-flasher-cancel').onclick = closeInAppFlasher;
+
+    function logFlasher(msg) {
+        const c = el('flasher-console-logs');
+        if (c) {
+            c.innerText += '\n' + msg;
+            c.scrollTop = c.scrollHeight;
+        }
+    }
+
+    async function executeDirectFirmwareFlash() {
+        if (!currentFlashManifest) return;
+        const statusEl = el('flasher-status-label');
+        const pctEl = el('flasher-pct-label');
+        const barEl = el('flasher-progress-bar');
+        const startBtn = el('btn-flasher-start');
+
+        if (startBtn) {
+            startBtn.disabled = true;
+            startBtn.innerText = '⏳ Flashing...';
+        }
+        isFlashingInProgress = true;
+
+        try {
+            // 1. Fetch manifest
+            logFlasher("[1/5] Fetching firmware manifest...");
+            if (statusEl) statusEl.innerText = "Downloading firmware manifest...";
+            const manifestResp = await fetch(currentFlashManifest);
+            if (!manifestResp.ok) throw new Error("Could not load firmware manifest.");
+            const manifest = await manifestResp.json();
+
+            const basePath = currentFlashManifest.substring(0, currentFlashManifest.lastIndexOf('/') + 1);
+            const parts = manifest.builds[0].parts;
+            const fileArray = [];
+
+            // 2. Fetch all binaries
+            logFlasher(`[2/5] Downloading ${parts.length} binary partition files...`);
+            for (let i = 0; i < parts.length; i++) {
+                const p = parts[i];
+                const binUrl = basePath + p.path;
+                logFlasher(`  - Downloading: ${p.path} (offset 0x${p.offset.toString(16)})...`);
+                const bResp = await fetch(binUrl);
+                if (!bResp.ok) throw new Error(`Failed to download binary: ${p.path}`);
+                const buf = await bResp.arrayBuffer();
+
+                let binary = '';
+                const bytes = new Uint8Array(buf);
+                for (let b = 0; b < bytes.byteLength; b++) {
+                    binary += String.fromCharCode(bytes[b]);
+                }
+
+                fileArray.push({
+                    data: binary,
+                    address: p.offset
+                });
+            }
+
+            // 3. Connect to USB Serial / WebUSB
+            logFlasher("[3/5] Requesting USB device connection from Android/Browser...");
+            if (statusEl) statusEl.innerText = "Select your USB-C Device in the popup...";
+
+            let port;
+            if (navigator.serial && typeof navigator.serial.requestPort === 'function') {
+                port = await navigator.serial.requestPort();
+            } else if (typeof serialPolyfill !== 'undefined' && ('usb' in navigator)) {
+                port = await serialPolyfill.serial.requestPort();
+            } else {
+                throw new Error("Web Serial / WebUSB is not supported in this browser. Please use Chrome on Android.");
+            }
+
+            if (!port) throw new Error("No USB device selected.");
+
+            logFlasher("[4/5] Initializing Espressif ESPLoader protocol...");
+            if (statusEl) statusEl.innerText = "Connecting to ESP32 bootloader...";
+
+            if (typeof esptooljs === 'undefined') {
+                throw new Error("esptool-js library not loaded. Check internet connection.");
+            }
+
+            const transport = new esptooljs.Transport(port);
+            const espLoader = new esptooljs.ESPLoader({
+                transport: transport,
+                baudrate: 115200,
+                terminal: {
+                    clean: () => {},
+                    writeLine: (data) => logFlasher(data),
+                    write: (data) => logFlasher(data)
+                }
+            });
+
+            const chip = await espLoader.main();
+            logFlasher(`✅ Connected to ${chip}! Starting flash write...`);
+            if (statusEl) statusEl.innerText = `Flashing ${chip} over USB...`;
+
+            // 4. Flash binary files
+            await espLoader.writeFlash({
+                fileArray: fileArray,
+                flashSize: "keep",
+                eraseAll: false,
+                compress: true,
+                reportProgress: (fileIndex, written, total) => {
+                    const pct = Math.round((written / total) * 100);
+                    if (pctEl) pctEl.innerText = `${pct}%`;
+                    if (barEl) barEl.style.width = `${pct}%`;
+                    if (statusEl) statusEl.innerText = `Writing partition ${fileIndex + 1}/${fileArray.length} (${pct}%)...`;
+                }
+            });
+
+            // 5. Reset chip
+            logFlasher("[5/5] Flashing complete! Performing hardware reset...");
+            if (statusEl) statusEl.innerText = "Resetting ESP32 controller...";
+            try {
+                await espLoader.hardReset();
+                await transport.disconnect();
+            } catch (rErr) {
+                console.warn("Reset notice:", rErr);
+            }
+
+            if (statusEl) statusEl.innerText = "🎉 Flashing 100% Succeeded!";
+            if (pctEl) pctEl.innerText = "100%";
+            if (barEl) {
+                barEl.style.width = "100%";
+                barEl.style.background = "#00ff88";
+            }
+            logFlasher("🎉 SUCCESS: Open Pixel Poi firmware flashed and running!");
+            showToast("🎉 Firmware Flashing 100% Complete!", 4000);
+
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.innerText = '✅ Flash Complete (Done)';
+            }
+            isFlashingInProgress = false;
+
+        } catch (err) {
+            console.error("In-App Flash Error:", err);
+            logFlasher(`❌ ERROR: ${err.message}`);
+            if (statusEl) statusEl.innerText = `Failed: ${err.message}`;
+            if (barEl) barEl.style.background = "#ff4d4d";
+            showToast(`⚠️ Flasher Error: ${err.message}`, 4000);
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.innerText = '🔄 Retry USB Flash';
+            }
+            isFlashingInProgress = false;
+        }
+    }
+
+    if (el('btn-flasher-start')) {
+        el('btn-flasher-start').onclick = executeDirectFirmwareFlash;
+    }
+
+    // Connect all .btn-android-flash buttons directly to openInAppFlasher
     document.querySelectorAll('.btn-android-flash').forEach(btn => {
         btn.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            setFirmwareUnlocked(true);
             const targetId = this.getAttribute('data-target-esp');
             const espBtn = el(targetId);
-            if (espBtn) {
-                const actBtn = espBtn.querySelector('button');
-                if (actBtn) {
-                    actBtn.disabled = false;
-                    actBtn.style.opacity = '1';
-                    actBtn.click();
-                } else {
-                    espBtn.click();
-                }
-            } else {
-                showToast("⚡ Connecting USB-C...", 2000);
+            let manifest = "firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=97";
+            let title = "Open Pixel Poi";
+            if (espBtn && espBtn.getAttribute('manifest')) {
+                manifest = espBtn.getAttribute('manifest');
             }
+            if (targetId.includes('55-fx')) title = "55px DotStar Studio FX (50 Slots)";
+            else if (targetId.includes('55-stock')) title = "55px DotStar Stock (15 Slots)";
+            else if (targetId.includes('25-stock')) title = "25px NeoPixel Stock (15 Slots)";
+            else if (targetId.includes('20-stock')) title = "20px NeoPixel Stock (15 Slots)";
+
+            openInAppFlasher(manifest, title);
         };
     });
 
@@ -6490,26 +6685,220 @@ document.addEventListener('DOMContentLoaded', function() {
     initEspNowProtection();
     setFirmwareUnlocked(true);
 
-    // Wire up Android 1-Tap Flash buttons
+    // --- DIRECT IN-APP ESPTOOL-JS FIRMWARE FLASHER (WEBUSB / WEBSERIAL) ---
+    let currentFlashManifest = null;
+    let currentFlashTitle = "Firmware";
+    let isFlashingInProgress = false;
+
+    function openInAppFlasher(manifestUrl, title) {
+        currentFlashManifest = manifestUrl;
+        currentFlashTitle = title || "Firmware";
+        const modal = el('in-app-flasher-modal');
+        const titleEl = el('flasher-modal-title');
+        const statusEl = el('flasher-status-label');
+        const pctEl = el('flasher-pct-label');
+        const barEl = el('flasher-progress-bar');
+        const consoleEl = el('flasher-console-logs');
+        const startBtn = el('btn-flasher-start');
+
+        if (titleEl) titleEl.innerText = `⚡ Flash: ${currentFlashTitle}`;
+        if (statusEl) statusEl.innerText = 'Ready to connect USB-C cable';
+        if (pctEl) pctEl.innerText = '0%';
+        if (barEl) {
+            barEl.style.width = '0%';
+            barEl.style.background = 'linear-gradient(90deg, #00897B, #00ff88)';
+        }
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.innerText = '🚀 Start USB Flash';
+        }
+        if (consoleEl) {
+            consoleEl.innerText = `[Open POI Studio Flasher Ready]\nTarget Firmware: ${currentFlashTitle}\nManifest: ${manifestUrl}\n\nEnsure your Poi power switch is ON and tap "Start USB Flash"...`;
+        }
+
+        if (modal) modal.style.display = 'flex';
+    }
+    window.openInAppFlasher = openInAppFlasher;
+
+    function closeInAppFlasher() {
+        if (isFlashingInProgress) {
+            if (!confirm("Flashing is currently in progress. Are you sure you want to exit?")) return;
+        }
+        const modal = el('in-app-flasher-modal');
+        if (modal) modal.style.display = 'none';
+        isFlashingInProgress = false;
+    }
+
+    if (el('btn-close-flasher-modal')) el('btn-close-flasher-modal').onclick = closeInAppFlasher;
+    if (el('btn-flasher-cancel')) el('btn-flasher-cancel').onclick = closeInAppFlasher;
+
+    function logFlasher(msg) {
+        const c = el('flasher-console-logs');
+        if (c) {
+            c.innerText += '\n' + msg;
+            c.scrollTop = c.scrollHeight;
+        }
+    }
+
+    async function executeDirectFirmwareFlash() {
+        if (!currentFlashManifest) return;
+        const statusEl = el('flasher-status-label');
+        const pctEl = el('flasher-pct-label');
+        const barEl = el('flasher-progress-bar');
+        const startBtn = el('btn-flasher-start');
+
+        if (startBtn) {
+            startBtn.disabled = true;
+            startBtn.innerText = '⏳ Flashing...';
+        }
+        isFlashingInProgress = true;
+
+        try {
+            // 1. Fetch manifest
+            logFlasher("[1/5] Fetching firmware manifest...");
+            if (statusEl) statusEl.innerText = "Downloading firmware manifest...";
+            const manifestResp = await fetch(currentFlashManifest);
+            if (!manifestResp.ok) throw new Error("Could not load firmware manifest.");
+            const manifest = await manifestResp.json();
+
+            const basePath = currentFlashManifest.substring(0, currentFlashManifest.lastIndexOf('/') + 1);
+            const parts = manifest.builds[0].parts;
+            const fileArray = [];
+
+            // 2. Fetch all binaries
+            logFlasher(`[2/5] Downloading ${parts.length} binary partition files...`);
+            for (let i = 0; i < parts.length; i++) {
+                const p = parts[i];
+                const binUrl = basePath + p.path;
+                logFlasher(`  - Downloading: ${p.path} (offset 0x${p.offset.toString(16)})...`);
+                const bResp = await fetch(binUrl);
+                if (!bResp.ok) throw new Error(`Failed to download binary: ${p.path}`);
+                const buf = await bResp.arrayBuffer();
+
+                let binary = '';
+                const bytes = new Uint8Array(buf);
+                for (let b = 0; b < bytes.byteLength; b++) {
+                    binary += String.fromCharCode(bytes[b]);
+                }
+
+                fileArray.push({
+                    data: binary,
+                    address: p.offset
+                });
+            }
+
+            // 3. Connect to USB Serial / WebUSB
+            logFlasher("[3/5] Requesting USB device connection from Android/Browser...");
+            if (statusEl) statusEl.innerText = "Select your USB-C Device in the popup...";
+
+            let port;
+            if (navigator.serial && typeof navigator.serial.requestPort === 'function') {
+                port = await navigator.serial.requestPort();
+            } else if (typeof serialPolyfill !== 'undefined' && ('usb' in navigator)) {
+                port = await serialPolyfill.serial.requestPort();
+            } else {
+                throw new Error("Web Serial / WebUSB is not supported in this browser. Please use Chrome on Android.");
+            }
+
+            if (!port) throw new Error("No USB device selected.");
+
+            logFlasher("[4/5] Initializing Espressif ESPLoader protocol...");
+            if (statusEl) statusEl.innerText = "Connecting to ESP32 bootloader...";
+
+            if (typeof esptooljs === 'undefined') {
+                throw new Error("esptool-js library not loaded. Check internet connection.");
+            }
+
+            const transport = new esptooljs.Transport(port);
+            const espLoader = new esptooljs.ESPLoader({
+                transport: transport,
+                baudrate: 115200,
+                terminal: {
+                    clean: () => {},
+                    writeLine: (data) => logFlasher(data),
+                    write: (data) => logFlasher(data)
+                }
+            });
+
+            const chip = await espLoader.main();
+            logFlasher(`✅ Connected to ${chip}! Starting flash write...`);
+            if (statusEl) statusEl.innerText = `Flashing ${chip} over USB...`;
+
+            // 4. Flash binary files
+            await espLoader.writeFlash({
+                fileArray: fileArray,
+                flashSize: "keep",
+                eraseAll: false,
+                compress: true,
+                reportProgress: (fileIndex, written, total) => {
+                    const pct = Math.round((written / total) * 100);
+                    if (pctEl) pctEl.innerText = `${pct}%`;
+                    if (barEl) barEl.style.width = `${pct}%`;
+                    if (statusEl) statusEl.innerText = `Writing partition ${fileIndex + 1}/${fileArray.length} (${pct}%)...`;
+                }
+            });
+
+            // 5. Reset chip
+            logFlasher("[5/5] Flashing complete! Performing hardware reset...");
+            if (statusEl) statusEl.innerText = "Resetting ESP32 controller...";
+            try {
+                await espLoader.hardReset();
+                await transport.disconnect();
+            } catch (rErr) {
+                console.warn("Reset notice:", rErr);
+            }
+
+            if (statusEl) statusEl.innerText = "🎉 Flashing 100% Succeeded!";
+            if (pctEl) pctEl.innerText = "100%";
+            if (barEl) {
+                barEl.style.width = "100%";
+                barEl.style.background = "#00ff88";
+            }
+            logFlasher("🎉 SUCCESS: Open Pixel Poi firmware flashed and running!");
+            showToast("🎉 Firmware Flashing 100% Complete!", 4000);
+
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.innerText = '✅ Flash Complete (Done)';
+            }
+            isFlashingInProgress = false;
+
+        } catch (err) {
+            console.error("In-App Flash Error:", err);
+            logFlasher(`❌ ERROR: ${err.message}`);
+            if (statusEl) statusEl.innerText = `Failed: ${err.message}`;
+            if (barEl) barEl.style.background = "#ff4d4d";
+            showToast(`⚠️ Flasher Error: ${err.message}`, 4000);
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.innerText = '🔄 Retry USB Flash';
+            }
+            isFlashingInProgress = false;
+        }
+    }
+
+    if (el('btn-flasher-start')) {
+        el('btn-flasher-start').onclick = executeDirectFirmwareFlash;
+    }
+
+    // Connect all .btn-android-flash buttons directly to openInAppFlasher
     document.querySelectorAll('.btn-android-flash').forEach(btn => {
         btn.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            setFirmwareUnlocked(true);
             const targetId = this.getAttribute('data-target-esp');
             const espBtn = el(targetId);
-            if (espBtn) {
-                const actBtn = espBtn.querySelector('button');
-                if (actBtn) {
-                    actBtn.disabled = false;
-                    actBtn.style.opacity = '1';
-                    actBtn.click();
-                } else {
-                    espBtn.click();
-                }
-            } else {
-                showToast("⚡ Connecting USB-C...", 2000);
+            let manifest = "firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=97";
+            let title = "Open Pixel Poi";
+            if (espBtn && espBtn.getAttribute('manifest')) {
+                manifest = espBtn.getAttribute('manifest');
             }
+            if (targetId.includes('55-fx')) title = "55px DotStar Studio FX (50 Slots)";
+            else if (targetId.includes('55-stock')) title = "55px DotStar Stock (15 Slots)";
+            else if (targetId.includes('25-stock')) title = "25px NeoPixel Stock (15 Slots)";
+            else if (targetId.includes('20-stock')) title = "20px NeoPixel Stock (15 Slots)";
+
+            openInAppFlasher(manifest, title);
         };
     });
 
@@ -6534,6 +6923,49 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
+
+    
+    <!-- DIRECT IN-APP ESP32 FLASHER MODAL (POWERED BY ESPTOOL-JS & WEBUSB) -->
+    <div class="bank-picker-modal-overlay" id="in-app-flasher-modal" style="display:none;">
+        <div class="bank-picker-modal" style="max-width:540px; border-color:var(--neon-green); background:#0e121d;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+                <div style="font-size:0.92rem; font-weight:900; color:var(--neon-green); display:flex; align-items:center; gap:8px;">
+                    <span>⚡</span>
+                    <span id="flasher-modal-title">In-App USB Firmware Flasher</span>
+                </div>
+                <button class="hw-btn" id="btn-close-flasher-modal" style="font-size:0.75rem; padding:3px 8px;">✕</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="font-size:0.74rem; color:var(--text-muted); line-height:1.45;">
+                    Direct in-browser flasher for Android & Desktop over USB-C data cable.
+                </div>
+
+                <!-- PROGRESS BAR -->
+                <div style="background:#07090f; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:0.75rem; font-weight:800; color:var(--text-color);" id="flasher-status-label">Ready to connect</span>
+                        <span class="telemetry-pill" id="flasher-pct-label" style="font-size:0.75rem; color:var(--neon-green); font-weight:800;">0%</span>
+                    </div>
+                    <div style="height:10px; background:#141722; border-radius:5px; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+                        <div id="flasher-progress-bar" style="width:0%; height:100%; background:linear-gradient(90deg, #00897B, #00ff88); transition:width 0.2s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- LIVE CONSOLE LOGS -->
+                <div id="flasher-console-logs" style="height:140px; background:#040508; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; font-family:monospace; font-size:0.68rem; color:#a0ffbf; overflow-y:auto; white-space:pre-wrap; line-height:1.4;">
+[Open POI Studio Flasher Ready]
+Plug in USB-C cable, power ON Poi, and tap "Start USB Flash" below...
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div style="display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;">
+                    <button class="hw-btn" id="btn-flasher-cancel" style="font-size:0.75rem; padding:8px 14px;">Cancel</button>
+                    <button class="btn-ble-upload" id="btn-flasher-start" style="font-size:0.75rem; padding:8px 18px; font-weight:900;">🚀 Start USB Flash</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- BANK PICKER MODAL -->
     <div class="bank-picker-modal-overlay" id="bank-picker-modal-overlay" style="display:none;">
