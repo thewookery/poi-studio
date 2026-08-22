@@ -12,14 +12,27 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=105">
+    <link rel="stylesheet" href="styles.css?v=106">
     <!-- GOOGLE WEB SERIAL POLYFILL OVER WEBUSB (ENABLES ANDROID CHROME USB-C FLASHING) -->
     <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.15/dist/serial.umd.js"></script>
     <script>
-        if (!('serial' in navigator) && ('usb' in navigator) && typeof serialPolyfill !== 'undefined') {
-            navigator.serial = serialPolyfill.serial;
-            console.log("⚡ Web Serial polyfilled via WebUSB for Android Chrome!");
-        }
+        (function() {
+            try {
+                if (typeof serialPolyfill !== 'undefined' && ('usb' in navigator)) {
+                    if (!navigator.serial || typeof navigator.serial.requestPort !== 'function') {
+                        Object.defineProperty(navigator, 'serial', {
+                            value: serialPolyfill.serial,
+                            configurable: true,
+                            writable: true,
+                            enumerable: true
+                        });
+                        console.log("⚡ Web Serial successfully polyfilled over WebUSB for Android Chrome!");
+                    }
+                }
+            } catch (e) {
+                console.warn("Web Serial polyfill notice:", e);
+            }
+        })();
     </script>
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 </head>
@@ -92,7 +105,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v105 (Spacing & Engine Polish)</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v106 (Android USB-C & Engine Edition)</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -2141,108 +2154,115 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // --- WEB SERIAL DETECTION & CROSS-PLATFORM (LINUX / ANDROID / WINDOWS / MAC) FLASHING ASSISTANT ---
+    // --- WEB SERIAL & ANDROID WEBUSB CABLE DIAGNOSTICS & FLASHING ASSISTANT ---
+    async function testAndroidUsbConnection() {
+        if (!('usb' in navigator) && (!navigator.serial || typeof navigator.serial.requestPort !== 'function')) {
+            showToast("⚠️ WebUSB / Web Serial unsupported in this browser. Use Chrome on Android.", 3500);
+            return;
+        }
+        try {
+            if ('usb' in navigator) {
+                // Open filter allows Android native device chooser to show all connected USB-C devices
+                const device = await navigator.usb.requestDevice({ filters: [] });
+                if (device) {
+                    showToast(`✅ USB Connected: ${device.productName || 'ESP32 Device'} (VID: 0x${device.vendorId.toString(16).toUpperCase()})`, 4000);
+                    const statusBadge = el('usb-live-status-badge');
+                    if (statusBadge) {
+                        statusBadge.innerHTML = `🟢 <b>Connected:</b> ${device.productName || 'USB Serial'} (VID: 0x${device.vendorId.toString(16).toUpperCase()}, PID: 0x${device.productId.toString(16).toUpperCase()})`;
+                        statusBadge.style.color = 'var(--neon-green)';
+                    }
+                }
+            } else if (navigator.serial && typeof navigator.serial.requestPort === 'function') {
+                const port = await navigator.serial.requestPort();
+                if (port) {
+                    showToast(`✅ Serial Port Paired Successfully!`, 3000);
+                }
+            }
+        } catch (err) {
+            if (err.name !== 'NotFoundError') {
+                console.warn("USB connection error:", err);
+                showToast(`⚠️ USB Test: ${err.message}`, 4000);
+            }
+        }
+    }
+    window.testAndroidUsbConnection = testAndroidUsbConnection;
+
     function checkWebSerialSupport() {
         const box = el('webserial-assistant-box');
         if (!box) return;
-        const isSupported = ('serial' in navigator);
+        const hasSerial = (navigator.serial && typeof navigator.serial.requestPort === 'function') || ('serial' in navigator);
+        const hasUsb = ('usb' in navigator);
         const isLinux = /Linux/i.test(navigator.userAgent) && !/Android/i.test(navigator.userAgent);
         const isAndroid = /Android/i.test(navigator.userAgent);
 
-        if (isSupported) {
-            box.style.borderColor = 'rgba(0, 255, 136, 0.5)';
-            box.style.background = 'rgba(0, 255, 136, 0.05)';
-            
-            let linuxHelperHtml = "";
-            if (isLinux) {
-                linuxHelperHtml = `
-                    <div style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px; font-size:0.68rem; color:var(--text-muted);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span>🐧 <b>Linux Note:</b> If port permission is denied, add your user to <code>dialout</code>:</span>
-                            <button class="hw-btn" id="btn-copy-linux-cmd" style="font-size:0.65rem; padding:2px 6px; color:var(--neon-cyan);">📋 Copy Command</button>
-                        </div>
-                        <input type="text" id="input-linux-cmd" value="sudo usermod -a -G dialout,plugdev $USER" readonly style="width:100%; background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:3px; padding:3px 6px; color:var(--neon-cyan); font-family:monospace; font-size:0.68rem; outline:none;">
+        box.style.borderColor = 'rgba(0, 137, 123, 0.45)';
+        box.style.background = 'rgba(19, 21, 31, 0.95)';
+        
+        let androidHelperHtml = "";
+        if (isAndroid || hasUsb) {
+            androidHelperHtml = `
+                <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span style="font-size:0.75rem; font-weight:800; color:var(--neon-cyan);">📱 Android USB-C Direct Pairing Assistant:</span>
+                        <button class="hw-btn" id="btn-test-android-usb" style="font-size:0.72rem; padding:5px 12px; color:var(--neon-green); font-weight:800; border-color:var(--neon-green);">🔌 Test & Pair USB-C Cable</button>
                     </div>
-                `;
-            }
-
-            box.innerHTML = `
-                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:1.1rem;">⚡</span>
-                        <div>
-                            <div style="font-size:0.8rem; font-weight:800; color:var(--neon-green);">Web Serial & WebUSB Active (Cross-Platform Ready)</div>
-                            <div style="font-size:0.68rem; color:var(--text-muted);">${isLinux ? 'Linux (Ubuntu/Debian/Arch/Fedora) detected.' : isAndroid ? 'Android WebUSB polyfill active.' : 'Ready to flash directly via USB-C on this device.'}</div>
-                        </div>
+                    <div id="usb-live-status-badge" style="font-size:0.68rem; color:var(--text-muted); font-family:monospace;">
+                        Status: Plug in USB-C cable to Poi & tap "Test & Pair USB-C Cable" above
                     </div>
-                    <span class="telemetry-pill" style="color:var(--neon-green); border-color:var(--neon-green); font-size:0.68rem; font-weight:800;">✅ Active</span>
-                </div>
-                ${linuxHelperHtml}
-            `;
-
-            const copyLinuxBtn = el('btn-copy-linux-cmd');
-            if (copyLinuxBtn) {
-                copyLinuxBtn.onclick = () => {
-                    const input = el('input-linux-cmd');
-                    if (input) {
-                        input.select();
-                        navigator.clipboard.writeText(input.value).then(() => {
-                            copyLinuxBtn.innerText = '✅ Copied!';
-                            setTimeout(() => { copyLinuxBtn.innerText = '📋 Copy Command'; }, 2500);
-                        });
-                    }
-                };
-            }
-
-        } else {
-            box.style.borderColor = 'rgba(255, 183, 3, 0.5)';
-            box.style.background = 'rgba(255, 183, 3, 0.05)';
-            box.innerHTML = `
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
-                        <div style="font-size:0.82rem; font-weight:800; color:var(--neon-yellow); display:flex; align-items:center; gap:6px;">
-                            <span>📱</span>
-                            <span>Flash via USB-C (Enable Web Serial / WebUSB)</span>
-                        </div>
-                        <button class="hw-btn" id="btn-recheck-webserial" style="font-size:0.68rem; padding:3px 8px; color:var(--neon-green);">🔄 Check Again</button>
-                    </div>
-                    <div style="font-size:0.72rem; color:var(--text-color); line-height:1.45;">
-                        If the device picker does not appear, enable <b>Web Serial API</b> or connect with a USB-C OTG cable.
-                    </div>
-                    <div style="display:flex; align-items:center; gap:6px; background:#070a11; padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
-                        <input type="text" id="input-webserial-flag" value="chrome://flags/#enable-web-serial" readonly style="flex:1; background:transparent; border:none; color:var(--neon-cyan); font-family:monospace; font-size:0.75rem; outline:none;">
-                        <button class="hw-btn" id="btn-copy-webserial-flag" style="font-size:0.7rem; font-weight:800; padding:5px 10px; color:var(--neon-yellow);" title="Copy Flag URL to Clipboard">📋 Copy URL</button>
-                    </div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:6px; font-size:0.68rem; color:var(--text-muted);">
-                        <div style="background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:4px;"><b>1.</b> Tap <b>Copy URL</b> above</div>
-                        <div style="background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:4px;"><b>2.</b> Paste in Chrome URL bar</div>
-                        <div style="background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:4px;"><b>3.</b> Set to <b>Enabled</b> & Relaunch</div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:6px; font-size:0.68rem; color:var(--text-muted);">
+                        <div style="background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:4px;"><b>1. Data Cable:</b> Ensure your USB-C cable has data lines (not a charge-only cord).</div>
+                        <div style="background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:4px;"><b>2. Power Switch:</b> Turn Poi power switch <b>ON</b> so the chip is awake.</div>
+                        <div style="background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:4px;"><b>3. OTG Permission:</b> If prompted, allow Chrome to access the USB device.</div>
                     </div>
                 </div>
             `;
+        }
 
-            const copyBtn = el('btn-copy-webserial-flag');
-            if (copyBtn) {
-                copyBtn.onclick = () => {
-                    const input = el('input-webserial-flag');
-                    if (input) {
-                        input.select();
-                        navigator.clipboard.writeText(input.value).then(() => {
-                            copyBtn.innerText = '✅ Copied!';
-                            setTimeout(() => { copyBtn.innerText = '📋 Copy URL'; }, 2500);
-                        }).catch(() => {
-                            alert('Copied chrome://flags/#enable-web-serial to clipboard!');
-                        });
-                    }
-                };
-            }
+        let linuxHelperHtml = "";
+        if (isLinux) {
+            linuxHelperHtml = `
+                <div style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px; font-size:0.68rem; color:var(--text-muted);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span>🐧 <b>Linux Note:</b> If port permission is denied, add your user to <code>dialout</code>:</span>
+                        <button class="hw-btn" id="btn-copy-linux-cmd" style="font-size:0.65rem; padding:2px 6px; color:var(--neon-cyan);">📋 Copy Command</button>
+                    </div>
+                    <input type="text" id="input-linux-cmd" value="sudo usermod -a -G dialout,plugdev $USER" readonly style="width:100%; background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:3px; padding:3px 6px; color:var(--neon-cyan); font-family:monospace; font-size:0.68rem; outline:none;">
+                </div>
+            `;
+        }
 
-            const recheckBtn = el('btn-recheck-webserial');
-            if (recheckBtn) {
-                recheckBtn.onclick = () => {
-                    checkWebSerialSupport();
-                };
-            }
+        box.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.1rem;">⚡</span>
+                    <div>
+                        <div style="font-size:0.82rem; font-weight:800; color:var(--neon-green);">In-App USB Flashing Engine Active</div>
+                        <div style="font-size:0.68rem; color:var(--text-muted);">${isAndroid ? 'Android WebUSB polyfill layered & active.' : isLinux ? 'Linux (Ubuntu/Debian/Arch/Fedora) detected.' : 'Web Serial active. Ready to flash directly over USB-C.'}</div>
+                    </div>
+                </div>
+                <span class="telemetry-pill" style="color:var(--neon-green); border-color:var(--neon-green); font-size:0.68rem; font-weight:800;">✅ Active</span>
+            </div>
+            ${androidHelperHtml}
+            ${linuxHelperHtml}
+        `;
+
+        const testUsbBtn = el('btn-test-android-usb');
+        if (testUsbBtn) {
+            testUsbBtn.onclick = testAndroidUsbConnection;
+        }
+
+        const copyLinuxBtn = el('btn-copy-linux-cmd');
+        if (copyLinuxBtn) {
+            copyLinuxBtn.onclick = () => {
+                const input = el('input-linux-cmd');
+                if (input) {
+                    input.select();
+                    navigator.clipboard.writeText(input.value).then(() => {
+                        copyLinuxBtn.innerText = '✅ Copied!';
+                        setTimeout(() => { copyLinuxBtn.innerText = '📋 Copy Command'; }, 2500);
+                    });
+                }
+            };
         }
     }
 
