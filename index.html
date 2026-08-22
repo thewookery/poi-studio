@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=106">
+    <link rel="stylesheet" href="styles.css?v=107">
     <!-- GOOGLE WEB SERIAL POLYFILL OVER WEBUSB (ENABLES ANDROID CHROME USB-C FLASHING) -->
     <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.15/dist/serial.umd.js"></script>
     <script>
@@ -105,7 +105,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v106 (Android USB-C & Engine Edition)</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v107 (Android 1-Tap USB-C Flasher)</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -1529,15 +1529,15 @@
                             • <b>Bank Capacity:</b> Standard 3 Banks (15 Slots)<br>
                             • <b>Speeds:</b> 1 to 2000 FPS (6 levels)
                         </div>
-                        <div class="firmware-flash-wrap" style="margin-top:6px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/app_2.0/3.0.0-55px/manifest.json">
-                                <button slot="activate" class="hw-btn firmware-install-btn" disabled style="width:100%; font-size:0.74rem; padding:8px 10px; opacity:0.4;">
+                        <div class="firmware-flash-wrap" style="margin-top:6px; display:flex; flex-direction:column; gap:6px;">
+                            <esp-web-install-button id="esp-btn-55-stock" manifest="firmware/opp_firmware/app_2.0/3.0.0-55px/manifest.json">
+                                <button slot="activate" class="hw-btn firmware-install-btn" style="width:100%; font-size:0.74rem; padding:8px 10px; color:var(--text-color); font-weight:800;">
                                     ⚡ Flash 55px DotStar Stock
                                 </button>
-                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
-                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
-                                </span>
                             </esp-web-install-button>
+                            <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-55-stock" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-green); font-weight:800; border-color:var(--neon-green);">
+                                📱 Android USB-C 1-Tap Flash
+                            </button>
                         </div>
                     </div>
 
@@ -1552,15 +1552,15 @@
                             • <b>Bank Capacity:</b> Standard 3 Banks (15 Slots)<br>
                             • <b>Speeds:</b> 1 to 800 FPS (6 levels)
                         </div>
-                        <div class="firmware-flash-wrap" style="margin-top:6px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/app_2.0/3.0.0-25px/manifest.json">
-                                <button slot="activate" class="hw-btn firmware-install-btn" disabled style="width:100%; font-size:0.74rem; padding:8px 10px; opacity:0.4;">
+                        <div class="firmware-flash-wrap" style="margin-top:6px; display:flex; flex-direction:column; gap:6px;">
+                            <esp-web-install-button id="esp-btn-25-stock" manifest="firmware/opp_firmware/app_2.0/3.0.0-25px/manifest.json">
+                                <button slot="activate" class="hw-btn firmware-install-btn" style="width:100%; font-size:0.74rem; padding:8px 10px; color:var(--text-color); font-weight:800;">
                                     ⚡ Flash 25px NeoPixel Stock
                                 </button>
-                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
-                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
-                                </span>
                             </esp-web-install-button>
+                            <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-25-stock" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-green); font-weight:800; border-color:var(--neon-green);">
+                                📱 Android USB-C 1-Tap Flash
+                            </button>
                         </div>
                     </div>
 
@@ -1575,15 +1575,15 @@
                             • <b>Bank Capacity:</b> Standard 3 Banks (15 Slots)<br>
                             • <b>Speeds:</b> 1 to 600 FPS (6 levels)
                         </div>
-                        <div class="firmware-flash-wrap" style="margin-top:6px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/app_2.0/2.2.1-20px/manifest.json">
-                                <button slot="activate" class="hw-btn firmware-install-btn" disabled style="width:100%; font-size:0.74rem; padding:8px 10px; opacity:0.4;">
+                        <div class="firmware-flash-wrap" style="margin-top:6px; display:flex; flex-direction:column; gap:6px;">
+                            <esp-web-install-button id="esp-btn-20-stock" manifest="firmware/opp_firmware/app_2.0/2.2.1-20px/manifest.json">
+                                <button slot="activate" class="hw-btn firmware-install-btn" style="width:100%; font-size:0.74rem; padding:8px 10px; color:var(--text-color); font-weight:800;">
                                     ⚡ Flash 20px NeoPixel Stock
                                 </button>
-                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
-                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
-                                </span>
                             </esp-web-install-button>
+                            <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-20-stock" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-green); font-weight:800; border-color:var(--neon-green);">
+                                📱 Android USB-C 1-Tap Flash
+                            </button>
                         </div>
                     </div>
 
@@ -1611,15 +1611,15 @@
                             • <b>100% Peak Value Luminance:</b> Full brilliance across all colors without dimming<br>
                             • <b>Rock-Solid Web Bluetooth:</b> Instant pairing, zero-lag controls & telemetry
                         </div>
-                        <div class="firmware-flash-wrap" style="margin-top:8px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=97">
-                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4;">
+                        <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+                            <esp-web-install-button id="esp-btn-55-fx" manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=97">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; font-weight:900;">
                                     ⚡ Flash 55px DotStar FX (50 Slots • 17 Motion Flows • Peak Brightness)
                                 </button>
-                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
-                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
-                                </span>
                             </esp-web-install-button>
+                            <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-55-fx" style="width:100%; font-size:0.74rem; padding:7px 10px; color:var(--neon-green); font-weight:800; border-color:var(--neon-green); background:rgba(0,255,136,0.1);">
+                                📱 Android USB-C 1-Tap Flash (50-Slot FX)
+                            </button>
                         </div>
                     </div>
 
@@ -2019,6 +2019,30 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (mode === 'workspace-firmware') {
             checkWebSerialSupport();
             initEspNowProtection();
+
+    // Wire up Android 1-Tap Flash buttons
+    document.querySelectorAll('.btn-android-flash').forEach(btn => {
+        btn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            setFirmwareUnlocked(true);
+            const targetId = this.getAttribute('data-target-esp');
+            const espBtn = el(targetId);
+            if (espBtn) {
+                const actBtn = espBtn.querySelector('button');
+                if (actBtn) {
+                    actBtn.disabled = false;
+                    actBtn.style.opacity = '1';
+                    actBtn.click();
+                } else {
+                    espBtn.click();
+                }
+            } else {
+                showToast("⚡ Connecting USB-C...", 2000);
+            }
+        };
+    });
+
         }
     }
 
@@ -6464,6 +6488,31 @@ document.addEventListener('DOMContentLoaded', function() {
     renderAllQuickGenerators();
     checkWebSerialSupport();
     initEspNowProtection();
+    setFirmwareUnlocked(true);
+
+    // Wire up Android 1-Tap Flash buttons
+    document.querySelectorAll('.btn-android-flash').forEach(btn => {
+        btn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            setFirmwareUnlocked(true);
+            const targetId = this.getAttribute('data-target-esp');
+            const espBtn = el(targetId);
+            if (espBtn) {
+                const actBtn = espBtn.querySelector('button');
+                if (actBtn) {
+                    actBtn.disabled = false;
+                    actBtn.style.opacity = '1';
+                    actBtn.click();
+                } else {
+                    espBtn.click();
+                }
+            } else {
+                showToast("⚡ Connecting USB-C...", 2000);
+            }
+        };
+    });
+
 
     if (el('btn-sidebar-profile') && el('btn-open-hw-wizard')) {
         el('btn-sidebar-profile').onclick = () => {
