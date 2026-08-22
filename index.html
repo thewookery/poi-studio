@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=108">
+    <link rel="stylesheet" href="styles.css?v=109">
     <!-- GOOGLE WEB SERIAL POLYFILL OVER WEBUSB (ENABLES ANDROID CHROME USB-C FLASHING) -->
     <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.15/dist/serial.umd.js"></script>
     <script src="https://unpkg.com/esptool-js@0.4.5/bundle.js"></script>
@@ -106,7 +106,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v108 (Direct In-App USB Flasher)</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v109 (Immediate USB Gesture Engine)</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -2085,14 +2085,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (startBtn) {
             startBtn.disabled = true;
-            startBtn.innerText = '⏳ Flashing...';
+            startBtn.innerText = '⏳ Connecting...';
         }
         isFlashingInProgress = true;
 
         try {
-            // 1. Fetch manifest
-            logFlasher("[1/5] Fetching firmware manifest...");
-            if (statusEl) statusEl.innerText = "Downloading firmware manifest...";
+            // 1. MUST REQUEST USB PORT IMMEDIATELY ON DIRECT USER GESTURE (BROWSER SECURITY RULE)
+            logFlasher("[1/5] Requesting USB device connection from Android/Browser...");
+            if (statusEl) statusEl.innerText = "Select your USB-C Device in the popup...";
+
+            let port;
+            if (navigator.serial && typeof navigator.serial.requestPort === 'function') {
+                port = await navigator.serial.requestPort();
+            } else if (typeof serialPolyfill !== 'undefined' && ('usb' in navigator)) {
+                port = await serialPolyfill.serial.requestPort();
+            } else {
+                throw new Error("Web Serial / WebUSB is not supported in this browser. Please use Chrome on Android.");
+            }
+
+            if (!port) throw new Error("No USB device selected.");
+            logFlasher("✅ USB-C Device Selected!");
+
+            // 2. Fetch manifest & binaries after device permission is granted
+            logFlasher("[2/5] Fetching firmware manifest & partition files...");
+            if (statusEl) statusEl.innerText = "Downloading firmware partitions...";
             const manifestResp = await fetch(currentFlashManifest);
             if (!manifestResp.ok) throw new Error("Could not load firmware manifest.");
             const manifest = await manifestResp.json();
@@ -2101,8 +2117,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const parts = manifest.builds[0].parts;
             const fileArray = [];
 
-            // 2. Fetch all binaries
-            logFlasher(`[2/5] Downloading ${parts.length} binary partition files...`);
             for (let i = 0; i < parts.length; i++) {
                 const p = parts[i];
                 const binUrl = basePath + p.path;
@@ -2121,19 +2135,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     data: binary,
                     address: p.offset
                 });
-            }
-
-            // 3. Connect to USB Serial / WebUSB
-            logFlasher("[3/5] Requesting USB device connection from Android/Browser...");
-            if (statusEl) statusEl.innerText = "Select your USB-C Device in the popup...";
-
-            let port;
-            if (navigator.serial && typeof navigator.serial.requestPort === 'function') {
-                port = await navigator.serial.requestPort();
-            } else if (typeof serialPolyfill !== 'undefined' && ('usb' in navigator)) {
-                port = await serialPolyfill.serial.requestPort();
-            } else {
-                throw new Error("Web Serial / WebUSB is not supported in this browser. Please use Chrome on Android.");
             }
 
             if (!port) throw new Error("No USB device selected.");
@@ -6749,14 +6750,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (startBtn) {
             startBtn.disabled = true;
-            startBtn.innerText = '⏳ Flashing...';
+            startBtn.innerText = '⏳ Connecting...';
         }
         isFlashingInProgress = true;
 
         try {
-            // 1. Fetch manifest
-            logFlasher("[1/5] Fetching firmware manifest...");
-            if (statusEl) statusEl.innerText = "Downloading firmware manifest...";
+            // 1. MUST REQUEST USB PORT IMMEDIATELY ON DIRECT USER GESTURE (BROWSER SECURITY RULE)
+            logFlasher("[1/5] Requesting USB device connection from Android/Browser...");
+            if (statusEl) statusEl.innerText = "Select your USB-C Device in the popup...";
+
+            let port;
+            if (navigator.serial && typeof navigator.serial.requestPort === 'function') {
+                port = await navigator.serial.requestPort();
+            } else if (typeof serialPolyfill !== 'undefined' && ('usb' in navigator)) {
+                port = await serialPolyfill.serial.requestPort();
+            } else {
+                throw new Error("Web Serial / WebUSB is not supported in this browser. Please use Chrome on Android.");
+            }
+
+            if (!port) throw new Error("No USB device selected.");
+            logFlasher("✅ USB-C Device Selected!");
+
+            // 2. Fetch manifest & binaries after device permission is granted
+            logFlasher("[2/5] Fetching firmware manifest & partition files...");
+            if (statusEl) statusEl.innerText = "Downloading firmware partitions...";
             const manifestResp = await fetch(currentFlashManifest);
             if (!manifestResp.ok) throw new Error("Could not load firmware manifest.");
             const manifest = await manifestResp.json();
@@ -6765,8 +6782,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const parts = manifest.builds[0].parts;
             const fileArray = [];
 
-            // 2. Fetch all binaries
-            logFlasher(`[2/5] Downloading ${parts.length} binary partition files...`);
             for (let i = 0; i < parts.length; i++) {
                 const p = parts[i];
                 const binUrl = basePath + p.path;
@@ -6785,19 +6800,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     data: binary,
                     address: p.offset
                 });
-            }
-
-            // 3. Connect to USB Serial / WebUSB
-            logFlasher("[3/5] Requesting USB device connection from Android/Browser...");
-            if (statusEl) statusEl.innerText = "Select your USB-C Device in the popup...";
-
-            let port;
-            if (navigator.serial && typeof navigator.serial.requestPort === 'function') {
-                port = await navigator.serial.requestPort();
-            } else if (typeof serialPolyfill !== 'undefined' && ('usb' in navigator)) {
-                port = await serialPolyfill.serial.requestPort();
-            } else {
-                throw new Error("Web Serial / WebUSB is not supported in this browser. Please use Chrome on Android.");
             }
 
             if (!port) throw new Error("No USB device selected.");
