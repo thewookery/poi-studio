@@ -300,8 +300,28 @@
                         let txChar = null;
                         try {
                             txChar = await service.getCharacteristic(NORDIC_UART_TX_CHAR);
+                            if (txChar && txChar.startNotifications) {
+                                await txChar.startNotifications();
+                                txChar.addEventListener('characteristicvaluechanged', (event) => {
+                                    const val = event.target.value;
+                                    if (val && val.byteLength >= 9 && val.getUint8(0) === 0xD0 && val.getUint8(1) === 0xFE) {
+                                        const telemetry = {
+                                            x: val.getUint8(2),
+                                            y: val.getUint8(3),
+                                            z: val.getUint8(4) === 1,
+                                            c: val.getUint8(5) === 1,
+                                            ax: val.getUint8(6),
+                                            ay: val.getUint8(7),
+                                            ok: val.getUint8(8) === 1
+                                        };
+                                        if (typeof window !== 'undefined') {
+                                            window.dispatchEvent(new CustomEvent('poi-nunchuk-telemetry', { detail: telemetry }));
+                                        }
+                                    }
+                                });
+                            }
                         } catch (e) {
-                            console.warn('[BLE] TX characteristic not available');
+                            console.warn('[BLE] TX characteristic not available or notifications failed:', e);
                         }
 
                         const deviceEntry = {

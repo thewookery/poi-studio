@@ -1,7 +1,6 @@
-#include <esp_wifi.h>
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE TRANSMITTER (v2.0)
+ * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE TRANSMITTER (v2.1 with Live Telemetry)
  * ============================================================================
  * Hardware: Seeed Studio XIAO ESP32-C3
  * Pins:
@@ -9,14 +8,9 @@
  *   - I2C SCL: D3 (GPIO 5)
  *   - 3V3: Power to Nunchuk VCC
  *   - GND: Ground to Nunchuk GND
- * 
- * Wireless Features:
- *   1. Direct ESP-NOW 2.4GHz broadcast to all Open Pixel Poi props (<1ms latency)
- *   2. Nordic UART Service (NUS) Web Bluetooth for 1-tap Open POI Studio pairing
- *   3. Standalone Wi-Fi Access Point ("OpenPixelBridge") with built-in Web Control UI
- *   4. Standalone Wii Nunchuk Joystick & Strobe Trigger Control
  */
 
+#include <esp_wifi.h>
 #include <Arduino.h>
 #include <Wire.h>
 #include <WiFi.h>
@@ -33,14 +27,14 @@
 
 #define ESPNOW_PACKET_MAGIC 0xA5
 
-// Official Nordic UART Service UUIDs (matches Open POI Studio Web Bluetooth)
+// Official Nordic UART Service UUIDs
 #define NORDIC_UART_SERVICE "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
-#define NORDIC_UART_RX_CHAR "6e400002-b5a3-f393-e0a9-e50e24dcca9e" // Write from App
-#define NORDIC_UART_TX_CHAR "6e400003-b5a3-f393-e0a9-e50e24dcca9e" // Notify to App
+#define NORDIC_UART_RX_CHAR "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
+#define NORDIC_UART_TX_CHAR "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
 
-// Framing Protocol
 #define START_BYTE 0xD0
 #define END_BYTE   0xD1
+#define TELEMETRY_BYTE 0xFE
 
 // Open Pixel Poi Command Codes
 #define CC_SET_BRIGHTNESS   0x02
@@ -53,24 +47,24 @@
 
 enum EspNowCommand {
   CMD_NONE = 0,
-  CMD_SET_PATTERN = 1,     // val1 = slot (0..9)
-  CMD_SET_BANK = 2,        // val1 = bank (0..4)
-  CMD_SET_PALETTE = 3,     // val1 = paletteId (0..32)
-  CMD_SET_MOTION_FX = 4,   // val1 = motionId (0..16)
-  CMD_SET_SPEED = 5,       // val1, val2 = speedHz (uint16_t)
-  CMD_STROBE_BLAST = 6,    // val1 = 1 (active) / 0 (inactive)
-  CMD_SET_BRIGHTNESS = 7,  // val1 = brightness (0..255)
-  CMD_TILT_MODULATION = 8  // tiltX, tiltY, tiltZ
+  CMD_SET_PATTERN = 1,
+  CMD_SET_BANK = 2,
+  CMD_SET_PALETTE = 3,
+  CMD_SET_MOTION_FX = 4,
+  CMD_SET_SPEED = 5,
+  CMD_STROBE_BLAST = 6,
+  CMD_SET_BRIGHTNESS = 7,
+  CMD_TILT_MODULATION = 8
 };
 
 typedef struct __attribute__((packed)) {
-  uint8_t magic;           // 0xA5
-  uint8_t cmd;             // EspNowCommand
-  uint8_t val1;            // Slot / Bank / Pal / Motion / Brightness
-  uint8_t val2;            // Secondary parameter
-  int16_t tiltX;           // Nunchuk Accelerometer X
-  int16_t tiltY;           // Nunchuk Accelerometer Y
-  int16_t tiltZ;           // Nunchuk Accelerometer Z
+  uint8_t magic;
+  uint8_t cmd;
+  uint8_t val1;
+  uint8_t val2;
+  int16_t tiltX;
+  int16_t tiltY;
+  int16_t tiltZ;
 } EspNowPacket;
 
 static uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -83,15 +77,27 @@ uint8_t currentMotion = 0;
 uint8_t currentBrightness = 200;
 bool isStrobeActive = false;
 
-// Nunchuk State
+// Live Nunchuk State
+bool isNunchukI2cOk = false;
+uint8_t liveJoyX = 128;
 uint8_t lastJoyX = 128;
 uint8_t lastJoyY = 128;
 bool lastBtnC = false;
 bool lastBtnZ = false;
+uint8_t liveJoyY = 128;
+bool liveBtnC = false;
+bool liveBtnZ = false;
+int16_t liveAccelX = 512;
+int16_t liveAccelY = 512;
+int16_t liveAccelZ = 512;
+
 unsigned long btnCHoldStart = 0;
 unsigned long lastJoyFlickTime = 0;
+unsigned long lastTelemetryNotify = 0;
 
-// Web Server for Wi-Fi Hotspot Mode
+BLECharacteristic *pGlobalTxChar = nullptr;
+bool isBleClientConnected = false;
+
 WebServer server(80);
 
 void sendEspNowPacket(uint8_t cmd, uint8_t val1 = 0, uint8_t val2 = 0, int16_t tx = 0, int16_t ty = 0, int16_t tz = 0) {
@@ -106,13 +112,23 @@ void sendEspNowPacket(uint8_t cmd, uint8_t val1 = 0, uint8_t val2 = 0, int16_t t
   esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
 }
 
-// BLE Callback: forwards framed Open POI Studio commands over ESP-NOW
+class BridgeServerCallbacks : public BLEServerCallbacks {
+  void onConnect(BLEServer* pServer) {
+    isBleClientConnected = true;
+    Serial.println("BLE Client Connected to Bridge!");
+  }
+  void onDisconnect(BLEServer* pServer) {
+    isBleClientConnected = false;
+    Serial.println("BLE Client Disconnected from Bridge!");
+    BLEDevice::startAdvertising();
+  }
+};
+
 class BridgeBleCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
     std::string rxValue = pCharacteristic->getValue();
     if (rxValue.length() >= 3) {
       const uint8_t *data = (const uint8_t *)rxValue.data();
-      // Check framing or direct packet
       uint8_t cmdCode = 0;
       uint8_t val = 0;
 
@@ -127,10 +143,10 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
       if (cmdCode == CC_SET_PATTERN || cmdCode == CC_SET_PATTERN_SLOT) {
         currentSlot = val % 10;
         sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
-      } else if (cmdCode == CC_SET_BANK) {
+      } else if (cmdCode == CC_SET_BANK || cmdCode == 0x08) {
         currentBank = val % 5;
         sendEspNowPacket(CMD_SET_BANK, currentBank);
-      } else if (cmdCode == CC_SET_BRIGHTNESS) {
+      } else if (cmdCode == CC_SET_BRIGHTNESS || cmdCode == 0x10) {
         currentBrightness = val;
         sendEspNowPacket(CMD_SET_BRIGHTNESS, val);
       } else if (cmdCode == CC_SET_PALETTE_FX) {
@@ -144,7 +160,7 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
   }
 };
 
-// Wi-Fi Web Dashboard HTML
+// Wi-Fi Web Dashboard HTML with Live Nunchuk Diagnostic Indicator
 const char INDEX_HTML[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
@@ -152,20 +168,37 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Open Pixel Bridge</title>
   <style>
-    body { background:#0a0d14; color:#fff; font-family:sans-serif; text-align:center; padding:16px; margin:0; }
-    h2 { color:#00ff88; margin-bottom:4px; }
-    .card { background:#141824; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:14px; margin:10px auto; max-width:340px; }
-    .btn-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:8px; }
+    body { background:#0a0d14; color:#fff; font-family:sans-serif; text-align:center; padding:12px; margin:0; }
+    h2 { color:#00ff88; margin:4px 0; }
+    .card { background:#141824; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px; margin:8px auto; max-width:340px; }
+    .btn-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:6px; }
     button { background:#1f2438; color:#00d2ff; border:1px solid #00d2ff; border-radius:6px; padding:10px 4px; font-weight:bold; font-size:14px; cursor:pointer; }
     button:active { background:#00d2ff; color:#000; }
-    .btn-strobe { width:100%; background:#ff0055; color:#fff; border:none; padding:16px; font-size:18px; border-radius:8px; font-weight:900; margin-top:8px; }
+    .btn-strobe { width:100%; background:#ff0055; color:#fff; border:none; padding:14px; font-size:16px; border-radius:8px; font-weight:900; margin-top:6px; }
     .btn-strobe:active { background:#fff; color:#ff0055; }
-    .badge { font-size:12px; color:#888; margin-top:4px; }
+    .status-pill { display:inline-block; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold; }
+    .stick-box { width:100px; height:100px; background:#070a11; border:2px solid #00ff88; border-radius:50%; margin:8px auto; position:relative; }
+    .stick-dot { width:14px; height:14px; background:#00ff88; border-radius:50%; position:absolute; top:43px; left:43px; transform:translate(0,0); }
   </style>
 </head>
 <body>
   <h2>⚡ OPEN PIXEL BRIDGE</h2>
-  <div class="badge">Direct ESP-NOW Wireless Mesh Active</div>
+  <div style="font-size:12px; color:#888;">Direct ESP-NOW Mesh Active (Channel 1)</div>
+
+  <!-- NUNCHUK LIVE HARDWARE CHECKER -->
+  <div class="card" style="border-color:#00ff88;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <b style="color:#00ff88;">🎮 Nunchuk Hardware Status</b>
+      <span id="nunchuk-badge" class="status-pill" style="background:rgba(255,77,77,0.2); color:#ff4d4d;">Connecting...</span>
+    </div>
+    <div class="stick-box">
+      <div id="stick-dot" class="stick-dot"></div>
+    </div>
+    <div style="display:flex; justify-content:space-around; font-size:12px; font-family:monospace;">
+      <span>X: <b id="val-x">128</b> | Y: <b id="val-y">128</b></span>
+      <span>Z: <b id="val-z">0</b> | C: <b id="val-c">0</b></span>
+    </div>
+  </div>
 
   <div class="card">
     <b>🎯 Pattern Slot (1-10)</b>
@@ -203,6 +236,33 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
     function sendCmd(act, val) {
       fetch('/api?act=' + act + '&val=' + val);
     }
+
+    // Poll live Nunchuk hardware diagnostics every 100ms
+    setInterval(async () => {
+      try {
+        const res = await fetch('/api?act=telemetry');
+        const data = await res.json();
+        const badge = document.getElementById('nunchuk-badge');
+        if (data.ok) {
+          badge.innerText = '🟢 I2C Connected';
+          badge.style.background = 'rgba(0,255,136,0.2)';
+          badge.style.color = '#00ff88';
+        } else {
+          badge.innerText = '🔴 I2C Disconnected';
+          badge.style.background = 'rgba(255,77,77,0.2)';
+          badge.style.color = '#ff4d4d';
+        }
+        document.getElementById('val-x').innerText = data.x;
+        document.getElementById('val-y').innerText = data.y;
+        document.getElementById('val-z').innerText = data.z ? 'ON' : '0';
+        document.getElementById('val-c').innerText = data.c ? 'ON' : '0';
+
+        // Move visual dot
+        const dx = ((data.x - 128) / 128) * 35;
+        const dy = -((data.y - 128) / 128) * 35;
+        document.getElementById('stick-dot').style.transform = `translate(${dx}px, ${dy}px)`;
+      } catch(e) {}
+    }, 120);
   </script>
 </body>
 </html>
@@ -213,20 +273,35 @@ void handleRoot() {
 }
 
 void handleApi() {
-  if (server.hasArg("act") && server.hasArg("val")) {
+  if (server.hasArg("act")) {
     String act = server.arg("act");
-    int val = server.arg("val").toInt();
-    if (act == "slot") {
-      currentSlot = val % 10;
-      sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
-    } else if (act == "bank") {
-      currentBank = val % 5;
-      sendEspNowPacket(CMD_SET_BANK, currentBank);
-    } else if (act == "strobe") {
-      sendEspNowPacket(CMD_STROBE_BLAST, val ? 1 : 0);
-    } else if (act == "pal") {
-      currentPalette = val % 33;
-      sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
+    if (act == "telemetry") {
+      String json = "{\"ok\":" + String(isNunchukI2cOk ? "true" : "false") +
+                    ",\"x\":" + String(liveJoyX) +
+                    ",\"y\":" + String(liveJoyY) +
+                    ",\"z\":" + String(liveBtnZ ? 1 : 0) +
+                    ",\"c\":" + String(liveBtnC ? 1 : 0) +
+                    ",\"ax\":" + String(liveAccelX) +
+                    ",\"ay\":" + String(liveAccelY) +
+                    ",\"az\":" + String(liveAccelZ) + "}";
+      server.send(200, "application/json", json);
+      return;
+    }
+
+    if (server.hasArg("val")) {
+      int val = server.arg("val").toInt();
+      if (act == "slot") {
+        currentSlot = val % 10;
+        sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
+      } else if (act == "bank") {
+        currentBank = val % 5;
+        sendEspNowPacket(CMD_SET_BANK, currentBank);
+      } else if (act == "strobe") {
+        sendEspNowPacket(CMD_STROBE_BLAST, val ? 1 : 0);
+      } else if (act == "pal") {
+        currentPalette = val % 33;
+        sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
+      }
     }
   }
   server.send(200, "application/json", "{\"status\":\"ok\"}");
@@ -253,9 +328,8 @@ void setupNunchuk() {
 }
 
 void setupEspNowAndWiFi() {
-  // Set Wi-Fi to AP + Station mode on Channel 1
   WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP("OpenPixelBridge", "openpixelbridge", 1); // Channel 1, matching ESP-NOW
+  WiFi.softAP("OpenPixelBridge", "openpixelbridge", 1); // Channel 1
 
   esp_wifi_set_promiscuous(true);
   esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
@@ -273,7 +347,6 @@ void setupEspNowAndWiFi() {
   peerInfo.encrypt = false;
   esp_now_add_peer(&peerInfo);
 
-  // Setup Web Server
   server.on("/", handleRoot);
   server.on("/api", handleApi);
   server.begin();
@@ -284,6 +357,8 @@ void setupEspNowAndWiFi() {
 void setupBleGateway() {
   BLEDevice::init("OpenPixelBridge-Nunchuk");
   BLEServer *pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new BridgeServerCallbacks());
+
   BLEService *pService = pServer->createService(NORDIC_UART_SERVICE);
 
   BLECharacteristic *pRxChar = pService->createCharacteristic(
@@ -292,11 +367,11 @@ void setupBleGateway() {
   );
   pRxChar->setCallbacks(new BridgeBleCallbacks());
 
-  BLECharacteristic *pTxChar = pService->createCharacteristic(
+  pGlobalTxChar = pService->createCharacteristic(
     NORDIC_UART_TX_CHAR,
     BLECharacteristic::PROPERTY_NOTIFY
   );
-  pTxChar->addDescriptor(new BLE2902());
+  pGlobalTxChar->addDescriptor(new BLE2902());
 
   pService->start();
 
@@ -317,8 +392,12 @@ void readNunchukAndProcess() {
   delayMicroseconds(250);
 
   Wire.requestFrom(NUNCHUK_ADDR, 6);
-  if (Wire.available() < 6) return;
+  if (Wire.available() < 6) {
+    isNunchukI2cOk = false;
+    return;
+  }
 
+  isNunchukI2cOk = true;
   uint8_t data[6];
   for (int i = 0; i < 6; i++) {
     data[i] = Wire.read();
@@ -332,7 +411,33 @@ void readNunchukAndProcess() {
   bool btnZ = !((data[5] >> 0) & 0x01); // Trigger pressed = 1
   bool btnC = !((data[5] >> 1) & 0x01); // Top button pressed = 1
 
+  liveJoyX = joyX;
+  liveJoyY = joyY;
+  liveBtnZ = btnZ;
+  liveBtnC = btnC;
+  liveAccelX = accelX;
+  liveAccelY = accelY;
+  liveAccelZ = accelZ;
+
   unsigned long now = millis();
+
+  // Notify BLE telemetry packet to Open POI Studio every 60ms
+  if (isBleClientConnected && pGlobalTxChar != nullptr && (now - lastTelemetryNotify > 60)) {
+    lastTelemetryNotify = now;
+    uint8_t telPkt[10];
+    telPkt[0] = START_BYTE;
+    telPkt[1] = TELEMETRY_BYTE;
+    telPkt[2] = joyX;
+    telPkt[3] = joyY;
+    telPkt[4] = btnZ ? 1 : 0;
+    telPkt[5] = btnC ? 1 : 0;
+    telPkt[6] = (uint8_t)(accelX >> 2);
+    telPkt[7] = (uint8_t)(accelY >> 2);
+    telPkt[8] = isNunchukI2cOk ? 1 : 0;
+    telPkt[9] = END_BYTE;
+    pGlobalTxChar->setValue(telPkt, 10);
+    pGlobalTxChar->notify();
+  }
 
   // 1. Joystick X: Slot change (Left / Right flick)
   if (now - lastJoyFlickTime > 250) {
@@ -340,12 +445,10 @@ void readNunchukAndProcess() {
       currentSlot = (currentSlot > 0) ? (currentSlot - 1) : 9;
       sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
       lastJoyFlickTime = now;
-      Serial.printf("Joystick Left -> Slot %d\n", currentSlot);
     } else if (joyX > 200) { // Flick Right -> Next Slot
       currentSlot = (currentSlot + 1) % 10;
       sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
       lastJoyFlickTime = now;
-      Serial.printf("Joystick Right -> Slot %d\n", currentSlot);
     }
   }
 
@@ -355,12 +458,10 @@ void readNunchukAndProcess() {
       currentBank = (currentBank + 1) % 5;
       sendEspNowPacket(CMD_SET_BANK, currentBank);
       lastJoyFlickTime = now;
-      Serial.printf("Joystick Up -> Bank %d\n", currentBank);
     } else if (joyY < 50) { // Flick Down -> Previous Bank
       currentBank = (currentBank > 0) ? (currentBank - 1) : 4;
       sendEspNowPacket(CMD_SET_BANK, currentBank);
       lastJoyFlickTime = now;
-      Serial.printf("Joystick Down -> Bank %d\n", currentBank);
     }
   }
 
@@ -372,20 +473,17 @@ void readNunchukAndProcess() {
     if (pressDur < 1000) {
       currentPalette = (currentPalette + 1) % 33;
       sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
-      Serial.printf("C Button Tap -> Palette %d\n", currentPalette);
     }
   } else if (btnC && (now - btnCHoldStart > 1200) && btnCHoldStart != 0) {
-    currentPalette = 0; // Blank (Original RGB)
+    currentPalette = 0; // Blank
     sendEspNowPacket(CMD_SET_PALETTE, 0);
-    Serial.println("C Button Hold -> Reset to Blank Palette (0)");
-    btnCHoldStart = 0; // Don't re-trigger
+    btnCHoldStart = 0;
   }
 
   // 4. Z Trigger: Instant Strobe Drop on hold
   if (btnZ != isStrobeActive) {
     isStrobeActive = btnZ;
     sendEspNowPacket(CMD_STROBE_BLAST, isStrobeActive ? 1 : 0);
-    Serial.printf("Z Trigger -> Strobe %s\n", isStrobeActive ? "ACTIVE" : "OFF");
   }
 
   // 5. Accelerometer Tilt Modulation (every 50ms)
@@ -404,13 +502,13 @@ void readNunchukAndProcess() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.0...");
+  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.1...");
 
   setupNunchuk();
   setupEspNowAndWiFi();
   setupBleGateway();
 
-  Serial.println("🎉 Bridge Ready! Bluetooth: 'OpenPixelBridge-Nunchuk' | Wi-Fi AP: 'OpenPixelBridge' (192.168.4.1)");
+  Serial.println("🎉 Bridge Ready! Bluetooth + Wi-Fi Telemetry Active.");
 }
 
 void loop() {

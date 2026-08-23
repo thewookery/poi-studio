@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=111">
+    <link rel="stylesheet" href="styles.css?v=112">
     <!-- GOOGLE WEB SERIAL POLYFILL OVER WEBUSB (ENABLES ANDROID CHROME USB-C FLASHING) -->
     <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.15/dist/serial.umd.js"></script>
     <script src="https://unpkg.com/esptool-js@0.4.5/bundle.js"></script>
@@ -106,7 +106,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v111 (Locked Channel 1 Mesh Edition)</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v112 (Live Nunchuk Hardware Diagnostics)</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -1629,6 +1629,47 @@
 
             </div>
 
+            
+            <!-- 🎮 LIVE NUNCHUK HARDWARE & I2C CHECKER -->
+            <div class="card-box" id="card-nunchuk-checker" style="border-color:var(--neon-green); margin-bottom:14px; background:rgba(0, 255, 136, 0.04);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+                    <div style="font-size:0.86rem; font-weight:900; color:var(--neon-green); display:flex; align-items:center; gap:8px;">
+                        <span>🎮</span>
+                        <span>Live Nunchuk Hardware & I2C Diagnostics</span>
+                    </div>
+                    <span id="app-nunchuk-i2c-badge" class="telemetry-pill" style="color:var(--text-muted); font-size:0.68rem; font-weight:800; border-color:rgba(255,255,255,0.1);">Connect Bridge to Test</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; align-items:center;">
+                    <!-- Virtual Joystick 2D View -->
+                    <div style="background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px; text-align:center;">
+                        <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">2D Analog Stick Position</div>
+                        <div style="width:90px; height:90px; border-radius:50%; border:2px solid var(--neon-cyan); background:#04060a; margin:0 auto; position:relative; overflow:hidden;">
+                            <div style="position:absolute; width:100%; height:1px; background:rgba(255,255,255,0.1); top:44px; left:0;"></div>
+                            <div style="position:absolute; width:1px; height:100%; background:rgba(255,255,255,0.1); left:44px; top:0;"></div>
+                            <div id="app-nunchuk-dot" style="width:16px; height:16px; border-radius:50%; background:var(--neon-green); box-shadow:0 0 10px var(--neon-green); position:absolute; top:37px; left:37px; transform:translate(0px, 0px); transition:transform 0.04s linear;"></div>
+                        </div>
+                        <div style="font-family:monospace; font-size:0.75rem; color:var(--neon-cyan); margin-top:8px;">
+                            X: <b id="app-nunchuk-x">128</b> | Y: <b id="app-nunchuk-y">128</b>
+                        </div>
+                    </div>
+                    <!-- Button & Trigger State -->
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <div style="background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.74rem; font-weight:700;">Z Trigger (Bottom Strobe):</span>
+                            <span id="app-nunchuk-z-badge" class="telemetry-pill" style="font-size:0.72rem; font-weight:800; color:var(--text-muted);">Released</span>
+                        </div>
+                        <div style="background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.74rem; font-weight:700;">C Button (Top Palette):</span>
+                            <span id="app-nunchuk-c-badge" class="telemetry-pill" style="font-size:0.72rem; font-weight:800; color:var(--text-muted);">Released</span>
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.45; background:rgba(255,255,255,0.02); padding:6px 10px; border-radius:6px;">
+                            • Tap <b>"📡 Connect Poi"</b> in top HUD and pick <code>OpenPixelBridge-Nunchuk</code>.<br>
+                            • Moving the physical analog stick or squeezing the trigger reflects live on screen!
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 3. EXPERIMENTAL: PURE ESP-NOW MESH & NUNCHUK BRIDGE (PASSWORD PROTECTED) -->
             <div style="margin-top:14px; border-top:1px solid rgba(188, 19, 254, 0.35); padding-top:12px; margin-bottom:14px;" id="sec-espnow-protected">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
@@ -2366,6 +2407,55 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el('btn-risk-modal-confirm')) {
         el('btn-risk-modal-confirm').onclick = function() {
             setFirmwareUnlocked(true);
+
+    // --- LIVE NUNCHUK HARDWARE TELEMETRY LISTENER ---
+    window.addEventListener('poi-nunchuk-telemetry', (e) => {
+        const d = e.detail;
+        if (!d) return;
+
+        const badge = el('app-nunchuk-i2c-badge');
+        const xEl = el('app-nunchuk-x');
+        const yEl = el('app-nunchuk-y');
+        const zEl = el('app-nunchuk-z-badge');
+        const cEl = el('app-nunchuk-c-badge');
+        const dotEl = el('app-nunchuk-dot');
+
+        if (badge) {
+            if (d.ok) {
+                badge.innerText = '🟢 I2C Connected (0x52 OK)';
+                badge.style.color = 'var(--neon-green)';
+                badge.style.borderColor = 'var(--neon-green)';
+            } else {
+                badge.innerText = '🔴 I2C Disconnected (Check D2/D3)';
+                badge.style.color = '#ff4d4d';
+                badge.style.borderColor = '#ff4d4d';
+            }
+        }
+
+        if (xEl) xEl.innerText = d.x;
+        if (yEl) yEl.innerText = d.y;
+
+        if (zEl) {
+            zEl.innerText = d.z ? '⚡ PRESSED (STROBE)' : 'Released';
+            zEl.style.color = d.z ? '#fff' : 'var(--text-muted)';
+            zEl.style.background = d.z ? '#ff0055' : 'transparent';
+            zEl.style.borderColor = d.z ? '#ff0055' : 'rgba(255,255,255,0.1)';
+        }
+
+        if (cEl) {
+            cEl.innerText = d.c ? '🌟 PRESSED (PALETTE)' : 'Released';
+            cEl.style.color = d.c ? '#000' : 'var(--text-muted)';
+            cEl.style.background = d.c ? 'var(--neon-yellow)' : 'transparent';
+            cEl.style.borderColor = d.c ? 'var(--neon-yellow)' : 'rgba(255,255,255,0.1)';
+        }
+
+        if (dotEl) {
+            const dx = ((d.x - 128) / 128) * 32;
+            const dy = -((d.y - 128) / 128) * 32;
+            dotEl.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+    });
+
             closeFirmwareRiskModal();
         };
     }
@@ -6687,6 +6777,55 @@ document.addEventListener('DOMContentLoaded', function() {
     checkWebSerialSupport();
     initEspNowProtection();
     setFirmwareUnlocked(true);
+
+    // --- LIVE NUNCHUK HARDWARE TELEMETRY LISTENER ---
+    window.addEventListener('poi-nunchuk-telemetry', (e) => {
+        const d = e.detail;
+        if (!d) return;
+
+        const badge = el('app-nunchuk-i2c-badge');
+        const xEl = el('app-nunchuk-x');
+        const yEl = el('app-nunchuk-y');
+        const zEl = el('app-nunchuk-z-badge');
+        const cEl = el('app-nunchuk-c-badge');
+        const dotEl = el('app-nunchuk-dot');
+
+        if (badge) {
+            if (d.ok) {
+                badge.innerText = '🟢 I2C Connected (0x52 OK)';
+                badge.style.color = 'var(--neon-green)';
+                badge.style.borderColor = 'var(--neon-green)';
+            } else {
+                badge.innerText = '🔴 I2C Disconnected (Check D2/D3)';
+                badge.style.color = '#ff4d4d';
+                badge.style.borderColor = '#ff4d4d';
+            }
+        }
+
+        if (xEl) xEl.innerText = d.x;
+        if (yEl) yEl.innerText = d.y;
+
+        if (zEl) {
+            zEl.innerText = d.z ? '⚡ PRESSED (STROBE)' : 'Released';
+            zEl.style.color = d.z ? '#fff' : 'var(--text-muted)';
+            zEl.style.background = d.z ? '#ff0055' : 'transparent';
+            zEl.style.borderColor = d.z ? '#ff0055' : 'rgba(255,255,255,0.1)';
+        }
+
+        if (cEl) {
+            cEl.innerText = d.c ? '🌟 PRESSED (PALETTE)' : 'Released';
+            cEl.style.color = d.c ? '#000' : 'var(--text-muted)';
+            cEl.style.background = d.c ? 'var(--neon-yellow)' : 'transparent';
+            cEl.style.borderColor = d.c ? 'var(--neon-yellow)' : 'rgba(255,255,255,0.1)';
+        }
+
+        if (dotEl) {
+            const dx = ((d.x - 128) / 128) * 32;
+            const dy = -((d.y - 128) / 128) * 32;
+            dotEl.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+    });
+
 
     // --- DIRECT IN-APP ESPTOOL-JS FIRMWARE FLASHER (WEBUSB / WEBSERIAL) ---
     let currentFlashManifest = null;
