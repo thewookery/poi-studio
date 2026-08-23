@@ -1,13 +1,13 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE TRANSMITTER (v2.1 with Live Telemetry)
+ * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.2 Universal Auto-Scanner)
  * ============================================================================
- * Hardware: Seeed Studio XIAO ESP32-C3
- * Pins:
- *   - I2C SDA: D2 (GPIO 4)
- *   - I2C SCL: D3 (GPIO 5)
- *   - 3V3: Power to Nunchuk VCC
- *   - GND: Ground to Nunchuk GND
+ * Features:
+ *   - Auto-scans I2C Pins: D2/D3 (GPIO 4/5) AND D4/D5 (GPIO 6/7)
+ *   - Auto-detects OEM Nintendo & 3rd-Party Clone Nunchuks
+ *   - Dual-mode Initialization (Unencrypted 0xF0/0x55 & Legacy 0x40/0x00)
+ *   - Live Bluetooth & Wi-Fi Telemetry Stream
+ *   - Sub-1ms ESP-NOW Broadcast on Channel 1
  */
 
 #include <esp_wifi.h>
@@ -21,13 +21,10 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-#define I2C_SDA_PIN 4
-#define I2C_SCL_PIN 5
 #define NUNCHUK_ADDR 0x52
-
 #define ESPNOW_PACKET_MAGIC 0xA5
 
-// Official Nordic UART Service UUIDs
+// Nordic UART Service UUIDs
 #define NORDIC_UART_SERVICE "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
 #define NORDIC_UART_RX_CHAR "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
 #define NORDIC_UART_TX_CHAR "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
@@ -36,14 +33,21 @@
 #define END_BYTE   0xD1
 #define TELEMETRY_BYTE 0xFE
 
-// Open Pixel Poi Command Codes
-#define CC_SET_BRIGHTNESS   0x02
-#define CC_SET_SPEED        0x03
-#define CC_SET_PATTERN      0x04
-#define CC_SET_PATTERN_SLOT 0x05
-#define CC_SET_BANK         0x07
-#define CC_SET_PALETTE_FX   0x15
-#define CC_SET_MOTION_FX    0x18
+// Pin configurations to auto-scan
+struct I2CPair {
+  uint8_t sda;
+  uint8_t scl;
+  const char* name;
+};
+
+const I2CPair I2C_PAIRS[] = {
+  { 4, 5, "D2 (SDA) / D3 (SCL)" }, // GPIO 4 / GPIO 5
+  { 6, 7, "D4 (SDA) / D5 (SCL)" }  // GPIO 6 / GPIO 7 (Xiao default hardware I2C)
+};
+
+int activeI2cIndex = 0;
+bool isNunchukEncrypted = false;
+bool isNunchukI2cOk = false;
 
 enum EspNowCommand {
   CMD_NONE = 0,
@@ -69,7 +73,7 @@ typedef struct __attribute__((packed)) {
 
 static uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-// Global Bridge State
+// State Variables
 uint8_t currentSlot = 0;
 uint8_t currentBank = 0;
 uint8_t currentPalette = 0;
@@ -77,16 +81,14 @@ uint8_t currentMotion = 0;
 uint8_t currentBrightness = 200;
 bool isStrobeActive = false;
 
-// Live Nunchuk State
-bool isNunchukI2cOk = false;
 uint8_t liveJoyX = 128;
+uint8_t liveJoyY = 128;
 uint8_t lastJoyX = 128;
 uint8_t lastJoyY = 128;
-bool lastBtnC = false;
-bool lastBtnZ = false;
-uint8_t liveJoyY = 128;
 bool liveBtnC = false;
 bool liveBtnZ = false;
+bool lastBtnC = false;
+bool lastBtnZ = false;
 int16_t liveAccelX = 512;
 int16_t liveAccelY = 512;
 int16_t liveAccelZ = 512;
@@ -94,6 +96,7 @@ int16_t liveAccelZ = 512;
 unsigned long btnCHoldStart = 0;
 unsigned long lastJoyFlickTime = 0;
 unsigned long lastTelemetryNotify = 0;
+unsigned long lastI2cRetry = 0;
 
 BLECharacteristic *pGlobalTxChar = nullptr;
 bool isBleClientConnected = false;
@@ -140,19 +143,19 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
         val = (rxValue.length() >= 2) ? data[1] : 0;
       }
 
-      if (cmdCode == CC_SET_PATTERN || cmdCode == CC_SET_PATTERN_SLOT) {
+      if (cmdCode == 0x04 || cmdCode == 0x05) {
         currentSlot = val % 10;
         sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
-      } else if (cmdCode == CC_SET_BANK || cmdCode == 0x08) {
+      } else if (cmdCode == 0x07 || cmdCode == 0x08) {
         currentBank = val % 5;
         sendEspNowPacket(CMD_SET_BANK, currentBank);
-      } else if (cmdCode == CC_SET_BRIGHTNESS || cmdCode == 0x10) {
+      } else if (cmdCode == 0x02 || cmdCode == 0x10) {
         currentBrightness = val;
         sendEspNowPacket(CMD_SET_BRIGHTNESS, val);
-      } else if (cmdCode == CC_SET_PALETTE_FX) {
+      } else if (cmdCode == 0x15) {
         currentPalette = val % 33;
         sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
-      } else if (cmdCode == CC_SET_MOTION_FX) {
+      } else if (cmdCode == 0x18) {
         currentMotion = val % 17;
         sendEspNowPacket(CMD_SET_MOTION_FX, currentMotion);
       }
@@ -160,7 +163,7 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
   }
 };
 
-// Wi-Fi Web Dashboard HTML with Live Nunchuk Diagnostic Indicator
+// Wi-Fi Web Dashboard HTML
 const char INDEX_HTML[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
@@ -183,13 +186,12 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <h2>⚡ OPEN PIXEL BRIDGE</h2>
-  <div style="font-size:12px; color:#888;">Direct ESP-NOW Mesh Active (Channel 1)</div>
+  <div style="font-size:12px; color:#888;">Direct ESP-NOW Mesh (Channel 1)</div>
 
-  <!-- NUNCHUK LIVE HARDWARE CHECKER -->
   <div class="card" style="border-color:#00ff88;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <b style="color:#00ff88;">🎮 Nunchuk Hardware Status</b>
-      <span id="nunchuk-badge" class="status-pill" style="background:rgba(255,77,77,0.2); color:#ff4d4d;">Connecting...</span>
+      <b style="color:#00ff88;">🎮 Nunchuk Diagnostics</b>
+      <span id="nunchuk-badge" class="status-pill" style="background:rgba(255,77,77,0.2); color:#ff4d4d;">Scanning...</span>
     </div>
     <div class="stick-box">
       <div id="stick-dot" class="stick-dot"></div>
@@ -198,6 +200,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       <span>X: <b id="val-x">128</b> | Y: <b id="val-y">128</b></span>
       <span>Z: <b id="val-z">0</b> | C: <b id="val-c">0</b></span>
     </div>
+    <div id="pin-info" style="font-size:11px; color:#aaa; margin-top:6px;">Scanning D2/D3 & D4/D5...</div>
   </div>
 
   <div class="card">
@@ -237,18 +240,17 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       fetch('/api?act=' + act + '&val=' + val);
     }
 
-    // Poll live Nunchuk hardware diagnostics every 100ms
     setInterval(async () => {
       try {
         const res = await fetch('/api?act=telemetry');
         const data = await res.json();
         const badge = document.getElementById('nunchuk-badge');
         if (data.ok) {
-          badge.innerText = '🟢 I2C Connected';
+          badge.innerText = '🟢 I2C OK (' + data.pins + ')';
           badge.style.background = 'rgba(0,255,136,0.2)';
           badge.style.color = '#00ff88';
         } else {
-          badge.innerText = '🔴 I2C Disconnected';
+          badge.innerText = '🔴 I2C Scanning...';
           badge.style.background = 'rgba(255,77,77,0.2)';
           badge.style.color = '#ff4d4d';
         }
@@ -256,8 +258,8 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         document.getElementById('val-y').innerText = data.y;
         document.getElementById('val-z').innerText = data.z ? 'ON' : '0';
         document.getElementById('val-c').innerText = data.c ? 'ON' : '0';
+        document.getElementById('pin-info').innerText = 'Active Pins: ' + data.pins;
 
-        // Move visual dot
         const dx = ((data.x - 128) / 128) * 35;
         const dy = -((data.y - 128) / 128) * 35;
         document.getElementById('stick-dot').style.transform = `translate(${dx}px, ${dy}px)`;
@@ -283,7 +285,8 @@ void handleApi() {
                     ",\"c\":" + String(liveBtnC ? 1 : 0) +
                     ",\"ax\":" + String(liveAccelX) +
                     ",\"ay\":" + String(liveAccelY) +
-                    ",\"az\":" + String(liveAccelZ) + "}";
+                    ",\"az\":" + String(liveAccelZ) +
+                    ",\"pins\":\"" + String(I2C_PAIRS[activeI2cIndex].name) + "\"}";
       server.send(200, "application/json", json);
       return;
     }
@@ -307,24 +310,62 @@ void handleApi() {
   server.send(200, "application/json", "{\"status\":\"ok\"}");
 }
 
-void setupNunchuk() {
-  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN, 100000);
+bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
+  Wire.end();
   delay(10);
+  
+  pinMode(sda, INPUT_PULLUP);
+  pinMode(scl, INPUT_PULLUP);
+  Wire.begin(sda, scl, 50000); // 50kHz conservative I2C speed for maximum compatibility
+  delay(20);
 
-  // Modern unencrypted initialization
+  // 1. Try Modern Unencrypted Init (0xF0 -> 0x55, 0xFB -> 0x00)
   Wire.beginTransmission(NUNCHUK_ADDR);
   Wire.write(0xF0);
   Wire.write(0x55);
-  Wire.endTransmission();
-  delay(2);
+  uint8_t err1 = Wire.endTransmission();
+  delay(5);
 
   Wire.beginTransmission(NUNCHUK_ADDR);
   Wire.write(0xFB);
   Wire.write(0x00);
-  Wire.endTransmission();
-  delay(2);
+  uint8_t err2 = Wire.endTransmission();
+  delay(5);
 
-  Serial.println("Wii Nunchuk I2C Initialized!");
+  if (err1 == 0 && err2 == 0) {
+    isNunchukEncrypted = false;
+    Serial.println("  -> Handshake Success: Modern Unencrypted Nunchuk");
+    return true;
+  }
+
+  // 2. Try Legacy Encrypted Init (0x40 -> 0x00)
+  Wire.beginTransmission(NUNCHUK_ADDR);
+  Wire.write(0x40);
+  Wire.write(0x00);
+  uint8_t err3 = Wire.endTransmission();
+  delay(5);
+
+  if (err3 == 0) {
+    isNunchukEncrypted = true;
+    Serial.println("  -> Handshake Success: Legacy Encrypted Nunchuk");
+    return true;
+  }
+
+  return false;
+}
+
+void autoScanNunchuk() {
+  for (int i = 0; i < 2; i++) {
+    Serial.printf("Scanning Nunchuk on %s (SDA=%d, SCL=%d)...\n", I2C_PAIRS[i].name, I2C_PAIRS[i].sda, I2C_PAIRS[i].scl);
+    if (tryInitNunchukOnPins(I2C_PAIRS[i].sda, I2C_PAIRS[i].scl)) {
+      activeI2cIndex = i;
+      isNunchukI2cOk = true;
+      Serial.printf("✅ Nunchuk LOCKED on %s!\n", I2C_PAIRS[i].name);
+      return;
+    }
+  }
+  isNunchukI2cOk = false;
+  Serial.println("❌ Nunchuk not responding on D2/D3 or D4/D5.");
 }
 
 void setupEspNowAndWiFi() {
@@ -385,11 +426,27 @@ void setupBleGateway() {
   Serial.println("Nordic UART Web Bluetooth Active!");
 }
 
+inline uint8_t decodeNunchukByte(uint8_t b) {
+  return isNunchukEncrypted ? ((b ^ 0x17) + 0x17) : b;
+}
+
 void readNunchukAndProcess() {
+  unsigned long now = millis();
+
+  // Retry auto-scanning if disconnected
+  if (!isNunchukI2cOk && (now - lastI2cRetry > 1500)) {
+    lastI2cRetry = now;
+    autoScanNunchuk();
+    if (!isNunchukI2cOk) return;
+  }
+
   Wire.beginTransmission(NUNCHUK_ADDR);
   Wire.write(0x00);
-  Wire.endTransmission();
-  delayMicroseconds(250);
+  if (Wire.endTransmission() != 0) {
+    isNunchukI2cOk = false;
+    return;
+  }
+  delayMicroseconds(300);
 
   Wire.requestFrom(NUNCHUK_ADDR, 6);
   if (Wire.available() < 6) {
@@ -398,18 +455,24 @@ void readNunchukAndProcess() {
   }
 
   isNunchukI2cOk = true;
-  uint8_t data[6];
+  uint8_t raw[6];
   for (int i = 0; i < 6; i++) {
-    data[i] = Wire.read();
+    raw[i] = decodeNunchukByte(Wire.read());
   }
 
-  uint8_t joyX = data[0];
-  uint8_t joyY = data[1];
-  int16_t accelX = (data[2] << 2) | ((data[5] >> 2) & 0x03);
-  int16_t accelY = (data[3] << 2) | ((data[5] >> 4) & 0x03);
-  int16_t accelZ = (data[4] << 2) | ((data[5] >> 6) & 0x03);
-  bool btnZ = !((data[5] >> 0) & 0x01); // Trigger pressed = 1
-  bool btnC = !((data[5] >> 1) & 0x01); // Top button pressed = 1
+  uint8_t joyX = raw[0];
+  uint8_t joyY = raw[1];
+  int16_t accelX = (raw[2] << 2) | ((raw[5] >> 2) & 0x03);
+  int16_t accelY = (raw[3] << 2) | ((raw[5] >> 4) & 0x03);
+  int16_t accelZ = (raw[4] << 2) | ((raw[5] >> 6) & 0x03);
+  bool btnZ = !((raw[5] >> 0) & 0x01);
+  bool btnC = !((raw[5] >> 1) & 0x01);
+
+  // If joy readings are completely stuck at 0 or 255 (corrupt I2C bus), ignore
+  if (joyX == 0 && joyY == 0 && raw[2] == 0) {
+    isNunchukI2cOk = false;
+    return;
+  }
 
   liveJoyX = joyX;
   liveJoyY = joyY;
@@ -419,9 +482,7 @@ void readNunchukAndProcess() {
   liveAccelY = accelY;
   liveAccelZ = accelZ;
 
-  unsigned long now = millis();
-
-  // Notify BLE telemetry packet to Open POI Studio every 60ms
+  // Stream live telemetry over Bluetooth
   if (isBleClientConnected && pGlobalTxChar != nullptr && (now - lastTelemetryNotify > 60)) {
     lastTelemetryNotify = now;
     uint8_t telPkt[10];
@@ -475,7 +536,7 @@ void readNunchukAndProcess() {
       sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
     }
   } else if (btnC && (now - btnCHoldStart > 1200) && btnCHoldStart != 0) {
-    currentPalette = 0; // Blank
+    currentPalette = 0;
     sendEspNowPacket(CMD_SET_PALETTE, 0);
     btnCHoldStart = 0;
   }
@@ -502,13 +563,13 @@ void readNunchukAndProcess() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.1...");
+  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.2 (Auto-Scanner)...");
 
-  setupNunchuk();
+  autoScanNunchuk();
   setupEspNowAndWiFi();
   setupBleGateway();
 
-  Serial.println("🎉 Bridge Ready! Bluetooth + Wi-Fi Telemetry Active.");
+  Serial.println("🎉 Bridge Ready! Auto-Scanner + Bluetooth + Wi-Fi Telemetry Active.");
 }
 
 void loop() {
