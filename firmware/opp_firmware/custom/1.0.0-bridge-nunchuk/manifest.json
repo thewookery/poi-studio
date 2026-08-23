@@ -1,7 +1,6 @@
 {
-  "name": "Master Wii Nunchuk ESP-NOW Bridge Transmitter (Xiao ESP32-C3)",
-  "version": "1.0.0-nunchuk-v99",
-  "home_assistant_domain": "open_pixel_poi",
+  "name": "OpenPixelBridge - Master Wii Nunchuk Transmitter v2.0 (Nordic BLE + Wi-Fi AP + ESP-NOW)",
+  "version": "2026.2.0-nunchuk-xiao",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -17,7 +16,11 @@
           "offset": 32768
         },
         {
-          "path": "firmware.bin",
+          "path": "boot_app0.bin",
+          "offset": 57344
+        },
+        {
+          "path": "firmware_bridge.bin",
           "offset": 65536
         }
       ]

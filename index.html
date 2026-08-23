@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=109">
+    <link rel="stylesheet" href="styles.css?v=110">
     <!-- GOOGLE WEB SERIAL POLYFILL OVER WEBUSB (ENABLES ANDROID CHROME USB-C FLASHING) -->
     <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.15/dist/serial.umd.js"></script>
     <script src="https://unpkg.com/esptool-js@0.4.5/bundle.js"></script>
@@ -106,7 +106,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v109 (Immediate USB Gesture Engine)</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.62rem; color:var(--neon-cyan); font-weight:600; background:rgba(0,137,123,0.15); border:1px solid rgba(0,137,123,0.4); padding:2px 6px; border-radius:3px;">v110 (Dual BLE + Wi-Fi Bridge Edition)</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <button class="ble-connect-btn" id="btn-ble-connect" title="Connect Open Pixel Poi via Web Bluetooth">📡 Connect Poi</button>
@@ -1668,15 +1668,15 @@
                             • <b>High-Speed 20MHz SPI Engine:</b> 50 Slots • 32 Palettes • 17 Motion Flows • Peak Brightness<br>
                             • <b>Unlimited Multi-Prop Mesh:</b> Syncs unlimited poi, hats, and wands in microsecond unison
                         </div>
-                        <div class="firmware-flash-wrap" style="margin-top:8px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/custom/3.0.0-55px-espnow/manifest.json?v=99">
-                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4; border-color:var(--neon-purple); color:var(--neon-purple);">
+                        <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+                            <esp-web-install-button id="esp-btn-espnow-recv" manifest="firmware/opp_firmware/custom/3.0.0-55px-espnow/manifest.json?v=99">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:var(--neon-purple); color:var(--neon-purple); font-weight:800;">
                                     ⚡ Flash Pure ESP-NOW Prop Receiver (55px DotStar)
                                 </button>
-                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
-                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
-                                </span>
                             </esp-web-install-button>
+                            <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-espnow-recv" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-purple); font-weight:800; border-color:var(--neon-purple);">
+                                📱 Android USB-C 1-Tap Flash (Receiver)
+                            </button>
                         </div>
                     </div>
 
@@ -1692,15 +1692,15 @@
                             • <b>Web Studio BLE Gateway:</b> Connects to Open POI Studio on your phone simultaneously<br>
                             • <b>Real-Time Interactive Drops:</b> Joystick pattern change, C palette cycle, Z trigger strobe
                         </div>
-                        <div class="firmware-flash-wrap" style="margin-top:8px;">
-                            <esp-web-install-button manifest="firmware/opp_firmware/custom/1.0.0-bridge-nunchuk/manifest.json?v=99">
-                                <button slot="activate" class="btn-ble-upload firmware-install-btn" disabled style="width:100%; font-size:0.75rem; padding:8px 10px; opacity:0.4; border-color:var(--neon-cyan); color:var(--neon-cyan);">
+                        <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+                            <esp-web-install-button id="esp-btn-bridge" manifest="firmware/opp_firmware/custom/1.0.0-bridge-nunchuk/manifest.json">
+                                <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:var(--neon-cyan); color:var(--neon-cyan); font-weight:800;">
                                     ⚡ Flash Master Nunchuk Bridge (Xiao ESP32-C3)
                                 </button>
-                                <span slot="unsupported" style="font-size:0.65rem; color:#ff4d4d; display:block; margin-top:3px;">
-                                    ⚠️ Web Serial unsupported in this browser. Use Chrome/Edge desktop.
-                                </span>
                             </esp-web-install-button>
+                            <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-bridge" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-cyan); font-weight:800; border-color:var(--neon-cyan);">
+                                📱 Android USB-C 1-Tap Flash (Bridge v2.0)
+                            </button>
                         </div>
                     </div>
 
@@ -2231,6 +2231,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 manifest = espBtn.getAttribute('manifest');
             }
             if (targetId.includes('55-fx')) title = "55px DotStar Studio FX (50 Slots)";
+            else if (targetId.includes('bridge')) title = "Master Nunchuk Bridge v2.0 (Xiao ESP32-C3)";
+            else if (targetId.includes('espnow-recv')) title = "Pure ESP-NOW Prop Receiver (55px DotStar)";
             else if (targetId.includes('55-stock')) title = "55px DotStar Stock (15 Slots)";
             else if (targetId.includes('25-stock')) title = "25px NeoPixel Stock (15 Slots)";
             else if (targetId.includes('20-stock')) title = "20px NeoPixel Stock (15 Slots)";
@@ -6896,6 +6898,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 manifest = espBtn.getAttribute('manifest');
             }
             if (targetId.includes('55-fx')) title = "55px DotStar Studio FX (50 Slots)";
+            else if (targetId.includes('bridge')) title = "Master Nunchuk Bridge v2.0 (Xiao ESP32-C3)";
+            else if (targetId.includes('espnow-recv')) title = "Pure ESP-NOW Prop Receiver (55px DotStar)";
             else if (targetId.includes('55-stock')) title = "55px DotStar Stock (15 Slots)";
             else if (targetId.includes('25-stock')) title = "25px NeoPixel Stock (15 Slots)";
             else if (targetId.includes('20-stock')) title = "20px NeoPixel Stock (15 Slots)";

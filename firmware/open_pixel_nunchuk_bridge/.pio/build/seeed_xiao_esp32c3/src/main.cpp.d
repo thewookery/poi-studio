@@ -181,6 +181,11 @@
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/Udp.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src/WebServer.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src/HTTP_Method.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/nghttp/port/include/http_parser.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src/Uri.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src/detail/RequestHandler.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_now.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_wifi_types.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEDevice.h \
