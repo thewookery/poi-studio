@@ -1,3 +1,4 @@
+#include <esp_wifi.h>
 #ifndef _OPEN_PIXEL_POI_ESPNOW_RECV
 #define _OPEN_PIXEL_POI_ESPNOW_RECV
 
@@ -99,13 +100,18 @@ class OpenPixelPoiEspNowRecv {
       WiFi.mode(WIFI_STA);
       WiFi.disconnect();
 
+      // Explicitly lock radio to Wi-Fi Channel 1 (matching Bridge)
+      esp_wifi_set_promiscuous(true);
+      esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+      esp_wifi_set_promiscuous(false);
+
       if (esp_now_init() != ESP_OK) {
         Serial.println("ESP-NOW Init Failed!");
         return;
       }
 
       esp_now_register_recv_cb(onEspNowDataRecv);
-      Serial.println("Pure ESP-NOW Receiver Active on Channel 1!");
+      Serial.println("Pure ESP-NOW Receiver Locked & Active on Channel 1!");
     }
 
     void loop() {

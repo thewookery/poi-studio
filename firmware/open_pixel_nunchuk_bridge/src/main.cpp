@@ -1,3 +1,4 @@
+#include <esp_wifi.h>
 /**
  * ============================================================================
  * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE TRANSMITTER (v2.0)
@@ -256,6 +257,10 @@ void setupEspNowAndWiFi() {
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAP("OpenPixelBridge", "openpixelbridge", 1); // Channel 1, matching ESP-NOW
 
+  esp_wifi_set_promiscuous(true);
+  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+  esp_wifi_set_promiscuous(false);
+
   if (esp_now_init() != ESP_OK) {
     Serial.println("ESP-NOW Bridge Init Failed!");
     return;
@@ -264,6 +269,7 @@ void setupEspNowAndWiFi() {
   esp_now_peer_info_t peerInfo = {};
   memcpy(peerInfo.peer_addr, broadcastMac, 6);
   peerInfo.channel = 1;
+  peerInfo.ifidx = WIFI_IF_AP;
   peerInfo.encrypt = false;
   esp_now_add_peer(&peerInfo);
 

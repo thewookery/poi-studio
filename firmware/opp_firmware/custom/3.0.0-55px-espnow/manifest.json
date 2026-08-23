@@ -1,7 +1,6 @@
 {
-  "name": "Open Pixel Prop - Pure ESP-NOW Receiver (55px DotStar)",
-  "version": "3.0.0-espnow-v99",
-  "home_assistant_domain": "open_pixel_poi",
+  "name": "OpenPixelPoi - Pure ESP-NOW Prop Receiver (55px DotStar Locked to Channel 1)",
+  "version": "2026.3.0-espnow-ch1",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -17,8 +16,16 @@
           "offset": 32768
         },
         {
-          "path": "firmware.bin",
+          "path": "boot_app0.bin",
+          "offset": 57344
+        },
+        {
+          "path": "firmware_espnow_recv.bin",
           "offset": 65536
+        },
+        {
+          "path": "littlefs.bin",
+          "offset": 1564672
         }
       ]
     }

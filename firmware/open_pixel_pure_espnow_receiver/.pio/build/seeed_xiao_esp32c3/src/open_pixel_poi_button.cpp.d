@@ -164,8 +164,13 @@
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src/LittleFS.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h \
  src/config.h src/open_pixel_poi_espnow_recv.cpp \
- C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_now.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_wifi.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_wifi_types.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_private/esp_wifi_private.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_wifi_crypto_types.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_private/wifi_os_adapter.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_wifi_default.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_now.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPv6Address.h \
