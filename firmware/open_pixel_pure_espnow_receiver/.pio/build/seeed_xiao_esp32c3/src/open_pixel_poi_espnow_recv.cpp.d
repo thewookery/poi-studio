@@ -167,7 +167,6 @@
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_hw_support/include/soc/esp32/spiram.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_now.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPv6Address.h \
@@ -188,7 +187,9 @@
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/Udp.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
- src/config.h src/open_pixel_poi_config.cpp \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_wifi/include/esp_now.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src/LittleFS.h \
- C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h
+ src/open_pixel_poi_config.cpp \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h \
+ src/config.h

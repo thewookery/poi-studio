@@ -1,11 +1,11 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.2 Universal Auto-Scanner)
+ * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.3 Universal ESP-NOW OTA Gateway)
  * ============================================================================
  * Features:
  *   - Auto-scans I2C Pins: D2/D3 (GPIO 4/5) AND D4/D5 (GPIO 6/7)
  *   - Auto-detects OEM Nintendo & 3rd-Party Clone Nunchuks
- *   - Dual-mode Initialization (Unencrypted 0xF0/0x55 & Legacy 0x40/0x00)
+ *   - ESP-NOW Over-The-Air Pattern Upload Relay (LittleFS Direct Burning)
  *   - Live Bluetooth & Wi-Fi Telemetry Stream
  *   - Sub-1ms ESP-NOW Broadcast on Channel 1
  */
@@ -23,6 +23,7 @@
 
 #define NUNCHUK_ADDR 0x52
 #define ESPNOW_PACKET_MAGIC 0xA5
+#define ESPNOW_DATA_MAGIC   0xA6
 
 // Nordic UART Service UUIDs
 #define NORDIC_UART_SERVICE "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
@@ -42,7 +43,7 @@ struct I2CPair {
 
 const I2CPair I2C_PAIRS[] = {
   { 4, 5, "D2 (SDA) / D3 (SCL)" }, // GPIO 4 / GPIO 5
-  { 6, 7, "D4 (SDA) / D5 (SCL)" }  // GPIO 6 / GPIO 7 (Xiao default hardware I2C)
+  { 6, 7, "D4 (SDA) / D5 (SCL)" }  // GPIO 6 / GPIO 7
 };
 
 int activeI2cIndex = 0;
@@ -58,7 +59,10 @@ enum EspNowCommand {
   CMD_SET_SPEED = 5,
   CMD_STROBE_BLAST = 6,
   CMD_SET_BRIGHTNESS = 7,
-  CMD_TILT_MODULATION = 8
+  CMD_TILT_MODULATION = 8,
+  CMD_START_PATTERN_UPLOAD = 0x20,
+  CMD_PATTERN_DATA_CHUNK = 0x21,
+  CMD_END_PATTERN_UPLOAD = 0x22
 };
 
 typedef struct __attribute__((packed)) {
@@ -71,6 +75,14 @@ typedef struct __attribute__((packed)) {
   int16_t tiltZ;
 } EspNowPacket;
 
+typedef struct __attribute__((packed)) {
+  uint8_t magic;
+  uint8_t cmd;
+  uint16_t chunkSeq;
+  uint8_t dataLen;
+  uint8_t data[200];
+} EspNowDataPacket;
+
 static uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 // State Variables
@@ -80,6 +92,10 @@ uint8_t currentPalette = 0;
 uint8_t currentMotion = 0;
 uint8_t currentBrightness = 200;
 bool isStrobeActive = false;
+
+// OTA Upload State
+bool isOtaUploading = false;
+uint16_t otaChunkSeq = 0;
 
 uint8_t liveJoyX = 128;
 uint8_t liveJoyY = 128;
@@ -115,6 +131,22 @@ void sendEspNowPacket(uint8_t cmd, uint8_t val1 = 0, uint8_t val2 = 0, int16_t t
   esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
 }
 
+void forwardPatternData(const uint8_t *data, size_t len) {
+  size_t offset = 0;
+  while (offset < len) {
+    size_t chunk = min((size_t)200, len - offset);
+    EspNowDataPacket dPkt;
+    dPkt.magic = ESPNOW_DATA_MAGIC;
+    dPkt.cmd = CMD_PATTERN_DATA_CHUNK;
+    dPkt.chunkSeq = otaChunkSeq++;
+    dPkt.dataLen = (uint8_t)chunk;
+    memcpy(dPkt.data, data + offset, chunk);
+    esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
+    offset += chunk;
+    delay(2); // Safe transmission pacing
+  }
+}
+
 class BridgeServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
     isBleClientConnected = true;
@@ -130,35 +162,90 @@ class BridgeServerCallbacks : public BLEServerCallbacks {
 class BridgeBleCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
     std::string rxValue = pCharacteristic->getValue();
-    if (rxValue.length() >= 3) {
-      const uint8_t *data = (const uint8_t *)rxValue.data();
-      uint8_t cmdCode = 0;
-      uint8_t val = 0;
+    size_t len = rxValue.length();
+    if (len == 0) return;
+    const uint8_t *data = (const uint8_t *)rxValue.data();
 
-      if (data[0] == START_BYTE && data[rxValue.length() - 1] == END_BYTE) {
-        cmdCode = data[1];
-        val = (rxValue.length() >= 4) ? data[2] : 0;
-      } else {
-        cmdCode = data[0];
-        val = (rxValue.length() >= 2) ? data[1] : 0;
+    // 1. Check for Pattern Upload Header / Chunks
+    if (data[0] == START_BYTE && len >= 5 && data[1] == 0x04) {
+      // Chunk 0: Start of new Pattern Upload
+      uint8_t height = data[2];
+      uint16_t width = ((uint16_t)data[3] << 8) | data[4];
+      uint8_t targetSlot = (currentBank * 10) + currentSlot;
+
+      isOtaUploading = true;
+      otaChunkSeq = 0;
+      sendEspNowPacket(CMD_START_PATTERN_UPLOAD, targetSlot, height, width);
+      delay(10);
+
+      // Forward RGB payload in chunk 0 (bytes 5..end)
+      if (len > 5) {
+        size_t dataLen = len - 5;
+        if (data[len - 1] == END_BYTE) {
+          dataLen--;
+        }
+        if (dataLen > 0) {
+          forwardPatternData(data + 5, dataLen);
+        }
       }
 
-      if (cmdCode == 0x04 || cmdCode == 0x05) {
-        currentSlot = val % 10;
-        sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
-      } else if (cmdCode == 0x07 || cmdCode == 0x08) {
-        currentBank = val % 5;
-        sendEspNowPacket(CMD_SET_BANK, currentBank);
-      } else if (cmdCode == 0x02 || cmdCode == 0x10) {
-        currentBrightness = val;
-        sendEspNowPacket(CMD_SET_BRIGHTNESS, val);
-      } else if (cmdCode == 0x15) {
-        currentPalette = val % 33;
-        sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
-      } else if (cmdCode == 0x18) {
-        currentMotion = val % 17;
-        sendEspNowPacket(CMD_SET_MOTION_FX, currentMotion);
+      if (data[len - 1] == END_BYTE || len < 509) {
+        isOtaUploading = false;
+        delay(15);
+        sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
+        Serial.printf("[Bridge] Completed single-packet OTA pattern upload to slot %d!\n", targetSlot);
       }
+      return;
+    }
+
+    // Subsequent Chunks during Pattern Upload
+    if (isOtaUploading) {
+      size_t dataLen = len;
+      bool isFinal = false;
+      if (data[len - 1] == END_BYTE) {
+        dataLen--;
+        isFinal = true;
+      }
+      if (dataLen > 0) {
+        forwardPatternData(data, dataLen);
+      }
+      if (isFinal || len < 509) {
+        isOtaUploading = false;
+        uint8_t targetSlot = (currentBank * 10) + currentSlot;
+        delay(20);
+        sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
+        Serial.printf("[Bridge] Completed multi-chunk OTA pattern upload to slot %d!\n", targetSlot);
+      }
+      return;
+    }
+
+    // 2. Standard Framed / Direct Commands
+    uint8_t cmdCode = 0;
+    uint8_t val = 0;
+
+    if (data[0] == START_BYTE && data[len - 1] == END_BYTE) {
+      cmdCode = data[1];
+      val = (len >= 4) ? data[2] : 0;
+    } else {
+      cmdCode = data[0];
+      val = (len >= 2) ? data[1] : 0;
+    }
+
+    if (cmdCode == 0x04 || cmdCode == 0x05) {
+      currentSlot = val % 10;
+      sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
+    } else if (cmdCode == 0x07 || cmdCode == 0x08) {
+      currentBank = val % 5;
+      sendEspNowPacket(CMD_SET_BANK, currentBank);
+    } else if (cmdCode == 0x02 || cmdCode == 0x10) {
+      currentBrightness = val;
+      sendEspNowPacket(CMD_SET_BRIGHTNESS, val);
+    } else if (cmdCode == 0x15) {
+      currentPalette = val % 33;
+      sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
+    } else if (cmdCode == 0x18) {
+      currentMotion = val % 17;
+      sendEspNowPacket(CMD_SET_MOTION_FX, currentMotion);
     }
   }
 };
@@ -316,7 +403,7 @@ bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
   
   pinMode(sda, INPUT_PULLUP);
   pinMode(scl, INPUT_PULLUP);
-  Wire.begin(sda, scl, 50000); // 50kHz conservative I2C speed for maximum compatibility
+  Wire.begin(sda, scl, 50000);
   delay(20);
 
   // 1. Try Modern Unencrypted Init (0xF0 -> 0x55, 0xFB -> 0x00)
@@ -370,7 +457,7 @@ void autoScanNunchuk() {
 
 void setupEspNowAndWiFi() {
   WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP("OpenPixelBridge", "openpixelbridge", 1); // Channel 1
+  WiFi.softAP("OpenPixelBridge", "openpixelbridge", 1);
 
   esp_wifi_set_promiscuous(true);
   esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
@@ -433,7 +520,6 @@ inline uint8_t decodeNunchukByte(uint8_t b) {
 void readNunchukAndProcess() {
   unsigned long now = millis();
 
-  // Retry auto-scanning if disconnected
   if (!isNunchukI2cOk && (now - lastI2cRetry > 1500)) {
     lastI2cRetry = now;
     autoScanNunchuk();
@@ -468,7 +554,6 @@ void readNunchukAndProcess() {
   bool btnZ = !((raw[5] >> 0) & 0x01);
   bool btnC = !((raw[5] >> 1) & 0x01);
 
-  // If joy readings are completely stuck at 0 or 255 (corrupt I2C bus), ignore
   if (joyX == 0 && joyY == 0 && raw[2] == 0) {
     isNunchukI2cOk = false;
     return;
@@ -482,7 +567,6 @@ void readNunchukAndProcess() {
   liveAccelY = accelY;
   liveAccelZ = accelZ;
 
-  // Stream live telemetry over Bluetooth
   if (isBleClientConnected && pGlobalTxChar != nullptr && (now - lastTelemetryNotify > 60)) {
     lastTelemetryNotify = now;
     uint8_t telPkt[10];
@@ -502,11 +586,11 @@ void readNunchukAndProcess() {
 
   // 1. Joystick X: Slot change (Left / Right flick)
   if (now - lastJoyFlickTime > 250) {
-    if (joyX < 50) { // Flick Left -> Previous Slot
+    if (joyX < 50) {
       currentSlot = (currentSlot > 0) ? (currentSlot - 1) : 9;
       sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
       lastJoyFlickTime = now;
-    } else if (joyX > 200) { // Flick Right -> Next Slot
+    } else if (joyX > 200) {
       currentSlot = (currentSlot + 1) % 10;
       sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
       lastJoyFlickTime = now;
@@ -515,11 +599,11 @@ void readNunchukAndProcess() {
 
   // 2. Joystick Y: Bank change (Up / Down flick)
   if (now - lastJoyFlickTime > 250) {
-    if (joyY > 200) { // Flick Up -> Next Bank
+    if (joyY > 200) {
       currentBank = (currentBank + 1) % 5;
       sendEspNowPacket(CMD_SET_BANK, currentBank);
       lastJoyFlickTime = now;
-    } else if (joyY < 50) { // Flick Down -> Previous Bank
+    } else if (joyY < 50) {
       currentBank = (currentBank > 0) ? (currentBank - 1) : 4;
       sendEspNowPacket(CMD_SET_BANK, currentBank);
       lastJoyFlickTime = now;
@@ -563,13 +647,13 @@ void readNunchukAndProcess() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.2 (Auto-Scanner)...");
+  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.3 (ESP-NOW OTA Gateway)...");
 
   autoScanNunchuk();
   setupEspNowAndWiFi();
   setupBleGateway();
 
-  Serial.println("🎉 Bridge Ready! Auto-Scanner + Bluetooth + Wi-Fi Telemetry Active.");
+  Serial.println("🎉 Bridge Ready! ESP-NOW OTA Gateway + Bluetooth + Wi-Fi Telemetry Active.");
 }
 
 void loop() {

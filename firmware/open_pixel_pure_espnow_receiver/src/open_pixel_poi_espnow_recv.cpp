@@ -1,46 +1,76 @@
-#include <esp_wifi.h>
 #ifndef _OPEN_PIXEL_POI_ESPNOW_RECV
 #define _OPEN_PIXEL_POI_ESPNOW_RECV
 
+#include <esp_wifi.h>
 #include <Arduino.h>
-#include <esp_now.h>
 #include <WiFi.h>
-#include "config.h"
+#include <esp_now.h>
+#include <FS.h>
+#include <LittleFS.h>
 #include "open_pixel_poi_config.cpp"
 
 #define ESPNOW_PACKET_MAGIC 0xA5
+#define ESPNOW_DATA_MAGIC   0xA6
 
 enum EspNowCommand {
   CMD_NONE = 0,
-  CMD_SET_PATTERN = 1,     // val1 = slot (0..9)
-  CMD_SET_BANK = 2,        // val1 = bank (0..4)
-  CMD_SET_PALETTE = 3,     // val1 = paletteId (0..32)
-  CMD_SET_MOTION_FX = 4,   // val1 = motionId (0..16)
-  CMD_SET_SPEED = 5,       // val1, val2 = speedHz (uint16_t)
-  CMD_STROBE_BLAST = 6,    // val1 = 1 (active) / 0 (inactive)
-  CMD_SET_BRIGHTNESS = 7,  // val1 = brightness (0..255)
-  CMD_TILT_MODULATION = 8  // tiltX, tiltY, tiltZ
+  CMD_SET_PATTERN = 1,
+  CMD_SET_BANK = 2,
+  CMD_SET_PALETTE = 3,
+  CMD_SET_MOTION_FX = 4,
+  CMD_SET_SPEED = 5,
+  CMD_STROBE_BLAST = 6,
+  CMD_SET_BRIGHTNESS = 7,
+  CMD_TILT_MODULATION = 8,
+  CMD_START_PATTERN_UPLOAD = 0x20,
+  CMD_PATTERN_DATA_CHUNK = 0x21,
+  CMD_END_PATTERN_UPLOAD = 0x22
 };
 
 typedef struct __attribute__((packed)) {
-  uint8_t magic;           // 0xA5
-  uint8_t cmd;             // EspNowCommand
-  uint8_t val1;            // Slot / Bank / Pal / Motion / Brightness
-  uint8_t val2;            // Secondary parameter
-  int16_t tiltX;           // Nunchuk Accelerometer X
-  int16_t tiltY;           // Nunchuk Accelerometer Y
-  int16_t tiltZ;           // Nunchuk Accelerometer Z
+  uint8_t magic;
+  uint8_t cmd;
+  uint8_t val1;
+  uint8_t val2;
+  int16_t tiltX;
+  int16_t tiltY;
+  int16_t tiltZ;
 } EspNowPacket;
 
+typedef struct __attribute__((packed)) {
+  uint8_t magic;
+  uint8_t cmd;
+  uint16_t chunkSeq;
+  uint8_t dataLen;
+  uint8_t data[200];
+} EspNowDataPacket;
+
 static OpenPixelPoiConfig* g_espnow_config = nullptr;
+static File g_uploadFile;
+static uint8_t g_uploadSlot = 0;
+static uint8_t g_uploadHeight = 55;
+static uint16_t g_uploadWidth = 0;
+static bool g_isUploading = false;
 
 static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   if (g_espnow_config == nullptr) return;
+
+  // 1. Handle Bulk Pattern Data Packets (Magic 0xA6)
+  if (len == sizeof(EspNowDataPacket)) {
+    const EspNowDataPacket *dPkt = (const EspNowDataPacket *)incomingData;
+    if (dPkt->magic == ESPNOW_DATA_MAGIC && dPkt->cmd == CMD_PATTERN_DATA_CHUNK) {
+      if (g_isUploading && g_uploadFile) {
+        g_uploadFile.write(dPkt->data, dPkt->dataLen);
+      }
+      return;
+    }
+  }
+
+  // 2. Handle Standard Control Packets (Magic 0xA5)
   if (len != sizeof(EspNowPacket)) return;
   const EspNowPacket *pkt = (const EspNowPacket *)incomingData;
   if (pkt->magic != ESPNOW_PACKET_MAGIC) return;
 
-  // Force active pattern display state on any wireless command
   g_espnow_config->displayState = DS_PATTERN;
   g_espnow_config->displayStateLastUpdated = millis();
 
@@ -78,14 +108,39 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
     }
     case CMD_STROBE_BLAST: {
       if (pkt->val1 == 1) {
-        g_espnow_config->setMotionFxMode(15); // Strobe drop on hold
+        g_espnow_config->setMotionFxMode(15);
       } else {
-        g_espnow_config->setMotionFxMode(0);  // Resume normal pattern
+        g_espnow_config->setMotionFxMode(0);
       }
       break;
     }
     case CMD_SET_BRIGHTNESS: {
       g_espnow_config->setLedBrightness(pkt->val1);
+      break;
+    }
+    case CMD_START_PATTERN_UPLOAD: {
+      g_uploadSlot = pkt->val1;
+      g_uploadHeight = pkt->val2;
+      g_uploadWidth = (uint16_t)pkt->tiltX;
+      String path = String("/pattern") + g_uploadSlot + ".oppp";
+      if (LittleFS.exists(path)) {
+        LittleFS.remove(path);
+      }
+      g_uploadFile = LittleFS.open(path, FILE_WRITE);
+      g_isUploading = true;
+      Serial.printf("[ESP-NOW OTA] Starting upload into slot %d (%dx%d)...\n", g_uploadSlot, g_uploadWidth, g_uploadHeight);
+      break;
+    }
+    case CMD_END_PATTERN_UPLOAD: {
+      if (g_isUploading && g_uploadFile) {
+        g_uploadFile.flush();
+        g_uploadFile.close();
+        g_isUploading = false;
+        g_espnow_config->setFrameHeight(g_uploadHeight);
+        g_espnow_config->setFrameCount(g_uploadWidth);
+        g_espnow_config->setPatternSlot(g_uploadSlot % PATTERN_BANK_SIZE, true);
+        Serial.printf("✅ [ESP-NOW OTA] Pattern Upload COMPLETE & Active on Slot %d!\n", g_uploadSlot);
+      }
       break;
     }
     default:
@@ -94,19 +149,19 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
 }
 
 class OpenPixelPoiEspNowRecv {
+  private:
+    OpenPixelPoiConfig* pConfig;
   public:
-    OpenPixelPoiConfig& config;
-
-    OpenPixelPoiEspNowRecv(OpenPixelPoiConfig& configRef) : config(configRef) {
-      g_espnow_config = &configRef;
+    OpenPixelPoiEspNowRecv(OpenPixelPoiConfig& config) {
+      pConfig = &config;
+      g_espnow_config = &config;
     }
 
     void setup() {
-      g_espnow_config = &config;
+      g_espnow_config = pConfig;
       WiFi.mode(WIFI_STA);
       WiFi.disconnect();
 
-      // Explicitly lock radio to Wi-Fi Channel 1 (matching Bridge)
       esp_wifi_set_promiscuous(true);
       esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
       esp_wifi_set_promiscuous(false);
@@ -117,12 +172,11 @@ class OpenPixelPoiEspNowRecv {
       }
 
       esp_now_register_recv_cb(onEspNowDataRecv);
-      Serial.println("Pure ESP-NOW Receiver Locked & Active on Channel 1!");
+      Serial.println("Pure ESP-NOW Receiver Ready on Channel 1!");
     }
 
     void loop() {
-      // Async
     }
 };
 
-#endif
+#endif // _OPEN_PIXEL_POI_ESPNOW_RECV
