@@ -49,13 +49,14 @@ static OpenPixelPoiConfig* g_espnow_config = nullptr;
 static uint8_t g_uploadSlot = 0;
 static uint8_t g_uploadHeight = 55;
 static uint16_t g_uploadWidth = 30;
+static size_t g_expectedTotalBytes = 0;
 static size_t g_maxWrittenOffset = 0;
 static bool g_isUploading = false;
 
 static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   if (g_espnow_config == nullptr) return;
 
-  // 1. Bulk Pattern Data with Absolute Byte Offset (Magic 0xA6)
+  // 1. Bulk Pattern Data Chunks (Magic 0xA6)
   if (len == sizeof(EspNowDataPacket)) {
     const EspNowDataPacket *dPkt = (const EspNowDataPacket *)incomingData;
     if (dPkt->magic == ESPNOW_DATA_MAGIC && dPkt->cmd == CMD_PATTERN_DATA_CHUNK) {
@@ -83,25 +84,21 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
     case CMD_SET_PATTERN: {
       uint8_t slot = pkt->val1 % PATTERN_BANK_SIZE;
       g_espnow_config->setPatternSlot(slot, false);
-      Serial.printf("[ESP-NOW] Switched to Slot %d\n", slot);
       break;
     }
     case CMD_SET_BANK: {
       uint8_t bank = pkt->val1 % PATTERN_BANK_COUNT;
       g_espnow_config->setPatternBank(bank, false);
-      Serial.printf("[ESP-NOW] Switched to Bank %d\n", bank);
       break;
     }
     case CMD_SET_PALETTE: {
       uint8_t pal = pkt->val1 % 33;
       g_espnow_config->setPaletteFxMode(pal);
-      Serial.printf("[ESP-NOW] Switched to Palette %d\n", pal);
       break;
     }
     case CMD_SET_MOTION_FX: {
       uint8_t mot = pkt->val1 % 17;
       g_espnow_config->setMotionFxMode(mot);
-      Serial.printf("[ESP-NOW] Switched to Motion FX %d\n", mot);
       break;
     }
     case CMD_SET_SPEED: {
@@ -127,6 +124,7 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
       g_uploadSlot = pkt->val1;
       g_uploadHeight = (pkt->val2 > 0) ? pkt->val2 : 55;
       g_uploadWidth = (pkt->tiltX > 0) ? (uint16_t)pkt->tiltX : 30;
+      g_expectedTotalBytes = (size_t)g_uploadHeight * g_uploadWidth * 3;
       g_maxWrittenOffset = 0;
 
       uint8_t targetBank = g_uploadSlot / PATTERN_BANK_SIZE;
@@ -138,9 +136,11 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
       g_espnow_config->setFrameHeight(g_uploadHeight);
       g_espnow_config->setFrameCount(g_uploadWidth);
 
+      // Clear memory buffer for clean new pattern
+      memset(g_espnow_config->pattern, 0, min((size_t)(PATTERN_PIXEL_LIMIT * 3), g_expectedTotalBytes + 100));
       g_isUploading = true;
-      Serial.printf("[ESP-NOW OTA] Started upload for Bank %d Slot %d (%dx%d)...\n",
-                    targetBank, targetSlot, g_uploadWidth, g_uploadHeight);
+      Serial.printf("[ESP-NOW OTA] Started upload for Bank %d Slot %d (%dx%d = %d bytes)...\n",
+                    targetBank, targetSlot, g_uploadWidth, g_uploadHeight, g_expectedTotalBytes);
       break;
     }
     case CMD_END_PATTERN_UPLOAD: {
@@ -156,23 +156,22 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
         g_espnow_config->setFrameHeight(g_uploadHeight);
         g_espnow_config->setFrameCount(g_uploadWidth);
 
-        if (g_maxWrittenOffset > 0) {
-          g_espnow_config->patternLength = g_maxWrittenOffset;
+        size_t finalLen = (g_maxWrittenOffset > 0) ? g_maxWrittenOffset : g_expectedTotalBytes;
+        g_espnow_config->patternLength = finalLen;
 
-          // Commit RAM buffer to LittleFS
-          String path = String("/pattern") + g_uploadSlot + ".oppp";
-          File file = LittleFS.open(path, FILE_WRITE);
-          if (file) {
-            file.write(g_espnow_config->pattern, g_maxWrittenOffset);
-            file.flush();
-            file.close();
-          }
+        // Commit RAM buffer to LittleFS
+        String path = String("/pattern") + g_uploadSlot + ".oppp";
+        File file = LittleFS.open(path, FILE_WRITE);
+        if (file) {
+          file.write(g_espnow_config->pattern, finalLen);
+          file.flush();
+          file.close();
         }
 
         g_espnow_config->displayState = DS_PATTERN;
         g_espnow_config->displayStateLastUpdated = millis();
-        Serial.printf("✅ [ESP-NOW OTA] Upload COMPLETE & Active: Bank %d Slot %d (%d bytes, %dx%d)!\n",
-                      targetBank, targetSlot, g_maxWrittenOffset, g_uploadWidth, g_uploadHeight);
+        Serial.printf("✅ [ESP-NOW OTA] Upload COMPLETE: Bank %d Slot %d (%d/%d bytes, %dx%d)!\n",
+                      targetBank, targetSlot, finalLen, g_expectedTotalBytes, g_uploadWidth, g_uploadHeight);
       }
       break;
     }

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.6 Dual-Burst Multi-Poi Redundancy)
+ * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.7 Byte-Counted ESP-NOW Streamer)
  * ============================================================================
  */
 
@@ -86,9 +86,11 @@ uint8_t currentMotion = 0;
 uint8_t currentBrightness = 200;
 bool isStrobeActive = false;
 
-// OTA Upload State
+// OTA Upload State Machine
 bool isOtaUploading = false;
-static uint16_t g_currentPatternByteOffset = 0;
+uint16_t otaExpectedTotalBytes = 0;
+uint16_t otaBytesReceived = 0;
+uint8_t otaTargetSlot = 0;
 
 uint8_t liveJoyX = 128;
 uint8_t liveJoyY = 128;
@@ -121,30 +123,28 @@ void sendEspNowPacket(uint8_t cmd, uint8_t val1 = 0, uint8_t val2 = 0, int16_t t
   pkt.tiltX = tx;
   pkt.tiltY = ty;
   pkt.tiltZ = tz;
-  // Send twice for command reliability across multiple pois
   esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
   delay(3);
   esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
 }
 
-void forwardPatternData(const uint8_t *data, size_t len) {
+void forwardPatternData(const uint8_t *data, size_t len, uint16_t startOffset) {
   size_t offset = 0;
   while (offset < len) {
     size_t chunk = min((size_t)190, len - offset);
     EspNowDataPacket dPkt;
     dPkt.magic = ESPNOW_DATA_MAGIC;
     dPkt.cmd = CMD_PATTERN_DATA_CHUNK;
-    dPkt.byteOffset = g_currentPatternByteOffset;
+    dPkt.byteOffset = startOffset + (uint16_t)offset;
     dPkt.dataLen = (uint8_t)chunk;
     memcpy(dPkt.data, data + offset, chunk);
 
-    // Dual-Burst transmission: sends each chunk 2x with 4ms spacing for 100% multi-Poi drop-proof reception
+    // Send packet twice with 3ms spacing for 100% wireless multi-device coverage
     esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
-    delay(4);
+    delay(3);
     esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
-    delay(4);
+    delay(3);
 
-    g_currentPatternByteOffset += chunk;
     offset += chunk;
   }
 }
@@ -168,53 +168,65 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
     if (len == 0) return;
     const uint8_t *data = (const uint8_t *)rxValue.data();
 
-    // 1. Chunk 0: Start of Pattern Upload
+    // 1. Chunk 0: Start of Pattern Upload (0xD0 0x04 height width_H width_L)
     if (data[0] == START_BYTE && len >= 5 && data[1] == 0x04) {
       uint8_t height = data[2];
       uint16_t width = ((uint16_t)data[3] << 8) | data[4];
-      uint8_t targetSlot = (currentBank * 10) + currentSlot;
-
+      otaTargetSlot = (currentBank * 10) + currentSlot;
+      otaExpectedTotalBytes = (uint16_t)height * width * 3;
+      otaBytesReceived = 0;
       isOtaUploading = true;
-      g_currentPatternByteOffset = 0;
-      sendEspNowPacket(CMD_START_PATTERN_UPLOAD, targetSlot, height, width);
-      delay(25);
 
-      if (len == 509) {
-        // Multipart chunk 0: bytes 5..508 are RGB data (504 bytes)
-        forwardPatternData(data + 5, 504);
-      } else {
-        // Single packet: bytes 5..len-2 are RGB data
-        size_t pLen = (len > 6) ? (len - 6) : 0;
-        if (pLen > 0) {
-          forwardPatternData(data + 5, pLen);
-        }
+      sendEspNowPacket(CMD_START_PATTERN_UPLOAD, otaTargetSlot, height, width);
+      delay(20);
+
+      // Extract image payload from Chunk 0 (starts at byte 5)
+      size_t payloadInChunk0 = len - 5;
+      // If single-packet upload, strip trailing 0xD1 if present
+      if (payloadInChunk0 > otaExpectedTotalBytes) {
+        payloadInChunk0 = otaExpectedTotalBytes;
+      }
+      if (payloadInChunk0 > 0) {
+        forwardPatternData(data + 5, payloadInChunk0, otaBytesReceived);
+        otaBytesReceived += payloadInChunk0;
+      }
+
+      if (otaBytesReceived >= otaExpectedTotalBytes) {
         isOtaUploading = false;
         delay(25);
-        sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
+        sendEspNowPacket(CMD_END_PATTERN_UPLOAD, otaTargetSlot);
+        Serial.printf("[Bridge] Single-packet upload COMPLETE (%d bytes)!\n", otaBytesReceived);
       }
       return;
     }
 
-    // 2. Middle & Final Chunks
+    // 2. Middle & Final Pattern Chunks (Active Upload State)
     if (isOtaUploading) {
-      if (len == 509) {
-        // Middle chunk: all 509 bytes are pure RGB data
-        forwardPatternData(data, 509);
+      // Guard against control commands being mistaken for pattern chunks
+      if (len <= 5 && data[0] == START_BYTE && data[len - 1] == END_BYTE && (data[1] == 0x05 || data[1] == 0x07)) {
+        // This is a control command sent after upload - process below
       } else {
-        // Final chunk (< 509 bytes): bytes 0..len-2 are RGB data
-        size_t pLen = (len > 1) ? (len - 1) : 0;
-        if (pLen > 0) {
-          forwardPatternData(data, pLen);
+        size_t chunkBytes = len;
+        if (otaBytesReceived + chunkBytes > otaExpectedTotalBytes) {
+          chunkBytes = otaExpectedTotalBytes - otaBytesReceived;
         }
-        isOtaUploading = false;
-        uint8_t targetSlot = (currentBank * 10) + currentSlot;
-        delay(30);
-        sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
+
+        if (chunkBytes > 0) {
+          forwardPatternData(data, chunkBytes, otaBytesReceived);
+          otaBytesReceived += chunkBytes;
+        }
+
+        if (otaBytesReceived >= otaExpectedTotalBytes) {
+          isOtaUploading = false;
+          delay(30);
+          sendEspNowPacket(CMD_END_PATTERN_UPLOAD, otaTargetSlot);
+          Serial.printf("✅ [Bridge] Full Pattern Upload COMPLETE (%d/%d bytes)!\n", otaBytesReceived, otaExpectedTotalBytes);
+        }
+        return;
       }
-      return;
     }
 
-    // 3. Standard Framed Commands
+    // 3. Standard Framed Control Commands
     uint8_t cmdCode = 0;
     uint8_t val = 0;
 
@@ -640,13 +652,13 @@ void readNunchukAndProcess() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.6 (Dual-Burst Redundancy)...");
+  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.7 (Byte-Counted Streamer)...");
 
   autoScanNunchuk();
   setupEspNowAndWiFi();
   setupBleGateway();
 
-  Serial.println("🎉 Bridge Ready! Dual-Burst Redundancy Active.");
+  Serial.println("🎉 Bridge Ready! Pure Byte-Counted ESP-NOW Streamer Active.");
 }
 
 void loop() {
