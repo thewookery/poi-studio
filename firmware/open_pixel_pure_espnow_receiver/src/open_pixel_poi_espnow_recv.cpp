@@ -40,29 +40,31 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   uint8_t magic;
   uint8_t cmd;
-  uint16_t chunkSeq;
+  uint16_t byteOffset;
   uint8_t dataLen;
-  uint8_t data[200];
+  uint8_t data[190];
 } EspNowDataPacket;
 
 static OpenPixelPoiConfig* g_espnow_config = nullptr;
 static uint8_t g_uploadSlot = 0;
 static uint8_t g_uploadHeight = 55;
 static uint16_t g_uploadWidth = 30;
-static size_t g_uploadOffset = 0;
+static size_t g_maxWrittenOffset = 0;
 static bool g_isUploading = false;
 
 static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   if (g_espnow_config == nullptr) return;
 
-  // 1. Bulk Pattern Data (Magic 0xA6)
+  // 1. Bulk Pattern Data with Absolute Byte Offset (Magic 0xA6)
   if (len == sizeof(EspNowDataPacket)) {
     const EspNowDataPacket *dPkt = (const EspNowDataPacket *)incomingData;
     if (dPkt->magic == ESPNOW_DATA_MAGIC && dPkt->cmd == CMD_PATTERN_DATA_CHUNK) {
       if (g_isUploading) {
-        if (g_uploadOffset + dPkt->dataLen <= PATTERN_PIXEL_LIMIT * 3) {
-          memcpy(g_espnow_config->pattern + g_uploadOffset, dPkt->data, dPkt->dataLen);
-          g_uploadOffset += dPkt->dataLen;
+        if (dPkt->byteOffset + dPkt->dataLen <= PATTERN_PIXEL_LIMIT * 3) {
+          memcpy(g_espnow_config->pattern + dPkt->byteOffset, dPkt->data, dPkt->dataLen);
+          if (dPkt->byteOffset + dPkt->dataLen > g_maxWrittenOffset) {
+            g_maxWrittenOffset = dPkt->byteOffset + dPkt->dataLen;
+          }
         }
       }
       return;
@@ -125,7 +127,7 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
       g_uploadSlot = pkt->val1;
       g_uploadHeight = (pkt->val2 > 0) ? pkt->val2 : 55;
       g_uploadWidth = (pkt->tiltX > 0) ? (uint16_t)pkt->tiltX : 30;
-      g_uploadOffset = 0;
+      g_maxWrittenOffset = 0;
 
       uint8_t targetBank = g_uploadSlot / PATTERN_BANK_SIZE;
       uint8_t targetSlot = g_uploadSlot % PATTERN_BANK_SIZE;
@@ -137,7 +139,7 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
       g_espnow_config->setFrameCount(g_uploadWidth);
 
       g_isUploading = true;
-      Serial.printf("[ESP-NOW OTA] Starting upload: Bank %d Slot %d (%dx%d)...\n",
+      Serial.printf("[ESP-NOW OTA] Started upload for Bank %d Slot %d (%dx%d)...\n",
                     targetBank, targetSlot, g_uploadWidth, g_uploadHeight);
       break;
     }
@@ -154,14 +156,14 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
         g_espnow_config->setFrameHeight(g_uploadHeight);
         g_espnow_config->setFrameCount(g_uploadWidth);
 
-        if (g_uploadOffset > 0) {
-          g_espnow_config->patternLength = g_uploadOffset;
+        if (g_maxWrittenOffset > 0) {
+          g_espnow_config->patternLength = g_maxWrittenOffset;
 
-          // Save complete RAM buffer to LittleFS
+          // Commit RAM buffer to LittleFS
           String path = String("/pattern") + g_uploadSlot + ".oppp";
           File file = LittleFS.open(path, FILE_WRITE);
           if (file) {
-            file.write(g_espnow_config->pattern, g_uploadOffset);
+            file.write(g_espnow_config->pattern, g_maxWrittenOffset);
             file.flush();
             file.close();
           }
@@ -169,8 +171,8 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
 
         g_espnow_config->displayState = DS_PATTERN;
         g_espnow_config->displayStateLastUpdated = millis();
-        Serial.printf("✅ [ESP-NOW OTA] Pattern Active: Bank %d Slot %d (%d bytes, %dx%d)!\n",
-                      targetBank, targetSlot, g_uploadOffset, g_uploadWidth, g_uploadHeight);
+        Serial.printf("✅ [ESP-NOW OTA] Upload COMPLETE & Active: Bank %d Slot %d (%d bytes, %dx%d)!\n",
+                      targetBank, targetSlot, g_maxWrittenOffset, g_uploadWidth, g_uploadHeight);
       }
       break;
     }

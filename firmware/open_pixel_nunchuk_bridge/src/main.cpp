@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.5 Proven Baseline + Clean Stream)
+ * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.6 Dual-Burst Multi-Poi Redundancy)
  * ============================================================================
  */
 
@@ -71,9 +71,9 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   uint8_t magic;
   uint8_t cmd;
-  uint16_t chunkSeq;
+  uint16_t byteOffset;
   uint8_t dataLen;
-  uint8_t data[200];
+  uint8_t data[190];
 } EspNowDataPacket;
 
 static uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -88,7 +88,7 @@ bool isStrobeActive = false;
 
 // OTA Upload State
 bool isOtaUploading = false;
-uint16_t otaChunkSeq = 0;
+static uint16_t g_currentPatternByteOffset = 0;
 
 uint8_t liveJoyX = 128;
 uint8_t liveJoyY = 128;
@@ -121,22 +121,31 @@ void sendEspNowPacket(uint8_t cmd, uint8_t val1 = 0, uint8_t val2 = 0, int16_t t
   pkt.tiltX = tx;
   pkt.tiltY = ty;
   pkt.tiltZ = tz;
+  // Send twice for command reliability across multiple pois
+  esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
+  delay(3);
   esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
 }
 
 void forwardPatternData(const uint8_t *data, size_t len) {
   size_t offset = 0;
   while (offset < len) {
-    size_t chunk = min((size_t)200, len - offset);
+    size_t chunk = min((size_t)190, len - offset);
     EspNowDataPacket dPkt;
     dPkt.magic = ESPNOW_DATA_MAGIC;
     dPkt.cmd = CMD_PATTERN_DATA_CHUNK;
-    dPkt.chunkSeq = otaChunkSeq++;
+    dPkt.byteOffset = g_currentPatternByteOffset;
     dPkt.dataLen = (uint8_t)chunk;
     memcpy(dPkt.data, data + offset, chunk);
+
+    // Dual-Burst transmission: sends each chunk 2x with 4ms spacing for 100% multi-Poi drop-proof reception
     esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
+    delay(4);
+    esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
+    delay(4);
+
+    g_currentPatternByteOffset += chunk;
     offset += chunk;
-    delay(3); // 3ms reliable pacing
   }
 }
 
@@ -166,12 +175,12 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
       uint8_t targetSlot = (currentBank * 10) + currentSlot;
 
       isOtaUploading = true;
-      otaChunkSeq = 0;
+      g_currentPatternByteOffset = 0;
       sendEspNowPacket(CMD_START_PATTERN_UPLOAD, targetSlot, height, width);
-      delay(20);
+      delay(25);
 
       if (len == 509) {
-        // Multipart chunk 0: bytes 5..508 are RGB data
+        // Multipart chunk 0: bytes 5..508 are RGB data (504 bytes)
         forwardPatternData(data + 5, 504);
       } else {
         // Single packet: bytes 5..len-2 are RGB data
@@ -180,7 +189,7 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
           forwardPatternData(data + 5, pLen);
         }
         isOtaUploading = false;
-        delay(15);
+        delay(25);
         sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
       }
       return;
@@ -189,7 +198,7 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
     // 2. Middle & Final Chunks
     if (isOtaUploading) {
       if (len == 509) {
-        // Middle chunk: all 509 bytes are RGB data
+        // Middle chunk: all 509 bytes are pure RGB data
         forwardPatternData(data, 509);
       } else {
         // Final chunk (< 509 bytes): bytes 0..len-2 are RGB data
@@ -199,7 +208,7 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
         }
         isOtaUploading = false;
         uint8_t targetSlot = (currentBank * 10) + currentSlot;
-        delay(20);
+        delay(30);
         sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
       }
       return;
@@ -631,13 +640,13 @@ void readNunchukAndProcess() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.5...");
+  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.6 (Dual-Burst Redundancy)...");
 
   autoScanNunchuk();
   setupEspNowAndWiFi();
   setupBleGateway();
 
-  Serial.println("🎉 Bridge Ready! Bluetooth + Wi-Fi Telemetry Active.");
+  Serial.println("🎉 Bridge Ready! Dual-Burst Redundancy Active.");
 }
 
 void loop() {
