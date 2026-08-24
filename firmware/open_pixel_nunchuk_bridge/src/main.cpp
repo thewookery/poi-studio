@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.10 Battery & Charger Telemetry)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.11 Full Nordic UART Gateway)
  * ============================================================================
  * Hardware Layout:
  * - Battery: 18350 3.7V LiPo on BAT+ / BAT- pads (Back of board)
@@ -8,10 +8,12 @@
  *   - Short Press: Wakes up / changes mode
  *   - Long Press (1.5s): Enters Ultra-Low Power Deep Sleep (Power OFF)
  *   - Auto-Sleep: 10 minutes of inactivity
- * - Battery & USB Charging ADC Telemetry:
- *   - Measures battery millivolts & calculates battery %
- *   - Detects USB-C plug-in & charging state
- * - Nunchuk I2C: 3V3, GND, D2 (SDA / GPIO 4), D3 (SCL / GPIO 5)
+ * - Full Nordic UART Server:
+ *   - RX Char (6E400002): Accepts commands from Web Studio & forwards to Pois
+ *   - TX Char (6E400003): Sends live Nunchuk + Battery telemetry to Web Studio
+ * - BLE Central Client:
+ *   - Auto-scans & connects to OpenPixelPoi
+ *   - Relays Nunchuk joystick/buttons/tilt to spinning Pois
  */
 
 #include <Arduino.h>
@@ -32,8 +34,8 @@
 #define NUNCHUK_ADDR   0x52
 
 static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
-static BLEUUID txCharUUID("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e");    // RX Characteristic
+static BLEUUID txCharUUID("6e400003-b5a3-f393-e0a9-e50e24dcca9e");  // TX Characteristic
 
 #define START_BYTE 0xD0
 #define END_BYTE   0xD1
@@ -97,6 +99,7 @@ bool pwrBtnPressed = false;
 unsigned long lastTelemetryNotify = 0;
 
 BLECharacteristic *pBridgeTxChar = nullptr;
+BLECharacteristic *pBridgeRxChar = nullptr;
 bool isWebClientConnected = false;
 
 // Dual-Poi Connection Pool
@@ -128,20 +131,17 @@ void updateBatteryTelemetry() {
   }
   uint32_t mv = (rawSum / 16) * 2; // Voltage divider scaling factor (2x)
 
-  // Bounds clamping & sanity checks
-  if (mv < 2500) mv = 3700; // default fallback if uncalibrated
+  if (mv < 2500) mv = 3700;
   if (mv > 4350) mv = 4350;
 
   liveBatteryMv = (uint16_t)mv;
 
-  // Detect USB-C Charging: when on USB charging, voltage is elevated (> 4.12V with charge ripple)
   if (liveBatteryMv >= 4130) {
     isUsbCharging = true;
   } else if (liveBatteryMv <= 4050) {
     isUsbCharging = false;
   }
 
-  // Calculate percentage (3.30V = 0%, 4.18V = 100%)
   if (liveBatteryMv >= 4180) {
     liveBatteryPct = 100;
   } else if (liveBatteryMv <= 3300) {
@@ -169,22 +169,63 @@ void sendBleCommand(uint8_t cmdCode, uint8_t val) {
   lastUserActivityTime = millis();
 }
 
+// Web App BLE Server Callbacks
+class BridgeServerCallbacks : public BLEServerCallbacks {
+  void onConnect(BLEServer* pServer) {
+    isWebClientConnected = true;
+    Serial.println("🌐 [BLE] Open POI Studio Connected to Bridge!");
+  }
+  void onDisconnect(BLEServer* pServer) {
+    isWebClientConnected = false;
+    Serial.println("🌐 [BLE] Open POI Studio Disconnected from Bridge!");
+    BLEDevice::startAdvertising();
+  }
+};
+
+// Web App BLE Characteristic Callbacks (Receives UI controls from browser & relays to Pois)
+class BridgeRxCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    std::string rxValue = pCharacteristic->getValue();
+    size_t len = rxValue.length();
+    if (len == 0) return;
+    const uint8_t *data = (const uint8_t *)rxValue.data();
+
+    if (data[0] == START_BYTE && data[len - 1] == END_BYTE && len >= 3) {
+      uint8_t cmdCode = data[1];
+      uint8_t val = (len >= 4) ? data[2] : 0;
+
+      if (cmdCode == CC_SET_PATTERN_SLOT) {
+        currentSlot = val % 10;
+        sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
+      } else if (cmdCode == CC_SET_BANK) {
+        currentBank = val % 5;
+        sendBleCommand(CC_SET_BANK, currentBank);
+      } else if (cmdCode == CC_SET_PALETTE_FX) {
+        currentPalette = val % 33;
+        sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
+      } else if (cmdCode == CC_SET_MOTION_FX) {
+        currentMotion = val % 17;
+        sendBleCommand(CC_SET_MOTION_FX, currentMotion);
+      } else if (cmdCode == CC_SET_BRIGHTNESS) {
+        sendBleCommand(CC_SET_BRIGHTNESS, val);
+      }
+    }
+  }
+};
+
 // Power Down to Deep Sleep (Ultra-Low Power OFF: ~0.005 mA)
 void enterDeepSleepPowerOff() {
   Serial.println("🛌 [POWER] Entering Deep Sleep (Power OFF)...");
 
-  // Disconnect BLE cleanly
   for (int i = 0; i < MAX_BLE_POIS; i++) {
     if (poiSlots[i].connected && poiSlots[i].client != nullptr) {
       poiSlots[i].client->disconnect();
     }
   }
 
-  // Ensure D0 is LOW as ground
   pinMode(PIN_BUTTON_GND, OUTPUT);
   digitalWrite(PIN_BUTTON_GND, LOW);
 
-  // Configure D1 (GPIO 3) as wakeup source on LOW
   esp_deep_sleep_enable_gpio_wakeup((1ULL << PIN_BUTTON_IN), ESP_GPIO_WAKEUP_GPIO_LOW);
 
   delay(100);
@@ -245,6 +286,9 @@ class AdvertisedScannerCallback: public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice advertisedDevice) {
     String devName = String(advertisedDevice.getName().c_str());
     
+    // Ignore self
+    if (devName.indexOf("Bridge") >= 0 || devName.indexOf("Master") >= 0) return;
+
     bool isMatch = false;
     if (devName.indexOf("OpenPixelPoi") >= 0 || devName.indexOf("Pixel Poi") >= 0 || devName.indexOf("Poi") >= 0) {
       isMatch = true;
@@ -381,7 +425,7 @@ void readNunchukAndProcess() {
   liveAccelY = accelY;
   liveAccelZ = accelZ;
 
-  // Broadcast Telemetry to Connected Web App
+  // Broadcast Telemetry to Connected Web App (14-byte payload)
   if (pBridgeTxChar != nullptr && (now - lastTelemetryNotify > 60)) {
     lastTelemetryNotify = now;
     uint8_t telPkt[14];
@@ -484,7 +528,7 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - BLE Master Bridge (Battery Telemetry)");
+  Serial.println("Open Pixel Poi - BLE Master Bridge (Nordic UART)");
   Serial.println("=================================================");
 
   // Setup D0 as Software Ground and D1 as Input Pullup
@@ -499,20 +543,33 @@ void setup() {
   // Setup BLE Device
   BLEDevice::init("OpenPixelBridge-Nunchuk");
 
-  // Create Server for Telemetry broadcast to Web Studio App
+  // Create Full Nordic UART Server for Web Studio App Connection
   BLEServer *pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new BridgeServerCallbacks());
+
   BLEService *pService = pServer->createService(serviceUUID);
 
+  // RX Characteristic (Web App -> Bridge)
+  pBridgeRxChar = pService->createCharacteristic(
+    charUUID,
+    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
+  );
+  pBridgeRxChar->setCallbacks(new BridgeRxCallbacks());
+
+  // TX Characteristic (Bridge -> Web App Telemetry)
   pBridgeTxChar = pService->createCharacteristic(
     txCharUUID,
     BLECharacteristic::PROPERTY_NOTIFY
   );
   pBridgeTxChar->addDescriptor(new BLE2902());
+
   pService->start();
 
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(serviceUUID);
   pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);
+  pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 
   // Setup Central Scanner for discovering OpenPixelPoi
@@ -522,7 +579,7 @@ void setup() {
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
 
-  Serial.println("🎮 Auto-Scanning for OpenPixelPoi over Bluetooth & Advertising Telemetry...");
+  Serial.println("🎮 Full Nordic UART Active! Ready for Open POI Studio & Poi mesh.");
 }
 
 void loop() {
