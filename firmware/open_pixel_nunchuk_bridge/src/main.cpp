@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.12 Rock-Solid Advertising)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.13 Unstoppable Telemetry)
  * ============================================================================
  * Hardware Layout:
  * - Battery: 18350 3.7V LiPo on BAT+ / BAT- pads (Back of board)
@@ -8,9 +8,9 @@
  *   - Short Press: Wakes up / changes mode
  *   - Long Press (1.5s): Enters Ultra-Low Power Deep Sleep (Power OFF)
  *   - Auto-Sleep: 10 minutes of inactivity
- * - Bluetooth Advertising:
- *   - Clean 31-byte advertising packet (Name: "OpenPixelBridge")
- *   - Guaranteed discovery on Chrome, Edge, Android, iOS, Mac, and Windows!
+ * - Continuous Independent Telemetry:
+ *   - Guaranteed 10Hz Battery, USB-C Charging, and Nunchuk telemetry stream
+ *   - Completely decoupled from I2C so battery & connection display immediately
  * - Nunchuk I2C: 3V3, GND, D2 (SDA / GPIO 4), D3 (SCL / GPIO 5)
  */
 
@@ -118,7 +118,7 @@ BLEScan* pBLEScan = nullptr;
 // Measure 18350 Battery Millivolts & Calculate Percentage & Charging Status
 void updateBatteryTelemetry() {
   unsigned long now = millis();
-  if (now - lastBatteryCheck < 1000 && lastBatteryCheck != 0) return;
+  if (now - lastBatteryCheck < 800 && lastBatteryCheck != 0) return;
   lastBatteryCheck = now;
 
   uint32_t rawSum = 0;
@@ -128,7 +128,7 @@ void updateBatteryTelemetry() {
   }
   uint32_t mv = (rawSum / 16) * 2;
 
-  if (mv < 2500) mv = 3700;
+  if (mv < 2500) mv = 3850;
   if (mv > 4350) mv = 4350;
 
   liveBatteryMv = (uint16_t)mv;
@@ -145,6 +145,31 @@ void updateBatteryTelemetry() {
     liveBatteryPct = 0;
   } else {
     liveBatteryPct = (uint8_t)(((uint32_t)(liveBatteryMv - 3300) * 100) / (4180 - 3300));
+  }
+}
+
+// Send Telemetry Broadcast to Connected Web App (14-byte payload)
+void sendContinuousTelemetryToApp() {
+  unsigned long now = millis();
+  if (pBridgeTxChar != nullptr && isWebClientConnected && (now - lastTelemetryNotify > 75)) {
+    lastTelemetryNotify = now;
+    uint8_t telPkt[14];
+    telPkt[0] = START_BYTE;
+    telPkt[1] = TELEMETRY_BYTE;
+    telPkt[2] = liveJoyX;
+    telPkt[3] = liveJoyY;
+    telPkt[4] = liveBtnZ ? 1 : 0;
+    telPkt[5] = liveBtnC ? 1 : 0;
+    telPkt[6] = (uint8_t)(liveAccelX >> 2);
+    telPkt[7] = (uint8_t)(liveAccelY >> 2);
+    telPkt[8] = isNunchukI2cOk ? 1 : 0;
+    telPkt[9] = liveBatteryPct;
+    telPkt[10] = (uint8_t)(liveBatteryMv >> 8);
+    telPkt[11] = (uint8_t)(liveBatteryMv & 0xFF);
+    telPkt[12] = isUsbCharging ? 1 : 0;
+    telPkt[13] = END_BYTE;
+    pBridgeTxChar->setValue(telPkt, 14);
+    pBridgeTxChar->notify();
   }
 }
 
@@ -276,7 +301,6 @@ bool executeConnect(BLEAdvertisedDevice* advDevice) {
 
   Serial.printf("🎉 [BLE] Poi %d LOCKED & READY: %s\n", targetSlot + 1, poiSlots[targetSlot].name.c_str());
   
-  // Re-enable advertising to phone after central connection completes
   BLEDevice::startAdvertising();
   return true;
 }
@@ -359,7 +383,6 @@ bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
 
 void autoScanNunchuk() {
   for (int i = 0; i < 2; i++) {
-    Serial.printf("Scanning Nunchuk on %s (SDA=%d, SCL=%d)...\n", I2C_PAIRS[i].name, I2C_PAIRS[i].sda, I2C_PAIRS[i].scl);
     if (tryInitNunchukOnPins(I2C_PAIRS[i].sda, I2C_PAIRS[i].scl)) {
       activeI2cIndex = i;
       isNunchukI2cOk = true;
@@ -423,27 +446,6 @@ void readNunchukAndProcess() {
   liveAccelX = accelX;
   liveAccelY = accelY;
   liveAccelZ = accelZ;
-
-  if (pBridgeTxChar != nullptr && (now - lastTelemetryNotify > 60)) {
-    lastTelemetryNotify = now;
-    uint8_t telPkt[14];
-    telPkt[0] = START_BYTE;
-    telPkt[1] = TELEMETRY_BYTE;
-    telPkt[2] = joyX;
-    telPkt[3] = joyY;
-    telPkt[4] = btnZ ? 1 : 0;
-    telPkt[5] = btnC ? 1 : 0;
-    telPkt[6] = (uint8_t)(accelX >> 2);
-    telPkt[7] = (uint8_t)(accelY >> 2);
-    telPkt[8] = isNunchukI2cOk ? 1 : 0;
-    telPkt[9] = liveBatteryPct;
-    telPkt[10] = (uint8_t)(liveBatteryMv >> 8);
-    telPkt[11] = (uint8_t)(liveBatteryMv & 0xFF);
-    telPkt[12] = isUsbCharging ? 1 : 0;
-    telPkt[13] = END_BYTE;
-    pBridgeTxChar->setValue(telPkt, 14);
-    pBridgeTxChar->notify();
-  }
 
   if (abs((int)joyX - 128) > 30 || abs((int)joyY - 128) > 30 || btnC || btnZ) {
     lastUserActivityTime = now;
@@ -524,7 +526,7 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - BLE Master Bridge v2.12");
+  Serial.println("Open Pixel Poi - BLE Master Bridge v2.13");
   Serial.println("=================================================");
 
   pinMode(PIN_BUTTON_GND, OUTPUT);
@@ -535,23 +537,19 @@ void setup() {
 
   autoScanNunchuk();
 
-  // Setup BLE Device with 100% standard name
   BLEDevice::init("OpenPixelBridge");
 
-  // Create Full Nordic UART Server for Web Studio App Connection
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new BridgeServerCallbacks());
 
   BLEService *pService = pServer->createService(serviceUUID);
 
-  // RX Characteristic (Web App -> Bridge)
   pBridgeRxChar = pService->createCharacteristic(
     charUUID,
     BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
   );
   pBridgeRxChar->setCallbacks(new BridgeRxCallbacks());
 
-  // TX Characteristic (Bridge -> Web App Telemetry)
   pBridgeTxChar = pService->createCharacteristic(
     txCharUUID,
     BLECharacteristic::PROPERTY_NOTIFY
@@ -560,7 +558,6 @@ void setup() {
 
   pService->start();
 
-  // Clean, high-compatibility Advertising payload
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(serviceUUID);
   pAdvertising->setScanResponse(true);
@@ -568,27 +565,34 @@ void setup() {
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 
-  // Setup Central Scanner for discovering OpenPixelPoi
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedScannerCallback());
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
 
-  Serial.println("🎮 BLE Advertising active as 'OpenPixelBridge'! Ready to pair in Chrome.");
+  Serial.println("🎮 Bridge Active! Telemetry running continuously.");
 }
 
 void loop() {
   unsigned long now = millis();
 
+  // 1. Always update battery telemetry
   updateBatteryTelemetry();
+
+  // 2. Always stream live telemetry to Web Studio app
+  sendContinuousTelemetryToApp();
+
+  // 3. Check Power Button
   checkPowerButton();
 
+  // 4. Auto-Sleep after 10 minutes of inactivity
   if (now - lastUserActivityTime > (10UL * 60UL * 1000UL)) {
     Serial.println("💤 [AUTO-SLEEP] Inactive for 10 minutes. Powering OFF...");
     enterDeepSleepPowerOff();
   }
 
+  // 5. Connect to discovered Pois
   if (doConnectPending && pendingDevice != nullptr) {
     executeConnect(pendingDevice);
     delete pendingDevice;
@@ -613,13 +617,13 @@ void loop() {
     }
   }
 
-  // Non-blocking scan without interrupting advertising
   if (activeCount < MAX_BLE_POIS && !doConnectPending && !isWebClientConnected && (now - lastScanStartTime > 4000)) {
     lastScanStartTime = now;
     pBLEScan->start(1, false);
-    BLEDevice::startAdvertising(); // Immediately resume advertising
+    BLEDevice::startAdvertising();
   }
 
+  // 6. Process Wii Nunchuk
   readNunchukAndProcess();
   delay(15);
 }
