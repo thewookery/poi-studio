@@ -1,53 +1,49 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.14 LED Power Animations)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK CONTROLLER (v3.0 Dedicated Engine)
  * ============================================================================
- * Hardware Layout:
- * - Battery: 18350 3.7V LiPo on BAT+ / BAT- pads (Back of board)
- * - Power Button: Connected across D0 (Pin 1 / GPIO 2) and D1 (Pin 2 / GPIO 3)
- *   - Short Press: Wakes up / changes mode
- *   - Long Press (1.5s): Enters Ultra-Low Power Deep Sleep (Power OFF)
+ * Dedicated handheld controller that connects directly to OpenPixelPoi over BLE.
+ * 
+ * Hardware:
+ * - Battery: 18350 3.7V on BAT+ / BAT- pads
+ * - Button: Connected across D0 (Pin 1 / GPIO 2) and D1 (Pin 2 / GPIO 3)
+ *   - Tap: Wakes up instantly (3 rapid LED blinks)
+ *   - Hold for 1.2s: Enters Deep Sleep Power OFF (2 slow LED blinks)
  *   - Auto-Sleep: 10 minutes of inactivity
- * - Onboard LED Visual Feedback (GPIO 10):
- *   - 🌟 Power ON / Wake Up: 3 Rapid Bright Blinks
- *   - 🛌 Power OFF / Deep Sleep: 2 Long Solid Pulses before turning OFF
- * - Continuous Independent Telemetry:
- *   - Guaranteed 10Hz Battery, USB-C Charging, and Nunchuk telemetry stream
- * - Nunchuk I2C: 3V3, GND, D2 (SDA / GPIO 4), D3 (SCL / GPIO 5)
+ * - Onboard LED (GPIO 10):
+ *   - Fast 3 blinks on Wake Up
+ *   - Solid / Pulses when Pois connected
+ *   - 2 slow blinks on Power OFF
+ * - Wii Nunchuk: 3V3, GND, D2 (SDA / GPIO 4), D3 (SCL / GPIO 5)
  */
 
 #include <Arduino.h>
 #include <Wire.h>
 #include <BLEDevice.h>
-#include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <BLEClient.h>
-#include <BLE2902.h>
 #include "esp_sleep.h"
-#include "esp_adc_cal.h"
+#include "driver/gpio.h"
 
-#define PIN_BUTTON_GND D0  // GPIO 2 - Software Ground
-#define PIN_BUTTON_IN  D1  // GPIO 3 - Button Input (Pulled UP)
-#define PIN_BATTERY_ADC 0  // GPIO 0 / A0 - Battery Voltage ADC
-#define PIN_BOARD_LED  10  // Onboard Yellow/Orange User LED on Xiao ESP32-C3
+#define PIN_BUTTON_GND 2   // D0 / GPIO 2 - Software Ground
+#define PIN_BUTTON_IN  3   // D1 / GPIO 3 - Button Input (Wakeup on LOW)
+#define PIN_BOARD_LED  10  // Onboard User LED on Xiao ESP32-C3
 #define NUNCHUK_ADDR   0x52
 
 static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e");    // RX Characteristic
-static BLEUUID txCharUUID("6e400003-b5a3-f393-e0a9-e50e24dcca9e");  // TX Characteristic
+static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e"); // Nordic UART RX Characteristic
 
 #define START_BYTE 0xD0
 #define END_BYTE   0xD1
-#define TELEMETRY_BYTE 0xFE
 
-// Comm Codes
-#define CC_SET_BRIGHTNESS 0x02
+// Golden Firmware CommCodes
+#define CC_SET_BRIGHTNESS   0x02
 #define CC_SET_PATTERN_SLOT 0x05
-#define CC_SET_BANK 0x07
-#define CC_SET_PALETTE_FX 0x15
-#define CC_SET_MOTION_FX 0x18
+#define CC_SET_BANK         0x07
+#define CC_SET_PALETTE_FX   0x15
+#define CC_SET_MOTION_FX    0x18
 
 struct I2CPair {
   uint8_t sda;
@@ -71,24 +67,13 @@ uint8_t currentPalette = 0;
 uint8_t currentMotion = 0;
 bool isStrobeActive = false;
 
-// Battery Telemetry
-uint16_t liveBatteryMv = 3850;
-uint8_t liveBatteryPct = 80;
-bool isUsbCharging = false;
-unsigned long lastBatteryCheck = 0;
-
 // Nunchuk Live Telemetry
 uint8_t liveJoyX = 128;
 uint8_t liveJoyY = 128;
-uint8_t lastJoyX = 128;
-uint8_t lastJoyY = 128;
 bool liveBtnC = false;
 bool liveBtnZ = false;
 bool lastBtnC = false;
 bool lastBtnZ = false;
-int16_t liveAccelX = 512;
-int16_t liveAccelY = 512;
-int16_t liveAccelZ = 512;
 
 unsigned long btnCHoldStart = 0;
 unsigned long lastJoyFlickTime = 0;
@@ -97,11 +82,6 @@ unsigned long lastScanStartTime = 0;
 unsigned long lastUserActivityTime = 0;
 unsigned long pwrBtnPressStart = 0;
 bool pwrBtnPressed = false;
-unsigned long lastTelemetryNotify = 0;
-
-BLECharacteristic *pBridgeTxChar = nullptr;
-BLECharacteristic *pBridgeRxChar = nullptr;
-bool isWebClientConnected = false;
 
 // Dual-Poi Connection Pool
 #define MAX_BLE_POIS 2
@@ -118,13 +98,13 @@ static BLEAdvertisedDevice* pendingDevice = nullptr;
 static bool doConnectPending = false;
 BLEScan* pBLEScan = nullptr;
 
-// Visual Onboard LED Feedback Animations
+// Visual LED Animations
 void flashWakeupLed() {
   pinMode(PIN_BOARD_LED, OUTPUT);
   for (int i = 0; i < 3; i++) {
-    digitalWrite(PIN_BOARD_LED, LOW);  // Turn ON (Active LOW on Xiao)
+    digitalWrite(PIN_BOARD_LED, LOW);  // ON (Active LOW on Xiao)
     delay(75);
-    digitalWrite(PIN_BOARD_LED, HIGH); // Turn OFF
+    digitalWrite(PIN_BOARD_LED, HIGH); // OFF
     delay(75);
   }
 }
@@ -132,68 +112,10 @@ void flashWakeupLed() {
 void flashPowerOffLed() {
   pinMode(PIN_BOARD_LED, OUTPUT);
   for (int i = 0; i < 2; i++) {
-    digitalWrite(PIN_BOARD_LED, LOW);  // Turn ON
+    digitalWrite(PIN_BOARD_LED, LOW);  // ON
     delay(280);
-    digitalWrite(PIN_BOARD_LED, HIGH); // Turn OFF
+    digitalWrite(PIN_BOARD_LED, HIGH); // OFF
     delay(150);
-  }
-}
-
-// Measure 18350 Battery Millivolts & Calculate Percentage & Charging Status
-void updateBatteryTelemetry() {
-  unsigned long now = millis();
-  if (now - lastBatteryCheck < 800 && lastBatteryCheck != 0) return;
-  lastBatteryCheck = now;
-
-  uint32_t rawSum = 0;
-  for (int i = 0; i < 16; i++) {
-    rawSum += analogReadMilliVolts(PIN_BATTERY_ADC);
-    delayMicroseconds(50);
-  }
-  uint32_t mv = (rawSum / 16) * 2;
-
-  if (mv < 2500) mv = 3850;
-  if (mv > 4350) mv = 4350;
-
-  liveBatteryMv = (uint16_t)mv;
-
-  if (liveBatteryMv >= 4130) {
-    isUsbCharging = true;
-  } else if (liveBatteryMv <= 4050) {
-    isUsbCharging = false;
-  }
-
-  if (liveBatteryMv >= 4180) {
-    liveBatteryPct = 100;
-  } else if (liveBatteryMv <= 3300) {
-    liveBatteryPct = 0;
-  } else {
-    liveBatteryPct = (uint8_t)(((uint32_t)(liveBatteryMv - 3300) * 100) / (4180 - 3300));
-  }
-}
-
-// Send Telemetry Broadcast to Connected Web App (14-byte payload)
-void sendContinuousTelemetryToApp() {
-  unsigned long now = millis();
-  if (pBridgeTxChar != nullptr && isWebClientConnected && (now - lastTelemetryNotify > 75)) {
-    lastTelemetryNotify = now;
-    uint8_t telPkt[14];
-    telPkt[0] = START_BYTE;
-    telPkt[1] = TELEMETRY_BYTE;
-    telPkt[2] = liveJoyX;
-    telPkt[3] = liveJoyY;
-    telPkt[4] = liveBtnZ ? 1 : 0;
-    telPkt[5] = liveBtnC ? 1 : 0;
-    telPkt[6] = (uint8_t)(liveAccelX >> 2);
-    telPkt[7] = (uint8_t)(liveAccelY >> 2);
-    telPkt[8] = isNunchukI2cOk ? 1 : 0;
-    telPkt[9] = liveBatteryPct;
-    telPkt[10] = (uint8_t)(liveBatteryMv >> 8);
-    telPkt[11] = (uint8_t)(liveBatteryMv & 0xFF);
-    telPkt[12] = isUsbCharging ? 1 : 0;
-    telPkt[13] = END_BYTE;
-    pBridgeTxChar->setValue(telPkt, 14);
-    pBridgeTxChar->notify();
   }
 }
 
@@ -212,72 +134,35 @@ void sendBleCommand(uint8_t cmdCode, uint8_t val) {
       }
     }
   }
+  Serial.printf("[BLE] Sent 0x%02X -> Val: %d to %d Poi(s)\n", cmdCode, val, sentCount);
   lastUserActivityTime = millis();
 }
 
-// Web App BLE Server Callbacks
-class BridgeServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer* pServer) {
-    isWebClientConnected = true;
-    Serial.println("🌐 [BLE] Open POI Studio Connected to Bridge!");
-  }
-  void onDisconnect(BLEServer* pServer) {
-    isWebClientConnected = false;
-    Serial.println("🌐 [BLE] Open POI Studio Disconnected from Bridge!");
-    BLEDevice::startAdvertising();
-  }
-};
-
-// Web App BLE Characteristic Callbacks (Receives UI controls from browser & relays to Pois)
-class BridgeRxCallbacks : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic) {
-    std::string rxValue = pCharacteristic->getValue();
-    size_t len = rxValue.length();
-    if (len == 0) return;
-    const uint8_t *data = (const uint8_t *)rxValue.data();
-
-    if (data[0] == START_BYTE && data[len - 1] == END_BYTE && len >= 3) {
-      uint8_t cmdCode = data[1];
-      uint8_t val = (len >= 4) ? data[2] : 0;
-
-      if (cmdCode == CC_SET_PATTERN_SLOT) {
-        currentSlot = val % 10;
-        sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
-      } else if (cmdCode == CC_SET_BANK) {
-        currentBank = val % 5;
-        sendBleCommand(CC_SET_BANK, currentBank);
-      } else if (cmdCode == CC_SET_PALETTE_FX) {
-        currentPalette = val % 33;
-        sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
-      } else if (cmdCode == CC_SET_MOTION_FX) {
-        currentMotion = val % 17;
-        sendBleCommand(CC_SET_MOTION_FX, currentMotion);
-      } else if (cmdCode == CC_SET_BRIGHTNESS) {
-        sendBleCommand(CC_SET_BRIGHTNESS, val);
-      }
-    }
-  }
-};
-
-// Power Down to Deep Sleep (Ultra-Low Power OFF: ~0.005 mA)
+// Enter Ultra-Low Power Deep Sleep (Power OFF: ~0.005 mA)
 void enterDeepSleepPowerOff() {
-  Serial.println("🛌 [POWER] Entering Deep Sleep (Power OFF)...");
+  Serial.println("🛌 [POWER] Powering OFF (Entering Deep Sleep)...");
 
-  // Visual Power OFF Confirmation: 2 Solid LED Pulses
+  // Visual Power OFF Confirmation: 2 Slow Pulses
   flashPowerOffLed();
 
+  // Disconnect BLE clients cleanly
   for (int i = 0; i < MAX_BLE_POIS; i++) {
     if (poiSlots[i].connected && poiSlots[i].client != nullptr) {
       poiSlots[i].client->disconnect();
     }
   }
 
+  // Hold D0 (GPIO 2) LOW as Ground during deep sleep
+  gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
   pinMode(PIN_BUTTON_GND, OUTPUT);
   digitalWrite(PIN_BUTTON_GND, LOW);
+  gpio_hold_en((gpio_num_t)PIN_BUTTON_GND);
+  gpio_deep_sleep_hold_en();
 
+  // Setup D1 (GPIO 3) as wakeup source on LOW
   esp_deep_sleep_enable_gpio_wakeup((1ULL << PIN_BUTTON_IN), ESP_GPIO_WAKEUP_GPIO_LOW);
 
-  delay(100);
+  delay(50);
   esp_deep_sleep_start();
 }
 
@@ -328,7 +213,15 @@ bool executeConnect(BLEAdvertisedDevice* advDevice) {
 
   Serial.printf("🎉 [BLE] Poi %d LOCKED & READY: %s\n", targetSlot + 1, poiSlots[targetSlot].name.c_str());
   
-  BLEDevice::startAdvertising();
+  // Flash LED twice to confirm connection
+  digitalWrite(PIN_BOARD_LED, LOW);
+  delay(100);
+  digitalWrite(PIN_BOARD_LED, HIGH);
+  delay(100);
+  digitalWrite(PIN_BOARD_LED, LOW);
+  delay(100);
+  digitalWrite(PIN_BOARD_LED, HIGH);
+
   return true;
 }
 
@@ -337,10 +230,8 @@ class AdvertisedScannerCallback: public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice advertisedDevice) {
     String devName = String(advertisedDevice.getName().c_str());
     
-    if (devName.indexOf("Bridge") >= 0 || devName.indexOf("Master") >= 0) return;
-
     bool isMatch = false;
-    if (devName.indexOf("OpenPixelPoi") >= 0 || devName.indexOf("Pixel Poi") >= 0 || devName.indexOf("Poi") >= 0) {
+    if (devName.indexOf("OpenPixelPoi") >= 0 || devName.indexOf("Pixel Poi") >= 0 || devName.indexOf("DotStar") >= 0 || devName.indexOf("Poi") >= 0) {
       isMatch = true;
     }
     if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
@@ -455,9 +346,6 @@ void readNunchukAndProcess() {
 
   uint8_t joyX = raw[0];
   uint8_t joyY = raw[1];
-  int16_t accelX = (raw[2] << 2) | ((raw[5] >> 2) & 0x03);
-  int16_t accelY = (raw[3] << 2) | ((raw[5] >> 4) & 0x03);
-  int16_t accelZ = (raw[4] << 2) | ((raw[5] >> 6) & 0x03);
   bool btnZ = !((raw[5] >> 0) & 0x01);
   bool btnC = !((raw[5] >> 1) & 0x01);
 
@@ -470,9 +358,6 @@ void readNunchukAndProcess() {
   liveJoyY = joyY;
   liveBtnZ = btnZ;
   liveBtnC = btnC;
-  liveAccelX = accelX;
-  liveAccelY = accelY;
-  liveAccelZ = accelZ;
 
   if (abs((int)joyX - 128) > 30 || abs((int)joyY - 128) > 30 || btnC || btnZ) {
     lastUserActivityTime = now;
@@ -525,8 +410,6 @@ void readNunchukAndProcess() {
     sendBleCommand(CC_SET_MOTION_FX, isStrobeActive ? 15 : 0);
   }
 
-  lastJoyX = joyX;
-  lastJoyY = joyY;
   lastBtnC = btnC;
   lastBtnZ = btnZ;
 }
@@ -540,7 +423,8 @@ void checkPowerButton() {
     pwrBtnPressed = true;
     pwrBtnPressStart = now;
   } else if (isPressed && pwrBtnPressed) {
-    if (now - pwrBtnPressStart > 1500) {
+    if (now - pwrBtnPressStart > 1200) {
+      // Held for 1.2 seconds -> Power OFF!
       enterDeepSleepPowerOff();
     }
   } else if (!isPressed && pwrBtnPressed) {
@@ -553,76 +437,48 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - BLE Master Bridge (LED Power FX)");
+  Serial.println("Open Pixel Poi - BLE Master Nunchuk v3.0");
   Serial.println("=================================================");
 
-  // Flash 3 Rapid Bright Blinks on Power ON / Wake Up!
-  flashWakeupLed();
+  // Release any previous GPIO holds
+  gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
 
+  // Setup D0 as Software Ground and D1 as Input Pullup
   pinMode(PIN_BUTTON_GND, OUTPUT);
   digitalWrite(PIN_BUTTON_GND, LOW);
   pinMode(PIN_BUTTON_IN, INPUT_PULLUP);
+
+  // Visual Power ON Confirmation: 3 Rapid Bright Blinks
+  flashWakeupLed();
 
   lastUserActivityTime = millis();
 
   autoScanNunchuk();
 
-  BLEDevice::init("OpenPixelBridge");
-
-  BLEServer *pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new BridgeServerCallbacks());
-
-  BLEService *pService = pServer->createService(serviceUUID);
-
-  pBridgeRxChar = pService->createCharacteristic(
-    charUUID,
-    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
-  );
-  pBridgeRxChar->setCallbacks(new BridgeRxCallbacks());
-
-  pBridgeTxChar = pService->createCharacteristic(
-    txCharUUID,
-    BLECharacteristic::PROPERTY_NOTIFY
-  );
-  pBridgeTxChar->addDescriptor(new BLE2902());
-
-  pService->start();
-
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID(serviceUUID);
-  pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);
-  pAdvertising->setMinPreferred(0x12);
-  BLEDevice::startAdvertising();
-
+  // Setup Dedicated BLE Central Scanner
+  BLEDevice::init("OpenPixelMasterCentral");
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedScannerCallback());
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
 
-  Serial.println("🎮 Bridge Active! Visual LED Power Feedback Enabled.");
+  Serial.println("🎮 Auto-Scanning for OpenPixelPoi over Bluetooth...");
 }
 
 void loop() {
   unsigned long now = millis();
 
-  // 1. Always update battery telemetry
-  updateBatteryTelemetry();
-
-  // 2. Always stream live telemetry to Web Studio app
-  sendContinuousTelemetryToApp();
-
-  // 3. Check Power Button
+  // 1. Check D0 / D1 Power Button
   checkPowerButton();
 
-  // 4. Auto-Sleep after 10 minutes of inactivity
+  // 2. Auto-Sleep after 10 minutes of inactivity
   if (now - lastUserActivityTime > (10UL * 60UL * 1000UL)) {
     Serial.println("💤 [AUTO-SLEEP] Inactive for 10 minutes. Powering OFF...");
     enterDeepSleepPowerOff();
   }
 
-  // 5. Connect to discovered Pois
+  // 3. Connect to discovered Pois
   if (doConnectPending && pendingDevice != nullptr) {
     executeConnect(pendingDevice);
     delete pendingDevice;
@@ -630,6 +486,7 @@ void loop() {
     doConnectPending = false;
   }
 
+  // 4. Health check connections & trigger background scan if slot is available
   int activeCount = 0;
   for (int i = 0; i < MAX_BLE_POIS; i++) {
     if (poiSlots[i].connected) {
@@ -647,13 +504,12 @@ void loop() {
     }
   }
 
-  if (activeCount < MAX_BLE_POIS && !doConnectPending && !isWebClientConnected && (now - lastScanStartTime > 4000)) {
+  if (activeCount < MAX_BLE_POIS && !doConnectPending && (now - lastScanStartTime > 3000)) {
     lastScanStartTime = now;
-    pBLEScan->start(1, false);
-    BLEDevice::startAdvertising();
+    pBLEScan->start(2, false);
   }
 
-  // 6. Process Wii Nunchuk
+  // 5. Process Wii Nunchuk
   readNunchukAndProcess();
   delay(15);
 }
