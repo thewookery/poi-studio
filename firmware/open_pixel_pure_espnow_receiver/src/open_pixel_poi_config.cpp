@@ -311,18 +311,17 @@ class OpenPixelPoiConfig {
       if(patternFile){
         patternFile.close();
       }
-      patternFile = LittleFS.open(String("/pattern") + this->getActivePatternIndex() + ".oppp");
-      if(!patternFile || patternFile.isDirectory()){
-        debugf("− failed to open file for reading\n");
+      String path = String("/pattern") + this->getActivePatternIndex() + ".oppp";
+      patternFile = LittleFS.open(path, "r");
+      if(!patternFile || patternFile.isDirectory() || patternFile.size() == 0){
         fillDefaultPattern();
       }else{
-        debugf(" - this much available: %d\n", patternFile.available());
-        // Filling the whole pattern with data is way too slow
-        // just fill one pixel so we don't have a completely black pattern if something goes weird
-        pattern[0] = 0xFF;
+        size_t fileSize = patternFile.size();
+        if (fileSize > PATTERN_PIXEL_LIMIT * 3) fileSize = PATTERN_PIXEL_LIMIT * 3;
+        patternFile.read(this->pattern, fileSize);
+        this->patternLength = fileSize;
+        patternFile.close();
       }
-      // Load first frame immediately (For large/fast patterns this is futile, as we already lagged past it)
-      continueLoadingPattern();
     }
 
     void continueLoadingPattern(){

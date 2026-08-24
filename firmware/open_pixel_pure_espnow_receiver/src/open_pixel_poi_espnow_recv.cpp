@@ -50,6 +50,7 @@ static File g_uploadFile;
 static uint8_t g_uploadSlot = 0;
 static uint8_t g_uploadHeight = 55;
 static uint16_t g_uploadWidth = 0;
+static size_t g_uploadOffset = 0;
 static bool g_isUploading = false;
 
 static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
@@ -59,8 +60,14 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
   if (len == sizeof(EspNowDataPacket)) {
     const EspNowDataPacket *dPkt = (const EspNowDataPacket *)incomingData;
     if (dPkt->magic == ESPNOW_DATA_MAGIC && dPkt->cmd == CMD_PATTERN_DATA_CHUNK) {
-      if (g_isUploading && g_uploadFile) {
-        g_uploadFile.write(dPkt->data, dPkt->dataLen);
+      if (g_isUploading) {
+        if (g_uploadOffset + dPkt->dataLen <= PATTERN_PIXEL_LIMIT * 3) {
+          memcpy(g_espnow_config->pattern + g_uploadOffset, dPkt->data, dPkt->dataLen);
+          g_uploadOffset += dPkt->dataLen;
+        }
+        if (g_uploadFile) {
+          g_uploadFile.write(dPkt->data, dPkt->dataLen);
+        }
       }
       return;
     }
@@ -122,6 +129,7 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
       g_uploadSlot = pkt->val1;
       g_uploadHeight = pkt->val2;
       g_uploadWidth = (uint16_t)pkt->tiltX;
+      g_uploadOffset = 0;
 
       uint8_t targetBank = g_uploadSlot / PATTERN_BANK_SIZE;
       uint8_t targetSlot = g_uploadSlot % PATTERN_BANK_SIZE;
@@ -130,20 +138,25 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
       g_espnow_config->setFrameHeight(g_uploadHeight);
       g_espnow_config->setFrameCount(g_uploadWidth);
 
+      // Clear RAM pattern buffer for clean upload
+      memset(g_espnow_config->pattern, 0, PATTERN_PIXEL_LIMIT * 3);
+
       String path = String("/pattern") + g_uploadSlot + ".oppp";
       if (LittleFS.exists(path)) {
         LittleFS.remove(path);
       }
       g_uploadFile = LittleFS.open(path, FILE_WRITE);
       g_isUploading = true;
-      Serial.printf("[ESP-NOW OTA] Starting upload: Bank %d Slot %d (Index %d, %dx%d)...\n",
-                    targetBank, targetSlot, g_uploadSlot, g_uploadWidth, g_uploadHeight);
+      Serial.printf("[ESP-NOW OTA] Starting upload: Bank %d Slot %d (%dx%d)...\n",
+                    targetBank, targetSlot, g_uploadWidth, g_uploadHeight);
       break;
     }
     case CMD_END_PATTERN_UPLOAD: {
-      if (g_isUploading && g_uploadFile) {
-        g_uploadFile.flush();
-        g_uploadFile.close();
+      if (g_isUploading) {
+        if (g_uploadFile) {
+          g_uploadFile.flush();
+          g_uploadFile.close();
+        }
         g_isUploading = false;
         
         uint8_t targetBank = g_uploadSlot / PATTERN_BANK_SIZE;
@@ -151,9 +164,10 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
         g_espnow_config->patternBank = targetBank;
         g_espnow_config->setFrameHeight(g_uploadHeight);
         g_espnow_config->setFrameCount(g_uploadWidth);
+        g_espnow_config->patternLength = g_uploadOffset;
         g_espnow_config->setPatternSlot(targetSlot, true);
-        Serial.printf("✅ [ESP-NOW OTA] Pattern Upload COMPLETE: Bank %d Slot %d (%dx%d)!\n",
-                      targetBank, targetSlot, g_uploadWidth, g_uploadHeight);
+        Serial.printf("✅ [ESP-NOW OTA] Pattern Upload COMPLETE & Active: Bank %d Slot %d (%d bytes, %dx%d)!\n",
+                      targetBank, targetSlot, g_uploadOffset, g_uploadWidth, g_uploadHeight);
       }
       break;
     }
