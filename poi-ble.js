@@ -211,7 +211,10 @@
                                     c: val.getUint8(5) === 1,
                                     ax: val.getUint8(6),
                                     ay: val.getUint8(7),
-                                    ok: val.getUint8(8) === 1
+                                    ok: val.getUint8(8) === 1,
+                                    batteryPct: (val.byteLength >= 10) ? val.getUint8(9) : null,
+                                    batteryMv: (val.byteLength >= 12) ? ((val.getUint8(10) << 8) | val.getUint8(11)) : null,
+                                    isCharging: (val.byteLength >= 13) ? (val.getUint8(12) === 1) : false
                                 };
                                 if (typeof window !== 'undefined') {
                                     window.dispatchEvent(new CustomEvent('poi-nunchuk-telemetry', { detail: telemetry }));
@@ -332,7 +335,10 @@
                                             c: val.getUint8(5) === 1,
                                             ax: val.getUint8(6),
                                             ay: val.getUint8(7),
-                                            ok: val.getUint8(8) === 1
+                                            ok: val.getUint8(8) === 1,
+                                            batteryPct: (val.byteLength >= 10) ? val.getUint8(9) : null,
+                                            batteryMv: (val.byteLength >= 12) ? ((val.getUint8(10) << 8) | val.getUint8(11)) : null,
+                                            isCharging: (val.byteLength >= 13) ? (val.getUint8(12) === 1) : false
                                         };
                                         if (typeof window !== 'undefined') {
                                             window.dispatchEvent(new CustomEvent('poi-nunchuk-telemetry', { detail: telemetry }));

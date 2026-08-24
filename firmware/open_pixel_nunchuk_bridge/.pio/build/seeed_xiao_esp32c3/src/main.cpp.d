@@ -187,7 +187,12 @@
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEAdvertisedDevice.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEScan.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEUtils.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEServer.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEUtils.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEScan.h \
  C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEAdvertisedDevice.h \
- C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEClient.h
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLEClient.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLE2902.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/esp_adc_cal/include/esp_adc_cal.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/driver/include/driver/adc.h \
+ C:/Users/BigBoof/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/hal/include/hal/adc_types.h

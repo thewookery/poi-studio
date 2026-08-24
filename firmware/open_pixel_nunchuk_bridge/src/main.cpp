@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.9)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.10 Battery & Charger Telemetry)
  * ============================================================================
  * Hardware Layout:
  * - Battery: 18350 3.7V LiPo on BAT+ / BAT- pads (Back of board)
@@ -8,27 +8,36 @@
  *   - Short Press: Wakes up / changes mode
  *   - Long Press (1.5s): Enters Ultra-Low Power Deep Sleep (Power OFF)
  *   - Auto-Sleep: 10 minutes of inactivity
+ * - Battery & USB Charging ADC Telemetry:
+ *   - Measures battery millivolts & calculates battery %
+ *   - Detects USB-C plug-in & charging state
  * - Nunchuk I2C: 3V3, GND, D2 (SDA / GPIO 4), D3 (SCL / GPIO 5)
  */
 
 #include <Arduino.h>
 #include <Wire.h>
 #include <BLEDevice.h>
+#include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <BLEClient.h>
+#include <BLE2902.h>
 #include "esp_sleep.h"
+#include "esp_adc_cal.h"
 
 #define PIN_BUTTON_GND D0  // GPIO 2 - Software Ground
 #define PIN_BUTTON_IN  D1  // GPIO 3 - Button Input (Pulled UP)
+#define PIN_BATTERY_ADC 0  // GPIO 0 / A0 - Battery Voltage ADC
 #define NUNCHUK_ADDR   0x52
 
 static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
 static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+static BLEUUID txCharUUID("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
 
 #define START_BYTE 0xD0
 #define END_BYTE   0xD1
+#define TELEMETRY_BYTE 0xFE
 
 // Comm Codes
 #define CC_SET_BRIGHTNESS 0x02
@@ -59,6 +68,12 @@ uint8_t currentPalette = 0;
 uint8_t currentMotion = 0;
 bool isStrobeActive = false;
 
+// Battery Telemetry
+uint16_t liveBatteryMv = 3850;
+uint8_t liveBatteryPct = 80;
+bool isUsbCharging = false;
+unsigned long lastBatteryCheck = 0;
+
 // Nunchuk Live Telemetry
 uint8_t liveJoyX = 128;
 uint8_t liveJoyY = 128;
@@ -68,6 +83,9 @@ bool liveBtnC = false;
 bool liveBtnZ = false;
 bool lastBtnC = false;
 bool lastBtnZ = false;
+int16_t liveAccelX = 512;
+int16_t liveAccelY = 512;
+int16_t liveAccelZ = 512;
 
 unsigned long btnCHoldStart = 0;
 unsigned long lastJoyFlickTime = 0;
@@ -76,6 +94,10 @@ unsigned long lastScanStartTime = 0;
 unsigned long lastUserActivityTime = 0;
 unsigned long pwrBtnPressStart = 0;
 bool pwrBtnPressed = false;
+unsigned long lastTelemetryNotify = 0;
+
+BLECharacteristic *pBridgeTxChar = nullptr;
+bool isWebClientConnected = false;
 
 // Dual-Poi Connection Pool
 #define MAX_BLE_POIS 2
@@ -92,6 +114,43 @@ static BLEAdvertisedDevice* pendingDevice = nullptr;
 static bool doConnectPending = false;
 BLEScan* pBLEScan = nullptr;
 
+// Measure 18350 Battery Millivolts & Calculate Percentage & Charging Status
+void updateBatteryTelemetry() {
+  unsigned long now = millis();
+  if (now - lastBatteryCheck < 1000 && lastBatteryCheck != 0) return;
+  lastBatteryCheck = now;
+
+  // Read ADC with multisampling
+  uint32_t rawSum = 0;
+  for (int i = 0; i < 16; i++) {
+    rawSum += analogReadMilliVolts(PIN_BATTERY_ADC);
+    delayMicroseconds(50);
+  }
+  uint32_t mv = (rawSum / 16) * 2; // Voltage divider scaling factor (2x)
+
+  // Bounds clamping & sanity checks
+  if (mv < 2500) mv = 3700; // default fallback if uncalibrated
+  if (mv > 4350) mv = 4350;
+
+  liveBatteryMv = (uint16_t)mv;
+
+  // Detect USB-C Charging: when on USB charging, voltage is elevated (> 4.12V with charge ripple)
+  if (liveBatteryMv >= 4130) {
+    isUsbCharging = true;
+  } else if (liveBatteryMv <= 4050) {
+    isUsbCharging = false;
+  }
+
+  // Calculate percentage (3.30V = 0%, 4.18V = 100%)
+  if (liveBatteryMv >= 4180) {
+    liveBatteryPct = 100;
+  } else if (liveBatteryMv <= 3300) {
+    liveBatteryPct = 0;
+  } else {
+    liveBatteryPct = (uint8_t)(((uint32_t)(liveBatteryMv - 3300) * 100) / (4180 - 3300));
+  }
+}
+
 // Send 4-byte command packet to all connected BLE Pois
 void sendBleCommand(uint8_t cmdCode, uint8_t val) {
   uint8_t pkt[4] = { START_BYTE, cmdCode, val, END_BYTE };
@@ -107,7 +166,6 @@ void sendBleCommand(uint8_t cmdCode, uint8_t val) {
       }
     }
   }
-  Serial.printf("[BLE CMD] 0x%02X -> Val: %d (Sent to %d Poi)\n", cmdCode, val, sentCount);
   lastUserActivityTime = millis();
 }
 
@@ -304,12 +362,45 @@ void readNunchukAndProcess() {
 
   uint8_t joyX = raw[0];
   uint8_t joyY = raw[1];
+  int16_t accelX = (raw[2] << 2) | ((raw[5] >> 2) & 0x03);
+  int16_t accelY = (raw[3] << 2) | ((raw[5] >> 4) & 0x03);
+  int16_t accelZ = (raw[4] << 2) | ((raw[5] >> 6) & 0x03);
   bool btnZ = !((raw[5] >> 0) & 0x01);
   bool btnC = !((raw[5] >> 1) & 0x01);
 
   if (joyX == 0 && joyY == 0 && raw[2] == 0) {
     isNunchukI2cOk = false;
     return;
+  }
+
+  liveJoyX = joyX;
+  liveJoyY = joyY;
+  liveBtnZ = btnZ;
+  liveBtnC = btnC;
+  liveAccelX = accelX;
+  liveAccelY = accelY;
+  liveAccelZ = accelZ;
+
+  // Broadcast Telemetry to Connected Web App
+  if (pBridgeTxChar != nullptr && (now - lastTelemetryNotify > 60)) {
+    lastTelemetryNotify = now;
+    uint8_t telPkt[14];
+    telPkt[0] = START_BYTE;
+    telPkt[1] = TELEMETRY_BYTE;
+    telPkt[2] = joyX;
+    telPkt[3] = joyY;
+    telPkt[4] = btnZ ? 1 : 0;
+    telPkt[5] = btnC ? 1 : 0;
+    telPkt[6] = (uint8_t)(accelX >> 2);
+    telPkt[7] = (uint8_t)(accelY >> 2);
+    telPkt[8] = isNunchukI2cOk ? 1 : 0;
+    telPkt[9] = liveBatteryPct;
+    telPkt[10] = (uint8_t)(liveBatteryMv >> 8);
+    telPkt[11] = (uint8_t)(liveBatteryMv & 0xFF);
+    telPkt[12] = isUsbCharging ? 1 : 0;
+    telPkt[13] = END_BYTE;
+    pBridgeTxChar->setValue(telPkt, 14);
+    pBridgeTxChar->notify();
   }
 
   // Activity detection for auto-sleep
@@ -393,7 +484,7 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - BLE Master Nunchuk (D0/D1 Power)");
+  Serial.println("Open Pixel Poi - BLE Master Bridge (Battery Telemetry)");
   Serial.println("=================================================");
 
   // Setup D0 as Software Ground and D1 as Input Pullup
@@ -405,29 +496,51 @@ void setup() {
 
   autoScanNunchuk();
 
-  BLEDevice::init("OpenPixelNunchukMaster");
+  // Setup BLE Device
+  BLEDevice::init("OpenPixelBridge-Nunchuk");
+
+  // Create Server for Telemetry broadcast to Web Studio App
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService(serviceUUID);
+
+  pBridgeTxChar = pService->createCharacteristic(
+    txCharUUID,
+    BLECharacteristic::PROPERTY_NOTIFY
+  );
+  pBridgeTxChar->addDescriptor(new BLE2902());
+  pService->start();
+
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(serviceUUID);
+  pAdvertising->setScanResponse(true);
+  BLEDevice::startAdvertising();
+
+  // Setup Central Scanner for discovering OpenPixelPoi
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedScannerCallback());
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
 
-  Serial.println("🎮 Auto-Scanning for OpenPixelPoi over Bluetooth...");
+  Serial.println("🎮 Auto-Scanning for OpenPixelPoi over Bluetooth & Advertising Telemetry...");
 }
 
 void loop() {
   unsigned long now = millis();
 
-  // 1. Check Power Button (D0 / D1)
+  // 1. Update Battery & Charging Telemetry
+  updateBatteryTelemetry();
+
+  // 2. Check Power Button (D0 / D1)
   checkPowerButton();
 
-  // 2. Auto-Sleep after 10 minutes of inactivity
+  // 3. Auto-Sleep after 10 minutes of inactivity
   if (now - lastUserActivityTime > (10UL * 60UL * 1000UL)) {
     Serial.println("💤 [AUTO-SLEEP] Inactive for 10 minutes. Powering OFF...");
     enterDeepSleepPowerOff();
   }
 
-  // 3. Process pending BLE connection safely in loop task
+  // 4. Process pending BLE connection safely in loop task
   if (doConnectPending && pendingDevice != nullptr) {
     executeConnect(pendingDevice);
     delete pendingDevice;
@@ -435,7 +548,7 @@ void loop() {
     doConnectPending = false;
   }
 
-  // 4. Health check connections & trigger background scan if slot is available
+  // 5. Health check connections & trigger background scan if slot is available
   int activeCount = 0;
   for (int i = 0; i < MAX_BLE_POIS; i++) {
     if (poiSlots[i].connected) {
@@ -458,7 +571,7 @@ void loop() {
     pBLEScan->start(2, false);
   }
 
-  // 5. Process Wii Nunchuk inputs
+  // 6. Process Wii Nunchuk inputs
   readNunchukAndProcess();
   delay(15);
 }
