@@ -1,19 +1,24 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK CONTROLLER (v3.2 Hyper Overdrive)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK CONTROLLER (v3.3 Z-Combo Engine)
  * ============================================================================
- * Hardware Controls:
- * - ⚡ Z Trigger (Hold): HYPER-SPEED BLINDER OVERDRIVE (1200 FPS + 100% Blinding Brightness!)
- * - ⚡ Z Trigger (Quick Tap): INSTANT NEXT PATTERN (Trigger finger pattern switch!)
- * - ⚡ Z Trigger (Double Tap): AUTO-LOOP ALL PATTERNS (Party Shuffle Mode)
- * - 🌟 C Button (Tap): Cycle 32 Pro Color Palettes (Rainbow, Cyber, Fire, Gold, etc.)
+ * Dual-Layer Pro Performance Mapping:
+ * 
+ * 🎮 LAYER 1: STANDARD CONTROLS (Z not held)
+ * - 🕹️ Joystick Left / Right: Switch Pattern Slot (1-10)
+ * - 🕹️ Joystick Up / Down: Switch Hardware Bank (1-5)
+ * - 🌟 C Button (Tap): Cycle 32 Pro Color Palettes
  * - 🌟 C Button (Hold 1.0s): Reset Palette to Original RGB Colors
- * - 🕹️ Joystick Left/Right: Switch Pattern Slot (1-10)
- * - 🕹️ Joystick Up/Down: Switch Hardware Bank (1-5)
- * - 🌀 Gyro Tilt Forward: Real-Time Speed Boost (Fast Warp)
- * - 🌀 Gyro Tilt Backward: Real-Time Slow-Mo Flow
- * - 💥 Gyro Whip/Shake: Instant Pattern & Color Burst!
- * - 🔘 D0/D1 Button: Tap = Wakeup (3 blinks) | Hold 1.2s = Deep Sleep OFF (2 blinks)
+ * - ⚡ Z Trigger (Quick Tap): Instant 1-Tap Next Pattern Jump
+ * - ⚡ Z Trigger (Hold Alone): HYPER-SPEED BLINDER OVERDRIVE (1200 FPS + 100% Brightness)
+ * 
+ * 🔥 LAYER 2: Z-TRIGGER COMBOS (While holding Z)
+ * - ⚡ Hold Z + 🕹️ Flick Left/Right: Live Brightness Adjust (Dim <---> Blinding)
+ * - ⚡ Hold Z + 🕹️ Flick Up/Down: Live Speed Step (Slow-Mo <---> Hyper Warp)
+ * - ⚡ Hold Z + 🌟 Tap C Button: Auto-Shuffle Party Loop (Loops all patterns!)
+ * - ⚡ Hold Z + 🌀 Tilt Left/Right: Dynamic Live Color Palette Morphing
+ * 
+ * 🔘 D0/D1 Power Button: Tap = Wakeup (3 blinks) | Hold 1.2s = Deep Sleep OFF (2 blinks)
  */
 
 #include <Arduino.h>
@@ -64,8 +69,10 @@ bool isNunchukI2cOk = false;
 uint8_t currentSlot = 0;
 uint8_t currentBank = 0;
 uint8_t currentPalette = 0;
-uint8_t currentSpeedOpt = 2; // Normal speed (Level 3)
+uint8_t currentSpeedOpt = 2;       // Level 3 (Normal Speed: 0 to 5)
+uint8_t currentBrightnessOpt = 2;  // Level 3 (Normal Brightness: 0 to 5)
 bool isOverdriveActive = false;
+bool isZComboUsed = false;
 
 // Nunchuk Live State
 uint8_t liveJoyX = 128;
@@ -80,12 +87,8 @@ int16_t liveAccelZ = 512;
 
 unsigned long btnCHoldStart = 0;
 unsigned long btnZPressStart = 0;
-unsigned long lastZTapTime = 0;
-int zTapCount = 0;
-
 unsigned long lastJoyFlickTime = 0;
-unsigned long lastTiltCheckTime = 0;
-unsigned long lastShakeTime = 0;
+unsigned long lastTiltMorphTime = 0;
 unsigned long lastI2cRetry = 0;
 unsigned long lastScanStartTime = 0;
 unsigned long lastUserActivityTime = 0;
@@ -352,7 +355,6 @@ void readNunchukAndProcess() {
   int16_t accelY = (raw[3] << 2) | ((raw[5] >> 4) & 0x03);
   int16_t accelZ = (raw[4] << 2) | ((raw[5] >> 6) & 0x03);
   
-  // Robust button bit parsing (Bit 0 = Z, Bit 1 = C; Active LOW)
   bool btnZ = ((raw[5] & 0x01) == 0);
   bool btnC = ((raw[5] & 0x02) == 0);
 
@@ -373,118 +375,146 @@ void readNunchukAndProcess() {
     lastUserActivityTime = now;
   }
 
-  // 1. Joystick X: Slot change (Left / Right flick)
-  if (now - lastJoyFlickTime > 250) {
-    if (joyX < 50) {
-      currentSlot = (currentSlot > 0) ? (currentSlot - 1) : 9;
-      sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
-      lastJoyFlickTime = now;
-    } else if (joyX > 200) {
+  // =========================================================================
+  // ⚡ Z-TRIGGER STATE TRACKING (Tracks Hold vs Tap vs Combo Modifier)
+  // =========================================================================
+  if (btnZ && !lastBtnZ) {
+    btnZPressStart = now;
+    isZComboUsed = false;
+    isOverdriveActive = false;
+  } else if (btnZ && !isZComboUsed && (now - btnZPressStart > 250) && !isOverdriveActive) {
+    // Squeezing Z alone without moving stick -> HYPER-SPEED BLINDER OVERDRIVE!
+    isOverdriveActive = true;
+    sendBleCommand(CC_SET_SPEED_OPTION, 5);       // Max 1200 FPS
+    sendBleCommand(CC_SET_BRIGHTNESS_OPTION, 5);  // Max 100% Blinding Power
+    Serial.println("⚡ [OVERDRIVE] HYPER-SPEED BLINDER ACTIVE!");
+  } else if (!btnZ && lastBtnZ) {
+    if (isOverdriveActive) {
+      isOverdriveActive = false;
+      sendBleCommand(CC_SET_SPEED_OPTION, currentSpeedOpt);
+      sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOpt);
+      Serial.println("⚡ [OVERDRIVE] Released -> Restoring normal flow.");
+    } else if (!isZComboUsed && (now - btnZPressStart < 250)) {
+      // Quick Tap Z alone -> Instant Next Pattern Slot!
       currentSlot = (currentSlot + 1) % 10;
       sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
+      Serial.printf("🎯 [Z-TRIGGER] Quick Tap -> Next Slot: %d\n", currentSlot);
+    }
+    isZComboUsed = false;
+  }
+
+  // =========================================================================
+  // 🕹️ JOYSTICK & BUTTON PROCESSING (NORMAL vs Z-COMBO LAYERS)
+  // =========================================================================
+
+  // 1. JOYSTICK LEFT / RIGHT FLICK
+  if (now - lastJoyFlickTime > 250) {
+    if (joyX < 50) {
+      if (btnZ) {
+        // 🔥 COMBO: Hold Z + Flick Left -> DECREASE BRIGHTNESS
+        isZComboUsed = true;
+        currentBrightnessOpt = (currentBrightnessOpt > 0) ? (currentBrightnessOpt - 1) : 0;
+        sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOpt);
+        Serial.printf("🔅 [Z-COMBO] Brightness Down: Level %d\n", currentBrightnessOpt + 1);
+      } else {
+        // 🎮 NORMAL: Previous Pattern Slot
+        currentSlot = (currentSlot > 0) ? (currentSlot - 1) : 9;
+        sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
+        Serial.printf("◀️ [JOYSTICK] Pattern Slot: %d\n", currentSlot);
+      }
+      lastJoyFlickTime = now;
+    } else if (joyX > 200) {
+      if (btnZ) {
+        // 🔥 COMBO: Hold Z + Flick Right -> INCREASE BRIGHTNESS
+        isZComboUsed = true;
+        currentBrightnessOpt = (currentBrightnessOpt < 5) ? (currentBrightnessOpt + 1) : 5;
+        sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOpt);
+        Serial.printf("🔆 [Z-COMBO] Brightness Up: Level %d\n", currentBrightnessOpt + 1);
+      } else {
+        // 🎮 NORMAL: Next Pattern Slot
+        currentSlot = (currentSlot + 1) % 10;
+        sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
+        Serial.printf("▶️ [JOYSTICK] Pattern Slot: %d\n", currentSlot);
+      }
       lastJoyFlickTime = now;
     }
   }
 
-  // 2. Joystick Y: Bank change (Up / Down flick)
+  // 2. JOYSTICK UP / DOWN FLICK
   if (now - lastJoyFlickTime > 250) {
     if (joyY > 200) {
-      currentBank = (currentBank + 1) % 5;
-      sendBleCommand(CC_SET_BANK, currentBank);
+      if (btnZ) {
+        // 🔥 COMBO: Hold Z + Flick Up -> INCREASE SPEED (Faster FPS)
+        isZComboUsed = true;
+        currentSpeedOpt = (currentSpeedOpt < 5) ? (currentSpeedOpt + 1) : 5;
+        sendBleCommand(CC_SET_SPEED_OPTION, currentSpeedOpt);
+        Serial.printf("🚀 [Z-COMBO] Speed Up: Level %d\n", currentSpeedOpt + 1);
+      } else {
+        // 🎮 NORMAL: Next Hardware Bank (1-5)
+        currentBank = (currentBank + 1) % 5;
+        sendBleCommand(CC_SET_BANK, currentBank);
+        Serial.printf("🔼 [JOYSTICK] Bank: %d\n", currentBank);
+      }
       lastJoyFlickTime = now;
     } else if (joyY < 50) {
-      currentBank = (currentBank > 0) ? (currentBank - 1) : 4;
-      sendBleCommand(CC_SET_BANK, currentBank);
+      if (btnZ) {
+        // 🔥 COMBO: Hold Z + Flick Down -> DECREASE SPEED (Slow-Mo Flow)
+        isZComboUsed = true;
+        currentSpeedOpt = (currentSpeedOpt > 0) ? (currentSpeedOpt - 1) : 0;
+        sendBleCommand(CC_SET_SPEED_OPTION, currentSpeedOpt);
+        Serial.printf("🐢 [Z-COMBO] Speed Down: Level %d\n", currentSpeedOpt + 1);
+      } else {
+        // 🎮 NORMAL: Previous Hardware Bank
+        currentBank = (currentBank > 0) ? (currentBank - 1) : 4;
+        sendBleCommand(CC_SET_BANK, currentBank);
+        Serial.printf("🔽 [JOYSTICK] Bank: %d\n", currentBank);
+      }
       lastJoyFlickTime = now;
     }
   }
 
-  // 3. C Button: Step Palette or Reset to RGB
+  // 3. C BUTTON ACTIONS (Step Palette, Reset, or Auto-Shuffle Combo)
   if (btnC && !lastBtnC) {
     btnCHoldStart = now;
   } else if (!btnC && lastBtnC) {
     unsigned long pressDur = now - btnCHoldStart;
-    if (pressDur < 800) {
-      currentPalette = (currentPalette + 1) % 33;
-      sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
-      Serial.printf("🎨 [NUNCHUK] Switched to Palette %d\n", currentPalette);
+    if (btnZ) {
+      // 🔥 COMBO: Hold Z + Tap C -> AUTO-SHUFFLE ALL PATTERNS LOOP!
+      isZComboUsed = true;
+      sendBleCommand(CC_SET_PATTERN_ALL, 0);
+      Serial.println("🔀 [Z-COMBO] Hold Z + Tap C -> Party Auto-Shuffle Loop Active!");
+    } else {
+      if (pressDur < 800) {
+        // 🎮 NORMAL: Step Palette (1-32)
+        currentPalette = (currentPalette + 1) % 33;
+        sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
+        Serial.printf("🎨 [C-BUTTON] Palette %d\n", currentPalette);
+      }
     }
-  } else if (btnC && (now - btnCHoldStart > 1000) && btnCHoldStart != 0) {
+  } else if (btnC && !btnZ && (now - btnCHoldStart > 1000) && btnCHoldStart != 0) {
+    // 🎮 NORMAL: Hold C alone (1.0s) -> Reset Palette to Original RGB
     currentPalette = 0;
     sendBleCommand(CC_SET_PALETTE_FX, 0);
-    Serial.println("🎨 [NUNCHUK] Reset Palette to Original RGB!");
+    Serial.println("🎨 [C-BUTTON] Reset Palette to Original RGB!");
     btnCHoldStart = 0;
   }
 
-  // 4. Z Trigger: Instant Hyper-Speed Blinder Drop (Hold) & Instant Pattern Switch (Tap)
-  if (btnZ && !lastBtnZ) {
-    btnZPressStart = now;
-    isOverdriveActive = false;
-  } else if (btnZ && (now - btnZPressStart > 200) && !isOverdriveActive) {
-    // Squeeze & Hold > 200ms -> INSTANT HYPER OVERDRIVE (Level 6 Speed + 100% Brightness!)
-    isOverdriveActive = true;
-    sendBleCommand(CC_SET_SPEED_OPTION, 5);       // Hyper Warp Speed (Max FPS!)
-    sendBleCommand(CC_SET_BRIGHTNESS_OPTION, 5);  // Max Blinding Brightness!
-    Serial.println("⚡ [OVERDRIVE] HYPER-SPEED BLINDER ACTIVE!");
-  } else if (!btnZ && lastBtnZ) {
-    if (isOverdriveActive) {
-      // Released Overdrive -> Return to normal speed and brightness
-      isOverdriveActive = false;
-      sendBleCommand(CC_SET_SPEED_OPTION, currentSpeedOpt);
-      sendBleCommand(CC_SET_BRIGHTNESS_OPTION, 2); // Standard normal brightness
-      Serial.println("⚡ [OVERDRIVE] Released -> Restoring normal flow.");
-    } else {
-      // Quick Tap < 200ms -> Instant Next Pattern Slot!
-      if (now - lastZTapTime < 350) {
-        zTapCount++;
-      } else {
-        zTapCount = 1;
-      }
-      lastZTapTime = now;
-
-      if (zTapCount >= 2) {
-        // Double-Tap Z -> Auto Loop All Patterns (Party Mode!)
-        sendBleCommand(CC_SET_PATTERN_ALL, 0);
-        Serial.println("🔀 [Z-TRIGGER] Double Tap -> Auto-Shuffle All Patterns!");
-        zTapCount = 0;
-      } else {
-        // Single Tap Z -> Step to Next Pattern Slot!
-        currentSlot = (currentSlot + 1) % 10;
-        sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
-        Serial.printf("🎯 [Z-TRIGGER] Quick Tap -> Next Slot: %d\n", currentSlot);
-      }
-    }
-  }
-
-  // 5. Gyro Live Speed & Shake Modulation (Every 150ms)
-  if (!isOverdriveActive && (now - lastTiltCheckTime > 150)) {
-    lastTiltCheckTime = now;
-
-    // A. Shake / Whip Detection (Sudden acceleration spike)
-    int16_t jerkX = abs(accelX - 512);
-    int16_t jerkY = abs(accelY - 512);
-    int16_t jerkZ = abs(accelZ - 512);
-    if ((jerkX > 300 || jerkY > 300 || jerkZ > 340) && (now - lastShakeTime > 1200)) {
-      lastShakeTime = now;
-      currentSlot = (currentSlot + 1) % 10;
-      currentPalette = (currentPalette + 3) % 33;
-      sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
+  // 4. 🌀 GYRO TILT MORPHING (Hold Z + Tilt Left/Right to Morph Palettes!)
+  if (btnZ && (now - lastTiltMorphTime > 300)) {
+    if (accelX < 360) {
+      // Tilt Left while holding Z -> Previous Palette
+      isZComboUsed = true;
+      currentPalette = (currentPalette > 0) ? (currentPalette - 1) : 32;
       sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
-      Serial.println("💥 [GYRO SHAKE] Whip Detected -> Jumped to next pattern + color shift!");
-    }
-
-    // B. Pitch Tilt Speed Modulation (Tilt forward = Fast | Tilt back = Slow-Mo)
-    uint8_t targetSpeed = 2; // Level 3 (Normal default)
-    if (accelY > 650) {
-      targetSpeed = 4; // Level 5 (Hyper Fast Warp)
-    } else if (accelY < 380) {
-      targetSpeed = 0; // Level 1 (Slow-Mo Flow)
-    }
-
-    if (targetSpeed != currentSpeedOpt) {
-      currentSpeedOpt = targetSpeed;
-      sendBleCommand(CC_SET_SPEED_OPTION, currentSpeedOpt);
-      Serial.printf("🚀 [GYRO SPEED] Dynamic Tilt Speed: Level %d\n", currentSpeedOpt + 1);
+      lastTiltMorphTime = now;
+      Serial.printf("🌈 [Z-TILT MORPH] Palette: %d\n", currentPalette);
+    } else if (accelX > 660) {
+      // Tilt Right while holding Z -> Next Palette
+      isZComboUsed = true;
+      currentPalette = (currentPalette + 1) % 33;
+      sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
+      lastTiltMorphTime = now;
+      Serial.printf("🌈 [Z-TILT MORPH] Palette: %d\n", currentPalette);
     }
   }
 
@@ -514,7 +544,7 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - BLE Master Nunchuk v3.2 (Overdrive)");
+  Serial.println("Open Pixel Poi - BLE Master Nunchuk v3.3 (Combos)");
   Serial.println("=================================================");
 
   gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
