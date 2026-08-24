@@ -1,32 +1,34 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.7 Byte-Counted ESP-NOW Streamer)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK CONTROLLER (For Golden Poi Firmware)
  * ============================================================================
+ * Connects directly to OpenPixelPoi over Bluetooth Low Energy (Nordic UART)
+ * and transmits real-time Wii Nunchuk commands with zero changes to Poi firmware.
  */
 
-#include <esp_wifi.h>
 #include <Arduino.h>
 #include <Wire.h>
-#include <WiFi.h>
-#include <WebServer.h>
-#include <esp_now.h>
 #include <BLEDevice.h>
-#include <BLEServer.h>
 #include <BLEUtils.h>
-#include <BLE2902.h>
+#include <BLEScan.h>
+#include <BLEAdvertisedDevice.h>
+#include <BLEClient.h>
 
 #define NUNCHUK_ADDR 0x52
-#define ESPNOW_PACKET_MAGIC 0xA5
-#define ESPNOW_DATA_MAGIC   0xA6
 
-// Nordic UART Service UUIDs
-#define NORDIC_UART_SERVICE "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
-#define NORDIC_UART_RX_CHAR "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
-#define NORDIC_UART_TX_CHAR "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
+// Nordic UART Service UUIDs matching OpenPixelPoi Golden Firmware
+static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
 
 #define START_BYTE 0xD0
 #define END_BYTE   0xD1
-#define TELEMETRY_BYTE 0xFE
+
+// Comm Codes
+#define CC_SET_BRIGHTNESS 0x02
+#define CC_SET_PATTERN_SLOT 0x05
+#define CC_SET_BANK 0x07
+#define CC_SET_PALETTE_FX 0x15
+#define CC_SET_MOTION_FX 0x18
 
 struct I2CPair {
   uint8_t sda;
@@ -43,55 +45,14 @@ int activeI2cIndex = 0;
 bool isNunchukEncrypted = false;
 bool isNunchukI2cOk = false;
 
-enum EspNowCommand {
-  CMD_NONE = 0,
-  CMD_SET_PATTERN = 1,
-  CMD_SET_BANK = 2,
-  CMD_SET_PALETTE = 3,
-  CMD_SET_MOTION_FX = 4,
-  CMD_SET_SPEED = 5,
-  CMD_STROBE_BLAST = 6,
-  CMD_SET_BRIGHTNESS = 7,
-  CMD_TILT_MODULATION = 8,
-  CMD_START_PATTERN_UPLOAD = 0x20,
-  CMD_PATTERN_DATA_CHUNK = 0x21,
-  CMD_END_PATTERN_UPLOAD = 0x22
-};
-
-typedef struct __attribute__((packed)) {
-  uint8_t magic;
-  uint8_t cmd;
-  uint8_t val1;
-  uint8_t val2;
-  int16_t tiltX;
-  int16_t tiltY;
-  int16_t tiltZ;
-} EspNowPacket;
-
-typedef struct __attribute__((packed)) {
-  uint8_t magic;
-  uint8_t cmd;
-  uint16_t byteOffset;
-  uint8_t dataLen;
-  uint8_t data[190];
-} EspNowDataPacket;
-
-static uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-
 // State Variables
 uint8_t currentSlot = 0;
 uint8_t currentBank = 0;
 uint8_t currentPalette = 0;
 uint8_t currentMotion = 0;
-uint8_t currentBrightness = 200;
 bool isStrobeActive = false;
 
-// OTA Upload State Machine
-bool isOtaUploading = false;
-uint16_t otaExpectedTotalBytes = 0;
-uint16_t otaBytesReceived = 0;
-uint8_t otaTargetSlot = 0;
-
+// Nunchuk Live Telemetry
 uint8_t liveJoyX = 128;
 uint8_t liveJoyY = 128;
 uint8_t lastJoyX = 128;
@@ -106,303 +67,95 @@ int16_t liveAccelZ = 512;
 
 unsigned long btnCHoldStart = 0;
 unsigned long lastJoyFlickTime = 0;
-unsigned long lastTelemetryNotify = 0;
 unsigned long lastI2cRetry = 0;
+unsigned long lastScanTime = 0;
 
-BLECharacteristic *pGlobalTxChar = nullptr;
-bool isBleClientConnected = false;
-
-WebServer server(80);
-
-void sendEspNowPacket(uint8_t cmd, uint8_t val1 = 0, uint8_t val2 = 0, int16_t tx = 0, int16_t ty = 0, int16_t tz = 0) {
-  EspNowPacket pkt;
-  pkt.magic = ESPNOW_PACKET_MAGIC;
-  pkt.cmd = cmd;
-  pkt.val1 = val1;
-  pkt.val2 = val2;
-  pkt.tiltX = tx;
-  pkt.tiltY = ty;
-  pkt.tiltZ = tz;
-  esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
-  delay(3);
-  esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
-}
-
-void forwardPatternData(const uint8_t *data, size_t len, uint16_t startOffset) {
-  size_t offset = 0;
-  while (offset < len) {
-    size_t chunk = min((size_t)190, len - offset);
-    EspNowDataPacket dPkt;
-    dPkt.magic = ESPNOW_DATA_MAGIC;
-    dPkt.cmd = CMD_PATTERN_DATA_CHUNK;
-    dPkt.byteOffset = startOffset + (uint16_t)offset;
-    dPkt.dataLen = (uint8_t)chunk;
-    memcpy(dPkt.data, data + offset, chunk);
-
-    // Send packet twice with 3ms spacing for 100% wireless multi-device coverage
-    esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
-    delay(3);
-    esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
-    delay(3);
-
-    offset += chunk;
-  }
-}
-
-class BridgeServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer* pServer) {
-    isBleClientConnected = true;
-    Serial.println("BLE Client Connected to Bridge!");
-  }
-  void onDisconnect(BLEServer* pServer) {
-    isBleClientConnected = false;
-    Serial.println("BLE Client Disconnected from Bridge!");
-    BLEDevice::startAdvertising();
-  }
+// BLE Multi-Poi Clients
+#define MAX_BLE_POIS 2
+struct BlePoiConnection {
+  BLEAdvertisedDevice* advDevice = nullptr;
+  BLEClient* client = nullptr;
+  BLERemoteCharacteristic* rxChar = nullptr;
+  bool connected = false;
+  std::string address = "";
 };
 
-class BridgeBleCallbacks : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic) {
-    std::string rxValue = pCharacteristic->getValue();
-    size_t len = rxValue.length();
-    if (len == 0) return;
-    const uint8_t *data = (const uint8_t *)rxValue.data();
+BlePoiConnection pois[MAX_BLE_POIS];
+int connectedPoiCount = 0;
+BLEScan* pBLEScan = nullptr;
+bool doScan = true;
 
-    // 1. Chunk 0: Start of Pattern Upload (0xD0 0x04 height width_H width_L)
-    if (data[0] == START_BYTE && len >= 5 && data[1] == 0x04) {
-      uint8_t height = data[2];
-      uint16_t width = ((uint16_t)data[3] << 8) | data[4];
-      otaTargetSlot = (currentBank * 10) + currentSlot;
-      otaExpectedTotalBytes = (uint16_t)height * width * 3;
-      otaBytesReceived = 0;
-      isOtaUploading = true;
-
-      sendEspNowPacket(CMD_START_PATTERN_UPLOAD, otaTargetSlot, height, width);
-      delay(20);
-
-      // Extract image payload from Chunk 0 (starts at byte 5)
-      size_t payloadInChunk0 = len - 5;
-      // If single-packet upload, strip trailing 0xD1 if present
-      if (payloadInChunk0 > otaExpectedTotalBytes) {
-        payloadInChunk0 = otaExpectedTotalBytes;
-      }
-      if (payloadInChunk0 > 0) {
-        forwardPatternData(data + 5, payloadInChunk0, otaBytesReceived);
-        otaBytesReceived += payloadInChunk0;
-      }
-
-      if (otaBytesReceived >= otaExpectedTotalBytes) {
-        isOtaUploading = false;
-        delay(25);
-        sendEspNowPacket(CMD_END_PATTERN_UPLOAD, otaTargetSlot);
-        Serial.printf("[Bridge] Single-packet upload COMPLETE (%d bytes)!\n", otaBytesReceived);
-      }
-      return;
+// Send Command packet to all connected BLE Pois
+void sendBleCommand(uint8_t cmdCode, uint8_t val) {
+  uint8_t pkt[4] = { START_BYTE, cmdCode, val, END_BYTE };
+  
+  for (int i = 0; i < MAX_BLE_POIS; i++) {
+    if (pois[i].connected && pois[i].rxChar != nullptr) {
+      pois[i].rxChar->writeValue(pkt, 4, false); // write without response for instant sub-millisecond latency
     }
+  }
+}
 
-    // 2. Middle & Final Pattern Chunks (Active Upload State)
-    if (isOtaUploading) {
-      // Guard against control commands being mistaken for pattern chunks
-      if (len <= 5 && data[0] == START_BYTE && data[len - 1] == END_BYTE && (data[1] == 0x05 || data[1] == 0x07)) {
-        // This is a control command sent after upload - process below
-      } else {
-        size_t chunkBytes = len;
-        if (otaBytesReceived + chunkBytes > otaExpectedTotalBytes) {
-          chunkBytes = otaExpectedTotalBytes - otaBytesReceived;
-        }
+// Connect to a discovered Poi device
+bool connectToPoi(int slotIdx, BLEAdvertisedDevice advertisedDevice) {
+  Serial.printf("[BLE] Connecting to Poi %d: %s (%s)...\n", slotIdx + 1, advertisedDevice.getName().c_str(), advertisedDevice.getAddress().toString().c_str());
 
-        if (chunkBytes > 0) {
-          forwardPatternData(data, chunkBytes, otaBytesReceived);
-          otaBytesReceived += chunkBytes;
-        }
+  BLEClient* pClient = BLEDevice::createClient();
+  if (!pClient->connect(&advertisedDevice)) {
+    Serial.println("[BLE] Connection failed!");
+    return false;
+  }
 
-        if (otaBytesReceived >= otaExpectedTotalBytes) {
-          isOtaUploading = false;
-          delay(30);
-          sendEspNowPacket(CMD_END_PATTERN_UPLOAD, otaTargetSlot);
-          Serial.printf("✅ [Bridge] Full Pattern Upload COMPLETE (%d/%d bytes)!\n", otaBytesReceived, otaExpectedTotalBytes);
+  BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
+  if (pRemoteService == nullptr) {
+    Serial.println("[BLE] Failed to find Nordic UART service!");
+    pClient->disconnect();
+    return false;
+  }
+
+  BLERemoteCharacteristic* pRemoteChar = pRemoteService->getCharacteristic(charUUID);
+  if (pRemoteChar == nullptr) {
+    Serial.println("[BLE] Failed to find RX characteristic!");
+    pClient->disconnect();
+    return false;
+  }
+
+  pois[slotIdx].client = pClient;
+  pois[slotIdx].rxChar = pRemoteChar;
+  pois[slotIdx].connected = true;
+  pois[slotIdx].address = advertisedDevice.getAddress().toString();
+  connectedPoiCount++;
+
+  Serial.printf("✅ [BLE] Poi %d Connected & Locked! Total connected: %d\n", slotIdx + 1, connectedPoiCount);
+  return true;
+}
+
+// Scan Callback to discover OpenPixelPoi devices
+class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    String devName = String(advertisedDevice.getName().c_str());
+    
+    if (devName.indexOf("OpenPixelPoi") >= 0 || devName.indexOf("Pixel Poi") >= 0 || advertisedDevice.isAdvertisingService(serviceUUID)) {
+      std::string addr = advertisedDevice.getAddress().toString();
+      
+      // Check if already connected to this address
+      for (int i = 0; i < MAX_BLE_POIS; i++) {
+        if (pois[i].connected && pois[i].address == addr) {
+          return; // already connected
         }
-        return;
       }
-    }
 
-    // 3. Standard Framed Control Commands
-    uint8_t cmdCode = 0;
-    uint8_t val = 0;
-
-    if (data[0] == START_BYTE && data[len - 1] == END_BYTE) {
-      cmdCode = data[1];
-      val = (len >= 4) ? data[2] : 0;
-    } else {
-      cmdCode = data[0];
-      val = (len >= 2) ? data[1] : 0;
-    }
-
-    if (cmdCode == 0x04 || cmdCode == 0x05) {
-      currentSlot = val % 10;
-      sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
-    } else if (cmdCode == 0x07 || cmdCode == 0x08) {
-      currentBank = val % 5;
-      sendEspNowPacket(CMD_SET_BANK, currentBank);
-    } else if (cmdCode == 0x02 || cmdCode == 0x10) {
-      currentBrightness = val;
-      sendEspNowPacket(CMD_SET_BRIGHTNESS, val);
-    } else if (cmdCode == 0x15) {
-      currentPalette = val % 33;
-      sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
-    } else if (cmdCode == 0x18) {
-      currentMotion = val % 17;
-      sendEspNowPacket(CMD_SET_MOTION_FX, currentMotion);
+      // Connect to available slot
+      for (int i = 0; i < MAX_BLE_POIS; i++) {
+        if (!pois[i].connected) {
+          pBLEScan->stop();
+          connectToPoi(i, advertisedDevice);
+          break;
+        }
+      }
     }
   }
 };
-
-// Wi-Fi Web Dashboard HTML
-const char INDEX_HTML[] PROGMEM = R"rawliteral(
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>Open Pixel Bridge</title>
-  <style>
-    body { background:#0a0d14; color:#fff; font-family:sans-serif; text-align:center; padding:12px; margin:0; }
-    h2 { color:#00ff88; margin:4px 0; }
-    .card { background:#141824; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px; margin:8px auto; max-width:340px; }
-    .btn-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:6px; }
-    button { background:#1f2438; color:#00d2ff; border:1px solid #00d2ff; border-radius:6px; padding:10px 4px; font-weight:bold; font-size:14px; cursor:pointer; }
-    button:active { background:#00d2ff; color:#000; }
-    .btn-strobe { width:100%; background:#ff0055; color:#fff; border:none; padding:14px; font-size:16px; border-radius:8px; font-weight:900; margin-top:6px; }
-    .btn-strobe:active { background:#fff; color:#ff0055; }
-    .status-pill { display:inline-block; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold; }
-    .stick-box { width:100px; height:100px; background:#070a11; border:2px solid #00ff88; border-radius:50%; margin:8px auto; position:relative; }
-    .stick-dot { width:14px; height:14px; background:#00ff88; border-radius:50%; position:absolute; top:43px; left:43px; transform:translate(0,0); }
-  </style>
-</head>
-<body>
-  <h2>⚡ OPEN PIXEL BRIDGE</h2>
-  <div style="font-size:12px; color:#888;">Direct ESP-NOW Mesh (Channel 1)</div>
-
-  <div class="card" style="border-color:#00ff88;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <b style="color:#00ff88;">🎮 Nunchuk Diagnostics</b>
-      <span id="nunchuk-badge" class="status-pill" style="background:rgba(255,77,77,0.2); color:#ff4d4d;">Scanning...</span>
-    </div>
-    <div class="stick-box">
-      <div id="stick-dot" class="stick-dot"></div>
-    </div>
-    <div style="display:flex; justify-content:space-around; font-size:12px; font-family:monospace;">
-      <span>X: <b id="val-x">128</b> | Y: <b id="val-y">128</b></span>
-      <span>Z: <b id="val-z">0</b> | C: <b id="val-c">0</b></span>
-    </div>
-    <div id="pin-info" style="font-size:11px; color:#aaa; margin-top:6px;">Scanning D2/D3 & D4/D5...</div>
-  </div>
-
-  <div class="card">
-    <b>🎯 Pattern Slot (1-10)</b>
-    <div class="btn-grid">
-      <button onclick="sendCmd('slot', 0)">1</button>
-      <button onclick="sendCmd('slot', 1)">2</button>
-      <button onclick="sendCmd('slot', 2)">3</button>
-      <button onclick="sendCmd('slot', 3)">4</button>
-      <button onclick="sendCmd('slot', 4)">5</button>
-      <button onclick="sendCmd('slot', 5)">6</button>
-      <button onclick="sendCmd('slot', 6)">7</button>
-      <button onclick="sendCmd('slot', 7)">8</button>
-      <button onclick="sendCmd('slot', 8)">9</button>
-      <button onclick="sendCmd('slot', 9)">10</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <b>📁 Hardware Bank (1-5)</b>
-    <div class="btn-grid" style="grid-template-columns:repeat(5, 1fr);">
-      <button onclick="sendCmd('bank', 0)">B1</button>
-      <button onclick="sendCmd('bank', 1)">B2</button>
-      <button onclick="sendCmd('bank', 2)">B3</button>
-      <button onclick="sendCmd('bank', 3)">B4</button>
-      <button onclick="sendCmd('bank', 4)">B5</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <b>⚡ Strobe Blinder</b>
-    <button class="btn-strobe" onmousedown="sendCmd('strobe', 1)" onmouseup="sendCmd('strobe', 0)" ontouchstart="sendCmd('strobe', 1)" ontouchend="sendCmd('strobe', 0)">💥 HOLD FOR STROBE</button>
-  </div>
-
-  <script>
-    function sendCmd(act, val) {
-      fetch('/api?act=' + act + '&val=' + val);
-    }
-
-    setInterval(async () => {
-      try {
-        const res = await fetch('/api?act=telemetry');
-        const data = await res.json();
-        const badge = document.getElementById('nunchuk-badge');
-        if (data.ok) {
-          badge.innerText = '🟢 I2C OK (' + data.pins + ')';
-          badge.style.background = 'rgba(0,255,136,0.2)';
-          badge.style.color = '#00ff88';
-        } else {
-          badge.innerText = '🔴 I2C Scanning...';
-          badge.style.background = 'rgba(255,77,77,0.2)';
-          badge.style.color = '#ff4d4d';
-        }
-        document.getElementById('val-x').innerText = data.x;
-        document.getElementById('val-y').innerText = data.y;
-        document.getElementById('val-z').innerText = data.z ? 'ON' : '0';
-        document.getElementById('val-c').innerText = data.c ? 'ON' : '0';
-        document.getElementById('pin-info').innerText = 'Active Pins: ' + data.pins;
-
-        const dx = ((data.x - 128) / 128) * 35;
-        const dy = -((data.y - 128) / 128) * 35;
-        document.getElementById('stick-dot').style.transform = `translate(${dx}px, ${dy}px)`;
-      } catch(e) {}
-    }, 120);
-  </script>
-</body>
-</html>
-)rawliteral";
-
-void handleRoot() {
-  server.send(200, "text/html", INDEX_HTML);
-}
-
-void handleApi() {
-  if (server.hasArg("act")) {
-    String act = server.arg("act");
-    if (act == "telemetry") {
-      String json = "{\"ok\":" + String(isNunchukI2cOk ? "true" : "false") +
-                    ",\"x\":" + String(liveJoyX) +
-                    ",\"y\":" + String(liveJoyY) +
-                    ",\"z\":" + String(liveBtnZ ? 1 : 0) +
-                    ",\"c\":" + String(liveBtnC ? 1 : 0) +
-                    ",\"ax\":" + String(liveAccelX) +
-                    ",\"ay\":" + String(liveAccelY) +
-                    ",\"az\":" + String(liveAccelZ) +
-                    ",\"pins\":\"" + String(I2C_PAIRS[activeI2cIndex].name) + "\"}";
-      server.send(200, "application/json", json);
-      return;
-    }
-
-    if (server.hasArg("val")) {
-      int val = server.arg("val").toInt();
-      if (act == "slot") {
-        currentSlot = val % 10;
-        sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
-      } else if (act == "bank") {
-        currentBank = val % 5;
-        sendEspNowPacket(CMD_SET_BANK, currentBank);
-      } else if (act == "strobe") {
-        sendEspNowPacket(CMD_STROBE_BLAST, val ? 1 : 0);
-      } else if (act == "pal") {
-        currentPalette = val % 33;
-        sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
-      }
-    }
-  }
-  server.send(200, "application/json", "{\"status\":\"ok\"}");
-}
 
 bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
   Wire.end();
@@ -457,65 +210,6 @@ void autoScanNunchuk() {
     }
   }
   isNunchukI2cOk = false;
-  Serial.println("❌ Nunchuk not responding on D2/D3 or D4/D5.");
-}
-
-void setupEspNowAndWiFi() {
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP("OpenPixelBridge", "openpixelbridge", 1);
-
-  esp_wifi_set_promiscuous(true);
-  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
-  esp_wifi_set_promiscuous(false);
-
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("ESP-NOW Bridge Init Failed!");
-    return;
-  }
-
-  esp_now_peer_info_t peerInfo = {};
-  memcpy(peerInfo.peer_addr, broadcastMac, 6);
-  peerInfo.channel = 1;
-  peerInfo.ifidx = WIFI_IF_AP;
-  peerInfo.encrypt = false;
-  esp_now_add_peer(&peerInfo);
-
-  server.on("/", handleRoot);
-  server.on("/api", handleApi);
-  server.begin();
-
-  Serial.println("ESP-NOW Mesh & Wi-Fi Web Dashboard Active at 192.168.4.1!");
-}
-
-void setupBleGateway() {
-  BLEDevice::init("OpenPixelBridge-Nunchuk");
-  BLEServer *pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new BridgeServerCallbacks());
-
-  BLEService *pService = pServer->createService(NORDIC_UART_SERVICE);
-
-  BLECharacteristic *pRxChar = pService->createCharacteristic(
-    NORDIC_UART_RX_CHAR,
-    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
-  );
-  pRxChar->setCallbacks(new BridgeBleCallbacks());
-
-  pGlobalTxChar = pService->createCharacteristic(
-    NORDIC_UART_TX_CHAR,
-    BLECharacteristic::PROPERTY_NOTIFY
-  );
-  pGlobalTxChar->addDescriptor(new BLE2902());
-
-  pService->start();
-
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID(NORDIC_UART_SERVICE);
-  pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);
-  pAdvertising->setMinPreferred(0x12);
-  BLEDevice::startAdvertising();
-
-  Serial.println("Nordic UART Web Bluetooth Active!");
 }
 
 inline uint8_t decodeNunchukByte(uint8_t b) {
@@ -564,53 +258,32 @@ void readNunchukAndProcess() {
     return;
   }
 
-  liveJoyX = joyX;
-  liveJoyY = joyY;
-  liveBtnZ = btnZ;
-  liveBtnC = btnC;
-  liveAccelX = accelX;
-  liveAccelY = accelY;
-  liveAccelZ = accelZ;
-
-  if (isBleClientConnected && pGlobalTxChar != nullptr && (now - lastTelemetryNotify > 60)) {
-    lastTelemetryNotify = now;
-    uint8_t telPkt[10];
-    telPkt[0] = START_BYTE;
-    telPkt[1] = TELEMETRY_BYTE;
-    telPkt[2] = joyX;
-    telPkt[3] = joyY;
-    telPkt[4] = btnZ ? 1 : 0;
-    telPkt[5] = btnC ? 1 : 0;
-    telPkt[6] = (uint8_t)(accelX >> 2);
-    telPkt[7] = (uint8_t)(accelY >> 2);
-    telPkt[8] = isNunchukI2cOk ? 1 : 0;
-    telPkt[9] = END_BYTE;
-    pGlobalTxChar->setValue(telPkt, 10);
-    pGlobalTxChar->notify();
-  }
-
-  // 1. Joystick X: Slot change
+  // 1. Joystick X: Slot change (Left / Right flick)
   if (now - lastJoyFlickTime > 250) {
     if (joyX < 50) {
       currentSlot = (currentSlot > 0) ? (currentSlot - 1) : 9;
-      sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
+      sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
+      Serial.printf("[NUNCHUK] Switched to Slot %d\n", currentSlot + 1);
       lastJoyFlickTime = now;
     } else if (joyX > 200) {
       currentSlot = (currentSlot + 1) % 10;
-      sendEspNowPacket(CMD_SET_PATTERN, currentSlot);
+      sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
+      Serial.printf("[NUNCHUK] Switched to Slot %d\n", currentSlot + 1);
       lastJoyFlickTime = now;
     }
   }
 
-  // 2. Joystick Y: Bank change
+  // 2. Joystick Y: Bank change (Up / Down flick)
   if (now - lastJoyFlickTime > 250) {
     if (joyY > 200) {
       currentBank = (currentBank + 1) % 5;
-      sendEspNowPacket(CMD_SET_BANK, currentBank);
+      sendBleCommand(CC_SET_BANK, currentBank);
+      Serial.printf("[NUNCHUK] Switched to Bank %d\n", currentBank + 1);
       lastJoyFlickTime = now;
     } else if (joyY < 50) {
       currentBank = (currentBank > 0) ? (currentBank - 1) : 4;
-      sendEspNowPacket(CMD_SET_BANK, currentBank);
+      sendBleCommand(CC_SET_BANK, currentBank);
+      Serial.printf("[NUNCHUK] Switched to Bank %d\n", currentBank + 1);
       lastJoyFlickTime = now;
     }
   }
@@ -622,25 +295,21 @@ void readNunchukAndProcess() {
     unsigned long pressDur = now - btnCHoldStart;
     if (pressDur < 1000) {
       currentPalette = (currentPalette + 1) % 33;
-      sendEspNowPacket(CMD_SET_PALETTE, currentPalette);
+      sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
+      Serial.printf("[NUNCHUK] Switched to Palette %d\n", currentPalette);
     }
   } else if (btnC && (now - btnCHoldStart > 1200) && btnCHoldStart != 0) {
     currentPalette = 0;
-    sendEspNowPacket(CMD_SET_PALETTE, 0);
+    sendBleCommand(CC_SET_PALETTE_FX, 0);
+    Serial.println("[NUNCHUK] Reset Palette to Blank");
     btnCHoldStart = 0;
   }
 
-  // 4. Z Trigger: Strobe Drop
+  // 4. Z Trigger: Instant Strobe Drop on hold
   if (btnZ != isStrobeActive) {
     isStrobeActive = btnZ;
-    sendEspNowPacket(CMD_STROBE_BLAST, isStrobeActive ? 1 : 0);
-  }
-
-  // 5. Accelerometer Tilt Modulation
-  static unsigned long lastTiltTime = 0;
-  if (now - lastTiltTime > 50) {
-    lastTiltTime = now;
-    sendEspNowPacket(CMD_TILT_MODULATION, 0, 0, accelX, accelY, accelZ);
+    sendBleCommand(CC_SET_MOTION_FX, isStrobeActive ? 15 : 0);
+    Serial.printf("[NUNCHUK] Strobe Blast: %s\n", isStrobeActive ? "ON" : "OFF");
   }
 
   lastJoyX = joyX;
@@ -652,17 +321,45 @@ void readNunchukAndProcess() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.7 (Byte-Counted Streamer)...");
+  Serial.println("=================================================");
+  Serial.println("Open Pixel Poi - Pure BLE Master Nunchuk Bridge");
+  Serial.println("=================================================");
 
   autoScanNunchuk();
-  setupEspNowAndWiFi();
-  setupBleGateway();
 
-  Serial.println("🎉 Bridge Ready! Pure Byte-Counted ESP-NOW Streamer Active.");
+  BLEDevice::init("OpenPixelNunchukMaster");
+  pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setInterval(1349);
+  pBLEScan->setWindow(449);
+  pBLEScan->setActiveScan(true);
+
+  Serial.println("🎮 Scanning for OpenPixelPoi over Bluetooth...");
 }
 
 void loop() {
-  server.handleClient();
+  unsigned long now = millis();
+
+  // Check connection status & scan if any slot is disconnected
+  int activeConnections = 0;
+  for (int i = 0; i < MAX_BLE_POIS; i++) {
+    if (pois[i].connected) {
+      if (!pois[i].client->isConnected()) {
+        Serial.printf("[BLE] Poi %d disconnected.\n", i + 1);
+        pois[i].connected = false;
+        pois[i].rxChar = nullptr;
+      } else {
+        activeConnections++;
+      }
+    }
+  }
+  connectedPoiCount = activeConnections;
+
+  if (connectedPoiCount < MAX_BLE_POIS && (now - lastScanTime > 3000)) {
+    lastScanTime = now;
+    pBLEScan->start(2, false);
+  }
+
   readNunchukAndProcess();
-  delay(10);
+  delay(15);
 }
