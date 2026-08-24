@@ -55,7 +55,7 @@ static bool g_isUploading = false;
 static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   if (g_espnow_config == nullptr) return;
 
-  // 1. Handle Bulk Pattern Data Chunks (Magic 0xA6)
+  // 1. Bulk Pattern Data (Magic 0xA6)
   if (len == sizeof(EspNowDataPacket)) {
     const EspNowDataPacket *dPkt = (const EspNowDataPacket *)incomingData;
     if (dPkt->magic == ESPNOW_DATA_MAGIC && dPkt->cmd == CMD_PATTERN_DATA_CHUNK) {
@@ -69,7 +69,7 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
     }
   }
 
-  // 2. Handle Control Packets (Magic 0xA5)
+  // 2. Control Packets (Magic 0xA5)
   if (len != sizeof(EspNowPacket)) return;
   const EspNowPacket *pkt = (const EspNowPacket *)incomingData;
   if (pkt->magic != ESPNOW_PACKET_MAGIC) return;
@@ -137,7 +137,7 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
       g_espnow_config->setFrameCount(g_uploadWidth);
 
       g_isUploading = true;
-      Serial.printf("[ESP-NOW OTA] Started upload for Bank %d Slot %d (%dx%d)...\n",
+      Serial.printf("[ESP-NOW OTA] Starting upload: Bank %d Slot %d (%dx%d)...\n",
                     targetBank, targetSlot, g_uploadWidth, g_uploadHeight);
       break;
     }
@@ -157,7 +157,7 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
         if (g_uploadOffset > 0) {
           g_espnow_config->patternLength = g_uploadOffset;
 
-          // Commit RAM buffer to LittleFS
+          // Save complete RAM buffer to LittleFS
           String path = String("/pattern") + g_uploadSlot + ".oppp";
           File file = LittleFS.open(path, FILE_WRITE);
           if (file) {
@@ -169,7 +169,7 @@ static void onEspNowDataRecv(const uint8_t *mac, const uint8_t *incomingData, in
 
         g_espnow_config->displayState = DS_PATTERN;
         g_espnow_config->displayStateLastUpdated = millis();
-        Serial.printf("✅ [ESP-NOW OTA] Upload COMPLETE & Active: Bank %d Slot %d (%d bytes, %dx%d)!\n",
+        Serial.printf("✅ [ESP-NOW OTA] Pattern Active: Bank %d Slot %d (%d bytes, %dx%d)!\n",
                       targetBank, targetSlot, g_uploadOffset, g_uploadWidth, g_uploadHeight);
       }
       break;

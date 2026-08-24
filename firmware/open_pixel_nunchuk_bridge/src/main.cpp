@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.4 Flawless BLE Chunking & OTA Relay)
+ * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.5 Proven Baseline + Clean Stream)
  * ============================================================================
  */
 
@@ -136,7 +136,7 @@ void forwardPatternData(const uint8_t *data, size_t len) {
     memcpy(dPkt.data, data + offset, chunk);
     esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
     offset += chunk;
-    delay(4); // 4ms safe pacing
+    delay(3); // 3ms reliable pacing
   }
 }
 
@@ -159,7 +159,7 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
     if (len == 0) return;
     const uint8_t *data = (const uint8_t *)rxValue.data();
 
-    // 1. Start of Pattern Upload (Chunk 0)
+    // 1. Chunk 0: Start of Pattern Upload
     if (data[0] == START_BYTE && len >= 5 && data[1] == 0x04) {
       uint8_t height = data[2];
       uint16_t width = ((uint16_t)data[3] << 8) | data[4];
@@ -168,41 +168,39 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
       isOtaUploading = true;
       otaChunkSeq = 0;
       sendEspNowPacket(CMD_START_PATTERN_UPLOAD, targetSlot, height, width);
-      delay(25);
+      delay(20);
 
       if (len == 509) {
-        // Multipart chunk 0: payload is data[5..508] (504 bytes)
+        // Multipart chunk 0: bytes 5..508 are RGB data
         forwardPatternData(data + 5, 504);
       } else {
-        // Single packet upload: payload is data[5..len-2] (minus trailing 0xD1)
-        size_t payloadLen = (len > 6) ? (len - 6) : 0;
-        if (payloadLen > 0) {
-          forwardPatternData(data + 5, payloadLen);
+        // Single packet: bytes 5..len-2 are RGB data
+        size_t pLen = (len > 6) ? (len - 6) : 0;
+        if (pLen > 0) {
+          forwardPatternData(data + 5, pLen);
         }
         isOtaUploading = false;
-        delay(20);
+        delay(15);
         sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
-        Serial.printf("[Bridge] Single-packet upload complete to slot %d!\n", targetSlot);
       }
       return;
     }
 
-    // 2. Middle & Final Chunks of Multipart Pattern Upload
+    // 2. Middle & Final Chunks
     if (isOtaUploading) {
       if (len == 509) {
-        // Middle chunk: ALL 509 bytes are RGB data
+        // Middle chunk: all 509 bytes are RGB data
         forwardPatternData(data, 509);
       } else {
-        // Final chunk (< 509 bytes): payload is data[0..len-2] (minus trailing 0xD1)
-        size_t payloadLen = (len > 1) ? (len - 1) : 0;
-        if (payloadLen > 0) {
-          forwardPatternData(data, payloadLen);
+        // Final chunk (< 509 bytes): bytes 0..len-2 are RGB data
+        size_t pLen = (len > 1) ? (len - 1) : 0;
+        if (pLen > 0) {
+          forwardPatternData(data, pLen);
         }
         isOtaUploading = false;
         uint8_t targetSlot = (currentBank * 10) + currentSlot;
-        delay(25);
+        delay(20);
         sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
-        Serial.printf("[Bridge] Multipart upload complete to slot %d!\n", targetSlot);
       }
       return;
     }
@@ -570,7 +568,7 @@ void readNunchukAndProcess() {
     pGlobalTxChar->notify();
   }
 
-  // 1. Joystick X: Slot change (Left / Right flick)
+  // 1. Joystick X: Slot change
   if (now - lastJoyFlickTime > 250) {
     if (joyX < 50) {
       currentSlot = (currentSlot > 0) ? (currentSlot - 1) : 9;
@@ -583,7 +581,7 @@ void readNunchukAndProcess() {
     }
   }
 
-  // 2. Joystick Y: Bank change (Up / Down flick)
+  // 2. Joystick Y: Bank change
   if (now - lastJoyFlickTime > 250) {
     if (joyY > 200) {
       currentBank = (currentBank + 1) % 5;
@@ -596,7 +594,7 @@ void readNunchukAndProcess() {
     }
   }
 
-  // 3. C Button: Step Palette on tap, Reset to Blank on hold > 1.2s
+  // 3. C Button: Step Palette
   if (btnC && !lastBtnC) {
     btnCHoldStart = now;
   } else if (!btnC && lastBtnC) {
@@ -611,13 +609,13 @@ void readNunchukAndProcess() {
     btnCHoldStart = 0;
   }
 
-  // 4. Z Trigger: Instant Strobe Drop on hold
+  // 4. Z Trigger: Strobe Drop
   if (btnZ != isStrobeActive) {
     isStrobeActive = btnZ;
     sendEspNowPacket(CMD_STROBE_BLAST, isStrobeActive ? 1 : 0);
   }
 
-  // 5. Accelerometer Tilt Modulation (every 50ms)
+  // 5. Accelerometer Tilt Modulation
   static unsigned long lastTiltTime = 0;
   if (now - lastTiltTime > 50) {
     lastTiltTime = now;
@@ -633,13 +631,13 @@ void readNunchukAndProcess() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.4 (Flawless BLE Chunking)...");
+  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.5...");
 
   autoScanNunchuk();
   setupEspNowAndWiFi();
   setupBleGateway();
 
-  Serial.println("🎉 Bridge Ready! Flawless BLE Chunking + Bluetooth + Wi-Fi Telemetry Active.");
+  Serial.println("🎉 Bridge Ready! Bluetooth + Wi-Fi Telemetry Active.");
 }
 
 void loop() {
