@@ -1,9 +1,9 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK CONTROLLER (For Golden Poi Firmware)
+ * OPEN PIXEL POI - ROBUST BLE MASTER NUNCHUK CONTROLLER (v2.8)
  * ============================================================================
- * Connects directly to OpenPixelPoi over Bluetooth Low Energy (Nordic UART)
- * and transmits real-time Wii Nunchuk commands with zero changes to Poi firmware.
+ * Non-blocking FreeRTOS BLE Central scanner + Automatic Dual-Poi Connection
+ * + Wii Nunchuk I2C Auto-Scanning Engine.
  */
 
 #include <Arduino.h>
@@ -16,14 +16,13 @@
 
 #define NUNCHUK_ADDR 0x52
 
-// Nordic UART Service UUIDs matching OpenPixelPoi Golden Firmware
 static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
 static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
 
 #define START_BYTE 0xD0
 #define END_BYTE   0xD1
 
-// Comm Codes
+// Golden Firmware CommCodes
 #define CC_SET_BRIGHTNESS 0x02
 #define CC_SET_PATTERN_SLOT 0x05
 #define CC_SET_BANK 0x07
@@ -68,90 +67,119 @@ int16_t liveAccelZ = 512;
 unsigned long btnCHoldStart = 0;
 unsigned long lastJoyFlickTime = 0;
 unsigned long lastI2cRetry = 0;
-unsigned long lastScanTime = 0;
+unsigned long lastScanStartTime = 0;
 
-// BLE Multi-Poi Clients
+// Dual-Poi Connection Pool
 #define MAX_BLE_POIS 2
-struct BlePoiConnection {
-  BLEAdvertisedDevice* advDevice = nullptr;
+struct BlePoiSlot {
   BLEClient* client = nullptr;
   BLERemoteCharacteristic* rxChar = nullptr;
   bool connected = false;
   std::string address = "";
+  std::string name = "";
 };
 
-BlePoiConnection pois[MAX_BLE_POIS];
-int connectedPoiCount = 0;
+BlePoiSlot poiSlots[MAX_BLE_POIS];
+static BLEAdvertisedDevice* pendingDevice = nullptr;
+static bool doConnectPending = false;
 BLEScan* pBLEScan = nullptr;
-bool doScan = true;
 
-// Send Command packet to all connected BLE Pois
+// Send 4-byte command packet to all connected BLE Pois
 void sendBleCommand(uint8_t cmdCode, uint8_t val) {
   uint8_t pkt[4] = { START_BYTE, cmdCode, val, END_BYTE };
-  
+  int sentCount = 0;
+
   for (int i = 0; i < MAX_BLE_POIS; i++) {
-    if (pois[i].connected && pois[i].rxChar != nullptr) {
-      pois[i].rxChar->writeValue(pkt, 4, false); // write without response for instant sub-millisecond latency
+    if (poiSlots[i].connected && poiSlots[i].rxChar != nullptr) {
+      try {
+        poiSlots[i].rxChar->writeValue(pkt, 4, false);
+        sentCount++;
+      } catch(...) {
+        Serial.printf("[BLE] Write failed to Poi %d\n", i + 1);
+      }
     }
   }
+  Serial.printf("[BLE CMD] 0x%02X -> Val: %d (Sent to %d Poi)\n", cmdCode, val, sentCount);
 }
 
-// Connect to a discovered Poi device
-bool connectToPoi(int slotIdx, BLEAdvertisedDevice advertisedDevice) {
-  Serial.printf("[BLE] Connecting to Poi %d: %s (%s)...\n", slotIdx + 1, advertisedDevice.getName().c_str(), advertisedDevice.getAddress().toString().c_str());
+// Connect safely in the main Arduino loop task
+bool executeConnect(BLEAdvertisedDevice* advDevice) {
+  if (advDevice == nullptr) return false;
+
+  int targetSlot = -1;
+  for (int i = 0; i < MAX_BLE_POIS; i++) {
+    if (!poiSlots[i].connected) {
+      targetSlot = i;
+      break;
+    }
+  }
+  if (targetSlot == -1) return false; // Both slots full
+
+  Serial.printf("⚡ [BLE] Connecting to Poi %d: %s (%s)...\n", 
+                targetSlot + 1, advDevice->getName().c_str(), advDevice->getAddress().toString().c_str());
 
   BLEClient* pClient = BLEDevice::createClient();
-  if (!pClient->connect(&advertisedDevice)) {
-    Serial.println("[BLE] Connection failed!");
+  if (!pClient->connect(advDevice)) {
+    Serial.println("❌ [BLE] Failed to connect to device.");
+    delete pClient;
     return false;
   }
 
   BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
   if (pRemoteService == nullptr) {
-    Serial.println("[BLE] Failed to find Nordic UART service!");
+    Serial.println("❌ [BLE] Nordic UART service not found on device.");
     pClient->disconnect();
+    delete pClient;
     return false;
   }
 
   BLERemoteCharacteristic* pRemoteChar = pRemoteService->getCharacteristic(charUUID);
   if (pRemoteChar == nullptr) {
-    Serial.println("[BLE] Failed to find RX characteristic!");
+    Serial.println("❌ [BLE] RX characteristic not found on device.");
     pClient->disconnect();
+    delete pClient;
     return false;
   }
 
-  pois[slotIdx].client = pClient;
-  pois[slotIdx].rxChar = pRemoteChar;
-  pois[slotIdx].connected = true;
-  pois[slotIdx].address = advertisedDevice.getAddress().toString();
-  connectedPoiCount++;
+  poiSlots[targetSlot].client = pClient;
+  poiSlots[targetSlot].rxChar = pRemoteChar;
+  poiSlots[targetSlot].connected = true;
+  poiSlots[targetSlot].address = advDevice->getAddress().toString();
+  poiSlots[targetSlot].name = advDevice->getName();
 
-  Serial.printf("✅ [BLE] Poi %d Connected & Locked! Total connected: %d\n", slotIdx + 1, connectedPoiCount);
+  Serial.printf("🎉 [BLE] Poi %d LOCKED & READY: %s\n", targetSlot + 1, poiSlots[targetSlot].name.c_str());
   return true;
 }
 
-// Scan Callback to discover OpenPixelPoi devices
-class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+// Advertised Device Scanner Callback (Non-blocking: only flags pending device)
+class AdvertisedScannerCallback: public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice advertisedDevice) {
     String devName = String(advertisedDevice.getName().c_str());
     
-    if (devName.indexOf("OpenPixelPoi") >= 0 || devName.indexOf("Pixel Poi") >= 0 || advertisedDevice.isAdvertisingService(serviceUUID)) {
+    // Check if device matches OpenPixelPoi or advertises Nordic UART
+    bool isMatch = false;
+    if (devName.indexOf("OpenPixelPoi") >= 0 || devName.indexOf("Pixel Poi") >= 0 || devName.indexOf("Poi") >= 0) {
+      isMatch = true;
+    }
+    if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
+      isMatch = true;
+    }
+
+    if (isMatch) {
       std::string addr = advertisedDevice.getAddress().toString();
       
-      // Check if already connected to this address
+      // Verify not already connected
       for (int i = 0; i < MAX_BLE_POIS; i++) {
-        if (pois[i].connected && pois[i].address == addr) {
-          return; // already connected
+        if (poiSlots[i].connected && poiSlots[i].address == addr) {
+          return;
         }
       }
 
-      // Connect to available slot
-      for (int i = 0; i < MAX_BLE_POIS; i++) {
-        if (!pois[i].connected) {
-          pBLEScan->stop();
-          connectToPoi(i, advertisedDevice);
-          break;
-        }
+      if (!doConnectPending) {
+        if (pendingDevice != nullptr) delete pendingDevice;
+        pendingDevice = new BLEAdvertisedDevice(advertisedDevice);
+        doConnectPending = true;
+        pBLEScan->stop();
       }
     }
   }
@@ -180,7 +208,7 @@ bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
 
   if (err1 == 0 && err2 == 0) {
     isNunchukEncrypted = false;
-    Serial.println("  -> Handshake Success: Modern Unencrypted Nunchuk");
+    Serial.println("  -> Nunchuk Handshake OK: Modern Unencrypted");
     return true;
   }
 
@@ -192,7 +220,7 @@ bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
 
   if (err3 == 0) {
     isNunchukEncrypted = true;
-    Serial.println("  -> Handshake Success: Legacy Encrypted Nunchuk");
+    Serial.println("  -> Nunchuk Handshake OK: Legacy Encrypted");
     return true;
   }
 
@@ -219,7 +247,7 @@ inline uint8_t decodeNunchukByte(uint8_t b) {
 void readNunchukAndProcess() {
   unsigned long now = millis();
 
-  if (!isNunchukI2cOk && (now - lastI2cRetry > 1500)) {
+  if (!isNunchukI2cOk && (now - lastI2cRetry > 2000)) {
     lastI2cRetry = now;
     autoScanNunchuk();
     if (!isNunchukI2cOk) return;
@@ -301,7 +329,7 @@ void readNunchukAndProcess() {
   } else if (btnC && (now - btnCHoldStart > 1200) && btnCHoldStart != 0) {
     currentPalette = 0;
     sendBleCommand(CC_SET_PALETTE_FX, 0);
-    Serial.println("[NUNCHUK] Reset Palette to Blank");
+    Serial.println("[NUNCHUK] Reset Palette to Blank (Original RGB)");
     btnCHoldStart = 0;
   }
 
@@ -322,44 +350,57 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - Pure BLE Master Nunchuk Bridge");
+  Serial.println("Open Pixel Poi - Robust BLE Master Nunchuk v2.8");
   Serial.println("=================================================");
 
   autoScanNunchuk();
 
   BLEDevice::init("OpenPixelNunchukMaster");
   pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedScannerCallback());
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
 
-  Serial.println("🎮 Scanning for OpenPixelPoi over Bluetooth...");
+  Serial.println("🎮 Auto-Scanning for OpenPixelPoi over Bluetooth...");
 }
 
 void loop() {
   unsigned long now = millis();
 
-  // Check connection status & scan if any slot is disconnected
-  int activeConnections = 0;
+  // 1. Process pending BLE connection safely in loop task
+  if (doConnectPending && pendingDevice != nullptr) {
+    executeConnect(pendingDevice);
+    delete pendingDevice;
+    pendingDevice = nullptr;
+    doConnectPending = false;
+  }
+
+  // 2. Health check connections & trigger background scan if slot is available
+  int activeCount = 0;
   for (int i = 0; i < MAX_BLE_POIS; i++) {
-    if (pois[i].connected) {
-      if (!pois[i].client->isConnected()) {
+    if (poiSlots[i].connected) {
+      if (poiSlots[i].client == nullptr || !poiSlots[i].client->isConnected()) {
         Serial.printf("[BLE] Poi %d disconnected.\n", i + 1);
-        pois[i].connected = false;
-        pois[i].rxChar = nullptr;
+        poiSlots[i].connected = false;
+        poiSlots[i].rxChar = nullptr;
+        if (poiSlots[i].client != nullptr) {
+          delete poiSlots[i].client;
+          poiSlots[i].client = nullptr;
+        }
       } else {
-        activeConnections++;
+        activeCount++;
       }
     }
   }
-  connectedPoiCount = activeConnections;
 
-  if (connectedPoiCount < MAX_BLE_POIS && (now - lastScanTime > 3000)) {
-    lastScanTime = now;
+  // If a slot is disconnected and not currently connecting, scan
+  if (activeCount < MAX_BLE_POIS && !doConnectPending && (now - lastScanStartTime > 3500)) {
+    lastScanStartTime = now;
     pBLEScan->start(2, false);
   }
 
+  // 3. Process Wii Nunchuk inputs
   readNunchukAndProcess();
   delay(15);
 }
