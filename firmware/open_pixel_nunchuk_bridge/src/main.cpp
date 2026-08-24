@@ -78,9 +78,9 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   uint8_t magic;
   uint8_t cmd;
-  uint16_t chunkSeq;
-  uint8_t dataLen;
-  uint8_t data[200];
+  uint32_t byteOffset;
+  uint16_t dataLen;
+  uint8_t data[190];
 } EspNowDataPacket;
 
 static uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -131,19 +131,22 @@ void sendEspNowPacket(uint8_t cmd, uint8_t val1 = 0, uint8_t val2 = 0, int16_t t
   esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
 }
 
+static uint32_t g_currentPatternByteOffset = 0;
+
 void forwardPatternData(const uint8_t *data, size_t len) {
   size_t offset = 0;
   while (offset < len) {
-    size_t chunk = min((size_t)200, len - offset);
+    size_t chunk = min((size_t)190, len - offset);
     EspNowDataPacket dPkt;
     dPkt.magic = ESPNOW_DATA_MAGIC;
     dPkt.cmd = CMD_PATTERN_DATA_CHUNK;
-    dPkt.chunkSeq = otaChunkSeq++;
-    dPkt.dataLen = (uint8_t)chunk;
+    dPkt.byteOffset = g_currentPatternByteOffset;
+    dPkt.dataLen = (uint16_t)chunk;
     memcpy(dPkt.data, data + offset, chunk);
     esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
+    g_currentPatternByteOffset += chunk;
     offset += chunk;
-    delay(2); // Safe transmission pacing
+    delay(6); // 6ms rock-solid queue pacing to prevent buffer drops
   }
 }
 
@@ -174,9 +177,9 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
       uint8_t targetSlot = (currentBank * 10) + currentSlot;
 
       isOtaUploading = true;
-      otaChunkSeq = 0;
+      g_currentPatternByteOffset = 0;
       sendEspNowPacket(CMD_START_PATTERN_UPLOAD, targetSlot, height, width);
-      delay(10);
+      delay(30); // 30ms settle delay before streaming
 
       // Forward RGB payload in chunk 0 (bytes 5..end)
       if (len > 5) {
