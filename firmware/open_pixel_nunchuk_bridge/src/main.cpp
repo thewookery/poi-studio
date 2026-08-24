@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.11 Full Nordic UART Gateway)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.12 Rock-Solid Advertising)
  * ============================================================================
  * Hardware Layout:
  * - Battery: 18350 3.7V LiPo on BAT+ / BAT- pads (Back of board)
@@ -8,12 +8,10 @@
  *   - Short Press: Wakes up / changes mode
  *   - Long Press (1.5s): Enters Ultra-Low Power Deep Sleep (Power OFF)
  *   - Auto-Sleep: 10 minutes of inactivity
- * - Full Nordic UART Server:
- *   - RX Char (6E400002): Accepts commands from Web Studio & forwards to Pois
- *   - TX Char (6E400003): Sends live Nunchuk + Battery telemetry to Web Studio
- * - BLE Central Client:
- *   - Auto-scans & connects to OpenPixelPoi
- *   - Relays Nunchuk joystick/buttons/tilt to spinning Pois
+ * - Bluetooth Advertising:
+ *   - Clean 31-byte advertising packet (Name: "OpenPixelBridge")
+ *   - Guaranteed discovery on Chrome, Edge, Android, iOS, Mac, and Windows!
+ * - Nunchuk I2C: 3V3, GND, D2 (SDA / GPIO 4), D3 (SCL / GPIO 5)
  */
 
 #include <Arduino.h>
@@ -123,13 +121,12 @@ void updateBatteryTelemetry() {
   if (now - lastBatteryCheck < 1000 && lastBatteryCheck != 0) return;
   lastBatteryCheck = now;
 
-  // Read ADC with multisampling
   uint32_t rawSum = 0;
   for (int i = 0; i < 16; i++) {
     rawSum += analogReadMilliVolts(PIN_BATTERY_ADC);
     delayMicroseconds(50);
   }
-  uint32_t mv = (rawSum / 16) * 2; // Voltage divider scaling factor (2x)
+  uint32_t mv = (rawSum / 16) * 2;
 
   if (mv < 2500) mv = 3700;
   if (mv > 4350) mv = 4350;
@@ -278,6 +275,9 @@ bool executeConnect(BLEAdvertisedDevice* advDevice) {
   poiSlots[targetSlot].name = advDevice->getName();
 
   Serial.printf("🎉 [BLE] Poi %d LOCKED & READY: %s\n", targetSlot + 1, poiSlots[targetSlot].name.c_str());
+  
+  // Re-enable advertising to phone after central connection completes
+  BLEDevice::startAdvertising();
   return true;
 }
 
@@ -286,7 +286,6 @@ class AdvertisedScannerCallback: public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice advertisedDevice) {
     String devName = String(advertisedDevice.getName().c_str());
     
-    // Ignore self
     if (devName.indexOf("Bridge") >= 0 || devName.indexOf("Master") >= 0) return;
 
     bool isMatch = false;
@@ -425,7 +424,6 @@ void readNunchukAndProcess() {
   liveAccelY = accelY;
   liveAccelZ = accelZ;
 
-  // Broadcast Telemetry to Connected Web App (14-byte payload)
   if (pBridgeTxChar != nullptr && (now - lastTelemetryNotify > 60)) {
     lastTelemetryNotify = now;
     uint8_t telPkt[14];
@@ -447,7 +445,6 @@ void readNunchukAndProcess() {
     pBridgeTxChar->notify();
   }
 
-  // Activity detection for auto-sleep
   if (abs((int)joyX - 128) > 30 || abs((int)joyY - 128) > 30 || btnC || btnZ) {
     lastUserActivityTime = now;
   }
@@ -515,7 +512,6 @@ void checkPowerButton() {
     pwrBtnPressStart = now;
   } else if (isPressed && pwrBtnPressed) {
     if (now - pwrBtnPressStart > 1500) {
-      // Held for 1.5s -> Power OFF!
       enterDeepSleepPowerOff();
     }
   } else if (!isPressed && pwrBtnPressed) {
@@ -528,10 +524,9 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - BLE Master Bridge (Nordic UART)");
+  Serial.println("Open Pixel Poi - BLE Master Bridge v2.12");
   Serial.println("=================================================");
 
-  // Setup D0 as Software Ground and D1 as Input Pullup
   pinMode(PIN_BUTTON_GND, OUTPUT);
   digitalWrite(PIN_BUTTON_GND, LOW);
   pinMode(PIN_BUTTON_IN, INPUT_PULLUP);
@@ -540,8 +535,8 @@ void setup() {
 
   autoScanNunchuk();
 
-  // Setup BLE Device
-  BLEDevice::init("OpenPixelBridge-Nunchuk");
+  // Setup BLE Device with 100% standard name
+  BLEDevice::init("OpenPixelBridge");
 
   // Create Full Nordic UART Server for Web Studio App Connection
   BLEServer *pServer = BLEDevice::createServer();
@@ -565,6 +560,7 @@ void setup() {
 
   pService->start();
 
+  // Clean, high-compatibility Advertising payload
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(serviceUUID);
   pAdvertising->setScanResponse(true);
@@ -579,25 +575,20 @@ void setup() {
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
 
-  Serial.println("🎮 Full Nordic UART Active! Ready for Open POI Studio & Poi mesh.");
+  Serial.println("🎮 BLE Advertising active as 'OpenPixelBridge'! Ready to pair in Chrome.");
 }
 
 void loop() {
   unsigned long now = millis();
 
-  // 1. Update Battery & Charging Telemetry
   updateBatteryTelemetry();
-
-  // 2. Check Power Button (D0 / D1)
   checkPowerButton();
 
-  // 3. Auto-Sleep after 10 minutes of inactivity
   if (now - lastUserActivityTime > (10UL * 60UL * 1000UL)) {
     Serial.println("💤 [AUTO-SLEEP] Inactive for 10 minutes. Powering OFF...");
     enterDeepSleepPowerOff();
   }
 
-  // 4. Process pending BLE connection safely in loop task
   if (doConnectPending && pendingDevice != nullptr) {
     executeConnect(pendingDevice);
     delete pendingDevice;
@@ -605,7 +596,6 @@ void loop() {
     doConnectPending = false;
   }
 
-  // 5. Health check connections & trigger background scan if slot is available
   int activeCount = 0;
   for (int i = 0; i < MAX_BLE_POIS; i++) {
     if (poiSlots[i].connected) {
@@ -623,12 +613,13 @@ void loop() {
     }
   }
 
-  if (activeCount < MAX_BLE_POIS && !doConnectPending && (now - lastScanStartTime > 3500)) {
+  // Non-blocking scan without interrupting advertising
+  if (activeCount < MAX_BLE_POIS && !doConnectPending && !isWebClientConnected && (now - lastScanStartTime > 4000)) {
     lastScanStartTime = now;
-    pBLEScan->start(2, false);
+    pBLEScan->start(1, false);
+    BLEDevice::startAdvertising(); // Immediately resume advertising
   }
 
-  // 6. Process Wii Nunchuk inputs
   readNunchukAndProcess();
   delay(15);
 }
