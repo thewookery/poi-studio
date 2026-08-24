@@ -1,20 +1,18 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK CONTROLLER (v3.0 Dedicated Engine)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK CONTROLLER (v3.1 Funky FX & Gyro)
  * ============================================================================
- * Dedicated handheld controller that connects directly to OpenPixelPoi over BLE.
- * 
- * Hardware:
- * - Battery: 18350 3.7V on BAT+ / BAT- pads
- * - Button: Connected across D0 (Pin 1 / GPIO 2) and D1 (Pin 2 / GPIO 3)
- *   - Tap: Wakes up instantly (3 rapid LED blinks)
- *   - Hold for 1.2s: Enters Deep Sleep Power OFF (2 slow LED blinks)
- *   - Auto-Sleep: 10 minutes of inactivity
- * - Onboard LED (GPIO 10):
- *   - Fast 3 blinks on Wake Up
- *   - Solid / Pulses when Pois connected
- *   - 2 slow blinks on Power OFF
- * - Wii Nunchuk: 3V3, GND, D2 (SDA / GPIO 4), D3 (SCL / GPIO 5)
+ * Hardware Controls:
+ * - 🕹️ Joystick Left/Right: Switch Pattern Slot (1-10)
+ * - 🕹️ Joystick Up/Down: Switch Hardware Bank (1-5)
+ * - 🌟 C Button (Tap): Cycle 32 Pro Color Palettes (Rainbow, Sunset, Cyber, etc.)
+ * - 🌟 C Button (Hold 1.2s): Reset Palette to Original RGB
+ * - ⚡ Z Trigger (Hold): Instant HYPER STROBE BLINDER DROP (Mode 15)
+ * - ⚡ Z Trigger (Quick Tap): Step through 16 CRAZY MOTION FLOWS (Warp, Glitch, Laser, Matrix)
+ * - 🌀 Gyro Tilt Forward: Speed Boost Hyper-Warp
+ * - 🌀 Gyro Tilt Backward: Slow-Mo Motion Flow
+ * - 💥 Gyro Whip/Shake: Instant Glitch Shockwave Burst!
+ * - 🔘 D0/D1 Button: Tap = Wakeup (3 blinks) | Hold 1.2s = Deep Sleep OFF (2 blinks)
  */
 
 #include <Arduino.h>
@@ -33,15 +31,16 @@
 #define NUNCHUK_ADDR   0x52
 
 static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e"); // Nordic UART RX Characteristic
+static BLEUUID charUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
 
 #define START_BYTE 0xD0
 #define END_BYTE   0xD1
 
-// Golden Firmware CommCodes
+// Comm Codes
 #define CC_SET_BRIGHTNESS   0x02
 #define CC_SET_PATTERN_SLOT 0x05
 #define CC_SET_BANK         0x07
+#define CC_SET_SPEED_OPTION 0x0C
 #define CC_SET_PALETTE_FX   0x15
 #define CC_SET_MOTION_FX    0x18
 
@@ -65,18 +64,25 @@ uint8_t currentSlot = 0;
 uint8_t currentBank = 0;
 uint8_t currentPalette = 0;
 uint8_t currentMotion = 0;
+uint8_t currentSpeedOpt = 2; // default normal speed (Level 3)
 bool isStrobeActive = false;
 
-// Nunchuk Live Telemetry
+// Nunchuk Live State
 uint8_t liveJoyX = 128;
 uint8_t liveJoyY = 128;
 bool liveBtnC = false;
 bool liveBtnZ = false;
 bool lastBtnC = false;
 bool lastBtnZ = false;
+int16_t liveAccelX = 512;
+int16_t liveAccelY = 512;
+int16_t liveAccelZ = 512;
 
 unsigned long btnCHoldStart = 0;
+unsigned long btnZPressStart = 0;
 unsigned long lastJoyFlickTime = 0;
+unsigned long lastTiltCheckTime = 0;
+unsigned long lastShakeTime = 0;
 unsigned long lastI2cRetry = 0;
 unsigned long lastScanStartTime = 0;
 unsigned long lastUserActivityTime = 0;
@@ -102,9 +108,9 @@ BLEScan* pBLEScan = nullptr;
 void flashWakeupLed() {
   pinMode(PIN_BOARD_LED, OUTPUT);
   for (int i = 0; i < 3; i++) {
-    digitalWrite(PIN_BOARD_LED, LOW);  // ON (Active LOW on Xiao)
+    digitalWrite(PIN_BOARD_LED, LOW);
     delay(75);
-    digitalWrite(PIN_BOARD_LED, HIGH); // OFF
+    digitalWrite(PIN_BOARD_LED, HIGH);
     delay(75);
   }
 }
@@ -112,9 +118,9 @@ void flashWakeupLed() {
 void flashPowerOffLed() {
   pinMode(PIN_BOARD_LED, OUTPUT);
   for (int i = 0; i < 2; i++) {
-    digitalWrite(PIN_BOARD_LED, LOW);  // ON
+    digitalWrite(PIN_BOARD_LED, LOW);
     delay(280);
-    digitalWrite(PIN_BOARD_LED, HIGH); // OFF
+    digitalWrite(PIN_BOARD_LED, HIGH);
     delay(150);
   }
 }
@@ -141,25 +147,20 @@ void sendBleCommand(uint8_t cmdCode, uint8_t val) {
 // Enter Ultra-Low Power Deep Sleep (Power OFF: ~0.005 mA)
 void enterDeepSleepPowerOff() {
   Serial.println("🛌 [POWER] Powering OFF (Entering Deep Sleep)...");
-
-  // Visual Power OFF Confirmation: 2 Slow Pulses
   flashPowerOffLed();
 
-  // Disconnect BLE clients cleanly
   for (int i = 0; i < MAX_BLE_POIS; i++) {
     if (poiSlots[i].connected && poiSlots[i].client != nullptr) {
       poiSlots[i].client->disconnect();
     }
   }
 
-  // Hold D0 (GPIO 2) LOW as Ground during deep sleep
   gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
   pinMode(PIN_BUTTON_GND, OUTPUT);
   digitalWrite(PIN_BUTTON_GND, LOW);
   gpio_hold_en((gpio_num_t)PIN_BUTTON_GND);
   gpio_deep_sleep_hold_en();
 
-  // Setup D1 (GPIO 3) as wakeup source on LOW
   esp_deep_sleep_enable_gpio_wakeup((1ULL << PIN_BUTTON_IN), ESP_GPIO_WAKEUP_GPIO_LOW);
 
   delay(50);
@@ -213,7 +214,6 @@ bool executeConnect(BLEAdvertisedDevice* advDevice) {
 
   Serial.printf("🎉 [BLE] Poi %d LOCKED & READY: %s\n", targetSlot + 1, poiSlots[targetSlot].name.c_str());
   
-  // Flash LED twice to confirm connection
   digitalWrite(PIN_BOARD_LED, LOW);
   delay(100);
   digitalWrite(PIN_BOARD_LED, HIGH);
@@ -346,6 +346,9 @@ void readNunchukAndProcess() {
 
   uint8_t joyX = raw[0];
   uint8_t joyY = raw[1];
+  int16_t accelX = (raw[2] << 2) | ((raw[5] >> 2) & 0x03);
+  int16_t accelY = (raw[3] << 2) | ((raw[5] >> 4) & 0x03);
+  int16_t accelZ = (raw[4] << 2) | ((raw[5] >> 6) & 0x03);
   bool btnZ = !((raw[5] >> 0) & 0x01);
   bool btnC = !((raw[5] >> 1) & 0x01);
 
@@ -358,8 +361,11 @@ void readNunchukAndProcess() {
   liveJoyY = joyY;
   liveBtnZ = btnZ;
   liveBtnC = btnC;
+  liveAccelX = accelX;
+  liveAccelY = accelY;
+  liveAccelZ = accelZ;
 
-  if (abs((int)joyX - 128) > 30 || abs((int)joyY - 128) > 30 || btnC || btnZ) {
+  if (abs((int)joyX - 128) > 30 || abs((int)joyY - 128) > 30 || btnC || btnZ || abs(accelX - 512) > 150) {
     lastUserActivityTime = now;
   }
 
@@ -389,25 +395,80 @@ void readNunchukAndProcess() {
     }
   }
 
-  // 3. C Button: Step Palette
+  // 3. C Button: Step Palette or Reset
   if (btnC && !lastBtnC) {
     btnCHoldStart = now;
   } else if (!btnC && lastBtnC) {
     unsigned long pressDur = now - btnCHoldStart;
-    if (pressDur < 1000) {
+    if (pressDur < 800) {
       currentPalette = (currentPalette + 1) % 33;
       sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
+      Serial.printf("🎨 [NUNCHUK] Switched to Palette %d\n", currentPalette);
     }
-  } else if (btnC && (now - btnCHoldStart > 1200) && btnCHoldStart != 0) {
+  } else if (btnC && (now - btnCHoldStart > 1000) && btnCHoldStart != 0) {
     currentPalette = 0;
     sendBleCommand(CC_SET_PALETTE_FX, 0);
+    Serial.println("🎨 [NUNCHUK] Reset Palette to Original RGB!");
     btnCHoldStart = 0;
   }
 
-  // 4. Z Trigger: Instant Strobe Drop on hold
-  if (btnZ != isStrobeActive) {
-    isStrobeActive = btnZ;
-    sendBleCommand(CC_SET_MOTION_FX, isStrobeActive ? 15 : 0);
+  // 4. Z Trigger: Dual Action (Hold = Strobe Blinder Drop | Tap = Cycle 16 Crazy Motion Flows!)
+  if (btnZ && !lastBtnZ) {
+    btnZPressStart = now;
+    isStrobeActive = false;
+  } else if (btnZ && (now - btnZPressStart > 300) && !isStrobeActive) {
+    // Squeeze & Hold > 300ms -> Instant Hyper Strobe Blinder Drop!
+    isStrobeActive = true;
+    sendBleCommand(CC_SET_MOTION_FX, 15); // Mode 15: Hyper Strobe Blinder
+    Serial.println("⚡ [STROBE DROP] Hyper Strobe Blinder ACTIVE!");
+  } else if (!btnZ && lastBtnZ) {
+    if (isStrobeActive) {
+      // Released Strobe Hold -> Snap back to current motion flow (or Solid 0)
+      isStrobeActive = false;
+      sendBleCommand(CC_SET_MOTION_FX, currentMotion);
+      Serial.println("⚡ [STROBE DROP] Strobe Released -> Restoring pattern.");
+    } else {
+      // Quick Tap < 300ms -> Step through 16 Crazy Motion Flows!
+      currentMotion = (currentMotion + 1) % 17;
+      sendBleCommand(CC_SET_MOTION_FX, currentMotion);
+      Serial.printf("🌀 [MOTION FLOW] Switched to Motion FX Flow Mode %d\n", currentMotion);
+    }
+  }
+
+  // 5. Gyro Tilt Speed & Shake Burst Modulation (Every 120ms)
+  if (now - lastTiltCheckTime > 120) {
+    lastTiltCheckTime = now;
+
+    // A. Shake / Whip Detection (Sudden acceleration jerk)
+    int16_t jerkX = abs(accelX - 512);
+    int16_t jerkY = abs(accelY - 512);
+    int16_t jerkZ = abs(accelZ - 512);
+    if ((jerkX > 280 || jerkY > 280 || jerkZ > 320) && (now - lastShakeTime > 1500)) {
+      lastShakeTime = now;
+      // Fire an instant Glitch Shockwave Drop (Mode 8) for 700ms!
+      sendBleCommand(CC_SET_MOTION_FX, 8); // Warp Shockwave
+      Serial.println("💥 [GYRO SHAKE] Wild Shockwave Drop Triggered!");
+    } else if (now - lastShakeTime > 750 && now - lastShakeTime < 950) {
+      sendBleCommand(CC_SET_MOTION_FX, currentMotion); // Restore motion mode
+    }
+
+    // B. Pitch Tilt Speed Modulation (Tilt forward = Hyper Speed | Tilt back = Slow-Mo)
+    uint8_t targetSpeed = 2; // Level 3 (Normal default)
+    if (accelY > 640) {
+      targetSpeed = 5; // Level 6 (Hyper Warp Speed Boost!)
+    } else if (accelY > 580) {
+      targetSpeed = 4; // Level 5 (Fast)
+    } else if (accelY < 380) {
+      targetSpeed = 0; // Level 1 (Smooth Slow-Mo Flow)
+    } else if (accelY < 440) {
+      targetSpeed = 1; // Level 2 (Relaxed Flow)
+    }
+
+    if (targetSpeed != currentSpeedOpt) {
+      currentSpeedOpt = targetSpeed;
+      sendBleCommand(CC_SET_SPEED_OPTION, currentSpeedOpt);
+      Serial.printf("🚀 [GYRO SPEED] Dynamic Tilt Speed: Level %d\n", currentSpeedOpt + 1);
+    }
   }
 
   lastBtnC = btnC;
@@ -424,7 +485,6 @@ void checkPowerButton() {
     pwrBtnPressStart = now;
   } else if (isPressed && pwrBtnPressed) {
     if (now - pwrBtnPressStart > 1200) {
-      // Held for 1.2 seconds -> Power OFF!
       enterDeepSleepPowerOff();
     }
   } else if (!isPressed && pwrBtnPressed) {
@@ -437,25 +497,21 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - BLE Master Nunchuk v3.0");
+  Serial.println("Open Pixel Poi - BLE Master Nunchuk v3.1 (Funky FX)");
   Serial.println("=================================================");
 
-  // Release any previous GPIO holds
   gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
 
-  // Setup D0 as Software Ground and D1 as Input Pullup
   pinMode(PIN_BUTTON_GND, OUTPUT);
   digitalWrite(PIN_BUTTON_GND, LOW);
   pinMode(PIN_BUTTON_IN, INPUT_PULLUP);
 
-  // Visual Power ON Confirmation: 3 Rapid Bright Blinks
   flashWakeupLed();
 
   lastUserActivityTime = millis();
 
   autoScanNunchuk();
 
-  // Setup Dedicated BLE Central Scanner
   BLEDevice::init("OpenPixelMasterCentral");
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new AdvertisedScannerCallback());
