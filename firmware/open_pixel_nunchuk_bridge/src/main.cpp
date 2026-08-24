@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.13 Unstoppable Telemetry)
+ * OPEN PIXEL POI - PURE BLE MASTER NUNCHUK BRIDGE (v2.14 LED Power Animations)
  * ============================================================================
  * Hardware Layout:
  * - Battery: 18350 3.7V LiPo on BAT+ / BAT- pads (Back of board)
@@ -8,9 +8,11 @@
  *   - Short Press: Wakes up / changes mode
  *   - Long Press (1.5s): Enters Ultra-Low Power Deep Sleep (Power OFF)
  *   - Auto-Sleep: 10 minutes of inactivity
+ * - Onboard LED Visual Feedback (GPIO 10):
+ *   - 🌟 Power ON / Wake Up: 3 Rapid Bright Blinks
+ *   - 🛌 Power OFF / Deep Sleep: 2 Long Solid Pulses before turning OFF
  * - Continuous Independent Telemetry:
  *   - Guaranteed 10Hz Battery, USB-C Charging, and Nunchuk telemetry stream
- *   - Completely decoupled from I2C so battery & connection display immediately
  * - Nunchuk I2C: 3V3, GND, D2 (SDA / GPIO 4), D3 (SCL / GPIO 5)
  */
 
@@ -29,6 +31,7 @@
 #define PIN_BUTTON_GND D0  // GPIO 2 - Software Ground
 #define PIN_BUTTON_IN  D1  // GPIO 3 - Button Input (Pulled UP)
 #define PIN_BATTERY_ADC 0  // GPIO 0 / A0 - Battery Voltage ADC
+#define PIN_BOARD_LED  10  // Onboard Yellow/Orange User LED on Xiao ESP32-C3
 #define NUNCHUK_ADDR   0x52
 
 static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
@@ -114,6 +117,27 @@ BlePoiSlot poiSlots[MAX_BLE_POIS];
 static BLEAdvertisedDevice* pendingDevice = nullptr;
 static bool doConnectPending = false;
 BLEScan* pBLEScan = nullptr;
+
+// Visual Onboard LED Feedback Animations
+void flashWakeupLed() {
+  pinMode(PIN_BOARD_LED, OUTPUT);
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(PIN_BOARD_LED, LOW);  // Turn ON (Active LOW on Xiao)
+    delay(75);
+    digitalWrite(PIN_BOARD_LED, HIGH); // Turn OFF
+    delay(75);
+  }
+}
+
+void flashPowerOffLed() {
+  pinMode(PIN_BOARD_LED, OUTPUT);
+  for (int i = 0; i < 2; i++) {
+    digitalWrite(PIN_BOARD_LED, LOW);  // Turn ON
+    delay(280);
+    digitalWrite(PIN_BOARD_LED, HIGH); // Turn OFF
+    delay(150);
+  }
+}
 
 // Measure 18350 Battery Millivolts & Calculate Percentage & Charging Status
 void updateBatteryTelemetry() {
@@ -238,6 +262,9 @@ class BridgeRxCallbacks : public BLECharacteristicCallbacks {
 // Power Down to Deep Sleep (Ultra-Low Power OFF: ~0.005 mA)
 void enterDeepSleepPowerOff() {
   Serial.println("🛌 [POWER] Entering Deep Sleep (Power OFF)...");
+
+  // Visual Power OFF Confirmation: 2 Solid LED Pulses
+  flashPowerOffLed();
 
   for (int i = 0; i < MAX_BLE_POIS; i++) {
     if (poiSlots[i].connected && poiSlots[i].client != nullptr) {
@@ -526,8 +553,11 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - BLE Master Bridge v2.13");
+  Serial.println("Open Pixel Poi - BLE Master Bridge (LED Power FX)");
   Serial.println("=================================================");
+
+  // Flash 3 Rapid Bright Blinks on Power ON / Wake Up!
+  flashWakeupLed();
 
   pinMode(PIN_BUTTON_GND, OUTPUT);
   digitalWrite(PIN_BUTTON_GND, LOW);
@@ -571,7 +601,7 @@ void setup() {
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
 
-  Serial.println("🎮 Bridge Active! Telemetry running continuously.");
+  Serial.println("🎮 Bridge Active! Visual LED Power Feedback Enabled.");
 }
 
 void loop() {
