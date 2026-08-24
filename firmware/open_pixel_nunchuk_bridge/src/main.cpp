@@ -1,13 +1,7 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.3 Universal ESP-NOW OTA Gateway)
+ * OPEN PIXEL POI - MASTER NUNCHUK BRIDGE (v2.4 Flawless BLE Chunking & OTA Relay)
  * ============================================================================
- * Features:
- *   - Auto-scans I2C Pins: D2/D3 (GPIO 4/5) AND D4/D5 (GPIO 6/7)
- *   - Auto-detects OEM Nintendo & 3rd-Party Clone Nunchuks
- *   - ESP-NOW Over-The-Air Pattern Upload Relay (LittleFS Direct Burning)
- *   - Live Bluetooth & Wi-Fi Telemetry Stream
- *   - Sub-1ms ESP-NOW Broadcast on Channel 1
  */
 
 #include <esp_wifi.h>
@@ -34,7 +28,6 @@
 #define END_BYTE   0xD1
 #define TELEMETRY_BYTE 0xFE
 
-// Pin configurations to auto-scan
 struct I2CPair {
   uint8_t sda;
   uint8_t scl;
@@ -42,8 +35,8 @@ struct I2CPair {
 };
 
 const I2CPair I2C_PAIRS[] = {
-  { 4, 5, "D2 (SDA) / D3 (SCL)" }, // GPIO 4 / GPIO 5
-  { 6, 7, "D4 (SDA) / D5 (SCL)" }  // GPIO 6 / GPIO 7
+  { 4, 5, "D2 (SDA) / D3 (SCL)" },
+  { 6, 7, "D4 (SDA) / D5 (SCL)" }
 };
 
 int activeI2cIndex = 0;
@@ -78,9 +71,9 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   uint8_t magic;
   uint8_t cmd;
-  uint32_t byteOffset;
-  uint16_t dataLen;
-  uint8_t data[190];
+  uint16_t chunkSeq;
+  uint8_t dataLen;
+  uint8_t data[200];
 } EspNowDataPacket;
 
 static uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -131,22 +124,19 @@ void sendEspNowPacket(uint8_t cmd, uint8_t val1 = 0, uint8_t val2 = 0, int16_t t
   esp_now_send(broadcastMac, (uint8_t *)&pkt, sizeof(EspNowPacket));
 }
 
-static uint32_t g_currentPatternByteOffset = 0;
-
 void forwardPatternData(const uint8_t *data, size_t len) {
   size_t offset = 0;
   while (offset < len) {
-    size_t chunk = min((size_t)190, len - offset);
+    size_t chunk = min((size_t)200, len - offset);
     EspNowDataPacket dPkt;
     dPkt.magic = ESPNOW_DATA_MAGIC;
     dPkt.cmd = CMD_PATTERN_DATA_CHUNK;
-    dPkt.byteOffset = g_currentPatternByteOffset;
-    dPkt.dataLen = (uint16_t)chunk;
+    dPkt.chunkSeq = otaChunkSeq++;
+    dPkt.dataLen = (uint8_t)chunk;
     memcpy(dPkt.data, data + offset, chunk);
     esp_now_send(broadcastMac, (uint8_t *)&dPkt, sizeof(EspNowDataPacket));
-    g_currentPatternByteOffset += chunk;
     offset += chunk;
-    delay(6); // 6ms rock-solid queue pacing to prevent buffer drops
+    delay(4); // 4ms safe pacing
   }
 }
 
@@ -169,60 +159,55 @@ class BridgeBleCallbacks : public BLECharacteristicCallbacks {
     if (len == 0) return;
     const uint8_t *data = (const uint8_t *)rxValue.data();
 
-    // 1. Check for Pattern Upload Header / Chunks
+    // 1. Start of Pattern Upload (Chunk 0)
     if (data[0] == START_BYTE && len >= 5 && data[1] == 0x04) {
-      // Chunk 0: Start of new Pattern Upload
       uint8_t height = data[2];
       uint16_t width = ((uint16_t)data[3] << 8) | data[4];
       uint8_t targetSlot = (currentBank * 10) + currentSlot;
 
       isOtaUploading = true;
-      g_currentPatternByteOffset = 0;
+      otaChunkSeq = 0;
       sendEspNowPacket(CMD_START_PATTERN_UPLOAD, targetSlot, height, width);
-      delay(30); // 30ms settle delay before streaming
+      delay(25);
 
-      // Forward RGB payload in chunk 0 (bytes 5..end)
-      if (len > 5) {
-        size_t dataLen = len - 5;
-        if (data[len - 1] == END_BYTE) {
-          dataLen--;
+      if (len == 509) {
+        // Multipart chunk 0: payload is data[5..508] (504 bytes)
+        forwardPatternData(data + 5, 504);
+      } else {
+        // Single packet upload: payload is data[5..len-2] (minus trailing 0xD1)
+        size_t payloadLen = (len > 6) ? (len - 6) : 0;
+        if (payloadLen > 0) {
+          forwardPatternData(data + 5, payloadLen);
         }
-        if (dataLen > 0) {
-          forwardPatternData(data + 5, dataLen);
-        }
-      }
-
-      if (data[len - 1] == END_BYTE || len < 509) {
         isOtaUploading = false;
-        delay(15);
-        sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
-        Serial.printf("[Bridge] Completed single-packet OTA pattern upload to slot %d!\n", targetSlot);
-      }
-      return;
-    }
-
-    // Subsequent Chunks during Pattern Upload
-    if (isOtaUploading) {
-      size_t dataLen = len;
-      bool isFinal = false;
-      if (data[len - 1] == END_BYTE) {
-        dataLen--;
-        isFinal = true;
-      }
-      if (dataLen > 0) {
-        forwardPatternData(data, dataLen);
-      }
-      if (isFinal || len < 509) {
-        isOtaUploading = false;
-        uint8_t targetSlot = (currentBank * 10) + currentSlot;
         delay(20);
         sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
-        Serial.printf("[Bridge] Completed multi-chunk OTA pattern upload to slot %d!\n", targetSlot);
+        Serial.printf("[Bridge] Single-packet upload complete to slot %d!\n", targetSlot);
       }
       return;
     }
 
-    // 2. Standard Framed / Direct Commands
+    // 2. Middle & Final Chunks of Multipart Pattern Upload
+    if (isOtaUploading) {
+      if (len == 509) {
+        // Middle chunk: ALL 509 bytes are RGB data
+        forwardPatternData(data, 509);
+      } else {
+        // Final chunk (< 509 bytes): payload is data[0..len-2] (minus trailing 0xD1)
+        size_t payloadLen = (len > 1) ? (len - 1) : 0;
+        if (payloadLen > 0) {
+          forwardPatternData(data, payloadLen);
+        }
+        isOtaUploading = false;
+        uint8_t targetSlot = (currentBank * 10) + currentSlot;
+        delay(25);
+        sendEspNowPacket(CMD_END_PATTERN_UPLOAD, targetSlot);
+        Serial.printf("[Bridge] Multipart upload complete to slot %d!\n", targetSlot);
+      }
+      return;
+    }
+
+    // 3. Standard Framed Commands
     uint8_t cmdCode = 0;
     uint8_t val = 0;
 
@@ -409,7 +394,6 @@ bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
   Wire.begin(sda, scl, 50000);
   delay(20);
 
-  // 1. Try Modern Unencrypted Init (0xF0 -> 0x55, 0xFB -> 0x00)
   Wire.beginTransmission(NUNCHUK_ADDR);
   Wire.write(0xF0);
   Wire.write(0x55);
@@ -428,7 +412,6 @@ bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
     return true;
   }
 
-  // 2. Try Legacy Encrypted Init (0x40 -> 0x00)
   Wire.beginTransmission(NUNCHUK_ADDR);
   Wire.write(0x40);
   Wire.write(0x00);
@@ -650,13 +633,13 @@ void readNunchukAndProcess() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.3 (ESP-NOW OTA Gateway)...");
+  Serial.println("Starting Open Pixel Master Nunchuk Bridge v2.4 (Flawless BLE Chunking)...");
 
   autoScanNunchuk();
   setupEspNowAndWiFi();
   setupBleGateway();
 
-  Serial.println("🎉 Bridge Ready! ESP-NOW OTA Gateway + Bluetooth + Wi-Fi Telemetry Active.");
+  Serial.println("🎉 Bridge Ready! Flawless BLE Chunking + Bluetooth + Wi-Fi Telemetry Active.");
 }
 
 void loop() {
