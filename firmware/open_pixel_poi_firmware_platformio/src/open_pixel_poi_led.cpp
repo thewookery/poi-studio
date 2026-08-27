@@ -349,142 +349,119 @@ static inline void getPaletteBaseColor(uint8_t palId, uint8_t index256, uint8_t 
   }
 }
 
-// Modular Palette + Motion Flow FX Engine (Supports Palettes AND True RGB Energy Pulses)
+// Modular Palette + Motion Flow FX Engine (Supports all 16 Step 2 Motion Flows on True RGB & Palettes)
 static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t palId, uint8_t motionId, unsigned long timeMs, uint8_t speed, uint8_t ledIndex = 0, uint16_t frameIndex = 0, uint16_t frameCount = 1, uint8_t ledCount = 55) {
   uint16_t safeFrameCount = (frameCount > 0) ? frameCount : 1;
   uint8_t safeLedCount = (ledCount > 0) ? ledCount : 55;
   uint8_t spd = (speed > 0) ? speed : 5;
 
-  // True RGB Energy Pulse & Wave Modulation (When palId == 0)
-  if (palId == 0) {
-    if (motionId == 0) return;
-    if (red == 0 && green == 0 && blue == 0) return;
-
-    if (motionId == 1 || motionId == 11) { // ⚡ Flow UP to Tip (Twist Left / Flick)
-      uint8_t wave = (uint8_t)(((timeMs * spd / 7) - (ledIndex * 256 / safeLedCount)) & 0xFF);
-      float factor = 0.35f + 0.65f * (wave / 255.0f);
-      red = (uint8_t)(red * factor);
-      green = (uint8_t)(green * factor);
-      blue = (uint8_t)(blue * factor);
-      if (wave > 225) {
-        uint8_t crest = (uint8_t)((wave - 225) * 6);
-        red = min(255, (int)(red + crest));
-        green = min(255, (int)(green + crest));
-        blue = min(255, (int)(blue + crest));
-      }
-    } else if (motionId == 2) { // ⚡ Flow DOWN to Handle (Twist Right)
-      uint8_t wave = (uint8_t)(((timeMs * spd / 7) + (ledIndex * 256 / safeLedCount)) & 0xFF);
-      float factor = 0.35f + 0.65f * (wave / 255.0f);
-      red = (uint8_t)(red * factor);
-      green = (uint8_t)(green * factor);
-      blue = (uint8_t)(blue * factor);
-      if (wave > 225) {
-        uint8_t crest = (uint8_t)((wave - 225) * 6);
-        red = min(255, (int)(red + crest));
-        green = min(255, (int)(green + crest));
-        blue = min(255, (int)(blue + crest));
-      }
-    }
-    return;
-  }
-
-  // Negative Space Protection: Never alter black pixels
   if (red == 0 && green == 0 && blue == 0) return;
-  // Maximum Value / Peak Intensity: Preserves 100% full brightness across all color channels
   uint8_t lum = max(red, max(green, blue));
-  if (lum == 0) { red = 0; green = 0; blue = 0; return; }
+  if (lum == 0) return;
 
-  uint8_t index256 = 0;
+  uint8_t index256 = lum;
 
   switch (motionId) {
-    case 0: { // 0. ⚪ No Effect (Pure Static Palette Tone Remap / No Motion)
+    case 0: { // 0. Static Tint
       index256 = lum;
       break;
     }
     case 1: { // 1. ⬆️ Flow UP (Geyser Outward to Tip)
-      index256 = (uint8_t)(((timeMs * speed / 12) - (ledIndex * 256 / safeLedCount)) & 0xFF);
+      index256 = (uint8_t)(((timeMs * spd / 8) - (ledIndex * 256 / safeLedCount)) & 0xFF);
       break;
     }
     case 2: { // 2. ⬇️ Flow DOWN (Cascade Inward to Handle)
-      index256 = (uint8_t)(((timeMs * speed / 12) + (ledIndex * 256 / safeLedCount)) & 0xFF);
+      index256 = (uint8_t)(((timeMs * spd / 8) + (ledIndex * 256 / safeLedCount)) & 0xFF);
       break;
     }
     case 3: { // 3. 🌧️ Matrix Pixel Rain (Falling Sparks)
-      index256 = (uint8_t)(((timeMs * speed / 10) + (ledIndex * 14)) & 0xFF);
+      index256 = (uint8_t)(((timeMs * spd / 8) + (ledIndex * 14)) & 0xFF);
       break;
     }
-    case 4: { // 4. 🌊 Dual Harmonic Tidal Surge (Up & Down Sine Waves)
-      int waveUp = (int)((timeMs * speed / 14) - (ledIndex * 8));
-      int waveDown = (int)((timeMs * speed / 16) + (ledIndex * 8));
+    case 4: { // 4. 🌊 Dual Harmonic Tidal Surge (Up & Down Waves)
+      int waveUp = (int)((timeMs * spd / 10) - (ledIndex * 8));
+      int waveDown = (int)((timeMs * spd / 12) + (ledIndex * 8));
       index256 = (uint8_t)((waveUp ^ waveDown) & 0xFF);
       break;
     }
     case 5: { // 5. ⚡ Plasma Lightning Burst (Radial Pulse)
-      index256 = (uint8_t)(((timeMs * speed / 8) - (ledIndex * 16)) & 0xFF);
+      index256 = (uint8_t)(((timeMs * spd / 6) - (ledIndex * 16)) & 0xFF);
       break;
     }
     case 6: { // 6. 💫 Stardust Meteor Cascade
-      index256 = (uint8_t)(((timeMs * speed / 10) + (ledIndex * 12)) & 0xFF);
+      index256 = (uint8_t)(((timeMs * spd / 8) + (ledIndex * 12)) & 0xFF);
       break;
     }
-    case 7: { // 7. 💓 Chromatic Breathing Pulse
-      index256 = (uint8_t)(((timeMs * speed / 18) + (ledIndex * 4)) & 0xFF);
+    case 7: { // 7. 💓 Chroma Breathing Pulse
+      index256 = (uint8_t)(((timeMs * spd / 14) + (ledIndex * 4)) & 0xFF);
       break;
     }
     case 8: { // 8. 🔄 Rotational POV Spin Sweep
-      index256 = (uint8_t)(((timeMs * speed / 16) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
+      index256 = (uint8_t)(((timeMs * spd / 12) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
       break;
     }
-    case 9: { // 9. 🌀 3D Spiral Helix Vortex (Radial + Angular Flow)
-      index256 = (uint8_t)(((timeMs * speed / 16) + (ledIndex * 6) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
+    case 9: { // 9. 🌀 3D Spiral Helix Vortex
+      index256 = (uint8_t)(((timeMs * spd / 12) + (ledIndex * 6) + (frameIndex * 256 / safeFrameCount)) & 0xFF);
       break;
     }
     case 10: { // 10. ⚡ Hyper-Strobe Shimmer Blade
-      bool strobe = ((frameIndex % 2) == 0) || ((millis() / 35) % 2 == 0);
-      index256 = (uint8_t)((timeMs * speed / 18) & 0xFF);
-      if (!strobe) { red = 0; green = 0; blue = 0; return; }
+      bool strobe = ((frameIndex % 2) == 0) || (((timeMs / 30) % 2) == 0);
+      if (!strobe) { red = (uint8_t)(red * 0.15f); green = (uint8_t)(green * 0.15f); blue = (uint8_t)(blue * 0.15f); return; }
+      index256 = (uint8_t)((timeMs * spd / 14) & 0xFF);
       break;
     }
-    case 11: { // 11. 🌌 Hyperspace Warp Shockwave (Explosive Quantum Pulse)
-      uint32_t phase = (timeMs * speed / 8) & 0xFF;
+    case 11: { // 11. 🌌 Hyperspace Warp Shockwave
+      uint32_t phase = (timeMs * spd / 6) & 0xFF;
       uint32_t dist = (ledIndex * 255) / safeLedCount;
       index256 = (uint8_t)((phase - ((dist * dist) >> 8)) & 0xFF);
       break;
     }
-    case 12: { // 12. ⚡ Glitch Matrix Cyber Spark (Rhythmic Glitch Shimmer)
-      uint8_t noise = (uint8_t)(((ledIndex * 73) ^ (frameIndex * 151) ^ (timeMs >> 4)) & 0xFF);
-      index256 = (uint8_t)(((timeMs * speed / 12) + noise) & 0xFF);
+    case 12: { // 12. ⚡ Glitch Matrix Cyber Spark
+      uint8_t noise = (uint8_t)(((ledIndex * 73) ^ (frameIndex * 151) ^ (timeMs >> 3)) & 0xFF);
+      index256 = (uint8_t)(((timeMs * spd / 10) + noise) & 0xFF);
       break;
     }
-    case 13: { // 13. 🌈 Rainbow Aurora Waveform (Flowing Harmonic Undulation)
-      int a1 = (int)((timeMs * speed / 14) + ledIndex * 7);
-      int a2 = (int)((timeMs * speed / 22) - ledIndex * 5);
+    case 13: { // 13. 🌈 Rainbow Aurora Waveform
+      int a1 = (int)((timeMs * spd / 10) + ledIndex * 7);
+      int a2 = (int)((timeMs * spd / 16) - ledIndex * 5);
       index256 = (uint8_t)(((a1 + a2) / 2) & 0xFF);
       break;
     }
-    case 14: { // 14. 🌋 Lava Bubble / Solar Flare (Bouncing Fiery Thermal Pockets)
-      uint8_t b1 = (uint8_t)((timeMs * speed / 10) + ledIndex * 16);
-      uint8_t b2 = (uint8_t)((timeMs * speed / 15) - ledIndex * 20);
+    case 14: { // 14. 🌋 Lava Flare
+      uint8_t b1 = (uint8_t)((timeMs * spd / 8) + ledIndex * 16);
+      uint8_t b2 = (uint8_t)((timeMs * spd / 12) - ledIndex * 20);
       index256 = (uint8_t)(max(b1, b2) & 0xFF);
       break;
     }
-    case 15: { // 15. 🪩 Disco BPM Strobe Blast (High-Contrast Dance Floor Flash)
-      uint8_t beat = ((timeMs * speed / 25) % 8);
+    case 15: { // 15. 🪩 Disco BPM Strobe Blast
+      uint8_t beat = ((timeMs * spd / 20) % 8);
       bool isFlash = (beat == 0 || beat == 2 || (ledIndex % 4 == (beat / 2)));
-      index256 = (uint8_t)((timeMs * speed / 12) & 0xFF);
-      if (!isFlash) { red = 0; green = 0; blue = 0; return; }
+      if (!isFlash) { red = (uint8_t)(red * 0.12f); green = (uint8_t)(green * 0.12f); blue = (uint8_t)(blue * 0.12f); return; }
+      index256 = (uint8_t)((timeMs * spd / 10) & 0xFF);
       break;
     }
-    case 16: { // 16. 🪐 Black Hole Gravitational Pull (Inward Accretion Vortex)
-      uint32_t phase = (timeMs * speed / 7) & 0xFF;
+    case 16: { // 16. 🪐 Black Hole Gravitational Pull
+      uint32_t phase = (timeMs * spd / 6) & 0xFF;
       uint32_t invDist = ((safeLedCount - 1 - ledIndex) * 255) / safeLedCount;
       index256 = (uint8_t)((phase + ((invDist * invDist) >> 8)) & 0xFF);
       break;
     }
-    default: {
-      index256 = (uint8_t)((ledIndex * 255) / max(1, safeLedCount - 1));
-      break;
+  }
+
+  // If True RGB (palId == 0), modulate pattern brightness & crests directly on original artwork!
+  if (palId == 0) {
+    if (motionId == 0) return;
+    float factor = 0.30f + 0.70f * (index256 / 255.0f);
+    red = (uint8_t)(red * factor);
+    green = (uint8_t)(green * factor);
+    blue = (uint8_t)(blue * factor);
+    if (index256 > 230) {
+      uint8_t crest = (uint8_t)((index256 - 230) * 8);
+      red = min(255, (int)(red + crest));
+      green = min(255, (int)(green + crest));
+      blue = min(255, (int)(blue + crest));
     }
+    return;
   }
 
   getPaletteBaseColor(palId, index256, lum, red, green, blue);
@@ -570,28 +547,11 @@ class OpenPixelPoiLED {
         float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)currentDuration) : 1.0f;
 
 
-        // 1. Calculate Physical Pattern Pixel Shift (Directly scrolls the pattern image!)
-        int pixelShift = 0;
         uint8_t safeHeight = (config.frameHeight >= 10) ? config.frameHeight : 55;
-        if (config.motionFxMode == 1) {
-          // Flow UP toward tip (Twist Left)
-          pixelShift = (int)((millis() * config.paletteSpeed / 8) % safeHeight);
-        } else if (config.motionFxMode == 2) {
-          // Flow DOWN toward handle (Twist Right)
-          pixelShift = (int)(safeHeight - ((millis() * config.paletteSpeed / 8) % safeHeight));
-        }
-
         for (int j=0; j<config.ledCount; j++){
-          int sampleLed = (j + pixelShift) % safeHeight;
-          red = config.pattern[frameIndex*safeHeight*3 + sampleLed*3 + 0];
-          green = config.pattern[frameIndex*safeHeight*3 + sampleLed*3 + 1];
-          blue = config.pattern[frameIndex*safeHeight*3 + sampleLed*3 + 2];
-
-          // If Flick Strobe Flash active (motionFxMode == 15):
-          if (config.motionFxMode == 15) {
-            bool flashOn = ((millis() / 30) % 2 == 0);
-            if (!flashOn) { red = (uint8_t)(red * 0.15f); green = (uint8_t)(green * 0.15f); blue = (uint8_t)(blue * 0.15f); }
-          }
+          red = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 0];
+          green = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 1];
+          blue = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 2];
 
           // Apply Snappy Zero-RAM Transition Modes
           if (isTransitioning) {

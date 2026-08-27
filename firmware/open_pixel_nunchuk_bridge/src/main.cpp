@@ -1,23 +1,26 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BLE BRIDGE (Build v142)
+ * OPEN PIXEL POI - MASTER NUNCHUK BLE BRIDGE (Build v143)
  * ============================================================================
- * Physical Pattern Scrolling on Barrel Roll & 100% Pre-Z State Restore Engine
+ * Z-Hold Step 2 Motion Flow Remix & Barrel Roll Tilt Speed Throttle
  * 
  * 🎮 CONTROLS:
  * - 📱 Auto-Pairs to OpenPixelPoi over Bluetooth in 1 second
- * - 🕹️ Joystick Left / Right: Previous / Next Pattern Slot (1-10) [When nothing pressed]
- * - 🕹️ Joystick Up / Down: Previous / Next Hardware Bank (1-5) [When nothing pressed]
- * - 🌟 C Button (Tap): Next Color Palette (1-32) | Hold 1.0s: Reset Original RGB
  * 
- * ⚡ Z-TRIGGER GESTURE ENGINE:
- * - 💥 HOLD Z + WRIST FLICK (Sharp Snap): Triggers explosive Strobe Flash Ripple!
- * - 🌀 HOLD Z + BARREL ROLL (Filtered Smooth Twist Left / Right):
- *     • 🔄 Twist Left: Pattern image physically scrolls UP toward the tip!
- *     • 🔄 Twist Right: Pattern image physically scrolls DOWN toward the handle!
- *     • 〰️ Level / Center: Steady, stationary pattern!
- * - 🔄 RELEASE Z: Instantly & PERFECTLY restores exact pre-Z settings (Palette, Motion, Speed)!
- * - ❌ No pattern slot changes on Z taps (Navigation is strictly on the joystick!)
+ * 🕹️ NORMAL MODE (When Z is NOT held):
+ * - 🕹️ Joystick Left / Right: Previous / Next Pattern Slot (1-10)
+ * - 🕹️ Joystick Up / Down: Previous / Next Hardware Bank (1-5)
+ * - 🌟 C-Button (Tap): Step through Step 1 Color Palettes (1-32)
+ * - 🌟 C-Button (Hold 1.0s): Reset Palette to Original True RGB
+ * 
+ * ⚡ Z-HOLD STEP 2 REMIX LAYER (Hold Z):
+ * - 🕹️ Hold Z + Joystick Left / Right: Flick through all 16 Step 2 Motion Flows!
+ *     (1=Flow Up, 2=Flow Down, 3=Matrix Rain, 4=Tidal Wave, 5=Plasma, 6=Stardust,
+ *      7=Chroma Pulse, 8=POV Spin, 9=Spiral Helix, 10=Strobe, 11=Warp Pulse,
+ *      12=Glitch Spark, 13=Aurora Wave, 14=Lava Flare, 15=Disco Strobe, 16=Black Hole)
+ * - 💥 Hold Z + Wrist Flick (Sharp Snap): Instant next random Motion Flow FX drop!
+ * - 🌀 Hold Z + Barrel Roll (Tilt Left / Right): Dynamically throttles flow speed (3 to 10)!
+ * - 🔄 Release Z: Instantly & fluidly restores steady stock pattern playback in 0ms!
  * 
  * 🔘 D0/D1 Power Button: Tap = Wakeup (3 blinks) | Hold 1.2s = Deep Sleep OFF (2 blinks)
  */
@@ -90,7 +93,7 @@ bool isNunchukI2cOk = false;
 uint8_t currentSlot = 0;
 uint8_t currentBank = 0;
 uint8_t currentPalette = 0;
-uint8_t currentMotion = 0;
+uint8_t activeZMotion = 1; // Default Step 2 Motion: Flow UP
 
 // Pre-Z Snapshot for 100% Perfect State Restoration
 uint8_t preZPalette = 0;
@@ -98,10 +101,9 @@ uint8_t preZMotion = 0;
 
 // Gesture & Filtering State
 bool isZHeld = false;
-unsigned long flickEndTime = 0;
-uint8_t activeZMotion = 255;
 uint8_t activeZSpeed = 255;
 unsigned long lastTiltSampleTime = 0;
+unsigned long lastFlickTime = 0;
 
 // Low-Pass Filtered Accelerometer for Silky Smooth Barrel Roll
 float smoothedAccelX = 512.0f;
@@ -347,85 +349,85 @@ void readNunchukAndProcess() {
     lastUserActivityTime = now;
   }
 
-  // Apply Low-Pass EMA Filter on AccelX for Smooth, Jitter-Free Flow
+  // Low-Pass Filter on AccelX for Smooth Throttle
   smoothedAccelX = (smoothedAccelX * 0.70f) + ((float)accelX * 0.30f);
 
   // =========================================================================
-  // ⚡ 1. Z-TRIGGER GESTURE ENGINE (Hold Z + Flick Flash / Pattern Barrel Roll)
+  // ⚡ 1. Z-TRIGGER GESTURE ENGINE (Hold Z + Step 2 Remix / Tilt Speed Throttle)
   // =========================================================================
   if (btnZ && !lastBtnZ) {
     // Save snapshot of current settings before Z engagement
     preZPalette = currentPalette;
-    preZMotion = currentMotion;
+    preZMotion = 0;
 
     isZHeld = true;
-    activeZMotion = 255;
     activeZSpeed = 255;
-    flickEndTime = 0;
     smoothedAccelX = (float)accelX;
-    Serial.printf("⚡ [Z-ENGAGE] Snapshot saved (Pal: %d, Mot: %d)\n", preZPalette, preZMotion);
+
+    // Activate the current Step 2 Motion Flow
+    if (activeZMotion == 0) activeZMotion = 1;
+    sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
+    sendBleCommand(CC_SET_PALETTE_SPEED, 6);
+    Serial.printf("⚡ [Z-ENGAGE] Step 2 Motion %d Active!\n", activeZMotion);
   } else if (btnZ) {
-    // Detect Sharp Wrist Flick (Jerk Magnitude)
+
+    // 💥 1A. WRIST FLICK (Sharp Snap) -> Instant Next Step 2 Motion Flow Drop!
     int16_t deltaX = abs(accelX - prevAccelX);
     int16_t deltaY = abs(accelY - prevAccelY);
     int16_t deltaZ = abs(accelZ - prevAccelZ);
     int16_t totalJerk = deltaX + deltaY + deltaZ;
 
-    if (totalJerk > 190 && (now > flickEndTime)) {
-      // 💥 WRIST FLICK DETECTED: Send Strobe Flash Burst (Motion 15)
-      flickEndTime = now + 400;
-      activeZMotion = 15;
-      sendBleCommand(CC_SET_MOTION_FX, 15);
-      Serial.printf("💥 [WRIST FLICK] Strobe Flash Burst! (Jerk: %d)\n", totalJerk);
+    if (totalJerk > 200 && (now - lastFlickTime > 400)) {
+      lastFlickTime = now;
+      activeZMotion = (activeZMotion % 16) + 1; // 1 to 16
+      sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
+      Serial.printf("💥 [WRIST FLICK] Jumped to Step 2 Motion %d!\n", activeZMotion);
     }
 
-    // Smooth Pattern Barrel Roll (Physical Pixel Scrolling) when not in flick flash
-    if (now > flickEndTime) {
-      if (now - lastTiltSampleTime > 35) {
-        lastTiltSampleTime = now;
-        
-        float dev = smoothedAccelX - 512.0f; // Deviation from level center
-        uint8_t targetMotion = 0;
-        uint8_t targetSpeed = 5;
+    // 🕹️ 1B. HOLD Z + JOYSTICK LEFT/RIGHT -> FLICK THROUGH STEP 2 MOTION FLOWS (1 to 16)
+    if (now - lastJoyFlickTime > 280) {
+      if (joyX < 50) {
+        // Previous Step 2 Motion Flow (1 to 16)
+        activeZMotion = (activeZMotion > 1) ? (activeZMotion - 1) : 16;
+        sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
+        Serial.printf("◀️ [Z-COMBO] Step 2 Motion: %d\n", activeZMotion);
+        lastJoyFlickTime = now;
+      } else if (joyX > 200) {
+        // Next Step 2 Motion Flow (1 to 16)
+        activeZMotion = (activeZMotion % 16) + 1;
+        sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
+        Serial.printf("▶️ [Z-COMBO] Step 2 Motion: %d\n", activeZMotion);
+        lastJoyFlickTime = now;
+      }
+    }
 
-        if (dev < -45.0f) {
-          // 🔄 Twist Left: Pattern physically scrolls UP to tip
-          targetMotion = 1;
-          float mag = (-dev - 45.0f) / 200.0f;
-          if (mag > 1.0f) mag = 1.0f;
-          targetSpeed = 4 + (uint8_t)(mag * 6.0f); // 4 to 10
-        } else if (dev > 45.0f) {
-          // 🔄 Twist Right: Pattern physically scrolls DOWN to handle
-          targetMotion = 2;
-          float mag = (dev - 45.0f) / 200.0f;
-          if (mag > 1.0f) mag = 1.0f;
-          targetSpeed = 4 + (uint8_t)(mag * 6.0f); // 4 to 10
-        } else {
-          // Level / Center Deadzone: Stationary pattern
-          targetMotion = 0;
-          targetSpeed = 5;
-        }
+    // 🌀 1C. HOLD Z + BARREL ROLL TILT -> DYNAMIC FLOW SPEED THROTTLE
+    if (now - lastTiltSampleTime > 35) {
+      lastTiltSampleTime = now;
+      float dev = abs(smoothedAccelX - 512.0f); // Tilt magnitude
+      uint8_t targetSpeed = 4;
+      if (dev > 30.0f) {
+        float mag = (dev - 30.0f) / 220.0f;
+        if (mag > 1.0f) mag = 1.0f;
+        targetSpeed = 4 + (uint8_t)(mag * 6.0f); // 4 to 10 (Dynamic Throttle)
+      } else {
+        targetSpeed = 4; // Steady / Chill
+      }
 
-        if (targetMotion != activeZMotion) {
-          activeZMotion = targetMotion;
-          sendBleCommand(CC_SET_MOTION_FX, targetMotion);
-        }
-        if (targetSpeed != activeZSpeed) {
-          activeZSpeed = targetSpeed;
-          sendBleCommand(CC_SET_PALETTE_SPEED, targetSpeed);
-        }
+      if (targetSpeed != activeZSpeed) {
+        activeZSpeed = targetSpeed;
+        sendBleCommand(CC_SET_PALETTE_SPEED, targetSpeed);
       }
     }
 
   } else if (!btnZ && lastBtnZ) {
-    // 🔄 RELEASE Z -> PERFECTLY RESTORE EXACT PRE-Z STATE!
+    // 🔄 RELEASE Z -> PERFECTLY RESTORE BASELINE STEADY PATTERN!
     isZHeld = false;
-    sendBleCommand(CC_SET_MOTION_FX, preZMotion);         // Restore previous motion
+    sendBleCommand(CC_SET_MOTION_FX, 0);                 // Motion OFF
     sendBleCommand(CC_SET_PALETTE_SPEED, 5);              // Base speed
-    sendBleCommand(CC_SET_PALETTE_FX, preZPalette);       // Restore previous palette
+    sendBleCommand(CC_SET_PALETTE_FX, preZPalette);       // Restore palette
     currentPalette = preZPalette;
-    currentMotion = preZMotion;
-    Serial.printf("🔄 [Z-RELEASE] Perfectly restored pre-Z state (Pal: %d, Mot: %d)\n", preZPalette, preZMotion);
+    Serial.printf("🔄 [Z-RELEASE] Fluidly restored steady pattern (Pal: %d)\n", preZPalette);
   }
 
   prevAccelX = accelX;
@@ -509,7 +511,7 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - Master Nunchuk BLE Bridge (v142)");
+  Serial.println("Open Pixel Poi - Master Nunchuk BLE Bridge (v143)");
   Serial.println("=================================================");
 
   gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
