@@ -360,24 +360,30 @@ static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& 
     if (motionId == 0) return;
     if (red == 0 && green == 0 && blue == 0) return;
 
-    if (motionId == 1 || motionId == 11) { // ⚡ LED Energy Pulse Down Spectrum
+    if (motionId == 1 || motionId == 11) { // ⚡ Flow UP to Tip (Twist Left / Flick)
       uint8_t wave = (uint8_t)(((timeMs * spd / 7) - (ledIndex * 256 / safeLedCount)) & 0xFF);
-      float factor = 0.25f + 0.75f * (wave / 255.0f);
+      float factor = 0.35f + 0.65f * (wave / 255.0f);
       red = (uint8_t)(red * factor);
       green = (uint8_t)(green * factor);
       blue = (uint8_t)(blue * factor);
       if (wave > 225) {
-        uint8_t crest = (uint8_t)((wave - 225) * 8);
+        uint8_t crest = (uint8_t)((wave - 225) * 6);
         red = min(255, (int)(red + crest));
         green = min(255, (int)(green + crest));
         blue = min(255, (int)(blue + crest));
       }
-    } else if (motionId == 2) { // Pulse Inward to Handle
+    } else if (motionId == 2) { // ⚡ Flow DOWN to Handle (Twist Right)
       uint8_t wave = (uint8_t)(((timeMs * spd / 7) + (ledIndex * 256 / safeLedCount)) & 0xFF);
-      float factor = 0.25f + 0.75f * (wave / 255.0f);
+      float factor = 0.35f + 0.65f * (wave / 255.0f);
       red = (uint8_t)(red * factor);
       green = (uint8_t)(green * factor);
       blue = (uint8_t)(blue * factor);
+      if (wave > 225) {
+        uint8_t crest = (uint8_t)((wave - 225) * 6);
+        red = min(255, (int)(red + crest));
+        green = min(255, (int)(green + crest));
+        blue = min(255, (int)(blue + crest));
+      }
     }
     return;
   }
