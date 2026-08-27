@@ -570,10 +570,28 @@ class OpenPixelPoiLED {
         float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)currentDuration) : 1.0f;
 
 
+        // 1. Calculate Physical Pattern Pixel Shift (Directly scrolls the pattern image!)
+        int pixelShift = 0;
+        uint8_t safeHeight = (config.frameHeight >= 10) ? config.frameHeight : 55;
+        if (config.motionFxMode == 1) {
+          // Flow UP toward tip (Twist Left)
+          pixelShift = (int)((millis() * config.paletteSpeed / 8) % safeHeight);
+        } else if (config.motionFxMode == 2) {
+          // Flow DOWN toward handle (Twist Right)
+          pixelShift = (int)(safeHeight - ((millis() * config.paletteSpeed / 8) % safeHeight));
+        }
+
         for (int j=0; j<config.ledCount; j++){
-          red = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 0];
-          green = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 1];
-          blue = config.pattern[frameIndex*config.frameHeight*3 + j%config.frameHeight*3 + 2];
+          int sampleLed = (j + pixelShift) % safeHeight;
+          red = config.pattern[frameIndex*safeHeight*3 + sampleLed*3 + 0];
+          green = config.pattern[frameIndex*safeHeight*3 + sampleLed*3 + 1];
+          blue = config.pattern[frameIndex*safeHeight*3 + sampleLed*3 + 2];
+
+          // If Flick Strobe Flash active (motionFxMode == 15):
+          if (config.motionFxMode == 15) {
+            bool flashOn = ((millis() / 30) % 2 == 0);
+            if (!flashOn) { red = (uint8_t)(red * 0.15f); green = (uint8_t)(green * 0.15f); blue = (uint8_t)(blue * 0.15f); }
+          }
 
           // Apply Snappy Zero-RAM Transition Modes
           if (isTransitioning) {

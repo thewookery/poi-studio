@@ -208,9 +208,7 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
             config.setAnimationSpeed(bleStatus[2] << 8 | bleStatus[3]);
             bleSendSuccess();
           }else if(requestCode == CC_SET_PATTERN){
-            for (int i=0; i<sizeof(config.pattern); i++){
-              config.pattern[i]=0;
-            }
+            memset(config.pattern, 0, min((size_t)(config.patternLength), (size_t)(PATTERN_PIXEL_LIMIT * 3)));
             config.setFrameHeight(bleStatus[2]);
             config.setFrameCount(bleStatus[3] << 8 | bleStatus[4]);
             config.patternLength = config.frameHeight*config.frameCount*3; // Need exception handling for buffer overruns!!!
@@ -361,9 +359,7 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
             debugf("Start multipart pattern! %d bits\n", bleStatus[2] * (bleStatus[3] << 8 | bleStatus[4]));
             multipartPattern = 1;
             multipartPatternOffset = 0;
-            for (int i=0; i<sizeof(config.pattern); i++){
-              config.pattern[i]=0;
-            }
+            memset(config.pattern, 0, min((size_t)(config.patternLength), (size_t)(PATTERN_PIXEL_LIMIT * 3)));
             config.setFrameHeight(bleStatus[2]);
             config.setFrameCount(bleStatus[3] << 8 | bleStatus[4]);
             config.patternLength = config.frameHeight*config.frameCount*3;// Need exception handling for buffer overruns!!!

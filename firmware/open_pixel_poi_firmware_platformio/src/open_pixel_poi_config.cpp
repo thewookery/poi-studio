@@ -325,16 +325,18 @@ class OpenPixelPoiConfig {
       String key = "p";
       key += this->getActivePatternIndex();
       key += "Height";
-      this->frameHeight = preferences.getChar(key.c_str(), 55);
-      if (this->frameHeight == 0) this->frameHeight = 55;
+      uint8_t h = preferences.getUChar(key.c_str(), 55);
+      if (h < 10 || h > 255) h = 55; // Strict 55px safety clamp (prevents 2-LED glitch)
+      this->frameHeight = h;
     }
 
     void loadFrameCount(){
       String key = "p";
       key += this->getActivePatternIndex();
       key += "FCount";
-      this->frameCount = preferences.getUShort(key.c_str(), 30);
-      if (this->frameCount == 0) this->frameCount = 30;
+      uint16_t fc = preferences.getUShort(key.c_str(), 30);
+      if (fc < 2 || fc > 2000) fc = 30;
+      this->frameCount = fc;
     }
 
     void saveSequencer() {

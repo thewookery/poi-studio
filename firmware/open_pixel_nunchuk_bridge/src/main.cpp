@@ -1,8 +1,8 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BLE BRIDGE (Build v141)
+ * OPEN PIXEL POI - MASTER NUNCHUK BLE BRIDGE (Build v142)
  * ============================================================================
- * Smooth Filtered Barrel Roll & Instant Pre-Z State Restore Engine
+ * Physical Pattern Scrolling on Barrel Roll & 100% Pre-Z State Restore Engine
  * 
  * 🎮 CONTROLS:
  * - 📱 Auto-Pairs to OpenPixelPoi over Bluetooth in 1 second
@@ -11,12 +11,12 @@
  * - 🌟 C Button (Tap): Next Color Palette (1-32) | Hold 1.0s: Reset Original RGB
  * 
  * ⚡ Z-TRIGGER GESTURE ENGINE:
- * - 💥 HOLD Z + WRIST FLICK (Sharp Snap): Triggers explosive LED Energy Pulse rushing down the spectrum!
+ * - 💥 HOLD Z + WRIST FLICK (Sharp Snap): Triggers explosive Strobe Flash Ripple!
  * - 🌀 HOLD Z + BARREL ROLL (Filtered Smooth Twist Left / Right):
- *     • 🔄 Twist Left: Liquid flow UP toward the tip (proportional speed based on tilt angle!)
- *     • 🔄 Twist Right: Liquid flow DOWN toward the handle (proportional speed based on tilt angle!)
- *     • 〰️ Level / Center: Steady, crisp pattern
- * - 🔄 RELEASE Z: Instantly & PERFECTLY restores the exact pre-Z settings (Palette, Motion, Speed)!
+ *     • 🔄 Twist Left: Pattern image physically scrolls UP toward the tip!
+ *     • 🔄 Twist Right: Pattern image physically scrolls DOWN toward the handle!
+ *     • 〰️ Level / Center: Steady, stationary pattern!
+ * - 🔄 RELEASE Z: Instantly & PERFECTLY restores exact pre-Z settings (Palette, Motion, Speed)!
  * - ❌ No pattern slot changes on Z taps (Navigation is strictly on the joystick!)
  * 
  * 🔘 D0/D1 Power Button: Tap = Wakeup (3 blinks) | Hold 1.2s = Deep Sleep OFF (2 blinks)
@@ -351,7 +351,7 @@ void readNunchukAndProcess() {
   smoothedAccelX = (smoothedAccelX * 0.70f) + ((float)accelX * 0.30f);
 
   // =========================================================================
-  // ⚡ 1. Z-TRIGGER GESTURE ENGINE (Hold Z + Flick / Smooth Barrel Roll)
+  // ⚡ 1. Z-TRIGGER GESTURE ENGINE (Hold Z + Flick Flash / Pattern Barrel Roll)
   // =========================================================================
   if (btnZ && !lastBtnZ) {
     // Save snapshot of current settings before Z engagement
@@ -372,16 +372,14 @@ void readNunchukAndProcess() {
     int16_t totalJerk = deltaX + deltaY + deltaZ;
 
     if (totalJerk > 190 && (now > flickEndTime)) {
-      // 💥 WRIST FLICK DETECTED: Send high-speed energy pulse down spectrum!
-      flickEndTime = now + 450;
-      activeZMotion = 1;
-      activeZSpeed = 10;
-      sendBleCommand(CC_SET_PALETTE_SPEED, 10);
-      sendBleCommand(CC_SET_MOTION_FX, 1);
-      Serial.printf("💥 [WRIST FLICK] LED Energy Pulse Sweeping Down Spectrum! (Jerk: %d)\n", totalJerk);
+      // 💥 WRIST FLICK DETECTED: Send Strobe Flash Burst (Motion 15)
+      flickEndTime = now + 400;
+      activeZMotion = 15;
+      sendBleCommand(CC_SET_MOTION_FX, 15);
+      Serial.printf("💥 [WRIST FLICK] Strobe Flash Burst! (Jerk: %d)\n", totalJerk);
     }
 
-    // Smooth Continuous Barrel Roll (Wrist Twist Left / Right) when not in a flick pulse
+    // Smooth Pattern Barrel Roll (Physical Pixel Scrolling) when not in flick flash
     if (now > flickEndTime) {
       if (now - lastTiltSampleTime > 35) {
         lastTiltSampleTime = now;
@@ -391,21 +389,19 @@ void readNunchukAndProcess() {
         uint8_t targetSpeed = 5;
 
         if (dev < -45.0f) {
-          // 🔄 Twist Left: Liquid Flow UP to tip
+          // 🔄 Twist Left: Pattern physically scrolls UP to tip
           targetMotion = 1;
-          // Smoothly scale speed from 3 (gentle tilt) up to 10 (steep tilt)
-          float mag = (-dev - 45.0f) / 200.0f; // 0.0 to 1.0+
+          float mag = (-dev - 45.0f) / 200.0f;
           if (mag > 1.0f) mag = 1.0f;
-          targetSpeed = 3 + (uint8_t)(mag * 7.0f); // 3 to 10
+          targetSpeed = 4 + (uint8_t)(mag * 6.0f); // 4 to 10
         } else if (dev > 45.0f) {
-          // 🔄 Twist Right: Liquid Flow DOWN to handle
+          // 🔄 Twist Right: Pattern physically scrolls DOWN to handle
           targetMotion = 2;
-          // Smoothly scale speed from 3 (gentle tilt) up to 10 (steep tilt)
-          float mag = (dev - 45.0f) / 200.0f; // 0.0 to 1.0+
+          float mag = (dev - 45.0f) / 200.0f;
           if (mag > 1.0f) mag = 1.0f;
-          targetSpeed = 3 + (uint8_t)(mag * 7.0f); // 3 to 10
+          targetSpeed = 4 + (uint8_t)(mag * 6.0f); // 4 to 10
         } else {
-          // Level / Center Deadzone: Steady pattern
+          // Level / Center Deadzone: Stationary pattern
           targetMotion = 0;
           targetSpeed = 5;
         }
@@ -425,7 +421,7 @@ void readNunchukAndProcess() {
     // 🔄 RELEASE Z -> PERFECTLY RESTORE EXACT PRE-Z STATE!
     isZHeld = false;
     sendBleCommand(CC_SET_MOTION_FX, preZMotion);         // Restore previous motion
-    sendBleCommand(CC_SET_PALETTE_SPEED, 5);              // Base palette speed
+    sendBleCommand(CC_SET_PALETTE_SPEED, 5);              // Base speed
     sendBleCommand(CC_SET_PALETTE_FX, preZPalette);       // Restore previous palette
     currentPalette = preZPalette;
     currentMotion = preZMotion;
@@ -513,7 +509,7 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - Master Nunchuk BLE Bridge (v141)");
+  Serial.println("Open Pixel Poi - Master Nunchuk BLE Bridge (v142)");
   Serial.println("=================================================");
 
   gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
