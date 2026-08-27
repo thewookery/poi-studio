@@ -1,8 +1,8 @@
 /**
  * ============================================================================
- * OPEN PIXEL POI - MASTER NUNCHUK BLE BRIDGE (Build v139)
+ * OPEN PIXEL POI - MASTER NUNCHUK BLE BRIDGE (Build v140)
  * ============================================================================
- * Z-Hold LED Spectrum Pulse + Pure Joystick Pattern Navigation
+ * Z-Hold Wrist Flick Spectrum Pulse & Barrel Roll Directional Flow Engine
  * 
  * 🎮 CONTROLS:
  * - 📱 Auto-Pairs to OpenPixelPoi over Bluetooth in 1 second
@@ -10,10 +10,14 @@
  * - 🕹️ Joystick Up / Down: Previous / Next Hardware Bank (1-5) [When nothing pressed]
  * - 🌟 C Button (Tap): Next Color Palette (1-32) | Hold 1.0s: Reset Original RGB
  * 
- * ⚡ Z-TRIGGER:
- * - ⚡ HOLD Z: Sends a high-speed LED Energy Pulse rushing down the pattern spectrum!
- * - 🔄 RELEASE Z: Instantly & fluidly stops the pulse and returns to steady pattern!
- * - ❌ No pattern slot jumping on Z taps (Navigation is strictly on the joystick!)
+ * ⚡ Z-TRIGGER GESTURE ENGINE:
+ * - 💥 HOLD Z + WRIST FLICK (Sharp Snap): Triggers explosive LED Energy Pulse rushing down the spectrum!
+ * - 🌀 HOLD Z + BARREL ROLL (Twist Left / Right):
+ *     • 🔄 Twist Left: Pattern flows UP toward the tip (harder twist = faster flow!)
+ *     • 🔄 Twist Right: Pattern flows DOWN toward the handle (harder twist = faster flow!)
+ *     • 〰️ Level / Center: Steady / Shimmering pattern
+ * - 🔄 RELEASE Z: Instantly & FLUIDLY stops the pulse/flow and restores steady pattern in 0ms!
+ * - ❌ No pattern slot changes on Z taps (Navigation is strictly on the joystick!)
  * 
  * 🔘 D0/D1 Power Button: Tap = Wakeup (3 blinks) | Hold 1.2s = Deep Sleep OFF (2 blinks)
  */
@@ -86,7 +90,18 @@ bool isNunchukI2cOk = false;
 uint8_t currentSlot = 0;
 uint8_t currentBank = 0;
 uint8_t currentPalette = 0;
-bool isZPulseActive = false;
+
+// Gesture State
+bool isZHeld = false;
+unsigned long flickEndTime = 0;
+uint8_t activeZMotion = 255;
+uint8_t activeZSpeed = 255;
+unsigned long lastTiltSampleTime = 0;
+
+// Accelerometer history for Flick Detection
+int16_t prevAccelX = 512;
+int16_t prevAccelY = 512;
+int16_t prevAccelZ = 700;
 
 // Nunchuk Live State
 uint8_t lastJoyX = 128;
@@ -311,6 +326,9 @@ void readNunchukAndProcess() {
 
   uint8_t joyX = raw[0];
   uint8_t joyY = raw[1];
+  int16_t accelX = (raw[2] << 2) | ((raw[5] >> 2) & 0x03);
+  int16_t accelY = (raw[3] << 2) | ((raw[5] >> 4) & 0x03);
+  int16_t accelZ = (raw[4] << 2) | ((raw[5] >> 6) & 0x03);
   bool btnZ = !((raw[5] >> 0) & 0x01);
   bool btnC = !((raw[5] >> 1) & 0x01);
 
@@ -324,26 +342,80 @@ void readNunchukAndProcess() {
   }
 
   // =========================================================================
-  // ⚡ 1. Z-TRIGGER (Hold = LED Spectrum Energy Pulse | Release = Steady Stock)
+  // ⚡ 1. Z-TRIGGER GESTURE ENGINE (Hold Z + Flick / Barrel Roll)
   // =========================================================================
   if (btnZ && !lastBtnZ) {
-    // Squeeze Z -> Activate high-speed LED Spectrum Energy Pulse!
-    isZPulseActive = true;
-    sendBleCommand(CC_SET_PALETTE_SPEED, 8); // Fast pulse speed
-    sendBleCommand(CC_SET_MOTION_FX, 1);     // Flow Up / Pulse Down Spectrum
-    Serial.println("⚡ [Z-PULSE] LED Energy Pulse Sweeping Down Spectrum!");
+    isZHeld = true;
+    activeZMotion = 255;
+    activeZSpeed = 255;
+    flickEndTime = 0;
+  } else if (btnZ) {
+    // Detect Sharp Wrist Flick (Jerk Magnitude)
+    int16_t deltaX = abs(accelX - prevAccelX);
+    int16_t deltaY = abs(accelY - prevAccelY);
+    int16_t deltaZ = abs(accelZ - prevAccelZ);
+    int16_t totalJerk = deltaX + deltaY + deltaZ;
+
+    if (totalJerk > 190 && (now > flickEndTime)) {
+      // 💥 WRIST FLICK DETECTED: Send high-speed energy pulse down spectrum!
+      flickEndTime = now + 450;
+      activeZMotion = 1;
+      activeZSpeed = 9;
+      sendBleCommand(CC_SET_PALETTE_SPEED, 9);
+      sendBleCommand(CC_SET_MOTION_FX, 1);
+      Serial.printf("💥 [WRIST FLICK] LED Energy Pulse Sweeping Down Spectrum! (Jerk: %d)\n", totalJerk);
+    }
+
+    // Barrel Roll (Wrist Twist Left / Right) when not in a flick pulse
+    if (now > flickEndTime) {
+      if (now - lastTiltSampleTime > 40) {
+        lastTiltSampleTime = now;
+        uint8_t targetMotion = 0; // Default: Steady
+        uint8_t targetSpeed = 5;
+
+        if (accelX < 430) {
+          // 🔄 Twist Left: Flow UP to tip
+          targetMotion = 1;
+          targetSpeed = (accelX < 320) ? 9 : 6;
+        } else if (accelX > 590) {
+          // 🔄 Twist Right: Flow DOWN to handle
+          targetMotion = 2;
+          targetSpeed = (accelX > 700) ? 9 : 6;
+        } else {
+          // Level / Center: Steady pattern
+          targetMotion = 0;
+          targetSpeed = 5;
+        }
+
+        if (targetMotion != activeZMotion) {
+          activeZMotion = targetMotion;
+          sendBleCommand(CC_SET_MOTION_FX, targetMotion);
+          Serial.printf("🌀 [BARREL ROLL] Motion %d\n", targetMotion);
+        }
+        if (targetSpeed != activeZSpeed) {
+          activeZSpeed = targetSpeed;
+          sendBleCommand(CC_SET_PALETTE_SPEED, targetSpeed);
+        }
+      }
+    }
+
   } else if (!btnZ && lastBtnZ) {
-    // Release Z -> Instantly and fluidly stop the pulse and restore steady playback!
-    isZPulseActive = false;
-    sendBleCommand(CC_SET_MOTION_FX, 0);     // Motion OFF / Steady Pattern
-    sendBleCommand(CC_SET_PALETTE_SPEED, 5); // Normal speed
-    Serial.println("🔄 [Z-PULSE] Released -> Restored Steady Pattern Playback.");
+    // 🔄 RELEASE Z -> Instantly and seamlessly restore steady stock pattern playback!
+    isZHeld = false;
+    sendBleCommand(CC_SET_MOTION_FX, 0);                 // Motion OFF
+    sendBleCommand(CC_SET_PALETTE_SPEED, 5);             // Normal speed
+    sendBleCommand(CC_SET_PALETTE_FX, currentPalette);   // Restore active palette
+    Serial.println("🔄 [Z-RELEASE] Fluidly restored steady pattern playback in 0ms.");
   }
 
+  prevAccelX = accelX;
+  prevAccelY = accelY;
+  prevAccelZ = accelZ;
+
   // =========================================================================
-  // 🕹️ 2. JOYSTICK PROCESSING (Pure Slot & Bank Navigation with Nothing Pressed)
+  // 🕹️ 2. JOYSTICK PROCESSING (Pure Slot & Bank Navigation when not holding Z)
   // =========================================================================
-  if (now - lastJoyFlickTime > 300) {
+  if (!isZHeld && (now - lastJoyFlickTime > 300)) {
     if (joyX < 50) {
       // Previous Pattern Slot (1-10)
       currentSlot = (currentSlot > 0) ? (currentSlot - 1) : 9;
@@ -374,20 +446,22 @@ void readNunchukAndProcess() {
   // =========================================================================
   // 🌟 3. C BUTTON (Tap = Step Palette | Hold 1.0s = Reset Original RGB)
   // =========================================================================
-  if (btnC && !lastBtnC) {
-    btnCHoldStart = now;
-  } else if (!btnC && lastBtnC) {
-    unsigned long pressDur = now - btnCHoldStart;
-    if (pressDur < 800) {
-      currentPalette = (currentPalette + 1) % 33;
-      sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
-      Serial.printf("🎨 [C-BUTTON] Palette %d\n", currentPalette);
+  if (!isZHeld) {
+    if (btnC && !lastBtnC) {
+      btnCHoldStart = now;
+    } else if (!btnC && lastBtnC) {
+      unsigned long pressDur = now - btnCHoldStart;
+      if (pressDur < 800) {
+        currentPalette = (currentPalette + 1) % 33;
+        sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
+        Serial.printf("🎨 [C-BUTTON] Palette %d\n", currentPalette);
+      }
+    } else if (btnC && (now - btnCHoldStart > 1000) && btnCHoldStart != 0) {
+      currentPalette = 0;
+      sendBleCommand(CC_SET_PALETTE_FX, 0);
+      Serial.println("🎨 [C-BUTTON] Reset Palette to Original RGB!");
+      btnCHoldStart = 0;
     }
-  } else if (btnC && (now - btnCHoldStart > 1000) && btnCHoldStart != 0) {
-    currentPalette = 0;
-    sendBleCommand(CC_SET_PALETTE_FX, 0);
-    Serial.println("🎨 [C-BUTTON] Reset Palette to Original RGB!");
-    btnCHoldStart = 0;
   }
 
   lastBtnC = btnC;
@@ -415,7 +489,7 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - Master Nunchuk BLE Bridge (v139)");
+  Serial.println("Open Pixel Poi - Master Nunchuk BLE Bridge (v140)");
   Serial.println("=================================================");
 
   gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
