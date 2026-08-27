@@ -244,20 +244,22 @@ class OpenPixelPoiConfig {
     }
     
     void setFrameHeight(uint8_t frameHeight) {
-      this->frameHeight = frameHeight;
+      uint8_t h = (frameHeight >= 20) ? frameHeight : 55;
+      this->frameHeight = h;
       String key = "p";
       key += this->getActivePatternIndex();
       key += "Height";
-      preferences.putChar(key.c_str(), this->frameHeight);
+      preferences.putUChar(key.c_str(), h);
       this->configLastUpdated = millis();
     }
     
     void setFrameCount(uint16_t frameCount) {
-      this->frameCount = frameCount;
+      uint16_t fc = (frameCount >= 2) ? frameCount : 30;
+      this->frameCount = fc;
       String key = "p";
       key += this->getActivePatternIndex();
       key += "FCount";
-      preferences.putUShort(key.c_str(), this->frameCount);
+      preferences.putUShort(key.c_str(), fc);
       this->configLastUpdated = millis();
     }
     
@@ -304,16 +306,37 @@ class OpenPixelPoiConfig {
       if(patternFile){
         patternFile.close();
       }
-      patternFile = LittleFS.open(String("/pattern") + this->getActivePatternIndex() + ".oppp");
+      String filename = String("/pattern") + this->getActivePatternIndex() + ".oppp";
+      patternFile = LittleFS.open(filename, "r");
+      
+      bool isCorruptOrMissing = false;
       if(!patternFile || patternFile.isDirectory()){
-        fillDefaultPattern();
-      }else{
+        isCorruptOrMissing = true;
+      } else {
         size_t availableBytes = patternFile.available();
-        if (availableBytes > 0) {
+        // A valid 55px pattern must have at least 1 frame (55 * 3 = 165 bytes)
+        if (availableBytes < 165) {
+          isCorruptOrMissing = true;
+        } else {
           size_t bytesToRead = min(availableBytes, (size_t)(PATTERN_PIXEL_LIMIT * 3));
           patternFile.read(pattern, bytesToRead);
+          this->patternLength = bytesToRead;
         }
         patternFile.close();
+      }
+
+      if (isCorruptOrMissing) {
+        fillDefaultPattern();
+        // Save the healthy full 55px pattern to LittleFS & NVS so it never glitches on reboot
+        File file = LittleFS.open(filename, FILE_WRITE);
+        if(file && !file.isDirectory()){
+          file.write(this->pattern, this->patternLength);
+          file.close();
+        }
+        String keyH = String("p") + this->getActivePatternIndex() + "Height";
+        String keyC = String("p") + this->getActivePatternIndex() + "FCount";
+        preferences.putUChar(keyH.c_str(), 55);
+        preferences.putUShort(keyC.c_str(), 30);
       }
     }
 
@@ -326,7 +349,7 @@ class OpenPixelPoiConfig {
       key += this->getActivePatternIndex();
       key += "Height";
       uint8_t h = preferences.getUChar(key.c_str(), 55);
-      if (h < 10 || h > 255) h = 55; // Strict 55px safety clamp (prevents 2-LED glitch)
+      if (h < 20 || h > 255) h = 55; // Strict 55px safety clamp (prevents 2-LED glitch)
       this->frameHeight = h;
     }
 
