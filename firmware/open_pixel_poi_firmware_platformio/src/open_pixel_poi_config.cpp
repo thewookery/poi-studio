@@ -277,32 +277,25 @@ class OpenPixelPoiConfig {
       if(!file || file.isDirectory()){
         debugf("− failed to open file for writing\n");
       }else{
-        debugf(" - opened file for writing: %d\n");
-        
-        int written = file.write(this->pattern, this->patternLength);
+        file.write(this->pattern, this->patternLength);
         file.close();
-        debugf(" - this much written: %d\n", written);
       }
-      
-      startLoadingPattern();
       this->configLastUpdated = millis();
     }
 
     void fillDefaultPattern(){
-      debugf("No pattern found, using default\n");
-      this->frameHeight = 5;
-      this->frameCount = 5;
+      this->frameHeight = 55;
+      this->frameCount = 30;
+      this->patternLength = this->frameHeight * this->frameCount * 3;
       for (int i = 0; i < this->frameCount; i++) {
         for (int j = 0; j < this->frameHeight; j++) {
-          if(i % 2 == 1){
-            pattern[(i * this->frameHeight * 3) + (j*3) + 0] = 0xFF;
-            pattern[(i * this->frameHeight * 3) + (j*3) + 1] = 0xFF;
-            pattern[(i * this->frameHeight * 3) + (j*3) + 2] = 0x00;
-          }else{
-            pattern[(i * this->frameHeight * 3) + (j*3) + 0] = 0x00;
-            pattern[(i * this->frameHeight * 3) + (j*3) + 1] = 0x00;
-            pattern[(i * this->frameHeight * 3) + (j*3) + 2] = 0x00;
-          }
+          uint8_t hue = (j * 256 / 55 + i * 8) & 0xFF;
+          uint8_t r = (hue < 85) ? (hue * 3) : ((hue < 170) ? (255 - (hue - 85) * 3) : 0);
+          uint8_t g = (hue < 85) ? (255 - hue * 3) : ((hue < 170) ? 0 : ((hue - 170) * 3));
+          uint8_t b = (hue < 85) ? 0 : ((hue < 170) ? ((hue - 85) * 3) : (255 - (hue - 170) * 3));
+          pattern[(i * this->frameHeight * 3) + (j*3) + 0] = r;
+          pattern[(i * this->frameHeight * 3) + (j*3) + 1] = g;
+          pattern[(i * this->frameHeight * 3) + (j*3) + 2] = b;
         }
       }
     }
@@ -313,41 +306,35 @@ class OpenPixelPoiConfig {
       }
       patternFile = LittleFS.open(String("/pattern") + this->getActivePatternIndex() + ".oppp");
       if(!patternFile || patternFile.isDirectory()){
-        debugf("− failed to open file for reading\n");
         fillDefaultPattern();
       }else{
-        debugf(" - this much available: %d\n", patternFile.available());
-        // Filling the whole pattern with data is way too slow
-        // just fill one pixel so we don't have a completely black pattern if something goes weird
-        pattern[0] = 0xFF;
+        size_t availableBytes = patternFile.available();
+        if (availableBytes > 0) {
+          size_t bytesToRead = min(availableBytes, (size_t)(PATTERN_PIXEL_LIMIT * 3));
+          patternFile.read(pattern, bytesToRead);
+        }
+        patternFile.close();
       }
-      // Load first frame immediately (For large/fast patterns this is futile, as we already lagged past it)
-      continueLoadingPattern();
     }
 
     void continueLoadingPattern(){
-      if(patternFile && patternFile.available() > 0){
-        if(patternFile.available() <= frameHeight * 3){
-          patternFile.read(pattern + patternFile.position(), patternFile.available());
-        }else{
-          patternFile.read(pattern + patternFile.position(), frameHeight * 3);
-        }
-      }
+      // No-op: Full pattern is already loaded instantaneously into RAM!
     }
 
     void loadFrameHeight(){
       String key = "p";
       key += this->getActivePatternIndex();
       key += "Height";
-      this->frameHeight = preferences.getChar(key.c_str(), 5);
+      this->frameHeight = preferences.getChar(key.c_str(), 55);
+      if (this->frameHeight == 0) this->frameHeight = 55;
     }
 
     void loadFrameCount(){
       String key = "p";
       key += this->getActivePatternIndex();
       key += "FCount";
-      debugf("key = %s\n", key);
-      this->frameCount = preferences.getUShort(key.c_str(), 5);
+      this->frameCount = preferences.getUShort(key.c_str(), 30);
+      if (this->frameCount == 0) this->frameCount = 30;
     }
 
     void saveSequencer() {
