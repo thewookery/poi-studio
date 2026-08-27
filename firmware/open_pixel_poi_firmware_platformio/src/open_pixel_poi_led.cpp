@@ -349,9 +349,38 @@ static inline void getPaletteBaseColor(uint8_t palId, uint8_t index256, uint8_t 
   }
 }
 
-// Modular Palette + Motion Flow FX Engine
+// Modular Palette + Motion Flow FX Engine (Supports Palettes AND True RGB Energy Pulses)
 static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t palId, uint8_t motionId, unsigned long timeMs, uint8_t speed, uint8_t ledIndex = 0, uint16_t frameIndex = 0, uint16_t frameCount = 1, uint8_t ledCount = 55) {
-  if (palId == 0) return; // 0: Normal True-Color RGB
+  uint16_t safeFrameCount = (frameCount > 0) ? frameCount : 1;
+  uint8_t safeLedCount = (ledCount > 0) ? ledCount : 55;
+  uint8_t spd = (speed > 0) ? speed : 5;
+
+  // True RGB Energy Pulse & Wave Modulation (When palId == 0)
+  if (palId == 0) {
+    if (motionId == 0) return;
+    if (red == 0 && green == 0 && blue == 0) return;
+
+    if (motionId == 1 || motionId == 11) { // ⚡ LED Energy Pulse Down Spectrum
+      uint8_t wave = (uint8_t)(((timeMs * spd / 7) - (ledIndex * 256 / safeLedCount)) & 0xFF);
+      float factor = 0.25f + 0.75f * (wave / 255.0f);
+      red = (uint8_t)(red * factor);
+      green = (uint8_t)(green * factor);
+      blue = (uint8_t)(blue * factor);
+      if (wave > 225) {
+        uint8_t crest = (uint8_t)((wave - 225) * 8);
+        red = min(255, (int)(red + crest));
+        green = min(255, (int)(green + crest));
+        blue = min(255, (int)(blue + crest));
+      }
+    } else if (motionId == 2) { // Pulse Inward to Handle
+      uint8_t wave = (uint8_t)(((timeMs * spd / 7) + (ledIndex * 256 / safeLedCount)) & 0xFF);
+      float factor = 0.25f + 0.75f * (wave / 255.0f);
+      red = (uint8_t)(red * factor);
+      green = (uint8_t)(green * factor);
+      blue = (uint8_t)(blue * factor);
+    }
+    return;
+  }
 
   // Negative Space Protection: Never alter black pixels
   if (red == 0 && green == 0 && blue == 0) return;
@@ -359,8 +388,6 @@ static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& 
   uint8_t lum = max(red, max(green, blue));
   if (lum == 0) { red = 0; green = 0; blue = 0; return; }
 
-  uint16_t safeFrameCount = (frameCount > 0) ? frameCount : 1;
-  uint8_t safeLedCount = (ledCount > 0) ? ledCount : 55;
   uint8_t index256 = 0;
 
   switch (motionId) {
@@ -622,7 +649,7 @@ class OpenPixelPoiLED {
 
 
           // Apply Real-Time Color Palette & Motion Flow FX Engine (Zero-RAM Overhead)
-          if (config.paletteFxMode > 0) {
+          if (config.paletteFxMode > 0 || config.motionFxMode > 0) {
             applyModularPaletteFX(red, green, blue, config.paletteFxMode, config.motionFxMode, millis(), config.paletteSpeed, j, frameIndex, config.frameCount, config.ledCount);
           }
 
