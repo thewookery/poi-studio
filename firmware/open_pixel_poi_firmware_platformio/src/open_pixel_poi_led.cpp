@@ -484,21 +484,13 @@ class OpenPixelPoiLED {
     OpenPixelPoiLED(OpenPixelPoiConfig& _config): config(_config){}    
     int frameIndex;
     void setup(){
-      debugf("Setup begin\n");
-      // Create Led Strip objects based on config, default to DotStar 55px
-      if(config.hardwareVersion == 1 && config.ledType == 1){
-        ledStrip = new NeoPixelStrip(config.ledCount > 0 ? config.ledCount : 20, 8);
-      }else if(config.hardwareVersion == 2 && config.ledType == 1){
-        ledStrip = new NeoPixelStrip(config.ledCount > 0 ? config.ledCount : 25, 6);
-      }else{
-        // 55px DotStar (Pins 6 Data, 7 Clock)
-        ledStrip = new DotStarStrip(config.ledCount > 0 ? config.ledCount : 55, 6, 7);
-      }
-
-      // LED Setup:
+      // Always initialize all 55 DotStar LEDs unconditionally (Pins 6 Data, 7 Clock)
+      config.ledCount = 55;
+      config.frameHeight = 55;
+      if (config.frameCount < 2) config.frameCount = 30;
+      ledStrip = new DotStarStrip(55, 6, 7);
       ledStrip->Begin();
       frameIndex = 0;
-      debugf("LED setup complete\n");
     }
 
     uint16_t getBlendDuration(uint8_t mode) {
@@ -547,8 +539,9 @@ class OpenPixelPoiLED {
         float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)currentDuration) : 1.0f;
 
 
-        uint8_t safeHeight = (config.frameHeight >= 10) ? config.frameHeight : 55;
-        for (int j=0; j<config.ledCount; j++){
+        uint8_t safeHeight = 55;
+        uint8_t totalLeds = 55;
+        for (int j=0; j<totalLeds; j++){
           red = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 0];
           green = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 1];
           blue = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 2];

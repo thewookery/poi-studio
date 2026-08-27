@@ -405,15 +405,13 @@ class OpenPixelPoiConfig {
       preferences.begin("led_pattern", false);
       debugf("Preffs free entries: %d\n", preferences.freeEntries());
 
-      // Load hardware settings with bulletproof defaults for 55px DotStar
-      this->hardwareVersion = preferences.getChar("hardwareVersion", DEFAULT_HARDWARE_VERSION);
-      if (this->hardwareVersion <= 0) this->hardwareVersion = 2;
-
-      this->ledType = preferences.getChar("ledType", DEFAULT_LED_TYPE);
-      if (this->ledType <= 0) this->ledType = 2; // 2 = DotStar
-
-      this->ledCount = preferences.getChar("ledCount", DEFAULT_LED_COUNT);
-      if (this->ledCount <= 0) this->ledCount = 55;
+      // Permanently lock hardware to 55px DotStar and overwrite any stale NVS corruptions
+      this->hardwareVersion = 2;
+      this->ledType = 2; // 2 = DotStar SPI
+      this->ledCount = 55;
+      preferences.putUChar("hardwareVersion", 2);
+      preferences.putUChar("ledType", 2);
+      preferences.putUChar("ledCount", 55);
 
       this->deviceName = preferences.getString("deviceName", DEFAULT_DEVICE_NAME);
 
