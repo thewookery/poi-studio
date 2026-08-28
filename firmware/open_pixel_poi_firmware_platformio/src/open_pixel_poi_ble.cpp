@@ -183,6 +183,9 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
     }
     
     void onWrite(BLECharacteristic *characteristic) {
+      // Ignore transient BLE packets during first 1.2 seconds of boot
+      if (millis() < 1200) return;
+
       debugf("OnWrite()!\n");
       if(characteristic->getUUID().equals(pixelPoiRxCharacteristicUUID)){
         bleLastReceived = millis();

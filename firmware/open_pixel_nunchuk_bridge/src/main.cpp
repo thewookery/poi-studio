@@ -133,6 +133,8 @@ void flashWakeupLed() {
   }
 }
 
+void sendBleCommand(uint8_t cmdCode, uint8_t val);
+
 void flashPowerOffLed() {
   pinMode(PIN_BOARD_LED, OUTPUT);
   for (int i = 0; i < 2; i++) {
@@ -144,7 +146,26 @@ void flashPowerOffLed() {
 }
 
 void enterDeepSleepPowerOff() {
-  Serial.println("🛌 [POWER] Powering OFF (Entering Deep Sleep)...");
+  Serial.println("🛌 [POWER] Gracefully disconnecting BLE and Powering OFF...");
+
+  // 1. Send clean baseline reset command to Poi props before shutting down
+  sendBleCommand(CC_SET_MOTION_FX, 0);
+  sendBleCommand(CC_SET_PALETTE_FX, 0);
+  sendBleCommand(CC_SET_PALETTE_SPEED, 5);
+  delay(120);
+
+  // 2. Gracefully disconnect all BLE clients so the Poi never gets stuck
+  for (int i = 0; i < MAX_BLE_POIS; i++) {
+    if (poiSlots[i].connected && poiSlots[i].client != nullptr) {
+      try {
+        poiSlots[i].client->disconnect();
+      } catch (...) {}
+      poiSlots[i].connected = false;
+      poiSlots[i].rxChar = nullptr;
+    }
+  }
+  delay(180);
+
   flashPowerOffLed();
 
   gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
@@ -541,6 +562,12 @@ void setup() {
 void loop() {
   unsigned long now = millis();
   checkPowerButton();
+
+  // Power-on 1.5s warmup buffer: let BLE radio and power stabilize before sending commands
+  if (now < 1500) {
+    delay(20);
+    return;
+  }
 
   // 1. Process pending BLE connection
   if (doConnectPending && pendingDevice != nullptr) {
