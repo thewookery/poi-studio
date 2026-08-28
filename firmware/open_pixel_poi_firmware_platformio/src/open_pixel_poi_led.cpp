@@ -634,27 +634,158 @@ class OpenPixelPoiLED {
         }
 
         unsigned long now = millis();
-        uint32_t effT = now / 4;
+        uint8_t spd = max((uint8_t)1, config.paletteSpeed);
+        uint32_t effT = (now * (uint32_t)spd) / 4;
         uint8_t numC = max((uint8_t)2, g_slotPalette.count);
 
         for (int j=0; j<config.ledCount; j++){
-          // Harmonic Wave Color Blend across the 32 LEDs using extracted slot colors
-          uint8_t wave = (fastSin8((j * 255 / config.ledCount) + (effT / 6)) + (effT / 8)) & 0xFF;
-          uint8_t cIdx1 = (wave * numC) / 256;
+          uint8_t factor = 0;
+          uint8_t colorPhase = 0;
+
+          switch (config.motionFxMode) {
+            case 1: { // 1. ⬆️ Chasing Comet Pulses (Moving UP with Dark Gaps)
+              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) - (effT / 3)) & 0xFF);
+              uint8_t wave = fastSin8(pos * 3);
+              factor = (wave > 150) ? (uint8_t)(((uint16_t)(wave - 150) * 255) / 105) : 0;
+              colorPhase = (pos + (effT / 8)) & 0xFF;
+              break;
+            }
+            case 2: { // 2. ⬇️ Cascading Rain Drops (Moving DOWN with Spaced Gaps)
+              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) + (effT / 3)) & 0xFF);
+              uint8_t wave = fastSin8(pos * 3);
+              factor = (wave > 150) ? (uint8_t)(((uint16_t)(wave - 150) * 255) / 105) : 0;
+              colorPhase = (pos - (effT / 8)) & 0xFF;
+              break;
+            }
+            case 3: { // 3. 🌧️ Matrix Isolated Sparks
+              uint8_t spark = fastSin8(j * 42 + (effT / 3));
+              factor = (spark > 215) ? 255 : ((spark > 185) ? (uint8_t)((spark - 185) * 3) : 0);
+              colorPhase = (j * 16 + (effT / 6)) & 0xFF;
+              break;
+            }
+            case 4: { // 4. 🌊 Dual Passing Chaser Beams (Two Comet Heads Passing Each Other)
+              uint8_t wave1 = fastSin8((j * 120 / config.ledCount) - (effT / 4));
+              uint8_t wave2 = fastSin8((j * 120 / config.ledCount) + (effT / 5));
+              uint8_t p1 = (wave1 > 170) ? (uint8_t)((wave1 - 170) * 3) : 0;
+              uint8_t p2 = (wave2 > 170) ? (uint8_t)((wave2 - 170) * 3) : 0;
+              factor = min(255, (int)(p1 + p2));
+              colorPhase = (j * 12 + (effT / 6)) & 0xFF;
+              break;
+            }
+            case 5: { // 5. ⚡ Laser Pulse Beads (Spaced Running Dots)
+              uint8_t dot = ((j + (effT / 16)) % 7);
+              factor = (dot == 0) ? 255 : ((dot == 1 || dot == 6) ? 70 : 0);
+              colorPhase = (j * 24 + (effT / 8)) & 0xFF;
+              break;
+            }
+            case 6: { // 6. 💫 Shooting Meteor Head with Fading Tail
+              uint8_t mPos = (effT / 12) % (config.ledCount + 8);
+              int dist = (int)mPos - (int)j;
+              if (dist >= 0 && dist < 7) {
+                factor = (uint8_t)(255 - dist * 36);
+              } else {
+                factor = 0;
+              }
+              colorPhase = (j * 16) & 0xFF;
+              break;
+            }
+            case 7: { // 7. 💓 Breathing Center Glow Pulse
+              int center = config.ledCount / 2;
+              int dist = abs(j - center);
+              uint8_t breath = fastSin8(effT / 6);
+              uint8_t maxDist = (uint8_t)((breath * 10) / 255);
+              factor = (dist <= maxDist) ? (uint8_t)(255 - dist * 24) : 0;
+              colorPhase = (breath + j * 8) & 0xFF;
+              break;
+            }
+            case 8: { // 8. 🔄 Traveling Spark Orbit
+              uint8_t head = (effT / 14) % config.ledCount;
+              int d = abs(j - (int)head);
+              factor = (d <= 3) ? (uint8_t)(255 - d * 70) : 0;
+              colorPhase = (j * 32) & 0xFF;
+              break;
+            }
+            case 9: { // 9. 🌀 Dual Interleaved Beads (Opposite Direction Dots)
+              bool isEven = (j % 2 == 0);
+              uint8_t pos = isEven ? ((j + (effT / 14)) % 8) : ((j - (effT / 14) + 64) % 8);
+              factor = (pos == 0) ? 255 : ((pos == 1) ? 60 : 0);
+              colorPhase = (j * 20 + (effT / 10)) & 0xFF;
+              break;
+            }
+            case 10: { // 10. ⚡ Hyper Strobe Sparks
+              bool flash = ((effT / 40) % 4 == 0) && (j % 3 == 0);
+              factor = flash ? 255 : 0;
+              colorPhase = (effT / 10) & 0xFF;
+              break;
+            }
+            case 11: { // 11. 🌌 Warp Shockwave Ring
+              uint8_t ringPos = (effT / 10) % config.ledCount;
+              int dist = abs(j - (int)ringPos);
+              factor = (dist <= 2) ? (uint8_t)(255 - dist * 100) : 0;
+              colorPhase = (ringPos * 8) & 0xFF;
+              break;
+            }
+            case 12: { // 12. ⚡ Glitch Cyber Matrix (Random Spark Drops)
+              uint8_t noise = (uint8_t)(((j * 73) ^ (effT / 8)) & 0xFF);
+              factor = (noise > 225) ? 255 : ((noise > 195) ? 60 : 0);
+              colorPhase = (j * 30) & 0xFF;
+              break;
+            }
+            case 13: { // 13. 🌈 Aurora Spaced Ribbon
+              uint8_t aur = fastSin8((j * 180 / config.ledCount) + (effT / 8));
+              factor = (aur > 160) ? (uint8_t)((aur - 160) * 2.6f) : 0;
+              colorPhase = (aur + (effT / 6)) & 0xFF;
+              break;
+            }
+            case 14: { // 14. 🌋 Lava Ember Flares
+              uint8_t flare = fastSin8(j * 40 + (effT / 5)) ^ fastSin8(j * 25 - (effT / 7));
+              factor = (flare > 170) ? (uint8_t)((flare - 170) * 3) : 0;
+              colorPhase = (flare + (effT / 10)) & 0xFF;
+              break;
+            }
+            case 15: { // 15. 🪩 Disco Beat Strobe Beads
+              uint8_t beat = (effT / 60) % 8;
+              bool on = (j % 4 == (beat / 2)) && ((effT / 20) % 2 == 0);
+              factor = on ? 255 : 0;
+              colorPhase = (beat * 32) & 0xFF;
+              break;
+            }
+            case 16: { // 16. 🕳️ Inward Gravity Convergence (Beads Rushing to Center)
+              int center = config.ledCount / 2;
+              int dist = abs(j - center);
+              uint8_t rush = fastSin8(dist * 35 - (effT / 3));
+              factor = (rush > 175) ? (uint8_t)((rush - 175) * 3) : 0;
+              colorPhase = (dist * 20 + (effT / 8)) & 0xFF;
+              break;
+            }
+            default: {
+              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) - (effT / 3)) & 0xFF);
+              uint8_t wave = fastSin8(pos * 3);
+              factor = (wave > 150) ? (uint8_t)(((uint16_t)(wave - 150) * 255) / 105) : 0;
+              colorPhase = (pos + (effT / 8)) & 0xFF;
+              break;
+            }
+          }
+
+          if (factor == 0) {
+            ledStrip->SetPixelColor(j, RgbColor(0, 0, 0));
+            continue;
+          }
+
+          uint8_t cIdx1 = (colorPhase * numC) / 256;
           uint8_t cIdx2 = (cIdx1 + 1) % numC;
-          uint8_t frac = (wave * numC) % 256;
+          uint8_t frac = (colorPhase * numC) % 256;
 
           RgbColor c1 = g_slotPalette.colors[cIdx1];
           RgbColor c2 = g_slotPalette.colors[cIdx2];
 
-          red = (uint8_t)(((uint16_t)c1.R * (255 - frac) + (uint16_t)c2.R * frac) / 255);
-          green = (uint8_t)(((uint16_t)c1.G * (255 - frac) + (uint16_t)c2.G * frac) / 255);
-          blue = (uint8_t)(((uint16_t)c1.B * (255 - frac) + (uint16_t)c2.B * frac) / 255);
+          uint8_t r = (uint8_t)(((uint16_t)c1.R * (255 - frac) + (uint16_t)c2.R * frac) / 255);
+          uint8_t g = (uint8_t)(((uint16_t)c1.G * (255 - frac) + (uint16_t)c2.G * frac) / 255);
+          uint8_t b = (uint8_t)(((uint16_t)c1.B * (255 - frac) + (uint16_t)c2.B * frac) / 255);
 
-          // Apply Step 2 Motion Flow Remix when Z is held on Nunchuk
-          if (config.paletteFxMode > 0 || config.motionFxMode > 0) {
-            applyModularPaletteFX(red, green, blue, config.paletteFxMode, config.motionFxMode, now, config.paletteSpeed, j, frameIndex, config.frameCount, config.ledCount);
-          }
+          red = (uint8_t)(((uint16_t)r * factor) / 255);
+          green = (uint8_t)(((uint16_t)g * factor) / 255);
+          blue = (uint8_t)(((uint16_t)b * factor) / 255);
 
           ledStrip->SetPixelColor(j, RgbColor(red, green, blue));
         }
