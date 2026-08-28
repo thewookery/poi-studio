@@ -541,12 +541,14 @@ class OpenPixelPoiLED {
         float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)currentDuration) : 1.0f;
 
 
-        uint8_t safeHeight = 55;
-        uint8_t totalLeds = 55;
-        for (int j=0; j<totalLeds; j++){
-          red = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 0];
-          green = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 1];
-          blue = config.pattern[frameIndex*safeHeight*3 + (j % safeHeight)*3 + 2];
+        const uint16_t frameStride = 55 * 3; // 165 bytes per frame strictly
+        uint32_t frameBase = (uint32_t)frameIndex * frameStride;
+
+        for (int j=0; j<55; j++){
+          uint32_t pixelIdx = frameBase + (j * 3);
+          red = config.pattern[pixelIdx + 0];
+          green = config.pattern[pixelIdx + 1];
+          blue = config.pattern[pixelIdx + 2];
 
           // Apply Snappy Zero-RAM Transition Modes
           if (isTransitioning) {

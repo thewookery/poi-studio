@@ -246,22 +246,12 @@ class OpenPixelPoiConfig {
     }
     
     void setFrameHeight(uint8_t frameHeight) {
-      uint8_t h = (frameHeight >= 20) ? frameHeight : 55;
-      this->frameHeight = h;
-      String key = "p";
-      key += this->getActivePatternIndex();
-      key += "Height";
-      preferences.putUChar(key.c_str(), h);
+      this->frameHeight = 55; // Hard-locked to 55px hardware
       this->configLastUpdated = millis();
     }
     
     void setFrameCount(uint16_t frameCount) {
-      uint16_t fc = (frameCount >= 2) ? frameCount : 30;
-      this->frameCount = fc;
-      String key = "p";
-      key += this->getActivePatternIndex();
-      key += "FCount";
-      preferences.putUShort(key.c_str(), fc);
+      this->frameCount = (frameCount >= 1) ? frameCount : 30;
       this->configLastUpdated = millis();
     }
     
@@ -290,16 +280,16 @@ class OpenPixelPoiConfig {
     void fillDefaultPattern(){
       this->frameHeight = 55;
       this->frameCount = 30;
-      this->patternLength = this->frameHeight * this->frameCount * 3;
-      for (int i = 0; i < this->frameCount; i++) {
-        for (int j = 0; j < this->frameHeight; j++) {
+      this->patternLength = 55 * 30 * 3; // 4950 bytes
+      for (int i = 0; i < 30; i++) {
+        for (int j = 0; j < 55; j++) {
           uint8_t hue = (j * 256 / 55 + i * 8) & 0xFF;
           uint8_t r = (hue < 85) ? (hue * 3) : ((hue < 170) ? (255 - (hue - 85) * 3) : 0);
           uint8_t g = (hue < 85) ? (255 - hue * 3) : ((hue < 170) ? 0 : ((hue - 170) * 3));
           uint8_t b = (hue < 85) ? 0 : ((hue < 170) ? ((hue - 85) * 3) : (255 - (hue - 170) * 3));
-          pattern[(i * this->frameHeight * 3) + (j*3) + 0] = r;
-          pattern[(i * this->frameHeight * 3) + (j*3) + 1] = g;
-          pattern[(i * this->frameHeight * 3) + (j*3) + 2] = b;
+          this->pattern[(i * 55 * 3) + (j * 3) + 0] = r;
+          this->pattern[(i * 55 * 3) + (j * 3) + 1] = g;
+          this->pattern[(i * 55 * 3) + (j * 3) + 2] = b;
         }
       }
     }
@@ -308,6 +298,7 @@ class OpenPixelPoiConfig {
       if(patternFile){
         patternFile.close();
       }
+      this->frameHeight = 55; // HARD-LOCKED 55 PIXELS PER COLUMN
       String filename = String("/pattern") + this->getActivePatternIndex() + ".oppp";
       patternFile = LittleFS.open(filename, "r");
       
@@ -315,14 +306,15 @@ class OpenPixelPoiConfig {
       if(!patternFile || patternFile.isDirectory()){
         isCorruptOrMissing = true;
       } else {
-        size_t availableBytes = patternFile.available();
-        // A valid 55px pattern must have at least 1 frame (55 * 3 = 165 bytes)
+        size_t availableBytes = patternFile.size();
         if (availableBytes < 165) {
           isCorruptOrMissing = true;
         } else {
           size_t bytesToRead = min(availableBytes, (size_t)(PATTERN_PIXEL_LIMIT * 3));
-          patternFile.read(pattern, bytesToRead);
+          patternFile.read(this->pattern, bytesToRead);
           this->patternLength = bytesToRead;
+          // Frame Count is calculated directly from actual file bytes (Zero-Drift!)
+          this->frameCount = max((uint16_t)1, (uint16_t)(this->patternLength / (55 * 3)));
         }
         patternFile.close();
       }
@@ -334,35 +326,23 @@ class OpenPixelPoiConfig {
           file.write(this->pattern, this->patternLength);
           file.close();
         }
-        String keyH = String("p") + this->getActivePatternIndex() + "Height";
-        String keyC = String("p") + this->getActivePatternIndex() + "FCount";
-        preferences.putUChar(keyH.c_str(), 55);
-        preferences.putUShort(keyC.c_str(), 30);
-        this->frameHeight = 55;
-        this->frameCount = 30;
       }
     }
 
     void continueLoadingPattern(){
-      // No-op: Full pattern is already loaded instantaneously into RAM!
+      // Full pattern is loaded instantaneously into RAM on slot switch
     }
 
     void loadFrameHeight(){
-      String key = "p";
-      key += this->getActivePatternIndex();
-      key += "Height";
-      uint8_t h = preferences.getUChar(key.c_str(), 55);
-      if (h < 20 || h > 255) h = 55; // Strict 55px safety clamp (prevents 2-LED glitch)
-      this->frameHeight = h;
+      this->frameHeight = 55; // Always strictly 55 pixels
     }
 
     void loadFrameCount(){
-      String key = "p";
-      key += this->getActivePatternIndex();
-      key += "FCount";
-      uint16_t fc = preferences.getUShort(key.c_str(), 30);
-      if (fc < 2 || fc > 2000) fc = 30;
-      this->frameCount = fc;
+      if (this->patternLength >= 165) {
+        this->frameCount = max((uint16_t)1, (uint16_t)(this->patternLength / (55 * 3)));
+      } else {
+        this->frameCount = 30;
+      }
     }
 
     void saveSequencer() {
