@@ -120,18 +120,18 @@ class OpenPixelPoiConfig {
     }
 
     void setHardwareVersion(uint8_t hardwareVersion) {
-      debugf("Save Hardware Version = %d\n", hardwareVersion);
-      preferences.putChar("hardwareVersion", hardwareVersion);
+      this->hardwareVersion = 2;
+      preferences.putUChar("hardwareVersion", 2);
     }
 
     void setLedType(uint8_t ledType) {
-      debugf("Save LED Type = %d\n", ledBrightness);
-      preferences.putChar("ledType", ledType);
+      this->ledType = 2; // Always DotStar
+      preferences.putUChar("ledType", 2);
     }
 
     void setLedCount(uint8_t ledCount) {
-      debugf("Save LED Count = %d\n", ledCount);
-      preferences.putChar("ledCount", ledCount);
+      this->ledCount = 55; // Always 55 LEDs
+      preferences.putUChar("ledCount", 55);
     }
 
     void setDeviceName(String deviceName) {
@@ -325,9 +325,8 @@ class OpenPixelPoiConfig {
         patternFile.close();
       }
 
-      if (isCorruptOrMissing) {
+      if (isCorruptOrMissing || this->patternLength < 165) {
         fillDefaultPattern();
-        // Save the healthy full 55px pattern to LittleFS & NVS so it never glitches on reboot
         File file = LittleFS.open(filename, FILE_WRITE);
         if(file && !file.isDirectory()){
           file.write(this->pattern, this->patternLength);
@@ -337,6 +336,8 @@ class OpenPixelPoiConfig {
         String keyC = String("p") + this->getActivePatternIndex() + "FCount";
         preferences.putUChar(keyH.c_str(), 55);
         preferences.putUShort(keyC.c_str(), 30);
+        this->frameHeight = 55;
+        this->frameCount = 30;
       }
     }
 

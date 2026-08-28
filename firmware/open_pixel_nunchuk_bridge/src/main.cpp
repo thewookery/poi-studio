@@ -435,10 +435,13 @@ void readNunchukAndProcess() {
   prevAccelZ = accelZ;
 
   // =========================================================================
-  // 🕹️ 2. JOYSTICK PROCESSING (Pure Slot & Bank Navigation when not holding Z)
+  // 🕹️ 2. JOYSTICK PROCESSING (Filtered Slot & Bank Navigation when not holding Z)
   // =========================================================================
-  if (!isZHeld && (now - lastJoyFlickTime > 300)) {
-    if (joyX < 50) {
+  // Ignore noisy I2C disconnect readings (0 or 255)
+  bool joyValid = (joyX > 15 && joyX < 240 && joyY > 15 && joyY < 240);
+
+  if (!isZHeld && joyValid && (now - lastJoyFlickTime > 350)) {
+    if (joyX < 55) {
       // Previous Pattern Slot (1-10)
       currentSlot = (currentSlot > 0) ? (currentSlot - 1) : 9;
       sendBleCommand(CC_SET_PATTERN_SLOT, currentSlot);
@@ -456,7 +459,7 @@ void readNunchukAndProcess() {
       sendBleCommand(CC_SET_BANK, currentBank);
       Serial.printf("🔼 [JOYSTICK] Bank: %d\n", currentBank + 1);
       lastJoyFlickTime = now;
-    } else if (joyY < 50) {
+    } else if (joyY < 55) {
       // Previous Hardware Bank (1-5)
       currentBank = (currentBank > 0) ? (currentBank - 1) : 4;
       sendBleCommand(CC_SET_BANK, currentBank);
