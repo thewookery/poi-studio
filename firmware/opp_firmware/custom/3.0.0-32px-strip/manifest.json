@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelStrip - 32-LED DotStar Controller (50 LittleFS Flashable Slots \u2022 16 Motion Flows)",
-  "version": "2026.3.0-32px-v155",
+  "name": "OpenPixelStrip - 32-LED DotStar Controller (Color-Extracted Harmonic Flow Engine)",
+  "version": "2026.4.0-32px-v157",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [

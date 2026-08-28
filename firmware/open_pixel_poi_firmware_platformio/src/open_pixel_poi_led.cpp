@@ -1,6 +1,16 @@
 #ifndef _OPEN_PIXEL_POI_LED
 #define _OPEN_PIXEL_POI_LED
 
+#include <Arduino.h>
+
+static inline uint8_t fastSin8(uint8_t theta) {
+  uint8_t t = theta;
+  if (t > 127) t = 255 - t;
+  uint32_t val = (uint32_t)t * (255 - t);
+  return (uint8_t)((val * 4) >> 8);
+}
+
+
 #include "open_pixel_poi_config.cpp"
 #include "led_strip/ILedStrip.h"
 #include "led_strip/NoStrip.h"
@@ -468,6 +478,63 @@ static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& 
 }
 
 
+// ----------------------------------------------------
+// 32px STRIP COLOR-EXTRACTION & HARMONIC FLOW ENGINE
+// ----------------------------------------------------
+#ifdef STRIP_32PX
+struct ExtractedSlotPalette {
+  uint8_t count;
+  RgbColor colors[8];
+};
+
+static ExtractedSlotPalette g_slotPalette = {0};
+
+static inline void extractColorsFromActivePattern(OpenPixelPoiConfig& config) {
+  g_slotPalette.count = 0;
+  if (!config.pattern || config.patternLength < 3) {
+    g_slotPalette.colors[0] = RgbColor(0, 255, 136); // Neon Green
+    g_slotPalette.colors[1] = RgbColor(0, 210, 255); // Neon Cyan
+    g_slotPalette.count = 2;
+    return;
+  }
+
+  size_t totalPixels = config.patternLength / 3;
+  size_t step = max((size_t)1, totalPixels / 24);
+
+  for (size_t i = 0; i < totalPixels && g_slotPalette.count < 8; i += step) {
+    uint8_t r = config.pattern[i * 3 + 0];
+    uint8_t g = config.pattern[i * 3 + 1];
+    uint8_t b = config.pattern[i * 3 + 2];
+
+    uint16_t bright = (uint16_t)r + (uint16_t)g + (uint16_t)b;
+    if (bright >= 45) { // Filter dark/black noise
+      bool isDuplicate = false;
+      for (int k = 0; k < g_slotPalette.count; k++) {
+        int dr = abs((int)r - (int)g_slotPalette.colors[k].R);
+        int dg = abs((int)g - (int)g_slotPalette.colors[k].G);
+        int db = abs((int)b - (int)g_slotPalette.colors[k].B);
+        if (dr + dg + db < 65) {
+          isDuplicate = true;
+          break;
+        }
+      }
+      if (!isDuplicate) {
+        g_slotPalette.colors[g_slotPalette.count++] = RgbColor(r, g, b);
+      }
+    }
+  }
+
+  if (g_slotPalette.count == 0) {
+    g_slotPalette.colors[0] = RgbColor(255, 0, 128); // Neon Pink
+    g_slotPalette.colors[1] = RgbColor(0, 230, 255); // Neon Cyan
+    g_slotPalette.count = 2;
+  } else if (g_slotPalette.count == 1) {
+    g_slotPalette.colors[1] = RgbColor(g_slotPalette.colors[0].B, g_slotPalette.colors[0].R, g_slotPalette.colors[0].G);
+    g_slotPalette.count = 2;
+  }
+}
+#endif
+
 class OpenPixelPoiLED {
 
   private:
@@ -547,6 +614,40 @@ class OpenPixelPoiLED {
         float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)currentDuration) : 1.0f;
 
 
+#ifdef STRIP_32PX
+        // Extract palette when slot loads or changes
+        static int lastLoadedSlot = -1;
+        if (lastLoadedSlot != config.getActivePatternIndex()) {
+          lastLoadedSlot = config.getActivePatternIndex();
+          extractColorsFromActivePattern(config);
+        }
+
+        unsigned long now = millis();
+        uint32_t effT = now / 4;
+        uint8_t numC = max((uint8_t)2, g_slotPalette.count);
+
+        for (int j=0; j<config.ledCount; j++){
+          // Harmonic Wave Color Blend across the 32 LEDs using extracted slot colors
+          uint8_t wave = (fastSin8((j * 255 / config.ledCount) + (effT / 6)) + (effT / 8)) & 0xFF;
+          uint8_t cIdx1 = (wave * numC) / 256;
+          uint8_t cIdx2 = (cIdx1 + 1) % numC;
+          uint8_t frac = (wave * numC) % 256;
+
+          RgbColor c1 = g_slotPalette.colors[cIdx1];
+          RgbColor c2 = g_slotPalette.colors[cIdx2];
+
+          red = (uint8_t)(((uint16_t)c1.R * (255 - frac) + (uint16_t)c2.R * frac) / 255);
+          green = (uint8_t)(((uint16_t)c1.G * (255 - frac) + (uint16_t)c2.G * frac) / 255);
+          blue = (uint8_t)(((uint16_t)c1.B * (255 - frac) + (uint16_t)c2.B * frac) / 255);
+
+          // Apply Step 2 Motion Flow Remix when Z is held on Nunchuk
+          if (config.paletteFxMode > 0 || config.motionFxMode > 0) {
+            applyModularPaletteFX(red, green, blue, config.paletteFxMode, config.motionFxMode, now, config.paletteSpeed, j, frameIndex, config.frameCount, config.ledCount);
+          }
+
+          ledStrip->SetPixelColor(j, RgbColor(red, green, blue));
+        }
+#else
         const uint16_t frameStride = config.frameHeight * 3;
         uint32_t frameBase = (uint32_t)frameIndex * frameStride;
 
@@ -643,6 +744,7 @@ class OpenPixelPoiLED {
           ledStrip->SetPixelColor(config.ledCount-1-j, RgbColor(red, green, blue)); // Invert display for POV arc
 
         }
+#endif
       }
 
 
