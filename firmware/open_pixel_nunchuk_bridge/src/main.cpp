@@ -66,7 +66,7 @@ struct PoiSlot {
   std::string name = "";
 };
 
-#define MAX_BLE_POIS 2
+#define MAX_BLE_POIS 4
 PoiSlot poiSlots[MAX_BLE_POIS];
 
 BLEScan* pBLEScan = nullptr;

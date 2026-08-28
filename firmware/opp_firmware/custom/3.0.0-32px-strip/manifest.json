@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelStrip - 32-LED DotStar Controller (Z-Trigger Stealth Battery Saver \u2022 Matching Color Flow)",
-  "version": "2026.5.0-32px-v158",
+  "name": "OpenPixelStrip - 32-LED DotStar Controller (Hardware Stealth Z-Mode \u2022 4-Prop Bridge Compatible)",
+  "version": "2026.6.0-32px-v159",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [

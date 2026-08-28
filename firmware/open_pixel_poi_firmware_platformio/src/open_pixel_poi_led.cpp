@@ -554,6 +554,7 @@ class OpenPixelPoiLED {
 #ifdef STRIP_32PX
       config.ledCount = 32;
       config.frameHeight = 32;
+      config.motionFxMode = 0;
       if (config.frameCount < 2) config.frameCount = 30;
       ledStrip = new DotStarStrip(32, 6, 5); // 32 LEDs on Pin 6 (Data) & Pin 5 (Clock)
 #else
@@ -616,9 +617,12 @@ class OpenPixelPoiLED {
 
 #ifdef STRIP_32PX
         // 🥷 STEALTH OFF BATTERY SAVER:
-        // Strip stays 100% OFF (black / zero power) until Z button is held on Nunchuk (motionFxMode > 0)
+        // Strip stays 100% OFF in hardware (black / zero power) until Z button is held on Nunchuk (motionFxMode > 0)
         if (config.motionFxMode == 0) {
-          ledStrip->ClearTo(RgbColor(0,0,0));
+          for (int j=0; j<config.ledCount; j++) {
+            ledStrip->SetPixelColor(j, RgbColor(0, 0, 0));
+          }
+          ledStrip->Show();
           return;
         }
 
