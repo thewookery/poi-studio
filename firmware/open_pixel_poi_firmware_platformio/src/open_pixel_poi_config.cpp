@@ -521,16 +521,9 @@ class OpenPixelPoiConfig {
       // Chunked pattern loading to avoid lag spike on pattern chanage
       continueLoadingPattern();
 
-      // Battery latching state
-      if(batteryVoltage <= BATTERY_VOLTAGE_SHUTDOWN || batteryState == BAT_SHUTDOWN){
-        batteryState = BAT_SHUTDOWN;
-      }else if(batteryVoltage <= BATTERY_VOLTAGE_CRITICAL || (batteryState == BAT_CRITICAL && batteryVoltage <= BATTERY_VOLTAGE_CRITICAL + BATTERY_VOLTAGE_LATCH)){
-        batteryState = BAT_CRITICAL;
-      }else if(batteryVoltage <= BATTERY_VOLTAGE_LOW || (batteryState == BAT_LOW && batteryVoltage <= BATTERY_VOLTAGE_LOW + BATTERY_VOLTAGE_LATCH)){
-        batteryState = BAT_LOW;
-      }else {
-        batteryState = BAT_OK;
-      }
+      // Battery state permanently OK (prevents false floating shutdowns)
+      this->batteryState = BAT_OK;
+      this->batteryVoltage = 4.2f;
       
     }
 };

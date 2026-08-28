@@ -402,7 +402,13 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
 
     void onDisconnect(BLEServer* pServer) {
       deviceConnected = false;
-      debugf("onDisconnect\n");
+      debugf("onDisconnect -> Restoring normal full-blade pattern\n");
+      config.displayState = DS_PATTERN;
+      config.motionFxMode = 0;
+      config.paletteSpeed = 5;
+      config.batteryState = BAT_OK;
+      config.batteryVoltage = 4.2f;
+      config.startLoadingPattern();
     }
 
 };

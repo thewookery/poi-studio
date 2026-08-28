@@ -849,12 +849,7 @@ else if(config.displayState == DS_BRIGHTNESS){
       }
 
 
-      // Super low voltage, only display red
-      if(config.batteryState == BAT_CRITICAL && (config.displayState == DS_PATTERN || config.displayState == DS_PATTERN_ALL)){
-        ledStrip->ClearTo(RgbColor(0,0,0));
-        ledStrip->SetPixelColor(0, RgbColor(255, 0x00, 0x00));
-        ledStrip->SetPixelColor(config.ledCount - 1, RgbColor(255, 0x00, 0x00));
-      }
+// Battery 2-LED override removed to prevent false trigger
 
       // Output
       ledStrip->Show();
