@@ -69,6 +69,13 @@ struct PoiSlot {
 #define MAX_BLE_POIS 4
 PoiSlot poiSlots[MAX_BLE_POIS];
 
+unsigned long scanWindowEndTime = 0;
+
+void startDiscoveryWindow(unsigned long durationMs = 25000) {
+  scanWindowEndTime = millis() + durationMs;
+  Serial.printf("📡 [BLE] Discovery Window OPEN for %lu ms (Scanning active)\n", durationMs);
+}
+
 BLEScan* pBLEScan = nullptr;
 bool doConnectPending = false;
 BLEAdvertisedDevice* pendingDevice = nullptr;
@@ -498,6 +505,7 @@ void readNunchukAndProcess() {
     } else if (!btnC && lastBtnC) {
       unsigned long pressDur = now - btnCHoldStart;
       if (pressDur < 800) {
+        startDiscoveryWindow(20000); // Re-open discovery if new props turned on
         currentPalette = (currentPalette + 1) % 33;
         sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
         Serial.printf("🎨 [C-BUTTON] Palette %d\n", currentPalette);
@@ -556,7 +564,8 @@ void setup() {
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
 
-  Serial.println("🎮 Auto-Scanning for OpenPixelPoi over Bluetooth...");
+  startDiscoveryWindow(25000);
+  Serial.println("🎮 Auto-Scanning for OpenPixelPoi over Bluetooth (25s Window)...");
 }
 
 void loop() {
@@ -595,9 +604,18 @@ void loop() {
     }
   }
 
-  if (activeCount < MAX_BLE_POIS && !doConnectPending && (now - lastScanStartTime > 3500)) {
+  // If a prop disconnected, immediately reopen 20s discovery window
+  static int prevActiveCount = 0;
+  if (activeCount < prevActiveCount) {
+    startDiscoveryWindow(20000);
+  }
+  prevActiveCount = activeCount;
+
+  // Scan strictly within the active discovery window to eliminate hitches
+  bool isScanWindowActive = (now < scanWindowEndTime);
+  if (activeCount < MAX_BLE_POIS && isScanWindowActive && !doConnectPending && (now - lastScanStartTime > 3500)) {
     lastScanStartTime = now;
-    pBLEScan->start(2, false);
+    pBLEScan->start(1, false);
   }
 
   if (now - lastUserActivityTime > (10UL * 60UL * 1000UL)) {
