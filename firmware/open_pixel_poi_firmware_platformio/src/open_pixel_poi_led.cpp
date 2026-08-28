@@ -525,8 +525,10 @@ class OpenPixelPoiLED {
       // Render output with Pattern Blend Engine & Color Palette FX
       if(config.displayState == DS_PATTERN || config.displayState == DS_PATTERN_ALL  || config.displayState == DS_PATTERN_ALL_ALL){
 
-        if(config.frameCount == 0 || config.frameHeight == 0) return;
-        frameIndex = ((micros() - (config.displayStateLastUpdated * 1000)) / (1000000/(config.animationSpeed))) % config.frameCount;
+        uint16_t safeSpeed = (config.animationSpeed >= 1) ? config.animationSpeed : 30;
+        uint16_t safeFCount = (config.frameCount >= 1) ? config.frameCount : 30;
+        uint32_t frameIntervalMicros = max((uint32_t)500, (uint32_t)(1000000 / safeSpeed));
+        frameIndex = ((micros() - (config.displayStateLastUpdated * 1000)) / frameIntervalMicros) % safeFCount;
         if(lastFrameIndex == frameIndex){
           return;
         }else{

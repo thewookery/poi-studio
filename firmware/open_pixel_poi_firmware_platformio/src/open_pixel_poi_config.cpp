@@ -70,7 +70,7 @@ class OpenPixelPoiConfig {
     // Pattern
     uint8_t frameHeight; 
     uint16_t frameCount;
-    uint8_t *pattern = (uint8_t *) malloc(PATTERN_PIXEL_LIMIT * 3 * sizeof(uint8_t));
+    uint8_t *pattern = nullptr;
     uint32_t patternLength;
 
     // Real-Time FX & Transition Engine (Zero-RAM Overhead)
@@ -93,7 +93,9 @@ class OpenPixelPoiConfig {
     long configLastUpdated;
 
     uint8_t getActivePatternIndex() {
-      return ((this->patternSlot % PATTERN_BANK_SIZE) + ((this->patternBank % PATTERN_BANK_COUNT) * PATTERN_BANK_SIZE));
+      uint8_t s = (this->patternSlot < PATTERN_BANK_SIZE) ? this->patternSlot : (this->patternSlot % PATTERN_BANK_SIZE);
+      uint8_t b = (this->patternBank < PATTERN_BANK_COUNT) ? this->patternBank : (this->patternBank % PATTERN_BANK_COUNT);
+      return (s + (b * PATTERN_BANK_SIZE));
     }
 
     void setPaletteFxMode(uint8_t mode) {
@@ -443,7 +445,13 @@ class OpenPixelPoiConfig {
       debugf("- pattern slot = %d\n", this->patternSlot);
 
       this->patternBank = preferences.getChar("patternBank", 0x00);
-      debugf("- pattern bank = %d\n", this->patternBank);
+      if (this->patternBank >= PATTERN_BANK_COUNT) this->patternBank = 0;
+      if (this->patternSlot >= PATTERN_BANK_SIZE) this->patternSlot = 0;
+      if (this->animationSpeed < 1 || this->animationSpeed > 2000) this->animationSpeed = 30;
+
+      if (this->pattern == nullptr) {
+        this->pattern = (uint8_t *) calloc(PATTERN_PIXEL_LIMIT * 3, sizeof(uint8_t));
+      }
 
       this->patternShuffleDuration = preferences.getChar("patShuffleDur", PATTERN_SHUFFLE_DURATION);
       debugf("- pattern shuffle duration = %d\n", this->patternShuffleDuration);

@@ -17,7 +17,7 @@
 // 50 High-Speed Slots (5 Banks x 10 Slots)
 #define PATTERN_BANK_SIZE 10
 #define PATTERN_BANK_COUNT 5
-#define PATTERN_PIXEL_LIMIT 40000
+#define PATTERN_PIXEL_LIMIT 10000
 
 
 
