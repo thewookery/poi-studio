@@ -615,6 +615,13 @@ class OpenPixelPoiLED {
 
 
 #ifdef STRIP_32PX
+        // 🥷 STEALTH OFF BATTERY SAVER:
+        // Strip stays 100% OFF (black / zero power) until Z button is held on Nunchuk (motionFxMode > 0)
+        if (config.motionFxMode == 0) {
+          ledStrip->ClearTo(RgbColor(0,0,0));
+          return;
+        }
+
         // Extract palette when slot loads or changes
         static int lastLoadedSlot = -1;
         if (lastLoadedSlot != config.getActivePatternIndex()) {
