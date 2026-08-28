@@ -1,6 +1,6 @@
 {
   "name": "OpenPixelPoi - 50 Slots, 32 Pro Palettes, 17 Crazy Motion Flows, Full Peak Brightness (55px DotStar)",
-  "version": "2026.19.55-50slots-v97",
+  "version": "2026.21.0-55px-v151",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -20,7 +20,7 @@
           "offset": 57344
         },
         {
-          "path": "firmware_50slots_v97.bin",
+          "path": "firmware.bin",
           "offset": 65536
         },
         {
