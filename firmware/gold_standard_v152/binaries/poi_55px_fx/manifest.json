@@ -1,0 +1,33 @@
+{
+  "name": "OpenPixelPoi - 50 Slots, 32 Pro Palettes, 17 Crazy Motion Flows, Full Peak Brightness (55px DotStar)",
+  "version": "2026.21.0-55px-v151",
+  "funding_url": "https://github.com/thewookery/poi-studio",
+  "new_install_prompt_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "bootloader.bin",
+          "offset": 0
+        },
+        {
+          "path": "partitions.bin",
+          "offset": 32768
+        },
+        {
+          "path": "boot_app0.bin",
+          "offset": 57344
+        },
+        {
+          "path": "firmware.bin",
+          "offset": 65536
+        },
+        {
+          "path": "littlefs.bin",
+          "offset": 1564672
+        }
+      ]
+    }
+  ]
+}
