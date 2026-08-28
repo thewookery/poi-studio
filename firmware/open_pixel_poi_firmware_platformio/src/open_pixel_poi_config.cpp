@@ -278,18 +278,18 @@ class OpenPixelPoiConfig {
     }
 
     void fillDefaultPattern(){
-      this->frameHeight = 55;
+      this->frameHeight = DEFAULT_LED_COUNT;
       this->frameCount = 30;
-      this->patternLength = 55 * 30 * 3; // 4950 bytes
+      this->patternLength = this->frameHeight * 30 * 3;
       for (int i = 0; i < 30; i++) {
-        for (int j = 0; j < 55; j++) {
-          uint8_t hue = (j * 256 / 55 + i * 8) & 0xFF;
+        for (int j = 0; j < this->frameHeight; j++) {
+          uint8_t hue = (j * 256 / this->frameHeight + i * 8) & 0xFF;
           uint8_t r = (hue < 85) ? (hue * 3) : ((hue < 170) ? (255 - (hue - 85) * 3) : 0);
           uint8_t g = (hue < 85) ? (255 - hue * 3) : ((hue < 170) ? 0 : ((hue - 170) * 3));
           uint8_t b = (hue < 85) ? 0 : ((hue < 170) ? ((hue - 85) * 3) : (255 - (hue - 170) * 3));
-          this->pattern[(i * 55 * 3) + (j * 3) + 0] = r;
-          this->pattern[(i * 55 * 3) + (j * 3) + 1] = g;
-          this->pattern[(i * 55 * 3) + (j * 3) + 2] = b;
+          this->pattern[(i * this->frameHeight * 3) + (j * 3) + 0] = r;
+          this->pattern[(i * this->frameHeight * 3) + (j * 3) + 1] = g;
+          this->pattern[(i * this->frameHeight * 3) + (j * 3) + 2] = b;
         }
       }
     }
@@ -298,28 +298,29 @@ class OpenPixelPoiConfig {
       if(patternFile){
         patternFile.close();
       }
-      this->frameHeight = 55; // HARD-LOCKED 55 PIXELS PER COLUMN
+      this->frameHeight = DEFAULT_LED_COUNT;
       String filename = String("/pattern") + this->getActivePatternIndex() + ".oppp";
       patternFile = LittleFS.open(filename, "r");
       
       bool isCorruptOrMissing = false;
+      size_t minFrameBytes = this->frameHeight * 3;
       if(!patternFile || patternFile.isDirectory()){
         isCorruptOrMissing = true;
       } else {
         size_t availableBytes = patternFile.size();
-        if (availableBytes < 165) {
+        if (availableBytes < minFrameBytes) {
           isCorruptOrMissing = true;
         } else {
           size_t bytesToRead = min(availableBytes, (size_t)(PATTERN_PIXEL_LIMIT * 3));
           patternFile.read(this->pattern, bytesToRead);
           this->patternLength = bytesToRead;
           // Frame Count is calculated directly from actual file bytes (Zero-Drift!)
-          this->frameCount = max((uint16_t)1, (uint16_t)(this->patternLength / (55 * 3)));
+          this->frameCount = max((uint16_t)1, (uint16_t)(this->patternLength / minFrameBytes));
         }
         patternFile.close();
       }
 
-      if (isCorruptOrMissing || this->patternLength < 165) {
+      if (isCorruptOrMissing || this->patternLength < minFrameBytes) {
         fillDefaultPattern();
         File file = LittleFS.open(filename, FILE_WRITE);
         if(file && !file.isDirectory()){
@@ -334,12 +335,13 @@ class OpenPixelPoiConfig {
     }
 
     void loadFrameHeight(){
-      this->frameHeight = 55; // Always strictly 55 pixels
+      this->frameHeight = DEFAULT_LED_COUNT;
     }
 
     void loadFrameCount(){
-      if (this->patternLength >= 165) {
-        this->frameCount = max((uint16_t)1, (uint16_t)(this->patternLength / (55 * 3)));
+      size_t minFrameBytes = this->frameHeight * 3;
+      if (this->patternLength >= minFrameBytes) {
+        this->frameCount = max((uint16_t)1, (uint16_t)(this->patternLength / minFrameBytes));
       } else {
         this->frameCount = 30;
       }

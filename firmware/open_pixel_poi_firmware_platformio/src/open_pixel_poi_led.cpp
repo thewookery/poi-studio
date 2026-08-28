@@ -484,11 +484,17 @@ class OpenPixelPoiLED {
     OpenPixelPoiLED(OpenPixelPoiConfig& _config): config(_config){}    
     int frameIndex;
     void setup(){
-      // Always initialize all 55 DotStar LEDs unconditionally (Pins 6 Data, 7 Clock)
+#ifdef STRIP_32PX
+      config.ledCount = 32;
+      config.frameHeight = 32;
+      if (config.frameCount < 2) config.frameCount = 30;
+      ledStrip = new DotStarStrip(32, 6, 5); // 32 LEDs on Pin 6 (Data) & Pin 5 (Clock)
+#else
       config.ledCount = 55;
       config.frameHeight = 55;
       if (config.frameCount < 2) config.frameCount = 30;
-      ledStrip = new DotStarStrip(55, 6, 7);
+      ledStrip = new DotStarStrip(55, 6, 7); // 55 LEDs on Pin 6 (Data) & Pin 7 (Clock)
+#endif
       ledStrip->Begin();
       frameIndex = 0;
     }
@@ -541,10 +547,10 @@ class OpenPixelPoiLED {
         float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)currentDuration) : 1.0f;
 
 
-        const uint16_t frameStride = 55 * 3; // 165 bytes per frame strictly
+        const uint16_t frameStride = config.frameHeight * 3;
         uint32_t frameBase = (uint32_t)frameIndex * frameStride;
 
-        for (int j=0; j<55; j++){
+        for (int j=0; j<config.ledCount; j++){
           uint32_t pixelIdx = frameBase + (j * 3);
           red = config.pattern[pixelIdx + 0];
           green = config.pattern[pixelIdx + 1];

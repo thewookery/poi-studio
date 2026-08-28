@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelStrip - 32-LED DotStar Controller (Master Wii Nunchuk Interactive Prop)",
-  "version": "2026.2.0-32px-v154",
+  "name": "OpenPixelStrip - 32-LED DotStar Controller (50 LittleFS Flashable Slots \u2022 16 Motion Flows)",
+  "version": "2026.3.0-32px-v155",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -22,6 +22,10 @@
         {
           "path": "firmware.bin",
           "offset": 65536
+        },
+        {
+          "path": "littlefs.bin",
+          "offset": 1564672
         }
       ]
     }
