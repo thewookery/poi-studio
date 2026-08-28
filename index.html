@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>⚡ Open POI Studio (Build v151)</title>
+    <title>⚡ Open POI Studio (Build v152)</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00ff88">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Open POI Studio">
-    <link rel="stylesheet" href="styles.css?v=151">
+    <link rel="stylesheet" href="styles.css?v=152">
     <!-- GOOGLE WEB SERIAL POLYFILL OVER WEBUSB (ENABLES ANDROID CHROME USB-C FLASHING) -->
     <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.15/dist/serial.umd.js"></script>
     <script src="https://unpkg.com/esptool-js@0.4.5/bundle.js"></script>
@@ -106,7 +106,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.68rem; color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.5); padding:3px 8px; border-radius:4px; margin-left:6px; box-shadow:0 0 10px rgba(0,255,136,0.25);">✨ BUILD v151 • POI & BRIDGE 100% SYNCED</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.68rem; color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.5); padding:3px 8px; border-radius:4px; margin-left:6px; box-shadow:0 0 10px rgba(0,255,136,0.25);">✨ BUILD v152 • CLEAN WORKSPACE & DEDICATED BRIDGE</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <span class="telemetry-pill" id="hud-bridge-battery" style="display:none; font-size:0.68rem; font-weight:800; color:var(--neon-green); border-color:var(--neon-green); background:rgba(0,255,136,0.08); padding:3px 6px;">🔋 <span id="hud-bridge-battery-text">--%</span></span>
@@ -1600,23 +1600,22 @@
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
                     
-                    <!-- 55-PIXELS DOTSTAR 50-SLOT STUDIO FX EDITION (GOLDEN BLE BASE v97) -->
-                    <div class="firmware-card" style="border-color:rgba(0,255,136,0.5); background:rgba(0,255,136,0.06);">
+                    <!-- 1. 55-PIXELS DOTSTAR 50-SLOT STUDIO FX EDITION -->
+                    <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(0,255,136,0.5); background:rgba(0,255,136,0.06);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX (Peak Brightness • 17 Motion FX)</span>
-                            <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 32 Palettes • 17 FX</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ LATEST RELEASE</span></span>
+                            <span class="telemetry-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">50 Slots • 32 Palettes • 16 FX</span>
                         </div>
                         <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
-                            • <b>50 Pattern Slots:</b> 5 Hardware Banks $\times$ 10 Slots each<br>
-                            • <b>32 Curated Pro Color Palettes:</b> Full-blade multi-color previews + Blank (Original RGB)<br>
-                            • <b>17 Motion Flow FX:</b> Warp Shockwave, Glitch Spark, Aurora, Lava Flare, Disco, Black Hole<br>
-                            • <b>100% Peak Value Luminance:</b> Full brilliance across all colors without dimming<br>
-                            • <b>Rock-Solid Web Bluetooth:</b> Instant pairing, zero-lag controls & telemetry
+                            • <b>🛡️ Boot Auto-Repair:</b> Permanent zero-glitch 55px hardware enforcement on power-on!<br>
+                            • <b>🗃️ 50 High-Speed Slots:</b> 5 Hardware Banks &times; 10 Instant Slots with LittleFS flash storage<br>
+                            • <b>🎨 32 Pro Palettes & 16 Motion Flows:</b> 100% True RGB & Curated Color Grading<br>
+                            • <b>⚡ Zero Wi-Fi Contention:</b> Rock-solid 20MHz SPI DotStar timing with pure Nordic BLE
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-55-fx" manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=151">
+                            <esp-web-install-button id="esp-btn-55-fx" manifest="firmware/opp_firmware/custom/3.0.0-55px-fx/manifest.json?v=152">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; font-weight:900;">
-                                    ⚡ Flash 55px DotStar FX (50 Slots • 17 Motion Flows • Peak Brightness)
+                                    ⚡ Flash 55px DotStar FX (50 Slots • 16 Motion Flows)
                                 </button>
                             </esp-web-install-button>
                             <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-55-fx" style="width:100%; font-size:0.74rem; padding:7px 10px; color:var(--neon-green); font-weight:800; border-color:var(--neon-green); background:rgba(0,255,136,0.1);">
@@ -1625,136 +1624,28 @@
                         </div>
                     </div>
 
-
-                </div>
-
-            </div>
-
-            
-            <!-- 🎮 LIVE NUNCHUK HARDWARE & I2C CHECKER -->
-            <div class="card-box" id="card-nunchuk-checker" style="border-color:var(--neon-green); margin-bottom:14px; background:rgba(0, 255, 136, 0.04);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
-                    <div style="font-size:0.86rem; font-weight:900; color:var(--neon-green); display:flex; align-items:center; gap:8px;">
-                        <span>🎮</span>
-                        <span>Live Nunchuk Hardware & I2C Diagnostics</span>
-                    </div>
-                    <span id="app-nunchuk-i2c-badge" class="telemetry-pill" style="color:var(--text-muted); font-size:0.68rem; font-weight:800; border-color:rgba(255,255,255,0.1);">Connect Bridge to Test</span>
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; align-items:center;">
-                    <!-- Virtual Joystick 2D View -->
-                    <div style="background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px; text-align:center;">
-                        <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">2D Analog Stick Position</div>
-                        <div style="width:90px; height:90px; border-radius:50%; border:2px solid var(--neon-cyan); background:#04060a; margin:0 auto; position:relative; overflow:hidden;">
-                            <div style="position:absolute; width:100%; height:1px; background:rgba(255,255,255,0.1); top:44px; left:0;"></div>
-                            <div style="position:absolute; width:1px; height:100%; background:rgba(255,255,255,0.1); left:44px; top:0;"></div>
-                            <div id="app-nunchuk-dot" style="width:16px; height:16px; border-radius:50%; background:var(--neon-green); box-shadow:0 0 10px var(--neon-green); position:absolute; top:37px; left:37px; transform:translate(0px, 0px); transition:transform 0.04s linear;"></div>
-                        </div>
-                        <div style="font-family:monospace; font-size:0.75rem; color:var(--neon-cyan); margin-top:8px;">
-                            X: <b id="app-nunchuk-x">128</b> | Y: <b id="app-nunchuk-y">128</b>
-                        </div>
-                    </div>
-                    <!-- Button & Trigger State -->
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        <div style="background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.74rem; font-weight:700;">Z Trigger (Bottom Strobe):</span>
-                            <span id="app-nunchuk-z-badge" class="telemetry-pill" style="font-size:0.72rem; font-weight:800; color:var(--text-muted);">Released</span>
-                        </div>
-                        <div style="background:#070a11; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.74rem; font-weight:700;">C Button (Top Palette):</span>
-                            <span id="app-nunchuk-c-badge" class="telemetry-pill" style="font-size:0.72rem; font-weight:800; color:var(--text-muted);">Released</span>
-                        </div>
-                        <div style="font-size:0.68rem; color:var(--text-muted); line-height:1.45; background:rgba(255,255,255,0.02); padding:6px 10px; border-radius:6px;">
-                            • Tap <b>"📡 Connect Poi"</b> in top HUD and pick <code>OpenPixelBridge-Nunchuk</code>.<br>
-                            • Moving the physical analog stick or squeezing the trigger reflects live on screen!
-                        </div>
-                    </div>
-                </div>
-                <!-- 🔋 BRIDGE BATTERY & CHARGING TELEMETRY ROW -->
-                <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:1.1rem;" id="nunchuk-bat-icon">🔋</span>
-                        <div>
-                            <div style="font-size:0.75rem; font-weight:800;" id="nunchuk-bat-title">Bridge Battery: <span style="color:var(--neon-green);" id="nunchuk-bat-pct">--%</span> (<span style="color:var(--text-muted);" id="nunchuk-bat-mv">-- V</span>)</div>
-                            <div style="font-size:0.66rem; color:var(--text-muted);" id="nunchuk-bat-state">Power: Connect Bridge to read battery</div>
-                        </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span id="nunchuk-charging-badge" class="telemetry-pill" style="font-size:0.65rem; color:var(--text-muted); border-color:rgba(255,255,255,0.1);">On Battery</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. EXPERIMENTAL: PURE ESP-NOW MESH & NUNCHUK BRIDGE (PASSWORD PROTECTED) -->
-            <div style="margin-top:14px; border-top:1px solid rgba(188, 19, 254, 0.35); padding-top:12px; margin-bottom:14px;" id="sec-espnow-protected">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
-                    <div style="font-size:0.8rem; font-weight:800; color:var(--neon-purple); display:flex; align-items:center; gap:6px;">
-                        <span>🎮</span>
-                        <span>Experimental: Pure ESP-NOW Mesh & Nunchuk Bridge System</span>
-                    </div>
-                    <span class="telemetry-pill" id="espnow-lock-badge" style="color:var(--neon-yellow); border-color:var(--neon-yellow); font-size:0.62rem; font-weight:800;">🔒 Password Protected</span>
-                </div>
-
-                <!-- LOCKED GATE CARD -->
-                <div id="espnow-locked-gate" class="firmware-card" style="border-color:rgba(188, 19, 254, 0.4); background:rgba(188, 19, 254, 0.04); text-align:center; padding:16px 12px;">
-                    <div style="font-size:1.6rem; margin-bottom:6px;">🔐</div>
-                    <div style="font-size:0.84rem; font-weight:800; color:var(--neon-purple);">Developer Access Required</div>
-                    <div style="font-size:0.7rem; color:var(--text-muted); max-width:440px; margin:4px auto 10px auto; line-height:1.45;">
-                        This section contains experimental <b>Pure ESP-NOW Receiver</b> firmware for Props (Poi, Hat, Wand) and the <b>Master Wii Nunchuk Bridge Transmitter</b>. Enter the developer password to unlock flasher controls.
-                    </div>
-                    <div style="display:flex; justify-content:center; align-items:center; gap:8px; max-width:300px; margin:0 auto;">
-                        <input type="password" id="input-espnow-pass" placeholder="Enter Developer Password..." style="flex:1; background:#070a11; border:1px solid rgba(188,19,254,0.4); border-radius:4px; padding:6px 10px; color:var(--text-color); font-size:0.75rem; text-align:center; outline:none;">
-                        <button class="hw-btn" id="btn-unlock-espnow" style="font-size:0.75rem; font-weight:800; padding:6px 14px; color:var(--neon-purple); border-color:var(--neon-purple);">🔓 Unlock</button>
-                    </div>
-                    <div id="espnow-pass-error" style="font-size:0.68rem; color:#ff4d4d; margin-top:6px; display:none;">⚠️ Invalid Developer Password. Try again.</div>
-                </div>
-
-                <!-- UNLOCKED CONTENT (HIDDEN BY DEFAULT) -->
-                <div id="espnow-unlocked-content" style="display:none; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
-                    
-                    <!-- 1. PURE ESP-NOW PROP RECEIVER (POI / HAT / STICK) -->
-                    <div class="firmware-card" style="border-color:rgba(188, 19, 254, 0.5); background:rgba(188, 19, 254, 0.05);">
+                    <!-- 2. MASTER WII NUNCHUK BLE BRIDGE TRANSMITTER -->
+                    <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(0, 210, 255, 0.5); background:rgba(0, 210, 255, 0.05);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-purple);">🪩 Pure ESP-NOW Prop Receiver (Poi / Hat / Stick)</span>
-                            <span class="telemetry-pill" style="color:var(--neon-purple); font-size:0.62rem; font-weight:800;">55px DotStar • Zero BLE</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-cyan);">🕹️ Master Wii Nunchuk Bridge <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ LATEST RELEASE</span></span>
+                            <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">Step 2 Motion Remix • Tilt Throttle</span>
                         </div>
                         <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
-                            • <b>100% Zero-Bluetooth Protocol:</b> Eliminates all radio drops on spinning poi<br>
-                            • <b>Instant Radio Sync:</b> Listens directly for master Nunchuk / Bridge broadcasts<br>
-                            • <b>High-Speed 20MHz SPI Engine:</b> 50 Slots • 32 Palettes • 17 Motion Flows • Peak Brightness<br>
-                            • <b>Unlimited Multi-Prop Mesh:</b> Syncs unlimited poi, hats, and wands in microsecond unison
+                            • <b>🕹️ Hold Z + Joystick L/R:</b> Flick through all 16 Step 2 Motion Flows (Matrix Rain, Warp, Glitch, etc.)<br>
+                            • <b>💥 Hold Z + Wrist Flick:</b> Instant random/next Motion Flow drop!<br>
+                            • <b>🌀 Hold Z + Barrel Roll:</b> Smooth dynamic tilt speed throttle (3 to 10)<br>
+                            • <b>🔄 Release Z:</b> 100% perfectly restores clean steady stock pattern playback in 0ms!<br>
+                            • <b>🕹️ Joystick (Nothing Pressed):</b> Pure Slot 1–10 (L/R) & Bank 1–5 (U/D) Navigation<br>
+                            • <b>🌟 C-Button:</b> Tap to cycle Step 1 Palettes | Hold 1.0s to Reset True RGB
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-espnow-recv" manifest="firmware/opp_firmware/custom/3.0.0-55px-espnow/manifest.json?v=99">
-                                <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:var(--neon-purple); color:var(--neon-purple); font-weight:800;">
-                                    ⚡ Flash Pure ESP-NOW Prop Receiver (55px DotStar)
-                                </button>
-                            </esp-web-install-button>
-                            <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-espnow-recv" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-purple); font-weight:800; border-color:var(--neon-purple);">
-                                📱 Android USB-C 1-Tap Flash (Receiver)
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 2. MASTER WII NUNCHUK ESP-NOW BRIDGE TRANSMITTER -->
-                    <div class="firmware-card" style="border-color:rgba(0, 210, 255, 0.5); background:rgba(0, 210, 255, 0.05);">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-cyan);">🕹️ Master Wii Nunchuk Bridge Transmitter</span>
-                            <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">Handheld Bridge • I2C</span>
-                        </div>
-                        <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
-                            • <b>Wii Nunchuk I2C Master:</b> Reads Joystick (X/Y), Buttons (C/Z), and 3-Axis Tilt (X/Y/Z)<br>
-                            • <b>Wireless ESP-NOW Broadcast:</b> Transmits real-time packet commands across 100+ meters<br>
-                            • <b>Web Studio BLE Gateway:</b> Connects to Open POI Studio on your phone simultaneously<br>
-                            • <b>Real-Time Interactive Drops:</b> Joystick pattern change, C palette cycle, Z trigger strobe
-                        </div>
-                        <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-bridge" manifest="firmware/opp_firmware/custom/1.0.0-bridge-nunchuk/manifest.json">
+                            <esp-web-install-button id="esp-btn-bridge" manifest="firmware/opp_firmware/custom/1.0.0-bridge-nunchuk/manifest.json?v=152">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:var(--neon-cyan); color:var(--neon-cyan); font-weight:800;">
-                                    ⚡ Flash Master Nunchuk Bridge (Xiao ESP32-C3)
+                                    ⚡ Flash Master Nunchuk BLE Bridge (Xiao ESP32-C3)
                                 </button>
                             </esp-web-install-button>
                             <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-bridge" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-cyan); font-weight:800; border-color:var(--neon-cyan);">
-                                📱 Android USB-C 1-Tap Flash (Bridge v2.0)
+                                📱 Android USB-C 1-Tap Flash (BLE Bridge)
                             </button>
                         </div>
                     </div>
@@ -2324,69 +2215,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- PASSWORD PROTECTION FOR EXPERIMENTAL ESP-NOW MESH SECTION ---
-    const ESPNOW_ALLOWED_HASHES = [
-        "d1f71ec58153477779595b7d1641683ab4ce3b2fd07a7864af865db8445f2717", // 'wookery'
-        "259fa722f3279777a88aa2727b0374135c665739784b28f262d646ff67acf062", // 'openpoi'
-        "5c328e3b2e77b6299b9cf9067b5b54668df2624a9a08e6702c89fcae1adff9c0"  // 'nunchuk'
-    ];
-
-    async function sha256Hex(text) {
-        const msgBuffer = new TextEncoder().encode(text.trim().toLowerCase());
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function initEspNowProtection() {
-        const isUnlocked = (sessionStorage.getItem('espnow_unlocked') === '1');
-        const gate = el('espnow-locked-gate');
-        const content = el('espnow-unlocked-content');
-        const badge = el('espnow-lock-badge');
-        const passInput = el('input-espnow-pass');
-        const unlockBtn = el('btn-unlock-espnow');
-        const errEl = el('espnow-pass-error');
-
-        if (isUnlocked) {
-            if (gate) gate.style.display = 'none';
-            if (content) content.style.display = 'grid';
-            if (badge) {
-                badge.innerText = '🔓 Developer Access';
-                badge.style.color = 'var(--neon-purple)';
-                badge.style.borderColor = 'var(--neon-purple)';
-            }
-        }
-
-        async function attemptUnlock() {
-            if (!passInput) return;
-            const inputVal = passInput.value.trim();
-            if (!inputVal) return;
-            const hash = await sha256Hex(inputVal);
-            if (ESPNOW_ALLOWED_HASHES.includes(hash)) {
-                sessionStorage.setItem('espnow_unlocked', '1');
-                if (gate) gate.style.display = 'none';
-                if (content) content.style.display = 'grid';
-                if (badge) {
-                    badge.innerText = '🔓 Developer Access';
-                    badge.style.color = 'var(--neon-purple)';
-                    badge.style.borderColor = 'var(--neon-purple)';
-                }
-                if (errEl) errEl.style.display = 'none';
-                const chk = el('chk-firmware-safety-agree');
-                setFirmwareUnlocked(chk ? chk.checked : false);
-            } else {
-                if (errEl) errEl.style.display = 'block';
-                passInput.value = '';
-                passInput.focus();
-            }
-        }
-
-        if (unlockBtn) unlockBtn.onclick = attemptUnlock;
-        if (passInput) {
-            passInput.onkeydown = (e) => {
-                if (e.key === 'Enter') attemptUnlock();
-            };
-        }
-    }
+    function initEspNowProtection() {}
 
     if (el('chk-firmware-safety-agree')) {
         el('chk-firmware-safety-agree').onchange = function() {
@@ -2421,6 +2250,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el('btn-risk-modal-confirm')) {
         el('btn-risk-modal-confirm').onclick = function() {
             setFirmwareUnlocked(true);
+            const chk = el('chk-firmware-safety-agree');
+            if (chk) chk.checked = true;
+            closeFirmwareRiskModal();
+        };
+    }
 
     // --- LIVE NUNCHUK HARDWARE TELEMETRY LISTENER ---
     window.addEventListener('poi-nunchuk-telemetry', (e) => {
@@ -2527,10 +2361,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-
-            closeFirmwareRiskModal();
-        };
-    }
 
     if (el('btn-deck-goto-firmware')) {
         el('btn-deck-goto-firmware').onclick = function() {
