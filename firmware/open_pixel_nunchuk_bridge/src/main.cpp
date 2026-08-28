@@ -100,6 +100,11 @@ bool isNunchukI2cOk = false;
 uint8_t currentSlot = 0;
 uint8_t currentBank = 0;
 uint8_t currentPalette = 0;
+// Brightness Gesture State (Hold Z + C simultaneously)
+bool isBrightnessComboActive = false;
+uint8_t currentBrightnessOption = 4; // Default ~50%
+unsigned long lastBrightnessStepTime = 0;
+
 uint8_t activeZMotion = 1; // Default Step 2 Motion: Flow UP
 
 // Pre-Z Snapshot for 100% Perfect State Restoration
@@ -379,6 +384,65 @@ void readNunchukAndProcess() {
 
   // Low-Pass Filter on AccelX for Smooth Throttle
   smoothedAccelX = (smoothedAccelX * 0.70f) + ((float)accelX * 0.30f);
+
+  // =========================================================================
+  // 💡 0. BRIGHTNESS COMBO (HOLD Z + C SIMULTANEOUSLY)
+  // =========================================================================
+  bool isZandCHeld = (btnZ && btnC);
+
+  if (isZandCHeld) {
+    isBrightnessComboActive = true;
+
+    // A. Joystick Up / Down for step adjustment
+    if (now - lastBrightnessStepTime > 250) {
+      if (joyY > 200) {
+        if (currentBrightnessOption < 5) {
+          currentBrightnessOption++;
+          sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOption);
+          Serial.printf("💡 [BRIGHTNESS (Z+C)] Level: %d/5\n", currentBrightnessOption);
+        }
+        lastBrightnessStepTime = now;
+      } else if (joyY < 55) {
+        if (currentBrightnessOption > 0) {
+          currentBrightnessOption--;
+          sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOption);
+          Serial.printf("💡 [BRIGHTNESS (Z+C)] Level: %d/5\n", currentBrightnessOption);
+        }
+        lastBrightnessStepTime = now;
+      }
+    }
+
+    // B. Pitch Tilt (accelY) for intuitive gesture adjustment
+    if (now - lastTiltSampleTime > 120) {
+      lastTiltSampleTime = now;
+      int tiltY = accelY - 512;
+      if (abs(tiltY) > 80 && (now - lastBrightnessStepTime > 320)) {
+        if (tiltY > 80 && currentBrightnessOption < 5) {
+          currentBrightnessOption++;
+          sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOption);
+          Serial.printf("💡 [TILT BRIGHTNESS] Level: %d/5\n", currentBrightnessOption);
+          lastBrightnessStepTime = now;
+        } else if (tiltY < -80 && currentBrightnessOption > 0) {
+          currentBrightnessOption--;
+          sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOption);
+          Serial.printf("💡 [TILT BRIGHTNESS] Level: %d/5\n", currentBrightnessOption);
+          lastBrightnessStepTime = now;
+        }
+      }
+    }
+
+    lastBtnZ = btnZ;
+    lastBtnC = btnC;
+    prevAccelX = accelX;
+    prevAccelY = accelY;
+    prevAccelZ = accelZ;
+    return;
+  }
+
+  // Clear combo latch on release
+  if (!btnZ && !btnC && isBrightnessComboActive) {
+    isBrightnessComboActive = false;
+  }
 
   // =========================================================================
   // ⚡ 1. Z-TRIGGER GESTURE ENGINE (Hold Z + Step 2 Remix / Tilt Speed Throttle)
