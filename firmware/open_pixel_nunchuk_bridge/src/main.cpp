@@ -88,9 +88,12 @@ struct I2CPair {
 };
 
 const I2CPair I2C_PAIRS[] = {
+  { 5, 4, "D3 (SDA) / D2 (SCL)" },
   { 4, 5, "D2 (SDA) / D3 (SCL)" },
-  { 6, 7, "D4 (SDA) / D5 (SCL)" }
+  { 6, 7, "D4 (SDA) / D5 (SCL)" },
+  { 7, 6, "D5 (SDA) / D4 (SCL)" }
 };
+const int NUM_I2C_PAIRS = sizeof(I2C_PAIRS) / sizeof(I2C_PAIRS[0]);
 
 int activeI2cIndex = 0;
 bool isNunchukEncrypted = false;
@@ -322,7 +325,7 @@ bool tryInitNunchukOnPins(uint8_t sda, uint8_t scl) {
 }
 
 void autoScanNunchuk() {
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < NUM_I2C_PAIRS; i++) {
     if (tryInitNunchukOnPins(I2C_PAIRS[i].sda, I2C_PAIRS[i].scl)) {
       activeI2cIndex = i;
       isNunchukI2cOk = true;
