@@ -1,0 +1,12 @@
+{
+  "version": "v165",
+  "name": "Pure Nordic BLE Slim Edition (Zero Wi-Fi Bloat \u2022 Massive Headroom)",
+  "date": "2026-08-31",
+  "features": [
+    "Purged legacy Wi-Fi AP / WebServer stack for rock-solid 2.4GHz BLE communication",
+    "Dropped firmware binary size from 1.46MB to ~1.05MB (~420KB of free flash space)",
+    "Instant 20MHz SPI DotStar timing with zero RF contention",
+    "Full 50-Slot LittleFS architecture, 32 Pro Palettes, 16 Motion flows",
+    "Master Nunchuk Bridge hold Z+C brightness control + Step 2 Remix"
+  ]
+}

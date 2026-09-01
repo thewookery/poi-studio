@@ -1,0 +1,10 @@
+{
+  "version": "v164",
+  "name": "Smart Auto-Calibrating Battery Fuel Gauge & Live Voltage Telemetry",
+  "date": "2026-08-30",
+  "features": [
+    "50 Slots, 32 Palettes, 16 Motion Flows",
+    "Auto-calibrating battery fuel gauge",
+    "Master Nunchuk Bridge hold Z+C brightness control"
+  ]
+}

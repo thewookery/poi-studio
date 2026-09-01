@@ -1,0 +1,9 @@
+{
+  "version": "stock-3.0.0",
+  "name": "Official OpenPixelPoi Factory Stock (15 Slots / 3 Banks)",
+  "date": "2026-01-22",
+  "features": [
+    "Official unmodified factory firmware from Seeed Studio / OpenPixelPoi",
+    "15 Slots across 3 Banks"
+  ]
+}

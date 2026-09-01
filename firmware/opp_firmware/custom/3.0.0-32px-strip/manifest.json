@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelStrip - 32-LED DotStar Controller (Spaced Chasers \u2022 Negative-Space Flow Engine)",
-  "version": "2026.7.0-32px-v161",
+  "name": "OpenPixelStrip - Pure BLE Slim (32-LED DotStar Strip Controller, Flow Engine & Chasers)",
+  "version": "2026.165.0-32px-pureble",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [

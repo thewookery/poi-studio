@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPoi - Pure BLE Slim (50 Slots, 32 Palettes, 16 Motion Flows, Zero Wi-Fi Bloat)",
-  "version": "2026.165.0-55px-pureble",
+  "name": "OpenPixelBridge - Master Wii Nunchuk Transmitter (Nordic BLE Bridge + Z/C Combos)",
+  "version": "2026.165.0-bridge-v165",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -20,12 +20,8 @@
           "offset": 57344
         },
         {
-          "path": "firmware.bin",
+          "path": "firmware_bridge.bin",
           "offset": 65536
-        },
-        {
-          "path": "littlefs.bin",
-          "offset": 1564672
         }
       ]
     }

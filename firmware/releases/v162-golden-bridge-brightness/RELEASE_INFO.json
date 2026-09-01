@@ -1,0 +1,10 @@
+{
+  "version": "v162",
+  "name": "Master Bridge Hold Z+C Live Brightness Control",
+  "date": "2026-08-27",
+  "features": [
+    "Hold Z+C and flick joystick or tilt to adjust brightness (10% - 100%)",
+    "50 High-speed slots, 32 Pro Palettes, 16 Motion flows",
+    "Spaced Chasers & Flow engine for 32px Strip"
+  ]
+}

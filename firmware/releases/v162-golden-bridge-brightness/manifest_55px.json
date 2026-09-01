@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPoi - Pure BLE Slim (50 Slots, 32 Palettes, 16 Motion Flows, Zero Wi-Fi Bloat)",
-  "version": "2026.165.0-55px-pureble",
+  "name": "OpenPixelPoi - 50 Slots, 32 Pro Palettes, 17 Crazy Motion Flows, Full Peak Brightness (55px DotStar)",
+  "version": "2026.21.0-55px-v151",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -20,7 +20,7 @@
           "offset": 57344
         },
         {
-          "path": "firmware.bin",
+          "path": "firmware_55px.bin",
           "offset": 65536
         },
         {

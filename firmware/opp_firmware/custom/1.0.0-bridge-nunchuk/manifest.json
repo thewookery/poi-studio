@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelBridge - Master Wii Nunchuk Transmitter v2.0 (Nordic BLE + Wi-Fi AP + ESP-NOW)",
-  "version": "2026.21.0-bridge-v151",
+  "name": "OpenPixelBridge - Master Wii Nunchuk Transmitter (Nordic BLE Bridge + Z/C Combos)",
+  "version": "2026.165.0-bridge-v165",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
