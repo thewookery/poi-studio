@@ -481,7 +481,7 @@ static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& 
 // ----------------------------------------------------
 // 32px STRIP COLOR-EXTRACTION & HARMONIC FLOW ENGINE
 // ----------------------------------------------------
-#ifdef STRIP_32PX
+#if defined(STRIP_32PX) || defined(PEBBLE_50PX)
 struct ExtractedSlotPalette {
   uint8_t count;
   RgbColor colors[8];
@@ -616,14 +616,14 @@ class OpenPixelPoiLED {
         }
 
         // Zero-RAM Transition Engine (strictly OFF when blendMode == 0)
-        uint16_t currentDuration = getBlendDuration(config.blendMode);
+      uint16_t currentDuration = getBlendDuration(config.blendMode);
         bool isTransitioning = (config.blendMode > 0 && config.blendStartTime > 0 && (millis() - config.blendStartTime < currentDuration));
         float tProgress = isTransitioning ? ((float)(millis() - config.blendStartTime) / (float)currentDuration) : 1.0f;
 
 
+#if defined(STRIP_32PX) || defined(PEBBLE_50PX)
 #ifdef STRIP_32PX
-        // 🥷 STEALTH OFF BATTERY SAVER:
-        // Strip stays 100% OFF in hardware (black / zero power) until Z button is held on Nunchuk (motionFxMode > 0)
+        // 🥷 STEALTH OFF BATTERY SAVER (Only for 32px auxiliary strip):
         if (config.motionFxMode == 0) {
           for (int j=0; j<config.ledCount; j++) {
             ledStrip->SetPixelColor(j, RgbColor(0, 0, 0));
@@ -631,6 +631,7 @@ class OpenPixelPoiLED {
           ledStrip->Show();
           return;
         }
+#endif
 
         // Extract palette when slot loads or changes
         static int lastLoadedSlot = -1;
@@ -644,11 +645,19 @@ class OpenPixelPoiLED {
         uint32_t effT = (now * (uint32_t)spd) / 4;
         uint8_t numC = max((uint8_t)2, g_slotPalette.count);
 
+        uint8_t activeEffect = config.motionFxMode;
+#ifdef PEBBLE_50PX
+        if (activeEffect == 0) {
+          // Normal Hat Mode: Slot (1-10 on Nunchuk) selects which crazy spaced-out ripple pattern plays!
+          activeEffect = (config.getActivePatternIndex() % 16) + 1;
+        }
+#endif
+
         for (int j=0; j<config.ledCount; j++){
           uint8_t factor = 0;
           uint8_t colorPhase = 0;
 
-          switch (config.motionFxMode) {
+          switch (activeEffect) {
             case 1: { // 1. ⬆️ Chasing Comet Pulses (Moving UP with Dark Gaps)
               uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) - (effT / 3)) & 0xFF);
               uint8_t wave = fastSin8(pos * 3);
@@ -788,6 +797,10 @@ class OpenPixelPoiLED {
           uint8_t r = (uint8_t)(((uint16_t)c1.R * (255 - frac) + (uint16_t)c2.R * frac) / 255);
           uint8_t g = (uint8_t)(((uint16_t)c1.G * (255 - frac) + (uint16_t)c2.G * frac) / 255);
           uint8_t b = (uint8_t)(((uint16_t)c1.B * (255 - frac) + (uint16_t)c2.B * frac) / 255);
+
+          if (config.paletteFxMode > 0) {
+            getPaletteBaseColor(config.paletteFxMode, colorPhase, 255, r, g, b);
+          }
 
           red = (uint8_t)(((uint16_t)r * factor) / 255);
           green = (uint8_t)(((uint16_t)g * factor) / 255);
