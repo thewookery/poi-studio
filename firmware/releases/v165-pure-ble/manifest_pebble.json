@@ -1,6 +1,6 @@
 {
-  "name": "OpenPixelPebble - 50-LED WS2811/WS2812 3-Pin Seed Pixel Controller (Xiao ESP32-C3)",
-  "version": "2026.165.0-pebble-v165",
+  "name": "OpenPixelPebble - 69-LED WS2811/WS2812 3-Pin Seed Pixel Controller (Xiao ESP32-C3)",
+  "version": "2026.167.0-pebble69-v167",
   "funding_url": "https://github.com/thewookery/poi-studio",
   "new_install_prompt_erase": false,
   "builds": [
@@ -20,7 +20,7 @@
           "offset": 57344
         },
         {
-          "path": "firmware_50px_pebble.bin",
+          "path": "firmware_69px_pebble.bin",
           "offset": 65536
         },
         {

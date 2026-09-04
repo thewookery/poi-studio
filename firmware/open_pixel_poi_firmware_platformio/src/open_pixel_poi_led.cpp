@@ -552,11 +552,11 @@ class OpenPixelPoiLED {
     int frameIndex;
     void setup(){
 #if defined(PEBBLE_50PX)
-      config.ledCount = 50;
-      config.frameHeight = 50;
+      config.ledCount = 69;
+      config.frameHeight = 69;
       config.motionFxMode = 0;
       if (config.frameCount < 2) config.frameCount = 30;
-      ledStrip = new NeoPixelStrip(50, 10); // 50 WS2811/WS2812 LEDs on Pin D10 (GPIO 10) on the right side!
+      ledStrip = new NeoPixelStrip(69, 10); // 69 WS2811/WS2812 LEDs on Pin D10 (GPIO 10) on the right side!
 #elif defined(STRIP_32PX)
       config.ledCount = 32;
       config.frameHeight = 32;
