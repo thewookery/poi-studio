@@ -1,0 +1,10 @@
+{
+  "version": "v172",
+  "name": "Build v172: Stealth Blackout & Analog Tilt Speed Throttle",
+  "date": "2026-09-03",
+  "features": [
+    "Pebble Hat 100% Pitch-Black on boot and release",
+    "Barrel roll tilt speed throttle",
+    "Deliberate Joystick L/R effect switching"
+  ]
+}

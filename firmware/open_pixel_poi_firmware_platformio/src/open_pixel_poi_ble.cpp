@@ -81,6 +81,7 @@ enum CommCode {
   CC_SET_BLEND_MODE,              // 22
   CC_SET_PALETTE_SPEED,           // 23
   CC_SET_MOTION_FX,               // 24
+  CC_TRIGGER_FLICK,               // 25
 };
 
 
@@ -352,6 +353,9 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
             }else{
               bleSendError();
             }
+          }else if(requestCode == CC_TRIGGER_FLICK){
+            config.triggerFlick();
+            bleSendSuccess();
           }else{
             debugf("Recieved message with unknown code!\n");
             bleSendError();

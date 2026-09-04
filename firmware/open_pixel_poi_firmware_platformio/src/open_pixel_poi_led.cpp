@@ -658,9 +658,19 @@ class OpenPixelPoiLED {
 
         unsigned long now = millis();
         uint8_t spd = max((uint8_t)1, config.paletteSpeed);
-        uint32_t effT = (now * (uint32_t)spd) / 4;
-        uint8_t numC = max((uint8_t)2, g_slotPalette.count);
+        // Silky smooth, organic fluid flow timebase:
+        // Level tilt (spd 2-3): calm, majestic, continuous drift.
+        // Full tilt (spd 8-10): rushing, energetic liquid flow.
+        uint32_t flowT = (now * (uint32_t)spd) / 12;
 
+        // Smooth 550ms Exponential Flick Response Envelope
+        bool isFlickActive = (config.lastFlickTime > 0 && (now - config.lastFlickTime < 550));
+        float flickFade = 0.0f;
+        if (isFlickActive) {
+          flickFade = 1.0f - ((float)(now - config.lastFlickTime) / 550.0f);
+        }
+
+        uint8_t numC = max((uint8_t)2, g_slotPalette.count);
         uint8_t activeEffect = (config.motionFxMode >= 1 && config.motionFxMode <= 16) ? config.motionFxMode : 1;
 
         for (int j=0; j<config.ledCount; j++){
@@ -669,125 +679,221 @@ class OpenPixelPoiLED {
 
           switch (activeEffect) {
             case 1: { // 1. ⬆️ Chasing Comet Pulses (Moving UP with Dark Gaps)
-              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) - (effT / 3)) & 0xFF);
-              uint8_t wave = fastSin8(pos * 3);
-              factor = (wave > 150) ? (uint8_t)(((uint16_t)(wave - 150) * 255) / 105) : 0;
-              colorPhase = (pos + (effT / 8)) & 0xFF;
+              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) - (flowT / 2)) & 0xFF);
+              uint8_t wave = fastSin8(pos * 2); // 2 smooth comets around brim
+              factor = (wave > 165) ? (uint8_t)(((uint16_t)(wave - 165) * 255) / 90) : 0;
+              colorPhase = (pos + (flowT / 6)) & 0xFF;
+
+              // 💥 FLICK: Supernova Surge! Comet heads burst into brilliant blinding light with trailing starlight
+              if (flickFade > 0.05f) {
+                if (wave > 140) factor = min(255, (int)(factor + (flickFade * 210)));
+                factor = min(255, (int)(factor + (flickFade * 45))); // Ambient starlight tail
+              }
               break;
             }
             case 2: { // 2. ⬇️ Cascading Rain Drops (Moving DOWN with Spaced Gaps)
-              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) + (effT / 3)) & 0xFF);
-              uint8_t wave = fastSin8(pos * 3);
-              factor = (wave > 150) ? (uint8_t)(((uint16_t)(wave - 150) * 255) / 105) : 0;
-              colorPhase = (pos - (effT / 8)) & 0xFF;
+              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) + (flowT / 2)) & 0xFF);
+              uint8_t wave = fastSin8(pos * 2);
+              factor = (wave > 165) ? (uint8_t)(((uint16_t)(wave - 165) * 255) / 90) : 0;
+              colorPhase = (pos - (flowT / 6)) & 0xFF;
+
+              // 💥 FLICK: Thunderstorm Splash! Lightning flash at top brim + cascading splash ripples
+              if (flickFade > 0.05f) {
+                if (j < 6 || j > config.ledCount - 7) factor = min(255, (int)(factor + (flickFade * 240))); // Top crown flash
+                factor = min(255, (int)(factor + (flickFade * 85))); // Downpour splash
+              }
               break;
             }
-            case 3: { // 3. 🌧️ Matrix Isolated Sparks
-              uint8_t spark = fastSin8(j * 42 + (effT / 3));
-              factor = (spark > 215) ? 255 : ((spark > 185) ? (uint8_t)((spark - 185) * 3) : 0);
-              colorPhase = (j * 16 + (effT / 6)) & 0xFF;
+            case 3: { // 3. 🌧️ Matrix Isolated Sparks (Gentle Glowing Rain Drops)
+              uint8_t dropPhase = fastSin8(j * 32 + (flowT / 3));
+              factor = (dropPhase > 200) ? (uint8_t)((dropPhase - 200) * 4.6f) : 0;
+              colorPhase = (j * 12 + (flowT / 4)) & 0xFF;
+
+              // 💥 FLICK: EMP Overcharge! All falling drops ignite into blazing phosphor glow
+              if (flickFade > 0.05f) {
+                if (factor > 20) factor = min(255, (int)(factor + (flickFade * 220)));
+              }
               break;
             }
-            case 4: { // 4. 🌊 Dual Passing Chaser Beams (Two Comet Heads Passing Each Other)
-              uint8_t wave1 = fastSin8((j * 120 / config.ledCount) - (effT / 4));
-              uint8_t wave2 = fastSin8((j * 120 / config.ledCount) + (effT / 5));
-              uint8_t p1 = (wave1 > 170) ? (uint8_t)((wave1 - 170) * 3) : 0;
-              uint8_t p2 = (wave2 > 170) ? (uint8_t)((wave2 - 170) * 3) : 0;
+            case 4: { // 4. 🌊 Dual Passing Chaser Beams (Two Passing Beams)
+              uint8_t wave1 = fastSin8((j * 128 / config.ledCount) - (flowT / 3));
+              uint8_t wave2 = fastSin8((j * 128 / config.ledCount) + (flowT / 3));
+              uint8_t p1 = (wave1 > 175) ? (uint8_t)((wave1 - 175) * 3.1f) : 0;
+              uint8_t p2 = (wave2 > 175) ? (uint8_t)((wave2 - 175) * 3.1f) : 0;
               factor = min(255, (int)(p1 + p2));
-              colorPhase = (j * 12 + (effT / 6)) & 0xFF;
+              colorPhase = (j * 10 + (flowT / 4)) & 0xFF;
+
+              // 💥 FLICK: Collision Shockwave! Where beams meet, a bright kinetic splash erupts
+              if (flickFade > 0.05f) {
+                if (p1 > 40 && p2 > 40) factor = 255; // Core collision ignition
+                factor = min(255, (int)(factor + (flickFade * 90)));
+              }
               break;
             }
-            case 5: { // 5. ⚡ Laser Pulse Beads (Spaced Running Dots)
-              uint8_t dot = ((j + (effT / 16)) % 7);
-              factor = (dot == 0) ? 255 : ((dot == 1 || dot == 6) ? 70 : 0);
-              colorPhase = (j * 24 + (effT / 8)) & 0xFF;
+            case 5: { // 5. ⚡ Laser Pulse Beads (Clean Spaced Running Dots)
+              uint8_t dot = ((j + (flowT / 8)) % 8);
+              factor = (dot == 0) ? 255 : ((dot == 1 || dot == 7) ? 50 : 0);
+              colorPhase = (j * 16 + (flowT / 5)) & 0xFF;
+
+              // 💥 FLICK: Laser Hyper-Streak! Beads stretch into continuous bright laser beams
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 180)));
+              }
               break;
             }
             case 6: { // 6. 💫 Shooting Meteor Head with Fading Tail
-              uint8_t mPos = (effT / 12) % (config.ledCount + 8);
+              uint8_t mPos = (flowT / 4) % (config.ledCount + 16);
               int dist = (int)mPos - (int)j;
-              if (dist >= 0 && dist < 7) {
-                factor = (uint8_t)(255 - dist * 36);
+              if (dist >= 0 && dist < 9) {
+                factor = (uint8_t)(255 - dist * 28);
               } else {
                 factor = 0;
               }
-              colorPhase = (j * 16) & 0xFF;
+              colorPhase = (j * 12) & 0xFF;
+
+              // 💥 FLICK: Meteor Airburst! Meteor head erupts into a shower of bright embers across adjacent pixels
+              if (flickFade > 0.05f) {
+                if (abs(dist) < 14) factor = min(255, (int)(factor + (flickFade * (255 - abs(dist) * 16))));
+              }
               break;
             }
             case 7: { // 7. 💓 Breathing Center Glow Pulse
               int center = config.ledCount / 2;
               int dist = abs(j - center);
-              uint8_t breath = fastSin8(effT / 6);
-              uint8_t maxDist = (uint8_t)((breath * 10) / 255);
-              factor = (dist <= maxDist) ? (uint8_t)(255 - dist * 24) : 0;
-              colorPhase = (breath + j * 8) & 0xFF;
+              uint8_t breath = fastSin8(flowT / 3);
+              uint8_t maxDist = (uint8_t)((breath * 16) / 255);
+              factor = (dist <= maxDist) ? (uint8_t)(255 - (dist * 255 / (maxDist + 1))) : 0;
+              colorPhase = (breath + j * 6) & 0xFF;
+
+              // 💥 FLICK: Heartbeat Shockwave! Sudden violent pulse expands across the entire hat
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 220)));
+              }
               break;
             }
             case 8: { // 8. 🔄 Traveling Spark Orbit
-              uint8_t head = (effT / 14) % config.ledCount;
-              int d = abs(j - (int)head);
-              factor = (d <= 3) ? (uint8_t)(255 - d * 70) : 0;
-              colorPhase = (j * 32) & 0xFF;
+              uint8_t head = (flowT / 4) % config.ledCount;
+              int d1 = abs(j - (int)head);
+              if (d1 > config.ledCount / 2) d1 = config.ledCount - d1;
+              factor = (d1 <= 3) ? (uint8_t)(255 - d1 * 65) : 0;
+              colorPhase = (head * 6) & 0xFF;
+
+              // 💥 FLICK: Twin Spark Split! Splits into twin counter-rotating sparks
+              if (flickFade > 0.05f) {
+                uint8_t head2 = (config.ledCount - head) % config.ledCount;
+                int d2 = abs(j - (int)head2);
+                if (d2 > config.ledCount / 2) d2 = config.ledCount - d2;
+                if (d2 <= 3) factor = max((int)factor, (int)((255 - d2 * 65) * flickFade));
+              }
               break;
             }
             case 9: { // 9. 🌀 Dual Interleaved Beads (Opposite Direction Dots)
               bool isEven = (j % 2 == 0);
-              uint8_t pos = isEven ? ((j + (effT / 14)) % 8) : ((j - (effT / 14) + 64) % 8);
-              factor = (pos == 0) ? 255 : ((pos == 1) ? 60 : 0);
-              colorPhase = (j * 20 + (effT / 10)) & 0xFF;
+              uint8_t pos = isEven ? ((j + (flowT / 6)) % 8) : ((j - (flowT / 6) + 128) % 8);
+              factor = (pos == 0) ? 255 : ((pos == 1) ? 55 : 0);
+              colorPhase = (j * 14 + (flowT / 6)) & 0xFF;
+
+              // 💥 FLICK: Quantum Inversion! Interleaved dots double in brightness & shimmer
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 150)));
+                colorPhase = (colorPhase + (uint8_t)(flickFade * 128)) & 0xFF; // Invert complementary color!
+              }
               break;
             }
-            case 10: { // 10. ⚡ Hyper Strobe Sparks
-              bool flash = ((effT / 40) % 4 == 0) && (j % 3 == 0);
-              factor = flash ? 255 : 0;
-              colorPhase = (effT / 10) & 0xFF;
+            case 10: { // 10. ⚡ Cyber Scanner Wave (Smooth futuristic sweep, replaces sporadic strobe!)
+              uint8_t scanPos = fastSin8(flowT / 3);
+              int targetLed = (scanPos * (config.ledCount - 1)) / 255;
+              int dist = abs(j - targetLed);
+              factor = (dist <= 4) ? (uint8_t)(255 - dist * 55) : 0;
+              colorPhase = (scanPos + (flowT / 6)) & 0xFF;
+
+              // 💥 FLICK: Cyber Surge! High-voltage electrical shimmer floods the scan head
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 210)));
+              }
               break;
             }
             case 11: { // 11. 🌌 Warp Shockwave Ring
-              uint8_t ringPos = (effT / 10) % config.ledCount;
+              uint8_t ringPos = (flowT / 4) % config.ledCount;
               int dist = abs(j - (int)ringPos);
-              factor = (dist <= 2) ? (uint8_t)(255 - dist * 100) : 0;
-              colorPhase = (ringPos * 8) & 0xFF;
+              if (dist > config.ledCount / 2) dist = config.ledCount - dist;
+              factor = (dist <= 3) ? (uint8_t)(255 - dist * 70) : 0;
+              colorPhase = (ringPos * 6) & 0xFF;
+
+              // 💥 FLICK: Hyperspace Jump! Explosive expansion shockwave radiates across whole hat
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 200)));
+              }
               break;
             }
-            case 12: { // 12. ⚡ Glitch Cyber Matrix (Random Spark Drops)
-              uint8_t noise = (uint8_t)(((j * 73) ^ (effT / 8)) & 0xFF);
-              factor = (noise > 225) ? 255 : ((noise > 195) ? 60 : 0);
-              colorPhase = (j * 30) & 0xFF;
+            case 12: { // 12. 💎 Liquid Crystal Ripples (Smooth undulating interference, zero random jitter!)
+              uint8_t waveA = fastSin8((j * 160 / config.ledCount) + (flowT / 3));
+              uint8_t waveB = fastSin8((j * 90 / config.ledCount) - (flowT / 4));
+              uint8_t combined = (waveA + waveB) / 2;
+              factor = (combined > 160) ? (uint8_t)((combined - 160) * 2.6f) : 0;
+              colorPhase = (combined + (flowT / 5)) & 0xFF;
+
+              // 💥 FLICK: Prismatic Diamond Flash! Sharp crystalline diamond sparkles ignite
+              if (flickFade > 0.05f) {
+                if (j % 3 == 0) factor = min(255, (int)(factor + (flickFade * 240)));
+              }
               break;
             }
-            case 13: { // 13. 🌈 Aurora Spaced Ribbon
-              uint8_t aur = fastSin8((j * 180 / config.ledCount) + (effT / 8));
-              factor = (aur > 160) ? (uint8_t)((aur - 160) * 2.6f) : 0;
-              colorPhase = (aur + (effT / 6)) & 0xFF;
+            case 13: { // 13. 🌈 Aurora Spaced Ribbon (Silky smooth polar curtain)
+              uint8_t aur = fastSin8((j * 140 / config.ledCount) + (flowT / 4));
+              factor = (aur > 155) ? (uint8_t)((aur - 155) * 2.5f) : 0;
+              colorPhase = (aur + (flowT / 5)) & 0xFF;
+
+              // 💥 FLICK: Solar Flare Eruption! Ribbon swells into a shimmering radiant curtain
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 190)));
+              }
               break;
             }
-            case 14: { // 14. 🌋 Lava Ember Flares
-              uint8_t flare = fastSin8(j * 40 + (effT / 5)) ^ fastSin8(j * 25 - (effT / 7));
-              factor = (flare > 170) ? (uint8_t)((flare - 170) * 3) : 0;
-              colorPhase = (flare + (effT / 10)) & 0xFF;
+            case 14: { // 14. 🌋 Lava Ember Flares (Warm undulating embers)
+              uint8_t flare = fastSin8(j * 32 + (flowT / 4));
+              factor = (flare > 165) ? (uint8_t)((flare - 165) * 2.8f) : 0;
+              colorPhase = (flare + (flowT / 6)) & 0xFF;
+
+              // 💥 FLICK: Magma Geyser Eruption! Hot yellow-orange magma sparks burst across the brim
+              if (flickFade > 0.05f) {
+                if (j % 2 == 0) factor = min(255, (int)(factor + (flickFade * 230)));
+              }
               break;
             }
-            case 15: { // 15. 🪩 Disco Beat Strobe Beads
-              uint8_t beat = (effT / 60) % 8;
-              bool on = (j % 4 == (beat / 2)) && ((effT / 20) % 2 == 0);
-              factor = on ? 255 : 0;
-              colorPhase = (beat * 32) & 0xFF;
+            case 15: { // 15. 🪩 Disco Groove Flow (Smooth rhythmic light pulses, no chaotic flashing)
+              uint8_t groove = (flowT / 6) % config.ledCount;
+              int dist = abs(j - (int)groove);
+              if (dist > config.ledCount / 2) dist = config.ledCount - dist;
+              factor = (dist <= 5) ? (uint8_t)(255 - dist * 45) : 0;
+              colorPhase = (groove * 10) & 0xFF;
+
+              // 💥 FLICK: Bass Drop Strobe! Energetic bass-drop flash burst
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 240)));
+              }
               break;
             }
-            case 16: { // 16. 🕳️ Inward Gravity Convergence (Beads Rushing to Center)
+            case 16: { // 16. 🕳️ Gravity Convergence (Beads smoothly drawn inward)
               int center = config.ledCount / 2;
               int dist = abs(j - center);
-              uint8_t rush = fastSin8(dist * 35 - (effT / 3));
-              factor = (rush > 175) ? (uint8_t)((rush - 175) * 3) : 0;
-              colorPhase = (dist * 20 + (effT / 8)) & 0xFF;
+              uint8_t rush = fastSin8(dist * 30 - (flowT / 2));
+              factor = (rush > 170) ? (uint8_t)((rush - 170) * 2.9f) : 0;
+              colorPhase = (dist * 18 + (flowT / 6)) & 0xFF;
+
+              // 💥 FLICK: Event Horizon Super-Burst! Blinding gamma ray flare ejects from the center
+              if (flickFade > 0.05f) {
+                if (dist <= 8) factor = min(255, (int)(factor + (flickFade * 255)));
+                factor = min(255, (int)(factor + (flickFade * 80)));
+              }
               break;
             }
             default: {
-              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) - (effT / 3)) & 0xFF);
-              uint8_t wave = fastSin8(pos * 3);
-              factor = (wave > 150) ? (uint8_t)(((uint16_t)(wave - 150) * 255) / 105) : 0;
-              colorPhase = (pos + (effT / 8)) & 0xFF;
+              uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) - (flowT / 2)) & 0xFF);
+              uint8_t wave = fastSin8(pos * 2);
+              factor = (wave > 165) ? (uint8_t)(((uint16_t)(wave - 165) * 255) / 90) : 0;
+              colorPhase = (pos + (flowT / 6)) & 0xFF;
+              if (flickFade > 0.05f) factor = min(255, (int)(factor + (flickFade * 200)));
               break;
             }
           }

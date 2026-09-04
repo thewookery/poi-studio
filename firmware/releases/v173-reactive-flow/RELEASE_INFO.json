@@ -1,0 +1,12 @@
+{
+  "version": "v173",
+  "name": "Build v173: Liquid Flow & Reactive Flick Excitation",
+  "date": "2026-09-03",
+  "features": [
+    "Organic, smooth flowing speed: hypnotic liquid ripples that accelerate on wrist tilt",
+    "Wrist Flick Excitation: Snap wrist to trigger unique reactive bursts for each of the 16 patterns",
+    "100% Authoritative Stick Control: Hold Z + Joystick L/R cleanly steps through effects 1 to 16",
+    "Pebble Hat 100% Pitch-Black Stealth on boot until Z is held",
+    "Zero-Jitter high-pass jerk filtering"
+  ]
+}

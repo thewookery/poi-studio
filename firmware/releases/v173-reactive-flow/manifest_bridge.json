@@ -1,0 +1,29 @@
+{
+  "name": "OpenPixelBridge - Master Wii Nunchuk Transmitter (v173)",
+  "version": "v173",
+  "funding_url": "https://github.com/thewookery/poi-studio",
+  "new_install_prompt_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "bootloader.bin",
+          "offset": 0
+        },
+        {
+          "path": "partitions.bin",
+          "offset": 32768
+        },
+        {
+          "path": "boot_app0.bin",
+          "offset": 57344
+        },
+        {
+          "path": "firmware_bridge.bin",
+          "offset": 65536
+        }
+      ]
+    }
+  ]
+}

@@ -82,6 +82,12 @@ class OpenPixelPoiConfig {
     bool autoPaletteMorph = false;
     unsigned long lastPaletteMorphTime = 0;
     uint16_t paletteMorphIntervalSeconds = 10;
+    unsigned long lastFlickTime = 0;
+
+    void triggerFlick() {
+      this->lastFlickTime = millis();
+      this->configLastUpdated = millis();
+    }
 
     // Sequencer
     uint8_t *sequencer = (uint8_t *) malloc(1785*sizeof(uint8_t)); // 255 Instruction max (7 bits per instruction)

@@ -53,6 +53,7 @@
 #define CC_SET_PALETTE_FX        0x15  // 21 (0 to 32)
 #define CC_SET_PALETTE_SPEED     0x17  // 23 (1 to 10)
 #define CC_SET_MOTION_FX         0x18  // 24 (0 to 17)
+#define CC_TRIGGER_FLICK         0x19  // 25 (1)
 
 // Nordic UART Service (NUS)
 static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
@@ -445,13 +446,13 @@ void readNunchukAndProcess() {
     // Activate the current Step 2 Motion Flow
     if (activeZMotion == 0) activeZMotion = 1;
     sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
-    sendBleCommand(CC_SET_PALETTE_SPEED, 6);
-    Serial.printf("⚡ [Z-ENGAGE] Step 2 Motion %d Active!\n", activeZMotion);
+    sendBleCommand(CC_SET_PALETTE_SPEED, 3); // Silky chill baseline flow on engage
+    Serial.printf("⚡ [Z-ENGAGE] Step 2 Motion %d Active (Flow Speed 3)!\n", activeZMotion);
   } else if (btnZ) {
 
     // 🕹️ 1. HOLD Z + JOYSTICK CONTROL:
     // • Joystick Left / Right: Step cleanly through Effects 1 to 16
-    // • Joystick Up / Down: Step Flow Speed (Faster / Slower, 2 to 10)
+    // • Joystick Up / Down: Step Flow Speed (Faster / Slower, 1 to 10)
     if (now - lastJoyFlickTime > 260) {
       if (joyX < 50) {
         // Previous Effect (1 to 16)
@@ -475,7 +476,7 @@ void readNunchukAndProcess() {
         lastJoyFlickTime = now;
       } else if (joyY < 55) {
         // Slower Speed
-        if (activeZSpeed > 2) {
+        if (activeZSpeed > 1) {
           activeZSpeed--;
           sendBleCommand(CC_SET_PALETTE_SPEED, activeZSpeed);
           Serial.printf("▼ [Z+STICK] Speed DOWN: %d/10\n", activeZSpeed);
@@ -485,14 +486,14 @@ void readNunchukAndProcess() {
     }
 
     // 🌀 2. HOLD Z + BARREL ROLL TILT -> DYNAMIC FLOW SPEED THROTTLE (Never changes effect!)
-    // Tilting wrist smoothly throttles flow speed from 4 (chill) to 10 (warp)
-    if (now - lastTiltSampleTime > 40) {
+    // Smooth analog flow throttle: Level hand = chill drift (2), Wrist roll = fast rushing river (10)
+    if (now - lastTiltSampleTime > 35) {
       lastTiltSampleTime = now;
       float dev = abs(smoothedAccelX - 512.0f); // Tilt deviation from level
-      uint8_t targetSpeed = 4;
-      if (dev > 35.0f) {
-        float mag = min(1.0f, (dev - 35.0f) / 220.0f);
-        targetSpeed = 4 + (uint8_t)(mag * 6.0f); // 4 to 10 dynamically
+      uint8_t targetSpeed = 2; // Default silky chill flow when level
+      if (dev > 30.0f) {
+        float mag = min(1.0f, (dev - 30.0f) / 220.0f);
+        targetSpeed = 2 + (uint8_t)(mag * 8.0f); // 2 to 10 dynamically
       }
       if (targetSpeed != activeZSpeed) {
         activeZSpeed = targetSpeed;
@@ -500,17 +501,16 @@ void readNunchukAndProcess() {
       }
     }
 
-    // 💥 3. HOLD Z + INTENTIONAL WRIST FLICK (High-Threshold Snap > 420)
-    // High-pass jerk filter ensures normal tilt NEVER accidentally switches patterns
+    // 💥 3. HOLD Z + INTENTIONAL WRIST FLICK (High-Threshold Snap > 400)
+    // EXCITES THE CURRENT EFFECT! Does NOT change patterns!
     int16_t deltaX = abs(accelX - prevAccelX);
     int16_t deltaY = abs(accelY - prevAccelY);
     int16_t deltaZ = abs(accelZ - prevAccelZ);
     int16_t totalJerk = deltaX + deltaY + deltaZ;
-    if (totalJerk > 420 && (now - lastFlickTime > 450)) {
+    if (totalJerk > 400 && (now - lastFlickTime > 400)) {
       lastFlickTime = now;
-      activeZMotion = (activeZMotion % 16) + 1;
-      sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
-      Serial.printf("💥 [WRIST FLICK] Intentional snap triggered Effect %d/16 (Jerk: %d)!\n", activeZMotion, totalJerk);
+      sendBleCommand(CC_TRIGGER_FLICK, 1);
+      Serial.printf("💥 [WRIST FLICK] Excited active effect %d with reactive burst! (Jerk: %d)\n", activeZMotion, totalJerk);
     }
 
   } else if (!btnZ && lastBtnZ) {
