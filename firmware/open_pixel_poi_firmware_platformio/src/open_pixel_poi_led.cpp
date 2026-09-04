@@ -622,8 +622,8 @@ class OpenPixelPoiLED {
 
 
 #if defined(STRIP_32PX) || defined(PEBBLE_50PX)
-#ifdef STRIP_32PX
-        // 🥷 STEALTH OFF BATTERY SAVER (Only for 32px auxiliary strip):
+        // 🥷 STEALTH REACTIVE PROP MODE (Hat Pebble & Aux Strip):
+        // Hat stays 100% OFF in hardware (black / zero power) until Z button is held on Nunchuk (motionFxMode > 0)
         if (config.motionFxMode == 0) {
           for (int j=0; j<config.ledCount; j++) {
             ledStrip->SetPixelColor(j, RgbColor(0, 0, 0));
@@ -631,7 +631,6 @@ class OpenPixelPoiLED {
           ledStrip->Show();
           return;
         }
-#endif
 
         // Extract palette when slot loads or changes
         static int lastLoadedSlot = -1;
@@ -645,13 +644,7 @@ class OpenPixelPoiLED {
         uint32_t effT = (now * (uint32_t)spd) / 4;
         uint8_t numC = max((uint8_t)2, g_slotPalette.count);
 
-        uint8_t activeEffect = config.motionFxMode;
-#ifdef PEBBLE_50PX
-        if (activeEffect == 0) {
-          // Normal Hat Mode: Slot (1-10 on Nunchuk) selects which crazy spaced-out ripple pattern plays!
-          activeEffect = (config.getActivePatternIndex() % 16) + 1;
-        }
-#endif
+        uint8_t activeEffect = (config.motionFxMode >= 1 && config.motionFxMode <= 16) ? config.motionFxMode : 1;
 
         for (int j=0; j<config.ledCount; j++){
           uint8_t factor = 0;

@@ -1644,18 +1644,18 @@
                     <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(0, 210, 255, 0.5); background:rgba(0, 210, 255, 0.05);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:0.84rem; font-weight:800; color:var(--neon-cyan);">🕹️ Master Wii Nunchuk Bridge <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ LATEST RELEASE</span></span>
-                            <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">Step 2 Motion Remix • Tilt Throttle</span>
+                            <span class="telemetry-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">Authoritative Stick Control • Zero Jitter</span>
                         </div>
                         <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
-                            • <b>🕹️ Hold Z + Joystick L/R:</b> Flick through all 16 Step 2 Motion Flows (Matrix Rain, Warp, Glitch, etc.)<br>
-                            • <b>💥 Hold Z + Wrist Flick:</b> Instant random/next Motion Flow drop!<br>
-                            • <b>🌀 Hold Z + Barrel Roll:</b> Smooth dynamic tilt speed throttle (3 to 10)<br>
-                            • <b>🔄 Release Z:</b> 100% perfectly restores clean steady stock pattern playback in 0ms!<br>
+                            • <b>🕹️ Hold Z + Joystick L/R:</b> Step cleanly through all 16 Motion Flows (Matrix Rain, Warp, Glitch, etc.) with 100% stick control<br>
+                            • <b>▲/▼ Hold Z + Joystick U/D:</b> Live Flow Speed Adjustment (Faster / Slower)<br>
+                            • <b>🔄 Release Z:</b> Hat & props immediately return to stealth dark in 0ms!<br>
                             • <b>🕹️ Joystick (Nothing Pressed):</b> Pure Slot 1–10 (L/R) & Bank 1–5 (U/D) Navigation<br>
-                            • <b>🌟 C-Button:</b> Tap to cycle Step 1 Palettes | Hold 1.0s to Reset True RGB
+                            • <b>🌟 C-Button:</b> Tap to cycle 32 Pro Palettes | Hold 1.0s to Reset True RGB<br>
+                            • <b>💡 Hold Z + C:</b> Joystick U/D steps brightness (10% to 100%)
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-bridge" manifest="firmware/opp_firmware/custom/1.0.0-bridge-nunchuk/manifest.json?v=165">
+                            <esp-web-install-button id="esp-btn-bridge" manifest="firmware/opp_firmware/custom/1.0.0-bridge-nunchuk/manifest.json?v=171">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:var(--neon-cyan); color:var(--neon-cyan); font-weight:800;">
                                     ⚡ Flash Master Nunchuk BLE Bridge (Xiao ESP32-C3)
                                 </button>
@@ -1694,16 +1694,16 @@
                     <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(255, 170, 0, 0.5); background:rgba(255, 170, 0, 0.05);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:0.84rem; font-weight:800; color:#ffaa00;">✨ 88px WS2812 Pebble Seed Pixels <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ 3-PIN PROP</span></span>
-                            <span class="telemetry-pill" style="color:#ffaa00; font-size:0.62rem; font-weight:800;">3-Pin • 88 LEDs • Xiao ESP32-C3</span>
+                            <span class="telemetry-pill" style="color:#ffaa00; font-size:0.62rem; font-weight:800;">3-Pin • 88 LEDs • Stealth Reactive Z-Trigger</span>
                         </div>
                         <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
+                            • <b>🥷 Stealth Reactive Z-Trigger:</b> Hat stays 100% dark (zero battery draw) until Z is held on Nunchuk!<br>
+                            • <b>🎩 16 Spaced-Out Ripple Flows:</b> Switch flows cleanly with Joystick L/R while holding Z<br>
                             • <b>🎯 Compact Same-Side Wiring:</b> 5V &rarr; <b>5V</b> | GND &rarr; <b>GND</b> | DATA &rarr; <b>D10 (GPIO 10)</b> (All 3 on the same right side!)<br>
-                            • <b>🕹️ Dual Multi-Prop Sync:</b> Connects to Master Wii Nunchuk Bridge alongside your Poi!<br>
-                            • <b>🎨 32 Pro Palettes & 16 Motion Flows:</b> 100% True RGB, Curated Color Grading & Live Tilt Throttle<br>
-                            • <b>🗃️ 50 High-Speed Slots:</b> 5 Banks &times; 10 Slots with LittleFS flash storage
+                            • <b>🎨 32 Pro Palettes:</b> Cycle through all 32 curated palettes with the C-button
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-pebble" manifest="firmware/opp_firmware/custom/3.0.0-88px-pebble/manifest.json?v=168">
+                            <esp-web-install-button id="esp-btn-pebble" manifest="firmware/opp_firmware/custom/3.0.0-88px-pebble/manifest.json?v=171">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:#ffaa00; color:#ffaa00; font-weight:800;">
                                     ⚡ Flash 88px Pebble Seed Pixels (Xiao ESP32-C3)
                                 </button>

@@ -415,24 +415,7 @@ void readNunchukAndProcess() {
       }
     }
 
-    // B. Pitch Tilt (accelY) for intuitive gesture adjustment
-    if (now - lastTiltSampleTime > 120) {
-      lastTiltSampleTime = now;
-      int tiltY = accelY - 512;
-      if (abs(tiltY) > 80 && (now - lastBrightnessStepTime > 320)) {
-        if (tiltY > 80 && currentBrightnessOption < 5) {
-          currentBrightnessOption++;
-          sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOption);
-          Serial.printf("💡 [TILT BRIGHTNESS] Level: %d/5\n", currentBrightnessOption);
-          lastBrightnessStepTime = now;
-        } else if (tiltY < -80 && currentBrightnessOption > 0) {
-          currentBrightnessOption--;
-          sendBleCommand(CC_SET_BRIGHTNESS_OPTION, currentBrightnessOption);
-          Serial.printf("💡 [TILT BRIGHTNESS] Level: %d/5\n", currentBrightnessOption);
-          lastBrightnessStepTime = now;
-        }
-      }
-    }
+
 
     lastBtnZ = btnZ;
     lastBtnC = btnC;
@@ -466,52 +449,38 @@ void readNunchukAndProcess() {
     Serial.printf("⚡ [Z-ENGAGE] Step 2 Motion %d Active!\n", activeZMotion);
   } else if (btnZ) {
 
-    // 💥 1A. WRIST FLICK (Sharp Snap) -> Instant Next Step 2 Motion Flow Drop!
-    int16_t deltaX = abs(accelX - prevAccelX);
-    int16_t deltaY = abs(accelY - prevAccelY);
-    int16_t deltaZ = abs(accelZ - prevAccelZ);
-    int16_t totalJerk = deltaX + deltaY + deltaZ;
-
-    if (totalJerk > 200 && (now - lastFlickTime > 400)) {
-      lastFlickTime = now;
-      activeZMotion = (activeZMotion % 16) + 1; // 1 to 16
-      sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
-      Serial.printf("💥 [WRIST FLICK] Jumped to Step 2 Motion %d!\n", activeZMotion);
-    }
-
-    // 🕹️ 1B. HOLD Z + JOYSTICK LEFT/RIGHT -> FLICK THROUGH STEP 2 MOTION FLOWS (1 to 16)
-    if (now - lastJoyFlickTime > 280) {
+    // 🕹️ HOLD Z + JOYSTICK CONTROL (100% Intentional, Zero Tilt/Flick Jitter!):
+    // • Joystick Left / Right: Step cleanly through Effects 1 to 16
+    // • Joystick Up / Down: Step Flow Speed (Faster / Slower, 2 to 10)
+    if (now - lastJoyFlickTime > 260) {
       if (joyX < 50) {
-        // Previous Step 2 Motion Flow (1 to 16)
+        // Previous Effect (1 to 16)
         activeZMotion = (activeZMotion > 1) ? (activeZMotion - 1) : 16;
         sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
-        Serial.printf("◀️ [Z-COMBO] Step 2 Motion: %d\n", activeZMotion);
+        Serial.printf("◀️ [Z+STICK] Effect: %d/16\n", activeZMotion);
         lastJoyFlickTime = now;
       } else if (joyX > 200) {
-        // Next Step 2 Motion Flow (1 to 16)
+        // Next Effect (1 to 16)
         activeZMotion = (activeZMotion % 16) + 1;
         sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
-        Serial.printf("▶️ [Z-COMBO] Step 2 Motion: %d\n", activeZMotion);
+        Serial.printf("▶️ [Z+STICK] Effect: %d/16\n", activeZMotion);
         lastJoyFlickTime = now;
-      }
-    }
-
-    // 🌀 1C. HOLD Z + BARREL ROLL TILT -> DYNAMIC FLOW SPEED THROTTLE
-    if (now - lastTiltSampleTime > 35) {
-      lastTiltSampleTime = now;
-      float dev = abs(smoothedAccelX - 512.0f); // Tilt magnitude
-      uint8_t targetSpeed = 4;
-      if (dev > 30.0f) {
-        float mag = (dev - 30.0f) / 220.0f;
-        if (mag > 1.0f) mag = 1.0f;
-        targetSpeed = 4 + (uint8_t)(mag * 6.0f); // 4 to 10 (Dynamic Throttle)
-      } else {
-        targetSpeed = 4; // Steady / Chill
-      }
-
-      if (targetSpeed != activeZSpeed) {
-        activeZSpeed = targetSpeed;
-        sendBleCommand(CC_SET_PALETTE_SPEED, targetSpeed);
+      } else if (joyY > 200) {
+        // Faster Speed
+        if (activeZSpeed < 10) {
+          activeZSpeed++;
+          sendBleCommand(CC_SET_PALETTE_SPEED, activeZSpeed);
+          Serial.printf("▲ [Z+STICK] Speed UP: %d/10\n", activeZSpeed);
+        }
+        lastJoyFlickTime = now;
+      } else if (joyY < 55) {
+        // Slower Speed
+        if (activeZSpeed > 2) {
+          activeZSpeed--;
+          sendBleCommand(CC_SET_PALETTE_SPEED, activeZSpeed);
+          Serial.printf("▼ [Z+STICK] Speed DOWN: %d/10\n", activeZSpeed);
+        }
+        lastJoyFlickTime = now;
       }
     }
 
