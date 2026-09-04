@@ -456,15 +456,15 @@ void readNunchukAndProcess() {
     if (now - lastJoyFlickTime > 260) {
       if (joyX < 50) {
         // Previous Effect (1 to 16)
-        activeZMotion = (activeZMotion > 1) ? (activeZMotion - 1) : 16;
+        activeZMotion = (activeZMotion > 1) ? (activeZMotion - 1) : 24;
         sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
-        Serial.printf("◀️ [Z+STICK] Effect: %d/16\n", activeZMotion);
+        Serial.printf("◀️ [Z+STICK] Effect: %d/24\n", activeZMotion);
         lastJoyFlickTime = now;
       } else if (joyX > 200) {
         // Next Effect (1 to 16)
-        activeZMotion = (activeZMotion % 16) + 1;
+        activeZMotion = (activeZMotion % 24) + 1;
         sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
-        Serial.printf("▶️ [Z+STICK] Effect: %d/16\n", activeZMotion);
+        Serial.printf("▶️ [Z+STICK] Effect: %d/24\n", activeZMotion);
         lastJoyFlickTime = now;
       } else if (joyY > 200) {
         // Faster Speed
@@ -571,7 +571,7 @@ void readNunchukAndProcess() {
       unsigned long pressDur = now - btnCHoldStart;
       if (pressDur < 800) {
         startDiscoveryWindow(20000); // Re-open discovery if new props turned on
-        currentPalette = (currentPalette + 1) % 33;
+        currentPalette = (currentPalette + 1) % 49;
         sendBleCommand(CC_SET_PALETTE_FX, currentPalette);
         Serial.printf("🎨 [C-BUTTON] Palette %d\n", currentPalette);
       }

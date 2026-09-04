@@ -325,7 +325,7 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
               bleSendError();
             }
           }else if(requestCode == CC_SET_PALETTE_FX){
-            if(bleStatus[2] >= 0 && bleStatus[2] <= 39){
+            if(bleStatus[2] >= 0 && bleStatus[2] <= 48){
               config.setPaletteFxMode(bleStatus[2]);
               bleSendSuccess();
             }else{
@@ -347,7 +347,7 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
               bleSendError();
             }
           }else if(requestCode == CC_SET_MOTION_FX){
-            if(bleStatus[2] >= 0 && bleStatus[2] <= 16){
+            if(bleStatus[2] >= 0 && bleStatus[2] <= 24){
               config.setMotionFxMode(bleStatus[2]);
               bleSendSuccess();
             }else{

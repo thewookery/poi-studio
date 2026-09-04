@@ -105,12 +105,12 @@ class OpenPixelPoiConfig {
     }
 
     void setPaletteFxMode(uint8_t mode) {
-      this->paletteFxMode = mode % 25;
+      this->paletteFxMode = min((uint8_t)48, mode);
       this->configLastUpdated = millis();
     }
 
     void setMotionFxMode(uint8_t mode) {
-      this->motionFxMode = min((uint8_t)16, mode);
+      this->motionFxMode = min((uint8_t)24, mode);
       this->configLastUpdated = millis();
     }
 

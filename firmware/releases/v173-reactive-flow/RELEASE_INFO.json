@@ -1,12 +1,12 @@
 {
   "version": "v173",
-  "name": "Build v173: Liquid Flow & Reactive Flick Excitation",
+  "name": "Build v173: 48 Pro Palettes & 24 Flow FX with Reactive Flick",
   "date": "2026-09-03",
   "features": [
-    "Organic, smooth flowing speed: hypnotic liquid ripples that accelerate on wrist tilt",
-    "Wrist Flick Excitation: Snap wrist to trigger unique reactive bursts for each of the 16 patterns",
-    "100% Authoritative Stick Control: Hold Z + Joystick L/R cleanly steps through effects 1 to 16",
-    "Pebble Hat 100% Pitch-Black Stealth on boot until Z is held",
-    "Zero-Jitter high-pass jerk filtering"
+    "Expanded 48 Curated Festival Palettes (Vaporwave, Cyber Rain, Bioluminescence, Arcane Quartz, etc.)",
+    "Expanded 24 Liquid Motion Flows (Fireflies, Plasma Vortex, Cosmic Spiral, Sonar Ping, Jellyfish Pulse, etc.)",
+    "Reactive Wrist Flick Burst on active pattern for both Pebble Hat and Poi blades",
+    "Pebble Hat 100% Pitch-Black Stealth until Z button held",
+    "Wii Nunchuk Bridge full 48-palette & 24-motion stick navigation"
   ]
 }

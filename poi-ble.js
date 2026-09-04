@@ -565,18 +565,18 @@
         }
 
         /**
-         * Set Real-Time Color Palette Filter (0=Normal, 1-32 Curated Palettes)
+         * Set Real-Time Color Palette Filter (0=Normal, 1-48 Curated Palettes)
          */
         async setPaletteFX(paletteId) {
-            const id = Math.max(0, Math.min(39, parseInt(paletteId) || 0));
+            const id = Math.max(0, Math.min(48, parseInt(paletteId) || 0));
             await this._sendMessage([COMM_CODES.CC_SET_PALETTE_FX, id]);
         }
 
         /**
-         * Set Real-Time Motion Flow FX Bank (0=Solid, 1-16: 16 Crazy Motion Flows)
+         * Set Real-Time Motion Flow FX Bank (0=Solid, 1-24: 24 Liquid Motion Flows)
          */
         async setMotionFX(motionId) {
-            const id = Math.max(0, Math.min(16, parseInt(motionId) || 0));
+            const id = Math.max(0, Math.min(24, parseInt(motionId) || 0));
             await this._sendMessage([COMM_CODES.CC_SET_MOTION_FX, id]);
         }
 

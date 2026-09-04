@@ -352,6 +352,234 @@ static inline void getPaletteBaseColor(uint8_t palId, uint8_t index256, uint8_t 
       }
       break;
     }
+    case 33: { // 33. 🌌 Vaporwave Dream (Pastel Cyan -> Lavender Mist -> Coral Pink)
+      if (index256 < 85) {
+        uint32_t t = index256 * 3;
+        red = (uint8_t)((lum * (t * 180 / 255)) >> 8);
+        green = (uint8_t)((lum * (240 - t * 100 / 255)) >> 8);
+        blue = lum;
+      } else if (index256 < 170) {
+        uint32_t t = (index256 - 85) * 3;
+        red = (uint8_t)((lum * (180 + t * 75 / 255)) >> 8);
+        green = (uint8_t)((lum * (140 - t * 30 / 255)) >> 8);
+        blue = (uint8_t)((lum * (255 - t * 95 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 170) * 3;
+        red = (uint8_t)((lum * (255 - t * 255 / 255)) >> 8);
+        green = (uint8_t)((lum * (110 + t * 130 / 255)) >> 8);
+        blue = (uint8_t)((lum * (160 + t * 95 / 255)) >> 8);
+      }
+      break;
+    }
+    case 34: { // 34. 🌲 Electric Forest (Deep Forest Pine -> Electric Chartreuse -> Golden Firefly)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (t * 140 / 255)) >> 8);
+        green = (uint8_t)((lum * (70 + t * 185 / 255)) >> 8);
+        blue = (uint8_t)((lum * (30 - t * 30 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (140 + t * 115 / 255)) >> 8);
+        green = (uint8_t)((lum * (255 - t * 35 / 255)) >> 8);
+        blue = 0;
+      }
+      break;
+    }
+    case 35: { // 35. 🪐 Saturn Rings (Muted Rose Gold -> Cosmic Champagne -> Deep Violet Dust)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (220 + t * 20 / 255)) >> 8);
+        green = (uint8_t)((lum * (140 + t * 80 / 255)) >> 8);
+        blue = (uint8_t)((lum * (140 + t * 30 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (240 - t * 150 / 255)) >> 8);
+        green = (uint8_t)((lum * (220 - t * 180 / 255)) >> 8);
+        blue = (uint8_t)((lum * (170 - t * 40 / 255)) >> 8);
+      }
+      break;
+    }
+    case 36: { // 36. ⚡ Acid Cyber Rain (Fluorescent Lime -> Electric Yellow -> Cyan Surge)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (110 + t * 145 / 255)) >> 8);
+        green = lum;
+        blue = 0;
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (255 - t * 255 / 255)) >> 8);
+        green = lum;
+        blue = (uint8_t)((lum * (t * 230 / 255)) >> 8);
+      }
+      break;
+    }
+    case 37: { // 37. 🪼 Bioluminescent Jellyfish (Deep Ultramarine -> Fluorescent Aqua -> Electric Pearl)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (10 - t * 10 / 255)) >> 8);
+        green = (uint8_t)((lum * (20 + t * 220 / 255)) >> 8);
+        blue = (uint8_t)((lum * (140 + t * 60 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (t * 200 / 255)) >> 8);
+        green = (uint8_t)((lum * (240 + t * 15 / 255)) >> 8);
+        blue = lum;
+      }
+      break;
+    }
+    case 38: { // 38. 🌺 Sunset Hibiscus (Deep Scarlet -> Vibrant Tangerine -> Golden Mango)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (200 + t * 55 / 255)) >> 8);
+        green = (uint8_t)((lum * (10 + t * 90 / 255)) >> 8);
+        blue = (uint8_t)((lum * (50 - t * 50 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = lum;
+        green = (uint8_t)((lum * (100 + t * 100 / 255)) >> 8);
+        blue = (uint8_t)((lum * (t * 20 / 255)) >> 8);
+      }
+      break;
+    }
+    case 39: { // 39. ❄️ Glacial Aurora (Arctic Ice Teal -> Polar Diamond -> Northern Emerald)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (t * 230 / 255)) >> 8);
+        green = (uint8_t)((lum * (180 + t * 70 / 255)) >> 8);
+        blue = (uint8_t)((lum * (210 + t * 45 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (230 - t * 230 / 255)) >> 8);
+        green = (uint8_t)((lum * (250 + t * 5 / 255)) >> 8);
+        blue = (uint8_t)((lum * (255 - t * 145 / 255)) >> 8);
+      }
+      break;
+    }
+    case 40: { // 40. 🔮 Arcane Mystic Quartz (Deep Obsidian Violet -> Radiant Orchid -> Opal White)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (60 + t * 130 / 255)) >> 8);
+        green = (uint8_t)((lum * (t * 40 / 255)) >> 8);
+        blue = (uint8_t)((lum * (110 + t * 110 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (190 + t * 65 / 255)) >> 8);
+        green = (uint8_t)((lum * (40 + t * 180 / 255)) >> 8);
+        blue = lum;
+      }
+      break;
+    }
+    case 41: { // 41. 🍬 Pastel Sorbet (Strawberry Cream -> Lemon Custard -> Mint Sorbet)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = lum;
+        green = (uint8_t)((lum * (140 + t * 90 / 255)) >> 8);
+        blue = (uint8_t)((lum * (160 - t * 20 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (255 - t * 115 / 255)) >> 8);
+        green = lum;
+        blue = (uint8_t)((lum * (140 + t * 60 / 255)) >> 8);
+      }
+      break;
+    }
+    case 42: { // 42. 🌋 Obsidian Ember (Smoky Charcoal -> Deep Ruby -> Molten Tangerine)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (40 + t * 150 / 255)) >> 8);
+        green = (uint8_t)((lum * (20 - t * 5 / 255)) >> 8);
+        blue = (uint8_t)((lum * (20 + t * 10 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (190 + t * 65 / 255)) >> 8);
+        green = (uint8_t)((lum * (15 + t * 105 / 255)) >> 8);
+        blue = 0;
+      }
+      break;
+    }
+    case 43: { // 43. 🌊 Caribbean Lagoon (Deep Coral Reef Blue -> Turquoise Wave -> White Sand Foam)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = 0;
+        green = (uint8_t)((lum * (80 + t * 140 / 255)) >> 8);
+        blue = (uint8_t)((lum * (180 + t * 20 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (t * 240 / 255)) >> 8);
+        green = (uint8_t)((lum * (220 + t * 35 / 255)) >> 8);
+        blue = (uint8_t)((lum * (200 + t * 50 / 255)) >> 8);
+      }
+      break;
+    }
+    case 44: { // 44. 🪩 Cyber Disco Glitz (Hot Magenta -> Electric Gold -> Laser Cyan)
+      if (index256 < 85) {
+        uint32_t t = index256 * 3;
+        red = lum;
+        green = (uint8_t)((lum * (t * 210 / 255)) >> 8);
+        blue = (uint8_t)((lum * (150 - t * 150 / 255)) >> 8);
+      } else if (index256 < 170) {
+        uint32_t t = (index256 - 85) * 3;
+        red = (uint8_t)((lum * (255 - t * 255 / 255)) >> 8);
+        green = (uint8_t)((lum * (210 + t * 45 / 255)) >> 8);
+        blue = (uint8_t)((lum * (t * 255 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 170) * 3;
+        red = (uint8_t)((lum * (t * 255 / 255)) >> 8);
+        green = (uint8_t)((lum * (255 - t * 255 / 255)) >> 8);
+        blue = (uint8_t)((lum * (255 - t * 105 / 255)) >> 8);
+      }
+      break;
+    }
+    case 45: { // 45. 🍒 Wild Black Cherry (Deep Bordeaux Wine -> Rich Cherry Red -> Rosy Diamond)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (80 + t * 140 / 255)) >> 8);
+        green = (uint8_t)((lum * (t * 20 / 255)) >> 8);
+        blue = (uint8_t)((lum * (30 + t * 30 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (220 + t * 35 / 255)) >> 8);
+        green = (uint8_t)((lum * (20 + t * 160 / 255)) >> 8);
+        blue = (uint8_t)((lum * (60 + t * 140 / 255)) >> 8);
+      }
+      break;
+    }
+    case 46: { // 46. 🌾 Autumn Harvest Moon (Burnt Cinnamon -> Spiced Pumpkin -> Golden Amber)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (160 + t * 75 / 255)) >> 8);
+        green = (uint8_t)((lum * (50 + t * 50 / 255)) >> 8);
+        blue = (uint8_t)((lum * (20 - t * 10 / 255)) >> 8);
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = lum;
+        green = (uint8_t)((lum * (100 + t * 90 / 255)) >> 8);
+        blue = (uint8_t)((lum * (10 + t * 10 / 255)) >> 8);
+      }
+      break;
+    }
+    case 47: { // 47. 💎 Prismatic Opal Prism (Iridescent shifting pastel rainbow)
+      uint8_t hue = (uint8_t)((index256 * 2) & 0xFF);
+      hueToRgb(hue, lum, red, green, blue);
+      red = (uint8_t)((red + lum * 2) / 3);
+      green = (uint8_t)((green + lum * 2) / 3);
+      blue = (uint8_t)((blue + lum * 2) / 3);
+      break;
+    }
+    case 48: { // 48. ⚡ High-Voltage Arc (Deep Cobalt Blue -> Pure Laser White -> Neon Indigo)
+      if (index256 < 128) {
+        uint32_t t = index256 * 2;
+        red = (uint8_t)((lum * (10 + t * 245 / 255)) >> 8);
+        green = (uint8_t)((lum * (40 + t * 215 / 255)) >> 8);
+        blue = lum;
+      } else {
+        uint32_t t = (index256 - 128) * 2;
+        red = (uint8_t)((lum * (255 - t * 155 / 255)) >> 8);
+        green = (uint8_t)((lum * (255 - t * 255 / 255)) >> 8);
+        blue = lum;
+      }
+      break;
+    }
     default: {
       hueToRgb(index256, lum, red, green, blue);
       break;
@@ -359,8 +587,8 @@ static inline void getPaletteBaseColor(uint8_t palId, uint8_t index256, uint8_t 
   }
 }
 
-// Modular Palette + Motion Flow FX Engine (Supports all 16 Step 2 Motion Flows on True RGB & Palettes)
-static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t palId, uint8_t motionId, unsigned long timeMs, uint8_t speed, uint8_t ledIndex = 0, uint16_t frameIndex = 0, uint16_t frameCount = 1, uint8_t ledCount = 55) {
+// Modular Palette + Motion Flow FX Engine (Supports all 24 Step 2 Motion Flows on True RGB & Palettes)
+static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t palId, uint8_t motionId, unsigned long timeMs, uint8_t speed, uint8_t ledIndex = 0, uint16_t frameIndex = 0, uint16_t frameCount = 1, uint8_t ledCount = 55, unsigned long lastFlickTime = 0) {
   uint16_t safeFrameCount = (frameCount > 0) ? frameCount : 1;
   uint8_t safeLedCount = (ledCount > 0) ? ledCount : 55;
   uint8_t spd = (speed > 0) ? speed : 5;
@@ -456,6 +684,58 @@ static inline void applyModularPaletteFX(uint8_t& red, uint8_t& green, uint8_t& 
       index256 = (uint8_t)((phase + ((invDist * invDist) >> 8)) & 0xFF);
       break;
     }
+    case 17: { // 17. 🐝 Fireflies Swarm (Bioluminescent Twinkle)
+      uint8_t spk = fastSin8(ledIndex * 47 + (timeMs * spd / 12)) ^ fastSin8(ledIndex * 23 - (timeMs * spd / 16));
+      index256 = (uint8_t)((spk > 180 ? (spk - 180) * 3.4f : 0));
+      break;
+    }
+    case 18: { // 18. 🌀 Plasma Harmonic Vortex
+      uint8_t w1 = fastSin8((ledIndex * 12) + (timeMs * spd / 10));
+      uint8_t w2 = fastSin8((ledIndex * 18) - (timeMs * spd / 14));
+      index256 = (uint8_t)(((w1 + w2) / 2) & 0xFF);
+      break;
+    }
+    case 19: { // 19. 🌌 Cosmic Stardust Spiral
+      index256 = (uint8_t)(((timeMs * spd / 10) + (ledIndex * 8) + (frameIndex * 128 / safeFrameCount)) & 0xFF);
+      break;
+    }
+    case 20: { // 20. 📡 Sonar Radar Ping
+      uint32_t pingPhase = (timeMs * spd / 8) % (safeLedCount + 4);
+      int d = abs((int)ledIndex - (int)pingPhase);
+      index256 = (d <= 3) ? (uint8_t)(255 - d * 70) : 0;
+      break;
+    }
+    case 21: { // 21. 📐 Tesseract Poly-Rhythm
+      uint8_t p1 = fastSin8((ledIndex * 8) + (timeMs * spd / 8));
+      uint8_t p2 = fastSin8((ledIndex * 14) - (timeMs * spd / 12));
+      index256 = (uint8_t)((p1 ^ p2) & 0xFF);
+      break;
+    }
+    case 22: { // 22. 🪼 Bioluminescent Jellyfish Pulse
+      uint8_t pulse = fastSin8(timeMs * spd / 14);
+      int d = abs((int)ledIndex - (int)(safeLedCount / 2));
+      index256 = (d < (pulse * safeLedCount / 512)) ? (uint8_t)(255 - d * 8) : 0;
+      break;
+    }
+    case 23: { // 23. ⛲ Liquid Rainbow Fountain
+      int d = abs((int)ledIndex - (int)(safeLedCount / 2));
+      index256 = (uint8_t)((d * 14 - (timeMs * spd / 10)) & 0xFF);
+      break;
+    }
+    case 24: { // 24. ⚡ Tachyon Particle Stream
+      uint8_t packet = ((ledIndex + (timeMs * spd / 16)) % 8);
+      index256 = (packet <= 1) ? 255 : 0;
+      break;
+    }
+  }
+
+  // 💥 Reactive Wrist Flick Energy Burst (for Poi blades!)
+  if (lastFlickTime > 0 && (timeMs - lastFlickTime < 500)) {
+    float flickFade = 1.0f - ((float)(timeMs - lastFlickTime) / 500.0f);
+    uint8_t burst = (uint8_t)(flickFade * 150.0f);
+    red = min(255, (int)(red + burst));
+    green = min(255, (int)(green + burst));
+    blue = min(255, (int)(blue + burst));
   }
 
   // If True RGB (palId == 0), modulate pattern brightness & crests directly on original artwork!
@@ -671,7 +951,7 @@ class OpenPixelPoiLED {
         }
 
         uint8_t numC = max((uint8_t)2, g_slotPalette.count);
-        uint8_t activeEffect = (config.motionFxMode >= 1 && config.motionFxMode <= 16) ? config.motionFxMode : 1;
+        uint8_t activeEffect = (config.motionFxMode >= 1 && config.motionFxMode <= 24) ? config.motionFxMode : 1;
 
         for (int j=0; j<config.ledCount; j++){
           uint8_t factor = 0;
@@ -888,6 +1168,110 @@ class OpenPixelPoiLED {
               }
               break;
             }
+            case 17: { // 17. 🐝 Fireflies Swarm (Bioluminescent Twinkle)
+              uint8_t spk = fastSin8(j * 47 + (flowT / 4)) ^ fastSin8(j * 23 - (flowT / 5));
+              factor = (spk > 185) ? (uint8_t)((spk - 185) * 3.6f) : 0;
+              colorPhase = (j * 15 + (flowT / 6)) & 0xFF;
+
+              // 💥 FLICK: Swarm Scatter Flash! Fireflies explode into dazzling starlight glitter
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 230)));
+              }
+              break;
+            }
+            case 18: { // 18. 🌀 Plasma Harmonic Vortex
+              uint8_t waveA = fastSin8((j * 110 / config.ledCount) + (flowT / 3));
+              uint8_t waveB = fastSin8((j * 170 / config.ledCount) - (flowT / 4));
+              uint8_t sum = (waveA + waveB) / 2;
+              factor = (sum > 165) ? (uint8_t)((sum - 165) * 2.8f) : 0;
+              colorPhase = (sum + (flowT / 5)) & 0xFF;
+
+              // 💥 FLICK: Plasma Arc Discharge! Blinding electrical arc bridging the nodes
+              if (flickFade > 0.05f) {
+                if (waveA > 140 || waveB > 140) factor = min(255, (int)(factor + (flickFade * 210)));
+              }
+              break;
+            }
+            case 19: { // 19. 🌌 Cosmic Stardust Spiral
+              uint8_t dust = fastSin8((j * 100 / config.ledCount) + (flowT / 3));
+              factor = (dust > 160) ? (uint8_t)((dust - 160) * 2.6f) : 0;
+              colorPhase = (j * 18 + (flowT / 5)) & 0xFF;
+
+              // 💥 FLICK: Supernova Core Collapse! Inward starburst ignition
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 220)));
+              }
+              break;
+            }
+            case 20: { // 20. 📡 Sonar Radar Ping
+              int center = config.ledCount / 2;
+              int dist = abs(j - center);
+              uint8_t pingPos = (flowT / 4) % (config.ledCount / 2 + 4);
+              int d = abs(dist - (int)pingPos);
+              factor = (d <= 2) ? (uint8_t)(255 - d * 85) : 0;
+              colorPhase = (pingPos * 12) & 0xFF;
+
+              // 💥 FLICK: Active Ping Shockwave! Resonant double-ping illuminating whole brim
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 210)));
+              }
+              break;
+            }
+            case 21: { // 21. 📐 Tesseract Poly-Rhythm
+              uint8_t p1 = (flowT / 3) % config.ledCount;
+              uint8_t p2 = (flowT / 5) % config.ledCount;
+              uint8_t p3 = (flowT / 7) % config.ledCount;
+              int d1 = abs(j - (int)p1); if (d1 > config.ledCount / 2) d1 = config.ledCount - d1;
+              int d2 = abs(j - (int)p2); if (d2 > config.ledCount / 2) d2 = config.ledCount - d2;
+              int d3 = abs(j - (int)p3); if (d3 > config.ledCount / 2) d3 = config.ledCount - d3;
+              int minD = min(d1, min(d2, d3));
+              factor = (minD <= 2) ? (uint8_t)(255 - minD * 90) : 0;
+              colorPhase = (j * 22 + (flowT / 6)) & 0xFF;
+
+              // 💥 FLICK: Dimensional Rift Shift! Interlocking geometric laser tracks
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 190)));
+              }
+              break;
+            }
+            case 22: { // 22. 🪼 Bioluminescent Jellyfish Pulse
+              uint8_t bell = fastSin8(flowT / 3);
+              int center = config.ledCount / 2;
+              int dist = abs(j - center);
+              uint8_t maxD = (bell * (config.ledCount / 2)) / 255;
+              factor = (dist <= maxD) ? (uint8_t)(255 - dist * 255 / (maxD + 1)) : 0;
+              colorPhase = (bell + j * 8) & 0xFF;
+
+              // 💥 FLICK: Deep Sea Flare! Radiant cyan bioluminescence bloom
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 220)));
+              }
+              break;
+            }
+            case 23: { // 23. ⛲ Liquid Rainbow Fountain
+              int dist = abs(j - (config.ledCount / 2));
+              uint8_t flow = (uint8_t)((dist * 14 - (flowT / 2)) & 0xFF);
+              uint8_t wave = fastSin8(flow);
+              factor = (wave > 160) ? (uint8_t)((wave - 160) * 2.6f) : 0;
+              colorPhase = (dist * 16 + (flowT / 4)) & 0xFF;
+
+              // 💥 FLICK: Geyser Eruption! High-pressure chromatic fountain blast
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 230)));
+              }
+              break;
+            }
+            case 24: { // 24. ⚡ Tachyon Particle Stream
+              uint8_t packet = ((j + (flowT / 6)) % 10);
+              factor = (packet <= 1) ? (uint8_t)(255 - packet * 90) : 0;
+              colorPhase = (j * 24 + (flowT / 4)) & 0xFF;
+
+              // 💥 FLICK: Tachyon Core Overdrive! Packets fuse into sustained blazing laser beam
+              if (flickFade > 0.05f) {
+                factor = min(255, (int)(factor + (flickFade * 240)));
+              }
+              break;
+            }
             default: {
               uint8_t pos = (uint8_t)(((j * 256 / config.ledCount) - (flowT / 2)) & 0xFF);
               uint8_t wave = fastSin8(pos * 2);
@@ -1015,7 +1399,7 @@ class OpenPixelPoiLED {
 
           // Apply Real-Time Color Palette & Motion Flow FX Engine (Zero-RAM Overhead)
           if (config.paletteFxMode > 0 || config.motionFxMode > 0) {
-            applyModularPaletteFX(red, green, blue, config.paletteFxMode, config.motionFxMode, millis(), config.paletteSpeed, j, frameIndex, config.frameCount, config.ledCount);
+            applyModularPaletteFX(red, green, blue, config.paletteFxMode, config.motionFxMode, millis(), config.paletteSpeed, j, frameIndex, config.frameCount, config.ledCount, config.lastFlickTime);
           }
 
           ledStrip->SetPixelColor(config.ledCount-1-j, RgbColor(red, green, blue)); // Invert display for POV arc
@@ -1231,7 +1615,7 @@ else if(config.displayState == DS_BRIGHTNESS){
           // Stage 2: Animate the live chosen Motion Flow across the blade!
           for (int j = 0; j < totalLeds; j++) {
             uint8_t r = 255, g = 255, b = 255;
-            applyModularPaletteFX(r, g, b, config.paletteFxMode, config.motionFxMode, millis(), config.paletteSpeed, j, 0, 1, totalLeds);
+            applyModularPaletteFX(r, g, b, config.paletteFxMode, config.motionFxMode, millis(), config.paletteSpeed, j, 0, 1, totalLeds, config.lastFlickTime);
             ledStrip->SetPixelColor(j, RgbColor(r, g, b));
           }
         }
