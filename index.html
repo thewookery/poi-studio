@@ -1690,11 +1690,11 @@
                         </div>
                     </div>
 
-                    <!-- 4. 69-LED WS2811/WS2812 3-PIN PEBBLE SEED PIXELS -->
+                    <!-- 4. 88-LED WS2811/WS2812 3-PIN PEBBLE SEED PIXELS -->
                     <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(255, 170, 0, 0.5); background:rgba(255, 170, 0, 0.05);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:#ffaa00;">✨ 69px WS2812 Pebble Seed Pixels <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ 3-PIN PROP</span></span>
-                            <span class="telemetry-pill" style="color:#ffaa00; font-size:0.62rem; font-weight:800;">3-Pin • 69 LEDs • Xiao ESP32-C3</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:#ffaa00;">✨ 88px WS2812 Pebble Seed Pixels <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ 3-PIN PROP</span></span>
+                            <span class="telemetry-pill" style="color:#ffaa00; font-size:0.62rem; font-weight:800;">3-Pin • 88 LEDs • Xiao ESP32-C3</span>
                         </div>
                         <div style="font-size:0.68rem; color:var(--text-color); line-height:1.45; margin-top:3px;">
                             • <b>🎯 Compact Same-Side Wiring:</b> 5V &rarr; <b>5V</b> | GND &rarr; <b>GND</b> | DATA &rarr; <b>D10 (GPIO 10)</b> (All 3 on the same right side!)<br>
@@ -1703,13 +1703,13 @@
                             • <b>🗃️ 50 High-Speed Slots:</b> 5 Banks &times; 10 Slots with LittleFS flash storage
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-pebble" manifest="firmware/opp_firmware/custom/3.0.0-69px-pebble/manifest.json?v=167">
+                            <esp-web-install-button id="esp-btn-pebble" manifest="firmware/opp_firmware/custom/3.0.0-88px-pebble/manifest.json?v=168">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:#ffaa00; color:#ffaa00; font-weight:800;">
-                                    ⚡ Flash 69px Pebble Seed Pixels (Xiao ESP32-C3)
+                                    ⚡ Flash 88px Pebble Seed Pixels (Xiao ESP32-C3)
                                 </button>
                             </esp-web-install-button>
                             <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-pebble" style="width:100%; font-size:0.72rem; padding:7px 10px; color:#ffaa00; font-weight:800; border-color:#ffaa00;">
-                                📱 Android USB-C 1-Tap Flash (69px Pebble)
+                                📱 Android USB-C 1-Tap Flash (88px Pebble)
                             </button>
                         </div>
                     </div>
@@ -2240,7 +2240,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 manifest = espBtn.getAttribute('manifest');
             }
             if (targetId.includes('55-fx')) title = "55px DotStar Studio FX (50 Slots)";
-            else if (targetId.includes('pebble')) title = "69-LED WS2812 Pebble Seed Pixels (Xiao ESP32-C3)";
+            else if (targetId.includes('pebble')) title = "88-LED WS2812 Pebble Seed Pixels (Xiao ESP32-C3)";
             else if (targetId.includes('32-strip')) title = "32px DotStar Strip Controller (ESP32-C3)";
             else if (targetId.includes('bridge')) title = "Master Nunchuk Bridge v2.0 (Xiao ESP32-C3)";
             else if (targetId.includes('espnow-recv')) title = "Pure ESP-NOW Prop Receiver (55px DotStar)";

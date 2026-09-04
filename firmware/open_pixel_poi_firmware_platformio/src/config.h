@@ -25,7 +25,7 @@
 #define DEFAULT_DEVICE_NAME "OpenPixelPoi-Pebble"
 #define DEFAULT_HARDWARE_VERSION 2
 #define DEFAULT_LED_TYPE 1 // 1 = WS2812B / WS2811 3-Pin NeoPixel
-#define DEFAULT_LED_COUNT 69
+#define DEFAULT_LED_COUNT 88
 #elif defined(STRIP_32PX)
 #define DEFAULT_DEVICE_NAME "OpenPixelPoi-Strip32"
 #define DEFAULT_HARDWARE_VERSION 2
