@@ -570,6 +570,8 @@ class OpenPixelPoiLED {
       ledStrip = new DotStarStrip(55, 6, 7); // 55 LEDs on Pin 6 (Data) & Pin 7 (Clock)
 #endif
       ledStrip->Begin();
+      ledStrip->ClearTo(RgbColor(0, 0, 0));
+      ledStrip->Show();
       frameIndex = 0;
     }
 
@@ -589,6 +591,21 @@ class OpenPixelPoiLED {
     }
 
     void loop(){
+#if defined(PEBBLE_50PX) || defined(STRIP_32PX)
+      // 🥷 100% STEALTH DARK UNTIL Z BUTTON IS PRESSED:
+      // Strip is 100% OFF in hardware (black / zero power) until Z button is held (motionFxMode > 0)
+      static bool isCurrentlyDark = false;
+      if (config.motionFxMode == 0) {
+        if (!isCurrentlyDark) {
+          ledStrip->ClearTo(RgbColor(0, 0, 0));
+          ledStrip->Show();
+          isCurrentlyDark = true;
+        }
+        delay(5);
+        return;
+      }
+      isCurrentlyDark = false;
+#endif
       // Set Brightness. 
       // Low voltage = force low brightness
       if(config.batteryState == BAT_LOW && config.ledBrightness > 10){

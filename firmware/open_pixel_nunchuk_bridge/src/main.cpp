@@ -449,7 +449,7 @@ void readNunchukAndProcess() {
     Serial.printf("⚡ [Z-ENGAGE] Step 2 Motion %d Active!\n", activeZMotion);
   } else if (btnZ) {
 
-    // 🕹️ HOLD Z + JOYSTICK CONTROL (100% Intentional, Zero Tilt/Flick Jitter!):
+    // 🕹️ 1. HOLD Z + JOYSTICK CONTROL:
     // • Joystick Left / Right: Step cleanly through Effects 1 to 16
     // • Joystick Up / Down: Step Flow Speed (Faster / Slower, 2 to 10)
     if (now - lastJoyFlickTime > 260) {
@@ -482,6 +482,35 @@ void readNunchukAndProcess() {
         }
         lastJoyFlickTime = now;
       }
+    }
+
+    // 🌀 2. HOLD Z + BARREL ROLL TILT -> DYNAMIC FLOW SPEED THROTTLE (Never changes effect!)
+    // Tilting wrist smoothly throttles flow speed from 4 (chill) to 10 (warp)
+    if (now - lastTiltSampleTime > 40) {
+      lastTiltSampleTime = now;
+      float dev = abs(smoothedAccelX - 512.0f); // Tilt deviation from level
+      uint8_t targetSpeed = 4;
+      if (dev > 35.0f) {
+        float mag = min(1.0f, (dev - 35.0f) / 220.0f);
+        targetSpeed = 4 + (uint8_t)(mag * 6.0f); // 4 to 10 dynamically
+      }
+      if (targetSpeed != activeZSpeed) {
+        activeZSpeed = targetSpeed;
+        sendBleCommand(CC_SET_PALETTE_SPEED, targetSpeed);
+      }
+    }
+
+    // 💥 3. HOLD Z + INTENTIONAL WRIST FLICK (High-Threshold Snap > 420)
+    // High-pass jerk filter ensures normal tilt NEVER accidentally switches patterns
+    int16_t deltaX = abs(accelX - prevAccelX);
+    int16_t deltaY = abs(accelY - prevAccelY);
+    int16_t deltaZ = abs(accelZ - prevAccelZ);
+    int16_t totalJerk = deltaX + deltaY + deltaZ;
+    if (totalJerk > 420 && (now - lastFlickTime > 450)) {
+      lastFlickTime = now;
+      activeZMotion = (activeZMotion % 16) + 1;
+      sendBleCommand(CC_SET_MOTION_FX, activeZMotion);
+      Serial.printf("💥 [WRIST FLICK] Intentional snap triggered Effect %d/16 (Jerk: %d)!\n", activeZMotion, totalJerk);
     }
 
   } else if (!btnZ && lastBtnZ) {

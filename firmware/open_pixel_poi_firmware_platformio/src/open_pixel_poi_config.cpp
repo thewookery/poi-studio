@@ -104,7 +104,7 @@ class OpenPixelPoiConfig {
     }
 
     void setMotionFxMode(uint8_t mode) {
-      this->motionFxMode = mode % 15;
+      this->motionFxMode = min((uint8_t)16, mode);
       this->configLastUpdated = millis();
     }
 
