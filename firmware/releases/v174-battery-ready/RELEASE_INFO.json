@@ -1,0 +1,13 @@
+{
+  "version": "v174",
+  "name": "Build v174: Direct Battery Pad Power & 48 Pro Palettes / 24 Flows",
+  "date": "2026-09-05",
+  "features": [
+    "Direct Battery Pad Power-On: Xiao ESP32-C3 Bridge powers on automatically from BAT+/BAT- pads (Always-ON, no button needed)",
+    "Zero Auto-Sleep Timeout: Bridge never shuts down automatically during spin sessions",
+    "Expanded 48 Curated Festival Palettes (Vaporwave, Cyber Rain, Bioluminescence, Arcane Quartz, etc.)",
+    "Expanded 24 Liquid Motion Flows with custom wrist flick excitation",
+    "Pebble Hat 100% Pitch-Black Stealth on boot until Z is held",
+    "Master Nunchuk Bridge 48-Palette and 24-Flow step selection"
+  ]
+}
