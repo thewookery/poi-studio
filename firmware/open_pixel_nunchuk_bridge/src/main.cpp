@@ -21,8 +21,9 @@
  * - 💥 Hold Z + Wrist Flick (Sharp Snap): Instant next random Motion Flow FX drop!
  * - 🌀 Hold Z + Barrel Roll (Tilt Left / Right): Dynamically throttles flow speed (3 to 10)!
  * - 🔄 Release Z: Instantly & fluidly restores steady stock pattern playback in 0ms!
- * 
- * 🔘 D0/D1 Power Button: Tap = Wakeup (3 blinks) | Hold 1.2s = Deep Sleep OFF (2 blinks)
+ * 🔋 DIRECT BATTERY PAD POWER:
+ * - Turns ON automatically as soon as battery power is connected to BAT+/BAT- pads!
+ * - Always-ON operation: No button required, zero auto-sleep timeout!
  */
 
 #include <Arduino.h>
@@ -32,12 +33,8 @@
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <BLEClient.h>
-#include "esp_sleep.h"
-#include "driver/gpio.h"
 
-#define PIN_BUTTON_GND 2   // D0 / GPIO 2 - Software Ground
-#define PIN_BUTTON_IN  3   // D1 / GPIO 3 - Button Input (Wakeup on LOW)
-#define PIN_BOARD_LED  10  // Onboard User LED on Xiao ESP32-C3
+#define PIN_BOARD_LED  10  // Optional external LED on D10 (blinks 3x on boot)
 #define NUNCHUK_ADDR   0x52
 
 #define START_BYTE 0xD0
@@ -136,9 +133,6 @@ unsigned long btnCHoldStart = 0;
 unsigned long lastJoyFlickTime = 0;
 unsigned long lastI2cRetry = 0;
 unsigned long lastUserActivityTime = 0;
-unsigned long pwrBtnPressStart = 0;
-bool pwrBtnPressed = false;
-
 void flashWakeupLed() {
   pinMode(PIN_BOARD_LED, OUTPUT);
   for (int i = 0; i < 3; i++) {
@@ -147,53 +141,6 @@ void flashWakeupLed() {
     digitalWrite(PIN_BOARD_LED, HIGH);
     delay(75);
   }
-}
-
-void sendBleCommand(uint8_t cmdCode, uint8_t val);
-
-void flashPowerOffLed() {
-  pinMode(PIN_BOARD_LED, OUTPUT);
-  for (int i = 0; i < 2; i++) {
-    digitalWrite(PIN_BOARD_LED, LOW);
-    delay(280);
-    digitalWrite(PIN_BOARD_LED, HIGH);
-    delay(150);
-  }
-}
-
-void enterDeepSleepPowerOff() {
-  Serial.println("🛌 [POWER] Gracefully disconnecting BLE and Powering OFF...");
-
-  // 1. Send clean baseline reset command to Poi props before shutting down
-  sendBleCommand(CC_SET_MOTION_FX, 0);
-  sendBleCommand(CC_SET_PALETTE_FX, 0);
-  sendBleCommand(CC_SET_PALETTE_SPEED, 5);
-  delay(120);
-
-  // 2. Gracefully disconnect all BLE clients so the Poi never gets stuck
-  for (int i = 0; i < MAX_BLE_POIS; i++) {
-    if (poiSlots[i].connected && poiSlots[i].client != nullptr) {
-      try {
-        poiSlots[i].client->disconnect();
-      } catch (...) {}
-      poiSlots[i].connected = false;
-      poiSlots[i].rxChar = nullptr;
-    }
-  }
-  delay(180);
-
-  flashPowerOffLed();
-
-  gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
-  pinMode(PIN_BUTTON_GND, OUTPUT);
-  digitalWrite(PIN_BUTTON_GND, LOW);
-  gpio_hold_en((gpio_num_t)PIN_BUTTON_GND);
-  gpio_deep_sleep_hold_en();
-
-  esp_deep_sleep_enable_gpio_wakeup((1ULL << PIN_BUTTON_IN), ESP_GPIO_WAKEUP_GPIO_LOW);
-
-  delay(50);
-  esp_deep_sleep_start();
 }
 
 // Send standard 4-byte command to connected Poi props
@@ -587,35 +534,12 @@ void readNunchukAndProcess() {
   lastBtnZ = btnZ;
 }
 
-void checkPowerButton() {
-  unsigned long now = millis();
-  bool isPressed = (digitalRead(PIN_BUTTON_IN) == LOW);
-
-  if (isPressed && !pwrBtnPressed) {
-    pwrBtnPressed = true;
-    pwrBtnPressStart = now;
-  } else if (isPressed && pwrBtnPressed) {
-    if (now - pwrBtnPressStart > 1200) {
-      enterDeepSleepPowerOff();
-    }
-  } else if (!isPressed && pwrBtnPressed) {
-    pwrBtnPressed = false;
-    lastUserActivityTime = now;
-  }
-}
-
 void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("=================================================");
-  Serial.println("Open Pixel Poi - Master Nunchuk BLE Bridge (v143)");
+  Serial.println("Open Pixel Poi - Master Nunchuk BLE Bridge (v173)");
   Serial.println("=================================================");
-
-  gpio_hold_dis((gpio_num_t)PIN_BUTTON_GND);
-
-  pinMode(PIN_BUTTON_GND, OUTPUT);
-  digitalWrite(PIN_BUTTON_GND, LOW);
-  pinMode(PIN_BUTTON_IN, INPUT_PULLUP);
 
   flashWakeupLed();
 
@@ -635,7 +559,6 @@ void setup() {
 
 void loop() {
   unsigned long now = millis();
-  checkPowerButton();
 
   // Power-on 1.5s warmup buffer: let BLE radio and power stabilize before sending commands
   if (now < 1500) {
@@ -681,11 +604,6 @@ void loop() {
   if (activeCount < MAX_BLE_POIS && isScanWindowActive && !doConnectPending && (now - lastScanStartTime > 3500)) {
     lastScanStartTime = now;
     pBLEScan->start(1, false);
-  }
-
-  if (now - lastUserActivityTime > (10UL * 60UL * 1000UL)) {
-    Serial.println("💤 [AUTO-SLEEP] Inactive for 10 minutes. Powering OFF...");
-    enterDeepSleepPowerOff();
   }
 
   readNunchukAndProcess();
