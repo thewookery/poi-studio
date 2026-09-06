@@ -623,6 +623,24 @@
             await this._sendMessage([COMM_CODES.CC_SET_PALETTE_SPEED, spd]);
         }
 
+        /**
+         * Trigger a reactive wrist flick burst on all connected Poi / Pebble Hat / Aux Strip
+         */
+        async triggerFlick() {
+            console.log('[BLE] 💥 Triggering Reactive Flick burst');
+            await this._sendMessage([COMM_CODES.CC_TRIGGER_FLICK, 1]);
+        }
+
+        /**
+         * Announce Central Source Identity to connected props
+         * @param {number} sourceType 1 = Master Bridge (enables reactive stealth blackout), 2 = Web App Studio
+         */
+        async setSourceIdentity(sourceType) {
+            const src = (sourceType === 1) ? 1 : 2;
+            console.log(`[BLE] 📡 Announcing Central Identity: ${src === 1 ? 'Master Bridge (0x01)' : 'Web App Studio (0x02)'}`);
+            await this._sendMessage([COMM_CODES.CC_IDENTIFY_SOURCE, src]);
+        }
+
 
 
 

@@ -1,5 +1,5 @@
 // Open POI Studio 100% Offline Festival Service Worker
-const CACHE_NAME = 'open-poi-studio-v176-dynamic-leds';
+const CACHE_NAME = 'open-poi-studio-v177-virtual-wiimote';
 
 
 
@@ -70,6 +70,7 @@ const ASSETS_TO_CACHE = [
   './master-vault-manifest.js',
   './poi-engine.js',
   './poi-ble.js',
+  './poi-wiimote.js',
   './manifest.json',
   './icon.svg'
 ];

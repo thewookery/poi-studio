@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>⚡ Open POI Studio (Build v176)</title>
+    <title>⚡ Open POI Studio (Build v177)</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00ff88">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -73,6 +73,10 @@
                 <span class="sidebar-item-icon">⚙️</span>
                 <span>Poi Settings</span>
             </button>
+            <button class="sidebar-item mode-switch-btn" id="btn-mode-wiimote" data-mode="workspace-wiimote" style="border-left:3px solid var(--neon-cyan);">
+                <span class="sidebar-item-icon">🕹️</span>
+                <span>Virtual Wiimote</span>
+            </button>
             <button class="sidebar-item mode-switch-btn" id="btn-mode-firmware" data-mode="workspace-firmware">
                 <span class="sidebar-item-icon">⚡</span>
                 <span>Firmware</span>
@@ -106,7 +110,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.68rem; color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.5); padding:3px 8px; border-radius:4px; margin-left:6px; box-shadow:0 0 10px rgba(0,255,136,0.25);">✨ BUILD v176 • HARDWARE LOOPBACK AUTO-DETECTION & LIVE LENGTH SLIDER</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.68rem; color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.5); padding:3px 8px; border-radius:4px; margin-left:6px; box-shadow:0 0 10px rgba(0,255,136,0.25);">✨ BUILD v177 • PHONE MOTION WIIMOTE & ACCELEROMETER Z-TRIGGER</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <span class="telemetry-pill" id="hud-bridge-battery" style="display:none; font-size:0.68rem; font-weight:800; color:var(--neon-green); border-color:var(--neon-green); background:rgba(0,255,136,0.08); padding:3px 6px;">🔋 <span id="hud-bridge-battery-text">--%</span></span>
@@ -2007,6 +2011,182 @@
 
     </div>
 
+    <!-- ==========================================================================
+         WORKSPACE 7: VIRTUAL WIIMOTE / MOTION CONTROLLER (PHONE SENSORS)
+         ========================================================================== -->
+    <div id="workspace-wiimote" class="workspace-view" style="display:none;">
+        <div class="wiimote-deck-wrap">
+            
+            <!-- TOP HEADER & SENSOR COMMAND BAR -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(0,0,0,0.4); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.3rem;">🕹️</span>
+                    <div>
+                        <div style="font-size:0.88rem; font-weight:800; color:#fff;">Phone Motion Wiimote</div>
+                        <div style="font-size:0.65rem; color:var(--text-muted);">Gyroscope Barrel Roll • Wrist Flick • Z-Trigger</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span class="telemetry-pill" id="wm-sensor-badge" style="font-size:0.66rem; font-weight:800; color:var(--text-muted); border-color:rgba(255,255,255,0.1);">● Sensors Standby</span>
+                    <button class="hw-btn" id="btn-wm-req-sensors" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-green); border-color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.1);">📡 Enable Sensors</button>
+                    <button class="hw-btn" id="btn-wm-tare" style="font-size:0.68rem; padding:4px 8px; color:var(--neon-cyan); border-color:var(--neon-cyan); font-weight:800;">🎯 Tare Level</button>
+                </div>
+            </div>
+
+            <!-- LIVE MOTION TELEMETRY DASHBOARD -->
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(0,210,255,0.25); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:10px;">
+                
+                <!-- 1. SPIRIT LEVEL HORIZON & SPEED THROTTLE -->
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; margin-bottom:4px;">
+                        <span style="font-weight:800; color:var(--neon-cyan); display:flex; align-items:center; gap:4px;">
+                            <span>🌀 Barrel Roll Tilt:</span>
+                            <span id="wm-roll-degrees" style="color:#fff; font-family:monospace;">0°</span>
+                        </span>
+                        <span style="font-weight:800; color:var(--neon-green);" id="wm-roll-speed">3x (Chill Drift)</span>
+                    </div>
+                    <div class="wm-horizon-gauge">
+                        <div class="wm-horizon-deadzone"></div>
+                        <div class="wm-horizon-center-line"></div>
+                        <div class="wm-spirit-bubble" id="wm-spirit-bubble"></div>
+                    </div>
+                    <!-- Speed Fill Bar -->
+                    <div style="width:100%; height:4px; background:rgba(255,255,255,0.06); border-radius:2px; margin-top:6px; overflow:hidden;">
+                        <div id="wm-speed-bar-fill" style="width:25%; height:100%; background:linear-gradient(90deg, var(--neon-cyan), var(--neon-green)); transition:width 0.08s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- 2. WRIST FLICK / JERK METER -->
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; margin-bottom:4px;">
+                        <span style="font-weight:800; color:var(--neon-pink); display:flex; align-items:center; gap:4px;">
+                            <span>💥 Wrist Snap / Jerk:</span>
+                            <span id="wm-jerk-val" style="color:#fff; font-family:monospace;">0.0 m/s²</span>
+                        </span>
+                        <span style="font-size:0.65rem; color:#ff0055; font-weight:700;">Threshold: 18.0 m/s²</span>
+                    </div>
+                    <div class="wm-jerk-meter-wrap">
+                        <div class="wm-jerk-threshold-line" title="Flick Trigger Threshold (18 m/s²)"></div>
+                        <div class="wm-jerk-meter-bar" id="wm-jerk-bar-fill"></div>
+                    </div>
+                </div>
+
+                <!-- FLICK ALERT BANNER -->
+                <div id="wm-flick-alert" style="opacity:0; transition:opacity 0.2s ease, transform 0.2s ease; text-align:center; padding:4px; background:rgba(255,0,85,0.2); border:1px solid #ff0055; border-radius:4px; color:#fff; font-size:0.75rem; font-weight:900; letter-spacing:0.5px;">
+                    💥 REACTIVE WRIST FLICK BURST TRIGGERED!
+                </div>
+
+                <!-- ACTIVE STATE PILLS -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:6px; font-size:0.68rem;">
+                    <div style="padding:6px 8px; background:rgba(255,255,255,0.04); border-radius:4px; border:1px solid rgba(255,255,255,0.06);">
+                        <span style="color:var(--text-muted);">Motion Flow (Z):</span>
+                        <div id="wm-motion-name" style="color:var(--neon-green); font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">4. 🌊 Tidal Wave</div>
+                    </div>
+                    <div style="padding:6px 8px; background:rgba(255,255,255,0.04); border-radius:4px; border:1px solid rgba(255,255,255,0.06);">
+                        <span style="color:var(--text-muted);">Palette (C):</span>
+                        <div id="wm-palette-name" style="color:#ffaa00; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">1. 🌈 Rainbow</div>
+                    </div>
+                    <div style="padding:6px 8px; background:rgba(255,255,255,0.04); border-radius:4px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+                        <span id="wm-slot-val" style="color:var(--neon-cyan); font-weight:800;">Slot 1</span>
+                        <span id="wm-bank-val" style="color:var(--neon-purple); font-weight:800;">Bank 1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLLER STATUS BADGE -->
+            <div id="wm-status-pill" style="text-align:center; padding:6px 10px; font-size:0.75rem; font-weight:900; border-radius:6px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.4); color:var(--neon-cyan); letter-spacing:0.5px;">
+                🥷 STEALTH STANDBY (PITCH BLACK UNTIL Z HELD)
+            </div>
+
+            <!-- VIRTUAL CONTROLLER DECK (TOUCH CONTROLS) -->
+            <div class="wm-controller-body">
+                
+                <!-- ACTION ROW: D-PAD + C-BUTTON -->
+                <div style="display:flex; justify-content:space-around; align-items:center; gap:16px; flex-wrap:wrap;">
+                    
+                    <!-- VIRTUAL D-PAD -->
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">🕹️ D-PAD (SWIPE / TAP)</div>
+                        <div class="wm-dpad-grid" id="wm-dpad-surface">
+                            <div></div>
+                            <button class="wm-dpad-btn" id="btn-wm-dpad-up" title="Speed + / Bank +">▲</button>
+                            <div></div>
+                            <button class="wm-dpad-btn" id="btn-wm-dpad-left" title="Prev Flow / Prev Slot">◀</button>
+                            <div style="display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:var(--text-muted);">●</div>
+                            <button class="wm-dpad-btn" id="btn-wm-dpad-right" title="Next Flow / Next Slot">▶</button>
+                            <div></div>
+                            <button class="wm-dpad-btn" id="btn-wm-dpad-down" title="Speed - / Bank -">▼</button>
+                            <div></div>
+                        </div>
+                    </div>
+
+                    <!-- C-BUTTON -->
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">🌟 PALETTE CONTROL</div>
+                        <button class="btn-c-action" id="btn-wm-c-btn">
+                            🌟 C BUTTON
+                            <div style="font-size:0.62rem; font-weight:600; opacity:0.85; margin-top:2px;">Tap: 48 Palettes • Hold: True RGB</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GIANT Z-TRIGGER BUTTON -->
+                <div>
+                    <button class="btn-z-trigger" id="btn-wm-z-trigger">
+                        <div style="font-size:1.25rem;">⚡ HOLD Z-TRIGGER</div>
+                        <div style="font-size:0.72rem; font-weight:700; color:rgba(255,255,255,0.75);">
+                            [ TILT TO THROTTLE SPEED • SNAP WRIST TO FLICK ]
+                        </div>
+                    </button>
+                </div>
+
+                <!-- CONTROLLER PREFERENCES & TOGGLES -->
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:10px; font-size:0.7rem; color:var(--text-muted);">
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="chk-wm-stealth" checked style="accent-color:var(--neon-green);">
+                        <span>🥷 Authentic Bridge Stealth (Pitch-black when Z released)</span>
+                    </label>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                            <input type="checkbox" id="chk-wm-haptics" checked style="accent-color:var(--neon-cyan);">
+                            <span>📳 Haptics</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                            <input type="checkbox" id="chk-wm-sound" checked style="accent-color:var(--neon-yellow);">
+                            <span>🔊 SFX</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DESKTOP SIMULATOR / FALLBACK TESTING CONTROLS (COLLAPSIBLE) -->
+            <details class="studio-accordion" style="border-color:rgba(255, 255, 255, 0.1);">
+                <summary>
+                    <span style="color:var(--text-muted); display:flex; align-items:center; gap:6px; font-size:0.72rem;">
+                        <span>🖥️</span>
+                        <span>Desktop PC / Testing Simulator (Manual Roll & Flick)</span>
+                    </span>
+                    <span class="accordion-chevron">▶</span>
+                </summary>
+                <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:8px; font-size:0.72rem;">
+                    <div class="ctrl-row">
+                        <span class="ctrl-label">🎮 Simulate Roll Tilt (-90° to +90°):</span>
+                        <input type="range" id="sim-wm-roll" min="-90" max="90" value="0" style="accent-color:var(--neon-cyan);">
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="hw-btn" id="btn-sim-wm-flick" style="flex:1; padding:8px; color:var(--neon-pink); border-color:var(--neon-pink); font-weight:800; background:rgba(255,0,85,0.08);">
+                            💥 Simulate Wrist Snap / Flick!
+                        </button>
+                    </div>
+                    <div style="color:var(--text-muted); font-size:0.65rem; line-height:1.4;">
+                        • <b>Keyboard shortcuts:</b> Hold <b>Space</b> or <b>Z</b> for Z-Trigger, tap <b>C</b> for Palette, <b>Arrow Keys</b> for D-Pad!
+                    </div>
+                </div>
+            </details>
+
+        </div>
+    </div>
+
     <!-- HARDWARE SETUP & POI PROFILE WIZARD MODAL -->
     <div id="hw-profile-modal" class="bank-picker-modal-overlay" style="display:none;">
         <div class="bank-picker-modal-content" style="max-width:560px; border-color:var(--neon-green); background:#0b0f17;">
@@ -2118,6 +2298,7 @@
 <script src="master-vault-manifest.js?v=98"></script>
 <script src="poi-engine.js?v=98"></script>
 <script src="poi-ble.js?v=98"></script>
+    <script src="poi-wiimote.js?v=177"></script>
 
 
 
@@ -2312,6 +2493,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const wQuickFx = el('workspace-quick-fx');
         const wDeck = el('workspace-deck');
         const wFirmware = el('workspace-firmware');
+        const wWiimote = el('workspace-wiimote');
 
         if (wGen) wGen.style.display = (mode === 'workspace-generator') ? 'flex' : 'none';
         if (wStitcher) wStitcher.style.display = (mode === 'workspace-stitcher') ? 'flex' : 'none';
@@ -2319,6 +2501,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (wQuickFx) wQuickFx.style.display = (mode === 'workspace-quick-fx') ? 'flex' : 'none';
         if (wDeck) wDeck.style.display = (mode === 'workspace-deck') ? 'flex' : 'none';
         if (wFirmware) wFirmware.style.display = (mode === 'workspace-firmware') ? 'flex' : 'none';
+        if (wWiimote) wWiimote.style.display = (mode === 'workspace-wiimote') ? 'flex' : 'none';
+
+        if (mode === 'workspace-wiimote') {
+            if (typeof initWiimoteMode === 'function') initWiimoteMode();
+        } else {
+            if (typeof exitWiimoteMode === 'function') exitWiimoteMode();
+        }
 
         if (mode === 'workspace-generator') {
             triggerSmoothRender();
