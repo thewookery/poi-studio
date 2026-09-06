@@ -1,5 +1,5 @@
 // ============================================================================
-// OPEN PIXEL POI - PURE NORDIC BLE SLIM EDITION (Build v165)
+// OPEN PIXEL POI - PURE NORDIC BLE SLIM EDITION (Build v179)
 // Zero Wi-Fi bloat • Instant 20MHz SPI DotStar timing • Pure Nordic UART BLE
 // ============================================================================
 
@@ -15,7 +15,7 @@ OpenPixelPoiButton button(config);
 void setup() {
   // Allocate pattern buffer if unallocated
   if (config.pattern == NULL) {
-    config.pattern = (uint8_t *) malloc(10000 * 3 * sizeof(uint8_t));
+    config.pattern = (uint8_t *) malloc(PATTERN_PIXEL_LIMIT * 3 * sizeof(uint8_t));
   }
 
   config.setup();

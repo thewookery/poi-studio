@@ -12,7 +12,7 @@ void setup() {
   delay(100);
 
   if (config.pattern == NULL) {
-    config.pattern = (uint8_t *) malloc(10000 * 3 * sizeof(uint8_t));
+    config.pattern = (uint8_t *) malloc(PATTERN_PIXEL_LIMIT * 3 * sizeof(uint8_t));
   }
 
   config.setup();
