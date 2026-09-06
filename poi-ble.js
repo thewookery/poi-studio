@@ -46,7 +46,9 @@
         CC_SET_PALETTE_FX: 0x15,
         CC_SET_BLEND_MODE: 0x16,
         CC_SET_PALETTE_SPEED: 0x17,
-        CC_SET_MOTION_FX: 0x18
+        CC_SET_MOTION_FX: 0x18,
+        CC_TRIGGER_FLICK: 0x19,
+        CC_IDENTIFY_SOURCE: 0x1A
     };
 
 
@@ -246,6 +248,19 @@
                 this.devices.push(deviceEntry);
                 this._saveDeviceCache();
                 this._notifyState('connected', { addedDevice: deviceEntry });
+
+                // Announce identity as Open POI Web Studio (0x02) to awaken Flow Mode
+                try {
+                    const identPkt = new Uint8Array([START_BYTE, 0x1A, 0x02, END_BYTE]);
+                    if (rxChar.writeValueWithoutResponse) {
+                        await rxChar.writeValueWithoutResponse(identPkt);
+                    } else {
+                        await rxChar.writeValue(identPkt);
+                    }
+                    console.log('[BLE] 🌐 Identified as Open POI Studio (Web App Handshake 0x02 sent)');
+                } catch (e) {
+                    console.warn('[BLE] Could not send Web App handshake:', e);
+                }
 
                 // Deferred non-blocking battery check (waits 2.5s for BLE settle)
                 this._queryBatteryDeferred(deviceEntry);

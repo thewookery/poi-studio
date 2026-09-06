@@ -82,6 +82,7 @@ enum CommCode {
   CC_SET_PALETTE_SPEED,           // 23
   CC_SET_MOTION_FX,               // 24
   CC_TRIGGER_FLICK,               // 25
+  CC_IDENTIFY_SOURCE,             // 26 (1=Bridge, 2=Web App)
 };
 
 
@@ -354,7 +355,11 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
               bleSendError();
             }
           }else if(requestCode == CC_TRIGGER_FLICK){
+            config.identifySource(1); // Bridge signature
             config.triggerFlick();
+            bleSendSuccess();
+          }else if(requestCode == CC_IDENTIFY_SOURCE){
+            config.identifySource(bleStatus[2]);
             bleSendSuccess();
           }else{
             debugf("Recieved message with unknown code!\n");
@@ -404,11 +409,13 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
 
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
+      config.setBleConnected(true);
       debugf("onConnect\n");
     }
 
     void onDisconnect(BLEServer* pServer) {
       deviceConnected = false;
+      config.setBleConnected(false);
       debugf("onDisconnect -> Restoring normal full-blade pattern\n");
       config.displayState = DS_PATTERN;
       config.motionFxMode = 0;

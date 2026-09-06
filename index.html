@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>⚡ Open POI Studio (Build v174)</title>
+    <title>⚡ Open POI Studio (Build v175)</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00ff88">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -106,7 +106,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.68rem; color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.5); padding:3px 8px; border-radius:4px; margin-left:6px; box-shadow:0 0 10px rgba(0,255,136,0.25);">✨ BUILD v174 • 48 PALETTES, 24 FLOWS & DIRECT BATTERY POWER</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.68rem; color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.5); padding:3px 8px; border-radius:4px; margin-left:6px; box-shadow:0 0 10px rgba(0,255,136,0.25);">✨ BUILD v175 • SMART BRIDGE/APP DISCRIMINATION & 60s FLOW MODE</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <span class="telemetry-pill" id="hud-bridge-battery" style="display:none; font-size:0.68rem; font-weight:800; color:var(--neon-green); border-color:var(--neon-green); background:rgba(0,255,136,0.08); padding:3px 6px;">🔋 <span id="hud-bridge-battery-text">--%</span></span>
@@ -1627,8 +1627,8 @@
                                         <!-- 1. 55-PIXELS DOTSTAR STUDIO FX & RELEASE VAULT -->
                     <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(0,255,136,0.5); background:rgba(0,255,136,0.06);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ BUILD v174</span></span>
-                            <span class="telemetry-pill" id="badge-55-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">v174 Liquid Flow (1.05 MB)</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-green);">🌟 55px DotStar Studio FX <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ BUILD v175</span></span>
+                            <span class="telemetry-pill" id="badge-55-pill" style="color:var(--neon-green); font-size:0.62rem; font-weight:800;">v175 Smart Flow (1.06 MB)</span>
                         </div>
                         
                         <!-- VERSION SELECTOR DROPDOWN -->
@@ -1638,7 +1638,8 @@
                                 <span style="color:var(--neon-green); font-weight:800;" id="ver-55-headroom">~475 KB Free Flash</span>
                             </div>
                             <select id="select-ver-55" onchange="onFirmwareVersionChange('55-fx', this.value)" style="width:100%; font-size:0.74rem; font-weight:700; background:rgba(0,0,0,0.7); border:1px solid rgba(0,255,136,0.5); color:var(--neon-green); border-radius:4px; padding:5px 8px; cursor:pointer;">
-                                <option value="v174" selected>⚡ v174 48 Palettes & 24 Flow FX (1.05MB • Zero Wi-Fi Bloat • Latest)</option>
+                                <option value="v175" selected>⚡ v175 Smart Source & 60s Flow Mode (1.06MB • Latest)</option>
+                                <option value="v174">⚡ v174 48 Palettes & 24 Flow FX (1.05MB)</option>
                                 <option value="v173">🌀 v173 Liquid Flow & Reactive Flick (1.05MB)</option>
                                 <option value="v172">🌀 v172 Stealth Base & Analog Throttle (1.05MB)</option>
                                 <option value="v165">⚡ v165 Pure Nordic BLE Slim (1.05MB)</option>
@@ -1656,7 +1657,7 @@
                             • <b>🛡️ Boot Auto-Repair:</b> Permanent zero-glitch 55px hardware enforcement on power-on!
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-55-fx" manifest="firmware/releases/v174-battery-ready/manifest_55px.json?v=174">
+                            <esp-web-install-button id="esp-btn-55-fx" manifest="firmware/releases/v175-smart-source/manifest_55px.json?v=175">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; font-weight:900;">
                                     ⚡ Flash 55px DotStar FX (50 Slots • Pure BLE)
                                 </button>
@@ -1664,7 +1665,7 @@
                             <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-55-fx" style="width:100%; font-size:0.74rem; padding:7px 10px; color:var(--neon-green); font-weight:800; border-color:var(--neon-green); background:rgba(0,255,136,0.1);">
                                 📱 Android USB-C 1-Tap Flash (55px Selected Version)
                             </button>
-                            <a id="dl-btn-55" href="firmware/releases/v174-battery-ready/firmware_55px.bin" download="firmware_55px_v174.bin" class="hw-btn" style="width:100%; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-size:0.72rem; padding:7px 10px; color:var(--neon-green); border-color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.08);">
+                            <a id="dl-btn-55" href="firmware/releases/v175-smart-source/firmware_55px.bin" download="firmware_55px_v175.bin" class="hw-btn" style="width:100%; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-size:0.72rem; padding:7px 10px; color:var(--neon-green); border-color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.08);">
                                 ⬇️ Direct Download .BIN (Selected Version)
                             </a>
                         </div>
@@ -1673,8 +1674,8 @@
                     <!-- 2. MASTER WII NUNCHUK BLE BRIDGE TRANSMITTER -->
                     <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(0, 210, 255, 0.5); background:rgba(0, 210, 255, 0.05);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-cyan);">🕹️ Master Wii Nunchuk Bridge <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ BUILD v174</span></span>
-                            <span class="telemetry-pill" id="badge-bridge-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">v174 Battery Ready (991 KB)</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-cyan);">🕹️ Master Wii Nunchuk Bridge <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ BUILD v175</span></span>
+                            <span class="telemetry-pill" id="badge-bridge-pill" style="color:var(--neon-cyan); font-size:0.62rem; font-weight:800;">v175 Smart Handshake (991 KB)</span>
                         </div>
                         
                         <!-- VERSION SELECTOR DROPDOWN -->
@@ -1684,7 +1685,8 @@
                                 <span style="color:var(--neon-cyan); font-weight:800;">Auto I2C Scanner</span>
                             </div>
                             <select id="select-ver-bridge" onchange="onFirmwareVersionChange('bridge', this.value)" style="width:100%; font-size:0.74rem; font-weight:700; background:rgba(0,0,0,0.7); border:1px solid rgba(0,210,255,0.5); color:var(--neon-cyan); border-radius:4px; padding:5px 8px; cursor:pointer;">
-                                <option value="v174" selected>⚡ v174 Direct Battery Power & 48P/24F (Latest)</option>
+                                <option value="v175" selected>⚡ v175 Smart Identity Handshake & 48P/24F (Latest)</option>
+                                <option value="v174">⚡ v174 Direct Battery Power & 48P/24F</option>
                                 <option value="v173">🌀 v173 Liquid Flow & Reactive Flick</option>
                                 <option value="v172">🌀 v172 Stealth Blackout & Analog Tilt Throttle</option>
                                 <option value="v165">⚡ v165 Pure Nordic BLE Slim</option>
@@ -1703,7 +1705,7 @@
                             • <b>💡 Hold Z + C:</b> Joystick U/D steps brightness (10% to 100%)
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-bridge" manifest="firmware/releases/v174-battery-ready/manifest_bridge.json?v=174">
+                            <esp-web-install-button id="esp-btn-bridge" manifest="firmware/releases/v175-smart-source/manifest_bridge.json?v=175">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:var(--neon-cyan); color:var(--neon-cyan); font-weight:800;">
                                     ⚡ Flash Master Nunchuk BLE Bridge (Xiao ESP32-C3)
                                 </button>
@@ -1711,7 +1713,7 @@
                             <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-bridge" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-cyan); font-weight:800; border-color:var(--neon-cyan);">
                                 📱 Android USB-C 1-Tap Flash (BLE Bridge)
                             </button>
-                            <a id="dl-btn-bridge" href="firmware/releases/v174-battery-ready/firmware_bridge.bin" download="firmware_bridge_v174.bin" class="hw-btn" style="width:100%; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-size:0.72rem; padding:7px 10px; color:var(--neon-cyan); border-color:var(--neon-cyan); font-weight:800; background:rgba(0,210,255,0.08);">
+                            <a id="dl-btn-bridge" href="firmware/releases/v175-smart-source/firmware_bridge.bin" download="firmware_bridge_v175.bin" class="hw-btn" style="width:100%; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-size:0.72rem; padding:7px 10px; color:var(--neon-cyan); border-color:var(--neon-cyan); font-weight:800; background:rgba(0,210,255,0.08);">
                                 ⬇️ Direct Download .BIN (Selected Version)
                             </a>
                         </div>
@@ -1720,8 +1722,8 @@
                     <!-- 3. 32-PIXELS DOTSTAR STRIP CONTROLLER (NUNCHUK AUX PROP / HAT / STAFF) -->
                     <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(188, 19, 254, 0.5); background:rgba(188, 19, 254, 0.05);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-purple);">✨ 32px DotStar Strip Controller <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ BUILD v174</span></span>
-                            <span class="telemetry-pill" id="badge-32-pill" style="color:var(--neon-purple); font-size:0.62rem; font-weight:800;">v174 Reactive Flow (1.06 MB)</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:var(--neon-purple);">✨ 32px DotStar Strip Controller <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ BUILD v175</span></span>
+                            <span class="telemetry-pill" id="badge-32-pill" style="color:var(--neon-purple); font-size:0.62rem; font-weight:800;">v175 Smart Flow (1.06 MB)</span>
                         </div>
                         
                         <!-- VERSION SELECTOR DROPDOWN -->
@@ -1731,7 +1733,8 @@
                                 <span style="color:var(--neon-purple); font-weight:800;">32 LEDs APA102</span>
                             </div>
                             <select id="select-ver-32" onchange="onFirmwareVersionChange('32-strip', this.value)" style="width:100%; font-size:0.74rem; font-weight:700; background:rgba(0,0,0,0.7); border:1px solid rgba(188,19,254,0.5); color:var(--neon-purple); border-radius:4px; padding:5px 8px; cursor:pointer;">
-                                <option value="v174" selected>⚡ v174 48 Palettes & 24 Flow FX (Latest)</option>
+                                <option value="v175" selected>⚡ v175 Smart Flow & 60s Auto Mode (Latest)</option>
+                                <option value="v174">⚡ v174 48 Palettes & 24 Flow FX</option>
                                 <option value="v173">🌀 v173 Liquid Flow & Reactive Flick</option>
                                 <option value="v172">🌀 v172 Stealth Reactive Z-Trigger</option>
                                 <option value="v165">⚡ v165 Multi-Prop Pure BLE</option>
@@ -1747,7 +1750,7 @@
                             • <b>🥷 Stealth Reactive Z-Trigger:</b> 100% dark until Z is pressed
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-32-strip" manifest="firmware/releases/v174-battery-ready/manifest_32px.json?v=174">
+                            <esp-web-install-button id="esp-btn-32-strip" manifest="firmware/releases/v175-smart-source/manifest_32px.json?v=175">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:var(--neon-purple); color:var(--neon-purple); font-weight:800;">
                                     ⚡ Flash 32px DotStar Strip Controller (ESP32-C3)
                                 </button>
@@ -1755,7 +1758,7 @@
                             <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-32-strip" style="width:100%; font-size:0.72rem; padding:7px 10px; color:var(--neon-purple); font-weight:800; border-color:var(--neon-purple);">
                                 📱 Android USB-C 1-Tap Flash (32px Strip)
                             </button>
-                            <a id="dl-btn-32" href="firmware/releases/v174-battery-ready/firmware_32px_strip.bin" download="firmware_32px_strip_v174.bin" class="hw-btn" style="width:100%; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-size:0.72rem; padding:7px 10px; color:var(--neon-purple); border-color:var(--neon-purple); font-weight:800; background:rgba(188,19,254,0.08);">
+                            <a id="dl-btn-32" href="firmware/releases/v175-smart-source/firmware_32px_strip.bin" download="firmware_32px_strip_v175.bin" class="hw-btn" style="width:100%; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-size:0.72rem; padding:7px 10px; color:var(--neon-purple); border-color:var(--neon-purple); font-weight:800; background:rgba(188,19,254,0.08);">
                                 ⬇️ Direct Download .BIN (Selected Version)
                             </a>
                         </div>
@@ -1764,8 +1767,8 @@
                     <!-- 4. 88-LED WS2811/WS2812 3-PIN PEBBLE SEED PIXELS -->
                     <div class="firmware-card rainbow-active-firmware" style="border-color:rgba(255, 170, 0, 0.5); background:rgba(255, 170, 0, 0.05);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.84rem; font-weight:800; color:#ffaa00;">✨ 88px WS2812 Pebble Seed Pixels <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ BUILD v174</span></span>
-                            <span class="telemetry-pill" id="badge-pebble-pill" style="color:#ffaa00; font-size:0.62rem; font-weight:800;">v174 Liquid Flow & Flick (1.06 MB)</span>
+                            <span style="font-size:0.84rem; font-weight:800; color:#ffaa00;">✨ 88px WS2812 Pebble Seed Pixels <span class="rainbow-badge" style="font-size:0.7rem; margin-left:4px;">✨ BUILD v175</span></span>
+                            <span class="telemetry-pill" id="badge-pebble-pill" style="color:#ffaa00; font-size:0.62rem; font-weight:800;">v175 Bridge vs App & 60s Flow (1.07 MB)</span>
                         </div>
                         
                         <!-- VERSION SELECTOR DROPDOWN -->
@@ -1775,7 +1778,8 @@
                                 <span style="color:#ffaa00; font-weight:800;">88 LEDs 3-Pin WS2812</span>
                             </div>
                             <select id="select-ver-pebble" onchange="onFirmwareVersionChange('pebble', this.value)" style="width:100%; font-size:0.74rem; font-weight:700; background:rgba(0,0,0,0.7); border:1px solid rgba(255,170,0,0.5); color:#ffaa00; border-radius:4px; padding:5px 8px; cursor:pointer;">
-                                <option value="v174" selected>⚡ v174 88px Liquid Flow & Reactive Flick (Latest)</option>
+                                <option value="v175" selected>⚡ v175 Bridge vs App & 60s Flow Mode (Latest)</option>
+                                <option value="v174">⚡ v174 88px Liquid Flow & Reactive Flick</option>
                                 <option value="v173">🌀 v173 88px Liquid Flow & Reactive Flick</option>
                                 <option value="v172">🌀 v172 88px Stealth Blackout & Analog Tilt Throttle</option>
                                 <option value="v165">⚡ v165 88px WS2812 Pebble Seed Pixels (Base)</option>
@@ -1790,7 +1794,7 @@
                             • <b>🎯 Compact Same-Side Wiring:</b> 5V &rarr; <b>5V</b> | GND &rarr; <b>GND</b> | DATA &rarr; <b>D10</b> (All 3 on right side!)
                         </div>
                         <div class="firmware-flash-wrap" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                            <esp-web-install-button id="esp-btn-pebble" manifest="firmware/releases/v174-battery-ready/manifest_pebble.json?v=174">
+                            <esp-web-install-button id="esp-btn-pebble" manifest="firmware/releases/v175-smart-source/manifest_pebble.json?v=175">
                                 <button slot="activate" class="btn-ble-upload firmware-install-btn" style="width:100%; font-size:0.75rem; padding:8px 10px; border-color:#ffaa00; color:#ffaa00; font-weight:800;">
                                     ⚡ Flash 88px Pebble Seed Pixels (Xiao ESP32-C3)
                                 </button>
@@ -1798,7 +1802,7 @@
                             <button class="hw-btn btn-android-flash" data-target-esp="esp-btn-pebble" style="width:100%; font-size:0.72rem; padding:7px 10px; color:#ffaa00; font-weight:800; border-color:#ffaa00;">
                                 📱 Android USB-C 1-Tap Flash (88px Pebble)
                             </button>
-                            <a id="dl-btn-pebble" href="firmware/releases/v174-battery-ready/firmware_88px_pebble.bin" download="firmware_88px_pebble_v174.bin" class="hw-btn" style="width:100%; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-size:0.72rem; padding:7px 10px; color:#ffaa00; border-color:#ffaa00; font-weight:800; background:rgba(255,170,0,0.08);">
+                            <a id="dl-btn-pebble" href="firmware/releases/v175-smart-source/firmware_88px_pebble.bin" download="firmware_88px_pebble_v175.bin" class="hw-btn" style="width:100%; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-size:0.72rem; padding:7px 10px; color:#ffaa00; border-color:#ffaa00; font-weight:800; background:rgba(255,170,0,0.08);">
                                 ⬇️ Direct Download .BIN (Selected Version)
                             </a>
                         </div>
@@ -1827,21 +1831,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr style="border-bottom:1px solid rgba(255,255,255,0.06); background:rgba(0,255,136,0.04);">
-                                <td style="padding:8px 10px; font-weight:800; color:var(--neon-green);">v174 (Latest)</td>
+                                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.06); background:rgba(0,255,136,0.04);">
+                                <td style="padding:8px 10px; font-weight:800; color:var(--neon-green);">v175 (Latest)</td>
+                                <td style="padding:8px 10px; color:#fff; font-size:0.75rem;">⚡ <b>v175</b>: Smart Central Discrimination (Master Bridge vs Open POI Web Studio), Reactive Stealth on Bridge, Instant Web App Glow, Autonomous 60-Second Standalone Flow Mode, 350ms Soft Emerald Boot Indicator.</td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_bridge.bin" download="firmware_bridge_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-cyan); text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_88px_pebble.bin" download="firmware_88px_pebble_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:#ffaa00; text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_32px_strip.bin" download="firmware_32px_strip_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-purple); text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_55px.bin" download="firmware_55px_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-green); text-decoration:none;">⬇️ .BIN</a></td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                                <td style="padding:8px 10px; font-weight:800; color:#aaa;">v174</td>
                                 <td style="padding:8px 10px; color:var(--text-color);"><b>Direct Battery Pad Power & 48P / 24F:</b> Xiao ESP32-C3 Bridge turns on automatically from BAT+/BAT- pads (Always-ON), 48 pro palettes, 24 liquid flows with reactive wrist flick</td>
-                                <td style="padding:8px 10px;"><a href="firmware/releases/v174-battery-ready/firmware_bridge.bin" download="firmware_bridge_v174.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-cyan); text-decoration:none;">⬇️ .BIN</a></td>
-                                <td style="padding:8px 10px;"><a href="firmware/releases/v174-battery-ready/firmware_88px_pebble.bin" download="firmware_88px_pebble_v174.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:#ffaa00; text-decoration:none;">⬇️ .BIN</a></td>
-                                <td style="padding:8px 10px;"><a href="firmware/releases/v174-battery-ready/firmware_32px_strip.bin" download="firmware_32px_strip_v174.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-purple); text-decoration:none;">⬇️ .BIN</a></td>
-                                <td style="padding:8px 10px;"><a href="firmware/releases/v174-battery-ready/firmware_55px.bin" download="firmware_55px_v174.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-green); text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_bridge.bin" download="firmware_bridge_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-cyan); text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_88px_pebble.bin" download="firmware_88px_pebble_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:#ffaa00; text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_32px_strip.bin" download="firmware_32px_strip_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-purple); text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_55px.bin" download="firmware_55px_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-green); text-decoration:none;">⬇️ .BIN</a></td>
                             </tr>
                             <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
                                 <td style="padding:8px 10px; font-weight:800; color:var(--neon-green);">v173</td>
                                 <td style="padding:8px 10px; color:var(--text-color);"><b>Liquid Flow & Reactive Flick Excitation:</b> Hypnotic ripples, smooth tilt speed throttle, wrist flick burst without pattern jumping</td>
-                                <td style="padding:8px 10px;"><a href="firmware/releases/v174-battery-ready/firmware_bridge.bin" download="firmware_bridge_v174.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-cyan); text-decoration:none;">⬇️ .BIN</a></td>
-                                <td style="padding:8px 10px;"><a href="firmware/releases/v174-battery-ready/firmware_88px_pebble.bin" download="firmware_88px_pebble_v174.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:#ffaa00; text-decoration:none;">⬇️ .BIN</a></td>
-                                <td style="padding:8px 10px;"><a href="firmware/releases/v174-battery-ready/firmware_32px_strip.bin" download="firmware_32px_strip_v174.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-purple); text-decoration:none;">⬇️ .BIN</a></td>
-                                <td style="padding:8px 10px;"><a href="firmware/releases/v174-battery-ready/firmware_55px.bin" download="firmware_55px_v174.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-green); text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_bridge.bin" download="firmware_bridge_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-cyan); text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_88px_pebble.bin" download="firmware_88px_pebble_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:#ffaa00; text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_32px_strip.bin" download="firmware_32px_strip_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-purple); text-decoration:none;">⬇️ .BIN</a></td>
+                                <td style="padding:8px 10px;"><a href="firmware/releases/v175-smart-source/firmware_55px.bin" download="firmware_55px_v175.bin" class="hw-btn" style="padding:3px 7px; font-size:0.68rem; color:var(--neon-green); text-decoration:none;">⬇️ .BIN</a></td>
                             </tr>
                             <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
                                 <td style="padding:8px 10px; font-weight:800; color:var(--neon-cyan);">v172</td>
@@ -2147,6 +2159,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dlBtnId: 'dl-btn-55',
                 badgeId: 'badge-55-pill',
                 versions: {
+                    'v175': { manifest: 'firmware/releases/v175-smart-source/manifest_55px.json?v=175', bin: 'firmware/releases/v175-smart-source/firmware_55px.bin', label: 'v175 Smart Flow (1.06 MB)' },
                     'v174': { manifest: 'firmware/releases/v174-battery-ready/manifest_55px.json?v=174', bin: 'firmware/releases/v174-battery-ready/firmware_55px.bin', label: 'v174 Liquid Flow (1.05 MB)' },
                     'v173': { manifest: 'firmware/releases/v173-reactive-flow/manifest_55px.json?v=173', bin: 'firmware/releases/v173-reactive-flow/firmware_55px.bin', label: 'v173 Liquid Flow (1.05 MB)' },
                     'v172': { manifest: 'firmware/releases/v172-stealth-reactive/manifest_55px.json?v=172', bin: 'firmware/releases/v172-stealth-reactive/firmware_55px.bin', label: 'v172 Stealth Base (1.05 MB)' },
@@ -2162,6 +2175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dlBtnId: 'dl-btn-bridge',
                 badgeId: 'badge-bridge-pill',
                 versions: {
+                    'v175': { manifest: 'firmware/releases/v175-smart-source/manifest_bridge.json?v=175', bin: 'firmware/releases/v175-smart-source/firmware_bridge.bin', label: 'v175 Smart Handshake (991 KB)' },
                     'v174': { manifest: 'firmware/releases/v174-battery-ready/manifest_bridge.json?v=174', bin: 'firmware/releases/v174-battery-ready/firmware_bridge.bin', label: 'v174 Battery Ready (991 KB)' },
                     'v173': { manifest: 'firmware/releases/v173-reactive-flow/manifest_bridge.json?v=173', bin: 'firmware/releases/v173-reactive-flow/firmware_bridge.bin', label: 'v173 Reactive Flick (997 KB)' },
                     'v172': { manifest: 'firmware/releases/v172-stealth-reactive/manifest_bridge.json?v=172', bin: 'firmware/releases/v172-stealth-reactive/firmware_bridge.bin', label: 'v172 Tilt Throttle (997 KB)' },
@@ -2175,6 +2189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dlBtnId: 'dl-btn-32',
                 badgeId: 'badge-32-pill',
                 versions: {
+                    'v175': { manifest: 'firmware/releases/v175-smart-source/manifest_32px.json?v=175', bin: 'firmware/releases/v175-smart-source/firmware_32px_strip.bin', label: 'v175 Smart Flow (1.06 MB)' },
                     'v174': { manifest: 'firmware/releases/v174-battery-ready/manifest_32px.json?v=174', bin: 'firmware/releases/v174-battery-ready/firmware_32px_strip.bin', label: 'v174 Reactive Flow (1.06 MB)' },
                     'v173': { manifest: 'firmware/releases/v173-reactive-flow/manifest_32px.json?v=173', bin: 'firmware/releases/v173-reactive-flow/firmware_32px_strip.bin', label: 'v173 Reactive Flow (1.06 MB)' },
                     'v172': { manifest: 'firmware/releases/v172-stealth-reactive/manifest_32px.json?v=172', bin: 'firmware/releases/v172-stealth-reactive/firmware_32px_strip.bin', label: 'v172 Stealth (1.06 MB)' },
@@ -2188,6 +2203,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dlBtnId: 'dl-btn-pebble',
                 badgeId: 'badge-pebble-pill',
                 versions: {
+                    'v175': { manifest: 'firmware/releases/v175-smart-source/manifest_pebble.json?v=175', bin: 'firmware/releases/v175-smart-source/firmware_88px_pebble.bin', label: 'v175 Bridge vs App & 60s Flow (1.07 MB)' },
                     'v174': { manifest: 'firmware/releases/v174-battery-ready/manifest_pebble.json?v=174', bin: 'firmware/releases/v174-battery-ready/firmware_88px_pebble.bin', label: 'v174 Liquid Flow & Flick (1.06 MB)' },
                     'v173': { manifest: 'firmware/releases/v173-reactive-flow/manifest_pebble.json?v=173', bin: 'firmware/releases/v173-reactive-flow/firmware_88px_pebble.bin', label: 'v173 Liquid Flow & Flick (1.06 MB)' },
                     'v172': { manifest: 'firmware/releases/v172-stealth-reactive/manifest_pebble.json?v=172', bin: 'firmware/releases/v172-stealth-reactive/firmware_88px_pebble.bin', label: 'v172 Stealth Throttle (1.06 MB)' },
@@ -2198,7 +2214,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const dev = FIRMWARE_MAP[deviceType];
         if (!dev) return;
-        const ver = dev.versions[versionKey] || dev.versions['v174'];
+        const ver = dev.versions[versionKey] || dev.versions['v175'];
         if (!ver) return;
 
         const espBtn = document.getElementById(dev.espBtnId);

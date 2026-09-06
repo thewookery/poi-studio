@@ -852,6 +852,14 @@ class OpenPixelPoiLED {
       ledStrip->Begin();
       ledStrip->ClearTo(RgbColor(0, 0, 0));
       ledStrip->Show();
+#if defined(PEBBLE_50PX) || defined(STRIP_32PX)
+      // Soft 350ms emerald power-on indicator: confirms battery connection & 3.7V boot
+      ledStrip->SetPixelColor(0, RgbColor(0, 80, 40));
+      ledStrip->Show();
+      delay(350);
+      ledStrip->ClearTo(RgbColor(0, 0, 0));
+      ledStrip->Show();
+#endif
       frameIndex = 0;
     }
 
@@ -872,10 +880,16 @@ class OpenPixelPoiLED {
 
     void loop(){
 #if defined(PEBBLE_50PX) || defined(STRIP_32PX)
-      // 🥷 100% STEALTH DARK UNTIL Z BUTTON IS PRESSED:
-      // Strip is 100% OFF in hardware (black / zero power) until Z button is held (motionFxMode > 0)
+      // 🥷 STEALTH REACTIVE vs AUTONOMOUS FLOW MODE:
+      // 1. If Bridge is connected: 100% OFF (black / zero power) until Z is held (motionFxMode > 0)
+      // 2. If Standalone & first 60 seconds: 100% OFF (standby waiting for bridge)
+      // 3. If Web App connected OR Standalone after 60s: Flow Mode ACTIVE!
       static bool isCurrentlyDark = false;
-      if (config.motionFxMode == 0) {
+      bool bridgeActive = config.isBridgeActive();
+      bool flowActive = config.isAutonomousFlowActive();
+      bool shouldBeDark = (bridgeActive && config.motionFxMode == 0) || (!bridgeActive && !flowActive);
+
+      if (shouldBeDark) {
         if (!isCurrentlyDark) {
           ledStrip->ClearTo(RgbColor(0, 0, 0));
           ledStrip->Show();
@@ -919,16 +933,6 @@ class OpenPixelPoiLED {
 
 
 #if defined(STRIP_32PX) || defined(PEBBLE_50PX)
-        // 🥷 STEALTH REACTIVE PROP MODE (Hat Pebble & Aux Strip):
-        // Hat stays 100% OFF in hardware (black / zero power) until Z button is held on Nunchuk (motionFxMode > 0)
-        if (config.motionFxMode == 0) {
-          for (int j=0; j<config.ledCount; j++) {
-            ledStrip->SetPixelColor(j, RgbColor(0, 0, 0));
-          }
-          ledStrip->Show();
-          return;
-        }
-
         // Extract palette when slot loads or changes
         static int lastLoadedSlot = -1;
         if (lastLoadedSlot != config.getActivePatternIndex()) {
@@ -951,7 +955,12 @@ class OpenPixelPoiLED {
         }
 
         uint8_t numC = max((uint8_t)2, g_slotPalette.count);
-        uint8_t activeEffect = (config.motionFxMode >= 1 && config.motionFxMode <= 24) ? config.motionFxMode : 1;
+        // Active Effect selection:
+        // 1. If motionFxMode is explicitly set (1..24 from Bridge or Web App), lock to it!
+        // 2. Otherwise (Flow Mode with motionFxMode == 0), automatically cycle through all 24 liquid flows every 20s!
+        uint8_t activeEffect = (config.motionFxMode >= 1 && config.motionFxMode <= 24)
+                               ? config.motionFxMode
+                               : (uint8_t)(((now / 20000) % 24) + 1);
 
         for (int j=0; j<config.ledCount; j++){
           uint8_t factor = 0;
@@ -1298,8 +1307,17 @@ class OpenPixelPoiLED {
           uint8_t g = (uint8_t)(((uint16_t)c1.G * (255 - frac) + (uint16_t)c2.G * frac) / 255);
           uint8_t b = (uint8_t)(((uint16_t)c1.B * (255 - frac) + (uint16_t)c2.B * frac) / 255);
 
-          if (config.paletteFxMode > 0) {
-            getPaletteBaseColor(config.paletteFxMode, colorPhase, 255, r, g, b);
+          // Palette Selection:
+          // 1. If paletteFxMode > 0 (chosen on Bridge C-button or in Web App), use it!
+          // 2. If Standalone Flow Mode (no BLE client connected and paletteFxMode == 0), cycle through 48 palettes every 12s!
+          // 3. Otherwise (Web App connected with paletteFxMode == 0), use g_slotPalette extracted from uploaded pattern.
+          uint8_t effectivePal = config.paletteFxMode;
+          if (effectivePal == 0 && !config.isBleConnected) {
+            effectivePal = (uint8_t)(((now / 12000) % 48) + 1);
+          }
+
+          if (effectivePal > 0) {
+            getPaletteBaseColor(effectivePal, colorPhase, 255, r, g, b);
           }
 
           red = (uint8_t)(((uint16_t)r * factor) / 255);

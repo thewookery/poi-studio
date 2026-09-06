@@ -51,6 +51,7 @@
 #define CC_SET_PALETTE_SPEED     0x17  // 23 (1 to 10)
 #define CC_SET_MOTION_FX         0x18  // 24 (0 to 17)
 #define CC_TRIGGER_FLICK         0x19  // 25 (1)
+#define CC_IDENTIFY_SOURCE       0x1A  // 26 (1=Bridge, 2=Web App)
 
 // Nordic UART Service (NUS)
 static BLEUUID serviceUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
@@ -199,6 +200,10 @@ bool executeConnect(BLEAdvertisedDevice* advDevice) {
   poiSlots[targetSlot].name = advDevice->getName();
 
   Serial.printf("🎉 [BLE] Poi %d LOCKED & READY: %s!\n", targetSlot + 1, poiSlots[targetSlot].name.c_str());
+
+  // Authoritative identity handshake: identify as Wii Nunchuk Bridge (0x01)
+  sendBleCommand(CC_IDENTIFY_SOURCE, 0x01);
+
   return true;
 }
 
@@ -604,6 +609,13 @@ void loop() {
   if (activeCount < MAX_BLE_POIS && isScanWindowActive && !doConnectPending && (now - lastScanStartTime > 3500)) {
     lastScanStartTime = now;
     pBLEScan->start(1, false);
+  }
+
+  // Periodic 4-second heartbeat so receiver confirms Bridge presence continuously
+  static unsigned long lastBridgeHeartbeat = 0;
+  if (activeCount > 0 && (now - lastBridgeHeartbeat > 4000)) {
+    lastBridgeHeartbeat = now;
+    sendBleCommand(CC_IDENTIFY_SOURCE, 0x01);
   }
 
   readNunchukAndProcess();

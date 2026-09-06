@@ -1,0 +1,13 @@
+{
+  "version": "v175",
+  "name": "Build v175: Bridge vs Web App Discrimination & 60s Standalone Flow Mode",
+  "date": "2026-09-06",
+  "features": [
+    "Intelligent Central Discrimination: Pebble Hat distinguishes between Master Nunchuk Bridge and Open POI Web Studio",
+    "Bridge Mode (Reactive Stealth): Pitch-black stealth when Z released (0mA draw), active reactive 24-flow FX when Z held",
+    "Web App Mode (Live Studio): Instant illumination upon Web Bluetooth link without needing Z button or controller",
+    "Autonomous 60s Flow Mode: Hat automatically awakens into continuous 24-flow / 48-palette morphing when unlinked for 60s",
+    "Instant Bridge Preemption: Turning ON the Bridge immediately overrides Standalone Flow Mode and snaps to reactive stealth",
+    "Soft Emerald Boot Confirmation: 350ms gentle green blink on Pixel 0 confirms 3.7V battery connection and switch activation"
+  ]
+}

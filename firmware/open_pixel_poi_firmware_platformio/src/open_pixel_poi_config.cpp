@@ -84,6 +84,65 @@ class OpenPixelPoiConfig {
     uint16_t paletteMorphIntervalSeconds = 10;
     unsigned long lastFlickTime = 0;
 
+    // Source identification & Autonomous Flow Mode state
+    bool isBleConnected = false;
+    bool sourceIsBridge = false;
+    bool sourceIsWebApp = false;
+    unsigned long lastBridgePacketTime = 0;
+    unsigned long lastWebPacketTime = 0;
+    unsigned long lastBleDisconnectTime = 0;
+
+    void setBleConnected(bool connected) {
+      this->isBleConnected = connected;
+      if (!connected) {
+        this->sourceIsBridge = false;
+        this->sourceIsWebApp = false;
+        this->lastBleDisconnectTime = millis();
+      }
+    }
+
+    void identifySource(uint8_t src) {
+      if (src == 1) {
+        this->sourceIsBridge = true;
+        this->sourceIsWebApp = false;
+        this->lastBridgePacketTime = millis();
+      } else if (src == 2) {
+        this->sourceIsWebApp = true;
+        this->sourceIsBridge = false;
+        this->lastWebPacketTime = millis();
+      }
+    }
+
+    bool isBridgeActive() {
+      if (!this->isBleConnected) return false;
+      if (this->sourceIsBridge) {
+        if (this->lastBridgePacketTime > 0 && (millis() - this->lastBridgePacketTime < 15000)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    bool isAutonomousFlowActive() {
+      // 1. If Bridge is actively controlling, Autonomous Flow is FALSE (Bridge has exclusive priority)
+      if (this->isBridgeActive()) return false;
+
+      // 2. If Web App is connected (either identified as web app or connected central that is not bridge)
+      if (this->isBleConnected) {
+        return true;
+      }
+
+      // 3. Standalone Mode: Not connected to anything for >= 60 seconds
+      unsigned long now = millis();
+      if (now >= 60000) {
+        if (this->lastBleDisconnectTime == 0 || (now - this->lastBleDisconnectTime >= 60000)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
     void triggerFlick() {
       this->lastFlickTime = millis();
       this->configLastUpdated = millis();

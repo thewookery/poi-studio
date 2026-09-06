@@ -1,5 +1,5 @@
 // Open POI Studio 100% Offline Festival Service Worker
-const CACHE_NAME = 'open-poi-studio-v174-battery-ready';
+const CACHE_NAME = 'open-poi-studio-v175-smart-source';
 
 
 
