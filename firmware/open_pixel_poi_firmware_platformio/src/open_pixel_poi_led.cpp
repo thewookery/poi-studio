@@ -832,11 +832,68 @@ class OpenPixelPoiLED {
     int frameIndex;
     void setup(){
 #if defined(PEBBLE_50PX)
-      config.ledCount = 88;
-      config.frameHeight = 88;
+      #define PEBBLE_MAX_BUFFER 150
+      #define PIN_LOOPBACK 9 // D9 on Seeed Studio XIAO ESP32-C3
+
+      // Ensure ledCount is in safe range from Flash (default 88)
+      if (config.ledCount < 8 || config.ledCount > PEBBLE_MAX_BUFFER) config.ledCount = 88;
+      config.frameHeight = config.ledCount;
       config.motionFxMode = 0;
       if (config.frameCount < 2) config.frameCount = 30;
-      ledStrip = new NeoPixelStrip(88, 10); // 88 WS2811/WS2812 LEDs on Pin D10 (GPIO 10) on the right side!
+
+      // =========================================================================
+      // 🔍 4TH WIRE LOOPBACK AUTO-DETECTION ON PIN D9 (GPIO 9)
+      // =========================================================================
+      pinMode(PIN_LOOPBACK, INPUT_PULLDOWN);
+      delay(2);
+
+      static volatile bool s_d9PulseSeen = false;
+      attachInterrupt(digitalPinToInterrupt(PIN_LOOPBACK), []() {
+        s_d9PulseSeen = true;
+      }, RISING);
+
+      // Probe test: send 150 pixels with low brightness
+      s_d9PulseSeen = false;
+      NeoPixelStrip* probeStrip = new NeoPixelStrip(PEBBLE_MAX_BUFFER, 10);
+      probeStrip->Begin();
+      probeStrip->ClearTo(RgbColor(1, 1, 1));
+      probeStrip->Show();
+      delay(8);
+      delete probeStrip;
+
+      if (s_d9PulseSeen) {
+        // 🎉 Loopback wire detected on Pin D9! Run binary search to measure exact strand length
+        uint8_t low = 8;
+        uint8_t high = PEBBLE_MAX_BUFFER;
+
+        while (low < high) {
+          uint8_t mid = (low + high) / 2;
+          s_d9PulseSeen = false;
+          NeoPixelStrip* testStrip = new NeoPixelStrip(mid, 10);
+          testStrip->Begin();
+          testStrip->ClearTo(RgbColor(1, 1, 1));
+          testStrip->Show();
+          delay(2 + (mid * 35 / 1000));
+          delete testStrip;
+
+          if (s_d9PulseSeen) {
+            high = mid;
+          } else {
+            low = mid + 1;
+          }
+        }
+
+        uint8_t detectedCount = (high > 8) ? (high - 1) : 8;
+        config.setLedCount(detectedCount);
+        Serial.printf("🎉 [LOOPBACK] Auto-Detected exact strand length: %d LEDs!\n", detectedCount);
+      } else {
+        Serial.printf("ℹ️ [STANDBY] No loopback wire on D9. Using calibrated count: %d LEDs\n", config.ledCount);
+      }
+
+      detachInterrupt(digitalPinToInterrupt(PIN_LOOPBACK));
+
+      // Final active full-capacity strip
+      ledStrip = new NeoPixelStrip(PEBBLE_MAX_BUFFER, 10);
 #elif defined(STRIP_32PX)
       config.ledCount = 32;
       config.frameHeight = 32;
@@ -1326,6 +1383,13 @@ class OpenPixelPoiLED {
 
           ledStrip->SetPixelColor(j, RgbColor(red, green, blue));
         }
+
+#if defined(PEBBLE_50PX)
+        // Clear any unused buffer pixels beyond active config.ledCount up to 150
+        for (int k = config.ledCount; k < PEBBLE_MAX_BUFFER; k++) {
+          ledStrip->SetPixelColor(k, RgbColor(0, 0, 0));
+        }
+#endif
 #else
         const uint16_t frameStride = config.frameHeight * 3;
         uint32_t frameBase = (uint32_t)frameIndex * frameStride;

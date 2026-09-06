@@ -1,0 +1,12 @@
+{
+  "version": "v176",
+  "name": "Build v176: Hardware Loopback Auto-Detection & Web App Live Length Slider",
+  "date": "2026-09-06",
+  "features": [
+    "Hardware Loopback Auto-Detection on Pin D9 (GPIO 9): Optional 4th wire from last LED DOUT enables 25ms boot measurement of exact strand length",
+    "Live Web App Strand Length Slider: Direct real-time control over LED count (10 to 150) in Open POI Studio with instant on-board Flash NVS persistence",
+    "Dynamic 150-LED Maximum Buffer: NeoPixelBus expands capacity to 150 LEDs with automatic blanking of unused pixels",
+    "Flash Memory Storage: Board remembers your calibrated LED count across power cycles without needing a phone or controller",
+    "Intelligent Source Discrimination: Master Bridge vs Web Studio vs Standalone 60s Flow Mode fully preserved and scaled to active strand length"
+  ]
+}

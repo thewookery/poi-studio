@@ -515,6 +515,16 @@
         }
 
         /**
+         * Set Dynamic LED Strand Length (10 to 150 pixels) on connected Pebble Hat or Aux Strip
+         * @param {number} count 8 to 150
+         */
+        async setLedCount(count) {
+            const c = Math.max(8, Math.min(150, Math.round(Number(count) || 88)));
+            console.log('[BLE] 📏 Setting LED Strand Length:', c);
+            await this._sendMessage([COMM_CODES.CC_SET_LED_COUNT, c]);
+        }
+
+        /**
          * Change Active Pattern Slot (0-15) on all connected Poi
          */
         async setPatternSlot(slotIndex) {

@@ -196,9 +196,18 @@ class OpenPixelPoiConfig {
       preferences.putUChar("ledType", 2);
     }
 
-    void setLedCount(uint8_t ledCount) {
+    void setLedCount(uint8_t count) {
+#if defined(PEBBLE_50PX) || defined(STRIP_32PX)
+      uint8_t safeCount = max((uint8_t)8, min((uint8_t)150, count));
+      this->ledCount = safeCount;
+      this->frameHeight = safeCount;
+      preferences.putUChar("ledCount", safeCount);
+      this->configLastUpdated = millis();
+      debugf("Saved Dynamic LED Count: %d\n", safeCount);
+#else
       this->ledCount = 55; // Always 55 LEDs
       preferences.putUChar("ledCount", 55);
+#endif
     }
 
     void setDeviceName(String deviceName) {
@@ -455,6 +464,21 @@ class OpenPixelPoiConfig {
       preferences.begin("led_pattern", false);
       debugf("Preffs free entries: %d\n", preferences.freeEntries());
 
+#if defined(PEBBLE_50PX)
+      this->hardwareVersion = 2;
+      this->ledType = 1; // 1 = WS2812
+      this->ledCount = preferences.getUChar("ledCount", 88);
+      if (this->ledCount < 8 || this->ledCount > 150) this->ledCount = 88;
+      preferences.putUChar("hardwareVersion", 2);
+      preferences.putUChar("ledType", 1);
+#elif defined(STRIP_32PX)
+      this->hardwareVersion = 2;
+      this->ledType = 2; // DotStar
+      this->ledCount = preferences.getUChar("ledCount", 32);
+      if (this->ledCount < 8 || this->ledCount > 150) this->ledCount = 32;
+      preferences.putUChar("hardwareVersion", 2);
+      preferences.putUChar("ledType", 2);
+#else
       // Permanently lock hardware to 55px DotStar and overwrite any stale NVS corruptions
       this->hardwareVersion = 2;
       this->ledType = 2; // 2 = DotStar SPI
@@ -462,6 +486,7 @@ class OpenPixelPoiConfig {
       preferences.putUChar("hardwareVersion", 2);
       preferences.putUChar("ledType", 2);
       preferences.putUChar("ledCount", 55);
+#endif
 
       this->deviceName = preferences.getString("deviceName", DEFAULT_DEVICE_NAME);
 
