@@ -1,5 +1,5 @@
 // Open POI Studio 100% Offline Festival Service Worker
-const CACHE_NAME = 'open-poi-studio-v177-virtual-wiimote';
+const CACHE_NAME = 'open-poi-studio-v178-wiimote-dpad-brightness';
 
 
 

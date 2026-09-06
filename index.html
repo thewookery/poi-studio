@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>⚡ Open POI Studio (Build v177)</title>
+    <title>⚡ Open POI Studio (Build v178)</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00ff88">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -110,7 +110,7 @@
         <!-- COMPACT ULTRA-CLEAN TOP HEADER -->
         <header class="pinned-top-hud">
             <div class="hud-brand-row">
-                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.68rem; color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.5); padding:3px 8px; border-radius:4px; margin-left:6px; box-shadow:0 0 10px rgba(0,255,136,0.25);">✨ BUILD v177 • PHONE MOTION WIIMOTE & ACCELEROMETER Z-TRIGGER</span></div>
+                <div class="hud-title">⚡ OPEN POI STUDIO <span style="font-size:0.68rem; color:var(--neon-green); font-weight:800; background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.5); padding:3px 8px; border-radius:4px; margin-left:6px; box-shadow:0 0 10px rgba(0,255,136,0.25);">✨ BUILD v178 • CONSOLE D-PAD & LIVE BRIGHTNESS</span></div>
                 <div class="hud-quick-actions">
                     <button class="hw-btn" id="btn-open-hw-wizard" style="font-size:0.72rem; color:var(--neon-yellow); font-weight:700; padding:5px 8px;" title="Select Hardware Model & Firmware Profile">🪄 Profile</button>
                     <span class="telemetry-pill" id="hud-bridge-battery" style="display:none; font-size:0.68rem; font-weight:800; color:var(--neon-green); border-color:var(--neon-green); background:rgba(0,255,136,0.08); padding:3px 6px;">🔋 <span id="hud-bridge-battery-text">--%</span></span>
@@ -2104,29 +2104,71 @@
                 <!-- ACTION ROW: D-PAD + C-BUTTON -->
                 <div style="display:flex; justify-content:space-around; align-items:center; gap:16px; flex-wrap:wrap;">
                     
-                    <!-- VIRTUAL D-PAD -->
-                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">🕹️ D-PAD (SWIPE / TAP)</div>
-                        <div class="wm-dpad-grid" id="wm-dpad-surface">
-                            <div></div>
-                            <button class="wm-dpad-btn" id="btn-wm-dpad-up" title="Speed + / Bank +">▲</button>
-                            <div></div>
-                            <button class="wm-dpad-btn" id="btn-wm-dpad-left" title="Prev Flow / Prev Slot">◀</button>
-                            <div style="display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:var(--text-muted);">●</div>
-                            <button class="wm-dpad-btn" id="btn-wm-dpad-right" title="Next Flow / Next Slot">▶</button>
-                            <div></div>
-                            <button class="wm-dpad-btn" id="btn-wm-dpad-down" title="Speed - / Bank -">▼</button>
-                            <div></div>
+                    <!-- AUTHENTIC CONSOLE CROSS D-PAD -->
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+                        <div style="font-size:0.68rem; color:var(--text-muted); font-weight:800; letter-spacing:0.5px; display:flex; align-items:center; gap:4px;">
+                            <span>🕹️ D-PAD</span>
+                            <span style="font-size:0.58rem; color:var(--neon-cyan);">(SWIPE / TAP)</span>
+                        </div>
+                        
+                        <!-- Circular Concave Housing Well -->
+                        <div class="wm-dpad-housing" id="wm-dpad-surface">
+                            <div class="wm-dpad-cross">
+                                <!-- UP ARM -->
+                                <button class="wm-dpad-arm wm-dpad-up" id="btn-wm-dpad-up" title="Speed + / Bank +">
+                                    <span class="wm-dpad-arrow">▲</span>
+                                </button>
+                                <!-- LEFT ARM -->
+                                <button class="wm-dpad-arm wm-dpad-left" id="btn-wm-dpad-left" title="Prev Flow / Prev Slot">
+                                    <span class="wm-dpad-arrow">◀</span>
+                                </button>
+                                <!-- CENTER PIVOT -->
+                                <div class="wm-dpad-center">
+                                    <div class="wm-dpad-pivot"></div>
+                                </div>
+                                <!-- RIGHT ARM -->
+                                <button class="wm-dpad-arm wm-dpad-right" id="btn-wm-dpad-right" title="Next Flow / Next Slot">
+                                    <span class="wm-dpad-arrow">▶</span>
+                                </button>
+                                <!-- DOWN ARM -->
+                                <button class="wm-dpad-arm wm-dpad-down" id="btn-wm-dpad-down" title="Speed - / Bank -">
+                                    <span class="wm-dpad-arrow">▼</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- C-BUTTON -->
                     <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">🌟 PALETTE CONTROL</div>
+                        <div style="font-size:0.68rem; color:var(--text-muted); font-weight:800; letter-spacing:0.5px;">🌟 PALETTE CONTROL</div>
                         <button class="btn-c-action" id="btn-wm-c-btn">
-                            🌟 C BUTTON
-                            <div style="font-size:0.62rem; font-weight:600; opacity:0.85; margin-top:2px;">Tap: 48 Palettes • Hold: True RGB</div>
+                            <div style="font-size:1.05rem; font-weight:900; letter-spacing:0.5px;">🌟 C BUTTON</div>
+                            <div style="font-size:0.64rem; font-weight:700; opacity:0.85; margin-top:3px;">Tap: 48 Palettes • Hold: True RGB</div>
                         </button>
+                    </div>
+                </div>
+
+                <!-- EASY-ACCESS LIVE BRIGHTNESS CONTROL ROW -->
+                <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,170,0,0.25); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span style="font-size:0.75rem; font-weight:800; color:#ffaa00; display:flex; align-items:center; gap:6px;">
+                            <span>☀️ Brightness:</span>
+                            <span id="wm-brightness-val" style="color:#fff; font-family:monospace; font-size:0.8rem;">50%</span>
+                        </span>
+                        <div style="display:flex; gap:4px;" id="wm-brightness-presets">
+                            <button class="wm-b-preset" data-b="10">10%</button>
+                            <button class="wm-b-preset" data-b="25">25%</button>
+                            <button class="wm-b-preset active" data-b="50">50%</button>
+                            <button class="wm-b-preset" data-b="75">75%</button>
+                            <button class="wm-b-preset" data-b="100">100%</button>
+                        </div>
+                    </div>
+
+                    <!-- Slider with Steppers -->
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button id="btn-wm-b-dec" class="hw-btn" style="padding:4px 10px; font-size:0.8rem; font-weight:bold; color:#ffaa00;">-</button>
+                        <input type="range" id="wm-brightness-slider" min="1" max="100" value="50" style="accent-color:#ffaa00; flex:1; height:6px; cursor:pointer;">
+                        <button id="btn-wm-b-inc" class="hw-btn" style="padding:4px 10px; font-size:0.8rem; font-weight:bold; color:#ffaa00;">+</button>
                     </div>
                 </div>
 

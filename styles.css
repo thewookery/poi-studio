@@ -1622,49 +1622,161 @@ esp-web-install-button {
 
 /* C-Button */
 .btn-c-action {
-    background: rgba(255, 170, 0, 0.12);
-    border: 2px solid rgba(255, 170, 0, 0.45);
+    background: linear-gradient(145deg, rgba(255, 170, 0, 0.2), rgba(255, 119, 0, 0.1));
+    border: 2px solid rgba(255, 170, 0, 0.5);
     color: #ffaa00;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     font-weight: 800;
-    border-radius: 8px;
-    padding: 12px 16px;
+    border-radius: 20px;
+    padding: 14px 18px;
     cursor: pointer;
     transition: all 0.1s ease;
     touch-action: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 135px;
 }
 .btn-c-action:active {
-    background: rgba(255, 170, 0, 0.35);
-    border-color: #ffaa00;
-    box-shadow: 0 0 16px rgba(255, 170, 0, 0.5);
-    transform: scale(0.96);
+    background: linear-gradient(145deg, rgba(255, 170, 0, 0.4), rgba(255, 119, 0, 0.25));
+    border-color: #ffd000;
+    box-shadow: 0 0 20px rgba(255, 170, 0, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.6);
+    transform: scale(0.96) translateY(2px);
 }
 
-/* Virtual D-Pad */
-.wm-dpad-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 44px);
-    gap: 4px;
-    max-width: 190px;
-    margin: 0 auto;
+/* Authentic Console Cross D-Pad */
+.wm-dpad-housing {
+    position: relative;
+    width: 154px;
+    height: 154px;
+    min-width: 154px;
+    min-height: 154px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #0e111a 62%, #181d2c 100%);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 4px 14px rgba(0, 0, 0, 0.9), 0 3px 8px rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
-.wm-dpad-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: var(--text-color);
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 800;
+
+.wm-dpad-cross {
+    position: relative;
+    width: 132px;
+    height: 132px;
+    display: grid;
+    grid-template-columns: 44px 44px 44px;
+    grid-template-rows: 44px 44px 44px;
+    grid-template-areas:
+        ".     up    ."
+        "left center right"
+        ".    down   .";
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.75));
+}
+
+.wm-dpad-arm {
+    background: linear-gradient(145deg, #262c3e, #181c28);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--neon-cyan);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.08s;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    transition: all 0.08s ease;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
 }
-.wm-dpad-btn:active {
-    background: rgba(0, 210, 255, 0.25);
+
+.wm-dpad-arm:active, .wm-dpad-arm.dpad-pressed {
+    background: linear-gradient(145deg, #132438, #0a3d4d);
     border-color: var(--neon-cyan);
+    box-shadow: inset 0 0 12px rgba(0, 210, 255, 0.6);
+}
+
+.wm-dpad-up {
+    grid-area: up;
+    border-radius: 10px 10px 0 0;
+    border-bottom: none;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22);
+}
+.wm-dpad-down {
+    grid-area: down;
+    border-radius: 0 0 10px 10px;
+    border-top: none;
+    box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.65);
+}
+.wm-dpad-left {
+    grid-area: left;
+    border-radius: 10px 0 0 10px;
+    border-right: none;
+    box-shadow: inset 1px 0 1px rgba(255, 255, 255, 0.22);
+}
+.wm-dpad-right {
+    grid-area: right;
+    border-radius: 0 10px 10px 0;
+    border-left: none;
+    box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.wm-dpad-center {
+    grid-area: center;
+    background: #1e2333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.wm-dpad-pivot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #0e111a 35%, #252b3d 100%);
+    border: 1px solid rgba(0, 0, 0, 0.7);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+.wm-dpad-arrow {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--neon-cyan);
+    filter: drop-shadow(0 0 4px rgba(0, 210, 255, 0.5));
+    pointer-events: none;
+    user-select: none;
+}
+.wm-dpad-arm:active .wm-dpad-arrow,
+.wm-dpad-arm.dpad-pressed .wm-dpad-arrow {
+    color: #ffffff;
+    filter: drop-shadow(0 0 10px var(--neon-cyan));
+    transform: scale(1.15);
+}
+
+/* Quick Brightness Presets in Wiimote */
+.wm-b-preset {
+    padding: 3px 8px;
+    font-size: 0.66rem;
+    font-weight: 800;
+    color: #ffaa00;
+    border: 1px solid rgba(255, 170, 0, 0.35);
+    background: rgba(255, 170, 0, 0.08);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+.wm-b-preset:hover, .wm-b-preset.active {
+    background: rgba(255, 170, 0, 0.3);
+    border-color: #ffaa00;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.45);
 }
 
 /* Screen Flick Burst Flash Animation */

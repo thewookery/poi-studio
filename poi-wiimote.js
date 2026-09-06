@@ -73,6 +73,7 @@
         activeSlot: 0,        // 0-9
         activeBank: 0,        // 0-4
         activeSpeed: 3,       // 1-10
+        activeBrightness: 50, // 1-100%
         preZPalette: 1,
 
         // Motion & Sensors
@@ -325,6 +326,11 @@
 
         vibrate(25);
         playSound('z-release');
+        const mainSlider = document.getElementById('ble-ctrl-brightness');
+        if (mainSlider) {
+            state.activeBrightness = parseInt(mainSlider.value) || 50;
+        }
+        updateBrightnessUI(state.activeBrightness);
         updateZButtonUI(false);
 
         if (window.OpenPixelPoiBLE && window.OpenPixelPoiBLE.isConnected) {
@@ -558,6 +564,39 @@
         if (elSpeed) elSpeed.innerText = `${state.activeSpeed}x`;
     }
 
+    function setBrightness(val) {
+        const b = Math.max(1, Math.min(100, Math.round(Number(val) || 50)));
+        state.activeBrightness = b;
+        updateBrightnessUI(b);
+
+        if (window.OpenPixelPoiBLE && window.OpenPixelPoiBLE.isConnected && typeof window.OpenPixelPoiBLE.setBrightness === 'function') {
+            window.OpenPixelPoiBLE.setBrightness(b);
+        }
+
+        const mainSlider = document.getElementById('ble-ctrl-brightness');
+        if (mainSlider && parseInt(mainSlider.value) !== b) {
+            mainSlider.value = b;
+            const mainVal = document.getElementById('ble-ctrl-brightness-val');
+            if (mainVal) mainVal.innerText = `${b}`;
+        }
+    }
+
+    function updateBrightnessUI(b) {
+        const valEl = document.getElementById('wm-brightness-val');
+        if (valEl) valEl.innerText = `${b}%`;
+
+        const slider = document.getElementById('wm-brightness-slider');
+        if (slider && parseInt(slider.value) !== b) {
+            slider.value = b;
+        }
+
+        document.querySelectorAll('#wm-brightness-presets button').forEach(btn => {
+            const pb = parseInt(btn.getAttribute('data-b')) || 0;
+            btn.classList.toggle('active', pb === b);
+        });
+    }
+
+
     // --- 🔄 WORKSPACE LIFECYCLE HOOKS ---
     function initWiimoteMode() {
         console.log('[Wiimote] Entering Virtual Wiimote Workspace');
@@ -582,6 +621,11 @@
         updatePaletteUI();
         updateSlotUI();
         updateBankUI();
+        const mainSlider = document.getElementById('ble-ctrl-brightness');
+        if (mainSlider) {
+            state.activeBrightness = parseInt(mainSlider.value) || 50;
+        }
+        updateBrightnessUI(state.activeBrightness);
         updateZButtonUI(false);
     }
 
@@ -682,6 +726,36 @@
             });
         }
 
+        // BRIGHTNESS SLIDER & CONTROLS
+        const bSlider = document.getElementById('wm-brightness-slider');
+        if (bSlider) {
+            bSlider.oninput = (e) => setBrightness(e.target.value);
+        }
+        document.querySelectorAll('#wm-brightness-presets button').forEach(btn => {
+            btn.onclick = () => {
+                const b = parseInt(btn.getAttribute('data-b')) || 50;
+                setBrightness(b);
+                vibrate(15);
+                playSound('step');
+            };
+        });
+        const btnBDec = document.getElementById('btn-wm-b-dec');
+        if (btnBDec) {
+            btnBDec.onclick = () => {
+                setBrightness(Math.max(1, state.activeBrightness - 5));
+                vibrate(15);
+                playSound('step');
+            };
+        }
+        const btnBInc = document.getElementById('btn-wm-b-inc');
+        if (btnBInc) {
+            btnBInc.onclick = () => {
+                setBrightness(Math.min(100, state.activeBrightness + 5));
+                vibrate(15);
+                playSound('step');
+            };
+        }
+
         // D-PAD BUTTONS
         const btnUp = document.getElementById('btn-wm-dpad-up');
         if (btnUp) btnUp.onclick = () => stepDirection('up');
@@ -691,6 +765,17 @@
         if (btnLeft) btnLeft.onclick = () => stepDirection('left');
         const btnRight = document.getElementById('btn-wm-dpad-right');
         if (btnRight) btnRight.onclick = () => stepDirection('right');
+
+        // Tactile Press Feedback for D-Pad Arms
+        ['up', 'down', 'left', 'right'].forEach(dir => {
+            const arm = document.getElementById(`btn-wm-dpad-${dir}`);
+            if (arm) {
+                arm.addEventListener('pointerdown', () => arm.classList.add('dpad-pressed'));
+                arm.addEventListener('pointerup', () => arm.classList.remove('dpad-pressed'));
+                arm.addEventListener('pointercancel', () => arm.classList.remove('dpad-pressed'));
+                arm.addEventListener('pointerleave', () => arm.classList.remove('dpad-pressed'));
+            }
+        });
 
         // D-PAD TOUCHPAD SWIPE LISTENER
         const dpadArea = document.getElementById('wm-dpad-surface');
@@ -778,7 +863,8 @@
         engageZ: engageZ,
         releaseZ: releaseZ,
         triggerFlick: triggerWristFlick,
-        stepDirection: stepDirection
+        stepDirection: stepDirection,
+        setBrightness: setBrightness
     };
 
     window.initWiimoteMode = initWiimoteMode;
