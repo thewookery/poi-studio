@@ -50,8 +50,9 @@ class OpenPixelPoiConfig {
     
   public:
     // Runtime State
-    float batteryVoltage = BATTERY_VOLTAGE_LOW;
+    float batteryVoltage = 4.2f;
     BatteryState batteryState = BAT_OK;
+    bool batterySensorDetected = false;
     DisplayState displayState = DS_PATTERN;
     long displayStateLastUpdated = 0;
     // Hardware Settings (Defaults from config.h but can be overriden using the app) 
@@ -601,9 +602,20 @@ class OpenPixelPoiConfig {
       // Chunked pattern loading to avoid lag spike on pattern chanage
       continueLoadingPattern();
 
-      // Battery state permanently OK (prevents false floating shutdowns)
-      this->batteryState = BAT_OK;
-      this->batteryVoltage = 4.2f;
+      // Battery state latching (only if hardware sensor divider is actively detected on A0)
+      if (this->batterySensorDetected) {
+        if (this->batteryVoltage <= BATTERY_VOLTAGE_SHUTDOWN || this->batteryState == BAT_SHUTDOWN) {
+          this->batteryState = BAT_SHUTDOWN;
+        } else if (this->batteryVoltage <= BATTERY_VOLTAGE_CRITICAL || (this->batteryState == BAT_CRITICAL && this->batteryVoltage <= BATTERY_VOLTAGE_CRITICAL + BATTERY_VOLTAGE_LATCH)) {
+          this->batteryState = BAT_CRITICAL;
+        } else if (this->batteryVoltage <= BATTERY_VOLTAGE_LOW || (this->batteryState == BAT_LOW && this->batteryVoltage <= BATTERY_VOLTAGE_LOW + BATTERY_VOLTAGE_LATCH)) {
+          this->batteryState = BAT_LOW;
+        } else {
+          this->batteryState = BAT_OK;
+        }
+      } else {
+        this->batteryState = BAT_OK;
+      }
       
     }
 };

@@ -420,8 +420,9 @@ class OpenPixelPoiBLE : public BLEServerCallbacks, public BLECharacteristicCallb
       config.displayState = DS_PATTERN;
       config.motionFxMode = 0;
       config.paletteSpeed = 5;
-      config.batteryState = BAT_OK;
-      config.batteryVoltage = 4.2f;
+      if (!config.batterySensorDetected) {
+        config.batteryState = BAT_OK;
+      }
       config.startLoadingPattern();
     }
 

@@ -61,8 +61,24 @@ public:
 
 
   void setup() {
-    // Voltage Input
-    pinMode(A0, INPUT);
+    // Voltage Input (ADC attenuation 11dB for 0-2.6V input on 1/2 divider)
+    analogSetPinAttenuation(BATTERY_ADC_PIN, ADC_11db);
+
+    // Initial battery voltage calibration on boot
+    if (BATTERY_VOLTAGE_SENSOR) {
+      uint32_t rawMvSum = 0;
+      for (int i = 0; i < 16; i++) {
+        rawMvSum += analogReadMilliVolts(BATTERY_ADC_PIN);
+      }
+      uint32_t initMv = rawMvSum / 16;
+      if (initMv >= 600) {
+        config.batterySensorDetected = true;
+        config.batteryVoltage = (initMv * 2.0f) / 1000.0f;
+      } else {
+        config.batterySensorDetected = false;
+        config.batteryVoltage = 4.2f;
+      }
+    }
 
     //Button Input
     pinMode(3,INPUT_PULLUP);
@@ -301,16 +317,32 @@ public:
     // Read battery voltage
     if(BATTERY_VOLTAGE_SENSOR){
       if(config.displayState != DS_SHUTDOWN){ // Don't read voltage during shutdown sequence as it swings due to dimming
-        config.batteryVoltage = (config.batteryVoltage * 0.999) + ((analogReadMilliVolts(A0)/500.0) * .001);
+        // Take a stable 4-sample average of ADC pin to filter RF noise
+        uint32_t rawMvSum = 0;
+        for (int i = 0; i < 4; i++) {
+          rawMvSum += analogReadMilliVolts(BATTERY_ADC_PIN);
+        }
+        uint32_t rawMv = rawMvSum / 4;
+
+        // If raw voltage on A0 >= 600mV (corresponds to >= 1.2V on 1/2 divider), hardware divider is present
+        if (rawMv >= 600) {
+          config.batterySensorDetected = true;
+          float currentV = (rawMv * 2.0f) / 1000.0f;
+          // Smooth 2% EMA filter
+          config.batteryVoltage = (config.batteryVoltage * 0.98f) + (currentV * 0.02f);
+        } else {
+          // Floating or unpopulated pin A0: flag as unmetered so board does not falsely shutdown
+          config.batterySensorDetected = false;
+          config.batteryVoltage = 4.2f;
+        }
       }
     }else{
-      config.batteryVoltage = 4.2;
+      config.batterySensorDetected = false;
+      config.batteryVoltage = 4.2f;
     }
 
-    
-
-    // Super low voltage, emergency shutdown (uses data from previous read, this is ok). 
-    if (config.batteryState == BAT_SHUTDOWN && config.displayState != DS_SHUTDOWN){
+    // Super low voltage, emergency shutdown (ONLY if hardware battery sensor is actively detected!)
+    if (config.batterySensorDetected && config.batteryState == BAT_SHUTDOWN && config.displayState != DS_SHUTDOWN){
       config.displayState = DS_SHUTDOWN;
       config.displayStateLastUpdated = millis();
       shutDownAt = millis();
